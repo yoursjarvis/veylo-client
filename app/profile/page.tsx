@@ -8,6 +8,16 @@ import { useRouter } from "next/navigation";
 export default function ProfilePage() {
   const { data: auth, isLoading } = useCurrentUser();
   const router = useRouter();
+  const user = auth?.user as
+    | {
+        firstName?: string;
+        lastName?: string;
+        name?: string;
+        email?: string;
+        emailVerified?: boolean;
+        createdAt?: string | Date;
+      }
+    | undefined;
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -26,24 +36,24 @@ export default function ProfilePage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-muted-foreground">First Name</p>
-              <p>{auth?.user?.firstName}</p>
+              <p>{user?.firstName ?? "N/A"}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Last Name</p>
-              <p>{auth?.user?.lastName}</p>
+              <p>{user?.lastName ?? "N/A"}</p>
             </div>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Email</p>
-            <p>{auth?.user?.email}</p>
+            <p>{user?.email}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Email Verified</p>
-            <p>{auth?.user?.emailVerified ? "Yes" : "No"}</p>
+            <p>{user?.emailVerified ? "Yes" : "No"}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Member Since</p>
-            <p>{auth?.user?.createdAt ? new Date(auth.user.createdAt).toLocaleDateString() : "N/A"}</p>
+            <p>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</p>
           </div>
         </CardContent>
       </Card>

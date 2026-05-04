@@ -16,11 +16,11 @@ export function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get("better-auth.session_token");
   const isAuthenticated = !!sessionCookie;
 
-  // If the user is on a protected route and not authenticated, redirect to login
+  // If the user is on a protected route and not authenticated, redirect to the unauthorized page
   if (protectedRoutes.some(route => pathname.startsWith(route)) && !isAuthenticated) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+    const unauthorizedUrl = new URL("/unauthorized", request.url);
+    unauthorizedUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(unauthorizedUrl);
   }
 
   // If the user is on an auth route and authenticated, redirect to dashboard

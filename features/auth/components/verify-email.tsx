@@ -1,41 +1,64 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { authService } from "../services/auth-service";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { authService } from "../services/auth-service"
 
 export function VerifyEmail() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("");
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token")
+  const [status, setStatus] = useState<"loading" | "success" | "error">(() =>
+    token ? "loading" : "error"
+  )
+  const [message, setMessage] = useState(() =>
+    token ? "" : "Missing verification token"
+  )
 
   useEffect(() => {
     if (!token) {
-      setStatus("error");
-      setMessage("Missing verification token");
-      return;
+      return
     }
 
-    authService.verifyEmail(token)
-      .then((res) => {
-        setStatus("success");
-        setMessage(res.message || "Email verified successfully");
-        toast.success("Email verified successfully");
+    let isActive = true
+
+    void authService
+      .verifyEmail(token)
+      .then(() => {
+        if (!isActive) {
+          return
+        }
+
+        setStatus("success")
+        setMessage("Email verified successfully")
+        toast.success("Email verified successfully")
       })
       .catch((err) => {
-        setStatus("error");
-        setMessage(err.response?.data?.message || "Verification failed");
-        toast.error("Email verification failed");
-      });
-  }, [token]);
+        if (!isActive) {
+          return
+        }
+
+        setStatus("error")
+        setMessage(err instanceof Error ? err.message : "Verification failed")
+        toast.error("Email verification failed")
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [token])
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="mx-auto w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">Email Verification</CardTitle>
         <CardDescription>
@@ -45,7 +68,9 @@ export function VerifyEmail() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <p className={status === "error" ? "text-destructive" : ""}>{message}</p>
+        <p className={status === "error" ? "text-destructive" : ""}>
+          {message}
+        </p>
         {status !== "loading" && (
           <Button className="w-full" render={<Link href="/login" />}>
             Go to Login
@@ -53,5 +78,5 @@ export function VerifyEmail() {
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

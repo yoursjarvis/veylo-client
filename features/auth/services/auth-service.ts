@@ -1,64 +1,94 @@
-import { axiosInstance } from "@/lib/axios";
+import { axiosInstance } from "@/lib/axios"
+import { getAuthErrorMessage } from "../lib/auth-errors"
 import {
-  AuthResponse,
-  ForgotPasswordInput,
-  LoginInput,
-  RegisterInput,
-  ResetPasswordInput,
-} from "../types";
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+  type ForgotPasswordInput,
+  type LoginInput,
+  type RegisterInput,
+  type ResetPasswordInput,
+} from "../types"
 
 export const authService = {
   async signup(data: RegisterInput) {
-    const response = await axiosInstance.post<{ message: string }>(
-      "/auth/signup",
-      data
-    );
-    return response.data;
+    const parsed = registerSchema.parse(data)
+
+    try {
+      await axiosInstance.post("/auth/signup", {
+        first_name: parsed.first_name,
+        last_name: parsed.last_name,
+        email: parsed.email,
+        password: parsed.password,
+      })
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, "Registration failed"))
+    }
   },
 
-  async login(data: LoginInput) {
-    const response = await axiosInstance.post<{ message: string }>(
-      "/auth/login",
-      data
-    );
-    return response.data;
+  async login(data: LoginInput & { callbackUrl?: string }) {
+    const parsed = loginSchema.parse(data)
+
+    try {
+      await axiosInstance.post("/auth/login", {
+        email: parsed.email,
+        password: parsed.password,
+      })
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, "Login failed"))
+    }
   },
 
   async logout() {
-    const response = await axiosInstance.post<{ message: string }>(
-      "/auth/logout"
-    );
-    return response.data;
+    try {
+      await axiosInstance.post("/auth/logout")
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, "Logout failed"))
+    }
   },
 
   async me() {
-    const response = await axiosInstance.get<{ data: AuthResponse }>("/auth/me");
-    return response.data.data;
+    try {
+      const response = await axiosInstance.get("/auth/me")
+      return response.data.data
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, "Failed to load session"))
+    }
   },
 
   async forgotPassword(data: ForgotPasswordInput) {
-    const response = await axiosInstance.post<{ message: string }>(
-      "/auth/forgot-password",
-      data
-    );
-    return response.data;
+    const parsed = forgotPasswordSchema.parse(data)
+
+    try {
+      await axiosInstance.post("/auth/forgot-password", {
+        email: parsed.email,
+      })
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, "Failed to send reset link"))
+    }
   },
 
   async resetPassword(token: string, data: ResetPasswordInput) {
-    const response = await axiosInstance.post<{ message: string }>(
-      "/auth/reset-password",
-      {
+    const parsed = resetPasswordSchema.parse(data)
+
+    try {
+      await axiosInstance.post("/auth/reset-password", {
         token,
-        new_password: data.password,
-      }
-    );
-    return response.data;
+        new_password: parsed.password,
+      })
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, "Failed to reset password"))
+    }
   },
 
   async verifyEmail(token: string) {
-    const response = await axiosInstance.get<{ message: string }>(
-      `/auth/verify-email?token=${token}`
-    );
-    return response.data;
+    try {
+      await axiosInstance.get("/auth/verify-email", {
+        params: { token },
+      })
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, "Verification failed"))
+    }
   },
-};
+}

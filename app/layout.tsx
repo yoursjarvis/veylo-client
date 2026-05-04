@@ -2,6 +2,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { QueryProvider } from "@/components/query-provider"
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body>
         <QueryProvider>
           <ThemeProvider>
+            <ThemeToggle />
             {children}
             <Toaster />
           </ThemeProvider>
