@@ -2,12 +2,10 @@ import {
   Analytics02Icon,
   BookOpen01Icon,
   Briefcase02Icon,
-  CreditCardIcon,
   DashboardSquare01Icon,
   HelpCircleIcon,
   Key01Icon,
   Plug01Icon,
-  Settings01Icon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -28,7 +26,7 @@ export type SidebarNavGroup = {
 
 export const navGroups: SidebarNavGroup[] = [
   {
-    label: "Product",
+    label: "WorkSpace",
     items: [
       {
         title: "Dashboard",
@@ -48,7 +46,7 @@ export const navGroups: SidebarNavGroup[] = [
     ],
   },
   {
-    label: "Workspace",
+    label: "Organization",
     items: [
       {
         title: "Members",
@@ -64,21 +62,6 @@ export const navGroups: SidebarNavGroup[] = [
         title: "API Keys",
         path: "/api-keys",
         icon: <HugeiconsIcon icon={Key01Icon} strokeWidth={2} />,
-      },
-    ],
-  },
-  {
-    label: "Administration",
-    items: [
-      {
-        title: "Settings",
-        path: "/settings",
-        icon: <HugeiconsIcon icon={Settings01Icon} strokeWidth={2} />,
-      },
-      {
-        title: "Billing",
-        path: "/billing",
-        icon: <HugeiconsIcon icon={CreditCardIcon} strokeWidth={2} />,
       },
     ],
   },

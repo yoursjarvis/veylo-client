@@ -121,7 +121,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
                     type="text"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value}
+                    value={field.state.value as any}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="given-name"
@@ -144,7 +144,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
                     type="text"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value}
+                    value={field.state.value as any}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="family-name"
@@ -167,7 +167,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
                     type="email"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value}
+                    value={field.state.value as any}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="email"
@@ -190,7 +190,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
                     type="password"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value}
+                    value={field.state.value as any}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="new-password"

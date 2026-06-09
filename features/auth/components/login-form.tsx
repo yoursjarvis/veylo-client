@@ -118,7 +118,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                     type="email"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value}
+                    value={field.state.value as any}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="email"
@@ -142,7 +142,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                       type="password"
                       name={field.name}
                       id={field.name}
-                      value={field.state.value}
+                      value={field.state.value as any}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       autoComplete="current-password"

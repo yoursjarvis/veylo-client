@@ -68,7 +68,8 @@ export function useAuthForm<
   TOnChange extends undefined | FormValidateOrFn<TFormData>,
 >(options: AuthFormOptions<TFormData, TOnChange>) {
   return useForm({
-    ...options,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(options as any),
     validatorAdapter: zodValidator(),
   })
 }

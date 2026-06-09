@@ -21,7 +21,7 @@ export default function AuthenticatedLayout({
       try {
         const { data: orgs } = await authClient.organization.list();
         const hostname = window.location.hostname;
-        const isMainDomain = hostname === "localhost" || hostname === "veylo.local" || hostname === "veylo.com";
+        const isMainDomain = hostname === "localhost" || hostname === "veylo.test" || hostname === "veylo.local" || hostname === "veylo.com";
 
         if (!orgs || orgs.length === 0) {
           if (window.location.pathname !== "/org-setup") {

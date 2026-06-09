@@ -234,7 +234,6 @@ export function SecurityTab() {
     try {
       const { error } = await authClient.twoFactor.disable({
         password: twoFactorPassword,
-        code: otpCode
       });
       if (error) {
         toast.error(error.message || "Failed to disable 2FA");

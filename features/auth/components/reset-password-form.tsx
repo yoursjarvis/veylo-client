@@ -96,7 +96,7 @@ export function ResetPasswordForm() {
                 <Input
                   id={field.name}
                   type="password"
-                  value={field.state.value}
+                  value={field.state.value as any}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
@@ -111,7 +111,7 @@ export function ResetPasswordForm() {
                 <Input
                   id={field.name}
                   type="password"
-                  value={field.state.value}
+                  value={field.state.value as any}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
