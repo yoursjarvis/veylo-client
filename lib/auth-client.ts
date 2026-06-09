@@ -1,4 +1,4 @@
-import { lastLoginMethodClient, organizationClient, twoFactorClient } from "better-auth/client/plugins";
+import { lastLoginMethodClient, organizationClient, twoFactorClient, adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
@@ -7,7 +7,8 @@ export const authClient = createAuthClient({
   plugins: [
     lastLoginMethodClient(), 
     organizationClient(), 
-    twoFactorClient()
+    twoFactorClient(),
+    adminClient()
   ],
 });
 

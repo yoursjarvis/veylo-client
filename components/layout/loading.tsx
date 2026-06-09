@@ -3,9 +3,9 @@
 import { LogoIcon } from "@/components/shared/logo";
 import { cn } from "@/lib/utils";
 
-export function FullPageLoader() {
+export function FullPageLoader({ className }: { className?: string }) {
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-background">
+    <div className={cn("flex min-h-[400px] flex-1 flex-col items-center justify-center bg-background", className)}>
       <div className="relative flex flex-col items-center">
         {/* Animated Glow Effect */}
         <div className="absolute -inset-4 animate-pulse rounded-full bg-primary/20 blur-2xl" />

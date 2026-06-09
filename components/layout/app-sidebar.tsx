@@ -14,8 +14,12 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export function AppSidebar() {
+	const pathname = usePathname();
+
 	return (
 		<Sidebar
 			className={cn(
@@ -27,7 +31,12 @@ export function AppSidebar() {
 			variant="sidebar"
 		>
 			<SidebarHeader className="h-14 justify-center border-b px-2">
-				<SidebarMenuButton render={<a href="#link" />}><LogoIcon /><span className="font-medium text-foreground!">{process.env.NEXT_PUBLIC_APP_NAME}</span></SidebarMenuButton>
+				<SidebarMenuButton render={<Link href="/dashboard" />}>
+					<LogoIcon />
+					<span className="font-medium text-foreground!">
+						{process.env.NEXT_PUBLIC_APP_NAME}
+					</span>
+				</SidebarMenuButton>
 			</SidebarHeader>
 			<SidebarContent>
 				{navGroups.map((group, index) => (
@@ -39,7 +48,15 @@ export function AppSidebar() {
 				<SidebarMenu className="border-t p-2">
 					{footerNavLinks.map((item) => (
 						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton className="text-muted-foreground" isActive={item.isActive} size="sm" render={<a href={item.path} />}>{item.icon}<span>{item.title}</span></SidebarMenuButton>
+							<SidebarMenuButton
+								className="text-muted-foreground"
+								isActive={item.path === pathname}
+								size="sm"
+								render={<Link href={item.path || "#"} />}
+							>
+								{item.icon}
+								<span>{item.title}</span>
+							</SidebarMenuButton>
 						</SidebarMenuItem>
 					))}
 				</SidebarMenu>

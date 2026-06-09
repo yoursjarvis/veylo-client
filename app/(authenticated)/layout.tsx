@@ -59,9 +59,9 @@ export default function AuthenticatedLayout({
     checkOrganization();
   }, [auth, isLoading]);
 
-  if (isLoading || !orgCheckComplete) {
-    return <FullPageLoader />;
-  }
-
-  return <AppShell>{children}</AppShell>;
+  return (
+    <AppShell>
+      {isLoading || !orgCheckComplete ? <FullPageLoader /> : children}
+    </AppShell>
+  );
 }

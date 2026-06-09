@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { NuqsAdapter } from "nuqs/adapters/next/app"
 import "./globals.css"
 
 const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
@@ -38,9 +39,11 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <TooltipProvider>
-              <ThemeToggle />
-              {children}
-              <Toaster />
+              <NuqsAdapter>
+                <ThemeToggle />
+                {children}
+                <Toaster />
+              </NuqsAdapter>
             </TooltipProvider>
           </QueryProvider>
         </ThemeProvider>
