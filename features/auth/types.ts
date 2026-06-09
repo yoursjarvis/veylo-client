@@ -43,6 +43,8 @@ export interface User {
   image?: string
   createdAt: string
   updatedAt: string
+  twoFactorEnabled?: boolean
+  hasPassword?: boolean
 }
 
 export interface Session {

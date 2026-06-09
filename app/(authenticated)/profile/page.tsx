@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
-  const { data: auth, isLoading } = useCurrentUser();
+  const { data: auth } = useCurrentUser();
   const router = useRouter();
   const user = auth?.user as
     | {
@@ -19,13 +19,13 @@ export default function ProfilePage() {
       }
     | undefined;
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="p-8 max-w-2xl mx-auto">
-      <Button variant="ghost" className="mb-4" onClick={() => router.back()}>
+      <Button
+        variant="ghost"
+        className="mb-6 -ml-4 gap-2"
+        onClick={() => router.back()}
+      >
         &larr; Back
       </Button>
       <Card>

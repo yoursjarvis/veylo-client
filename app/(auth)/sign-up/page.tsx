@@ -1,16 +1,18 @@
-import { DecorIcon } from "@/components/ui/decor-icon"
+import { DecorIcon } from "@/components/shared/decor-icon"
 import { cn } from "@/lib/utils"
 import { RegisterForm } from "@/features/auth/components/register-form"
 
-export default function SingUpPage({
+export default async function SingUpPage({
   searchParams,
 }: {
-  searchParams?: { callbackUrl?: string | string[] }
+  searchParams: Promise<{ callbackUrl?: string | string[] }>
 }) {
+  const params = await searchParams
   const callbackUrl =
-    typeof searchParams?.callbackUrl === "string"
-      ? searchParams.callbackUrl
+    typeof params.callbackUrl === "string"
+      ? params.callbackUrl
       : undefined
+
 
   return (
     <div className="relative flex h-screen w-full items-center justify-center overflow-hidden px-6 md:px-8">

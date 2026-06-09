@@ -1,12 +1,13 @@
 "use client"
 
-import { AuthDivider } from "@/components/auth-divider"
 import { Button } from "@/components/ui/button"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { AuthDivider } from "@/features/auth/components/auth-divider"
+import { authClient } from "@/lib/auth-client"
 import {
   AtSignIcon,
   Github,
@@ -18,9 +19,10 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useLogin } from "../hooks/use-auth"
+
+import { Field, FieldError } from "@/components/ui/field"
 import { loginSchema } from "../types"
 import { toFieldErrors, useAuthForm } from "./auth-form-utils"
-import { Field, FieldError } from "@/components/ui/field"
 
 type LoginFormProps = {
   callbackUrl?: string
@@ -53,6 +55,19 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
     },
   })
 
+  const handleSocialLogin = async (provider: "google" | "github") => {
+    try {
+      await authClient.signIn.social({
+        provider,
+        callbackURL: `${window.location.origin}/org-setup`,
+      })
+    } catch (error) {
+      toast.error("Social login failed")
+    }
+  }
+
+  const lastMethod = authClient.getLastUsedLoginMethod()
+
   return (
     <div className="w-full max-w-sm animate-in space-y-8">
       <div className="flex flex-col space-y-1">
@@ -62,6 +77,37 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         </p>
       </div>
       <div className="space-y-4">
+        <div className="flex flex-col gap-2">
+          <Button
+            className="relative w-full"
+            type="button"
+            variant="outline"
+            onClick={() => handleSocialLogin("google")}
+          >
+            <HugeiconsIcon icon={GoogleIcon} />
+            Continue with Google
+            {lastMethod === "google" && (
+              <span className="absolute right-3 text-xs text-muted-foreground">
+                Last used
+              </span>
+            )}
+          </Button>
+          <Button
+            className="relative w-full"
+            type="button"
+            variant="outline"
+            onClick={() => handleSocialLogin("github")}
+          >
+            <HugeiconsIcon icon={Github} />
+            Continue with GitHub
+            {lastMethod === "github" && (
+              <span className="absolute right-3 text-xs text-muted-foreground">
+                Last used
+              </span>
+            )}
+          </Button>
+        </div>
+        <AuthDivider>OR</AuthDivider>
         <form
           className="space-y-2"
           onSubmit={(e) => {
@@ -145,19 +191,6 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             )}
           </form.Subscribe>
         </form>
-
-        <AuthDivider>OR</AuthDivider>
-
-        <div className="grid grid-cols-2 gap-2 space-y-2">
-          <Button className="w-full" type="button" variant="outline">
-            <HugeiconsIcon icon={GoogleIcon} />
-            Google
-          </Button>
-          <Button className="w-full" type="button" variant="outline">
-            <HugeiconsIcon icon={Github} />
-            GitHub
-          </Button>
-        </div>
       </div>
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}

@@ -1,15 +1,16 @@
 import { Geist, Geist_Mono, Inter } from "next/font/google"
 
-import "./globals.css"
+import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { QueryProvider } from "@/components/query-provider"
-import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
+import "./globals.css"
 
-const geistHeading = Geist({subsets:['latin'],variable:'--font-heading'});
+const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'})
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -25,16 +26,24 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", inter.variable, geistHeading.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        inter.variable,
+        geistHeading.variable
+      )}
     >
       <body>
-        <QueryProvider>
-          <ThemeProvider>
-            <ThemeToggle />
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            <TooltipProvider>
+              <ThemeToggle />
+              {children}
+              <Toaster />
+            </TooltipProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

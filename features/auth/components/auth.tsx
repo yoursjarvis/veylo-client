@@ -1,15 +1,15 @@
-import { cn } from "@/lib/utils";
-import type React from "react";
-import { DecorIcon } from "@/components/ui/decor-icon";
+import { DecorIcon } from "@/components/shared/decor-icon";
 import { Button } from "@/components/ui/button";
 import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
 } from "@/components/ui/input-group";
-import { AuthDivider } from "@/components/auth-divider";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { AuthDivider } from "@/features/auth/components/auth-divider";
+import { cn } from "@/lib/utils";
 import { AtIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import type React from "react";
 
 export function AuthPage() {
 	return (
@@ -31,7 +31,7 @@ export function AuthPage() {
 					<div className="flex flex-col space-y-1">
 						<h1 className="font-bold text-2xl tracking-wide">Join Now!</h1>
 						<p className="text-base text-muted-foreground">
-							Login or create your efferd account.
+							Login or create your {process.env.NEXT_PUBLIC_APP_NAME} account.
 						</p>
 					</div>
 					<div className="space-y-4">

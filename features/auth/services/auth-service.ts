@@ -16,7 +16,7 @@ export const authService = {
     const parsed = registerSchema.parse(data)
 
     try {
-      await axiosInstance.post("/auth/signup", {
+      await axiosInstance.post("auth/signup", {
         first_name: parsed.first_name,
         last_name: parsed.last_name,
         email: parsed.email,
@@ -31,7 +31,7 @@ export const authService = {
     const parsed = loginSchema.parse(data)
 
     try {
-      await axiosInstance.post("/auth/login", {
+      await axiosInstance.post("auth/login", {
         email: parsed.email,
         password: parsed.password,
       })
@@ -42,7 +42,7 @@ export const authService = {
 
   async logout() {
     try {
-      await axiosInstance.post("/auth/logout")
+      await axiosInstance.post("auth/logout")
     } catch (error) {
       throw new Error(getAuthErrorMessage(error, "Logout failed"))
     }
@@ -50,7 +50,7 @@ export const authService = {
 
   async me() {
     try {
-      const response = await axiosInstance.get("/auth/me")
+      const response = await axiosInstance.get("auth/me")
       return response.data.data
     } catch (error) {
       throw new Error(getAuthErrorMessage(error, "Failed to load session"))
@@ -61,7 +61,7 @@ export const authService = {
     const parsed = forgotPasswordSchema.parse(data)
 
     try {
-      await axiosInstance.post("/auth/forgot-password", {
+      await axiosInstance.post("auth/forgot-password", {
         email: parsed.email,
       })
     } catch (error) {
@@ -73,7 +73,7 @@ export const authService = {
     const parsed = resetPasswordSchema.parse(data)
 
     try {
-      await axiosInstance.post("/auth/reset-password", {
+      await axiosInstance.post("auth/reset-password", {
         token,
         new_password: parsed.password,
       })
@@ -84,7 +84,7 @@ export const authService = {
 
   async verifyEmail(token: string) {
     try {
-      await axiosInstance.get("/auth/verify-email", {
+      await axiosInstance.get("auth/verify-email", {
         params: { token },
       })
     } catch (error) {

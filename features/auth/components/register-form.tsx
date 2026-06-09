@@ -1,6 +1,6 @@
 "use client"
 
-import { AuthDivider } from "@/components/auth-divider"
+import { AuthDivider } from "@/features/auth/components/auth-divider"
 import { Button } from "@/components/ui/button"
 import {
   InputGroup,
@@ -18,7 +18,9 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { authClient } from "@/lib/auth-client"
 import { useRegister } from "../hooks/use-auth"
+
 import { registerSchema } from "../types"
 import { toFieldErrors, useAuthForm } from "./auth-form-utils"
 import { Field, FieldError } from "@/components/ui/field"
@@ -57,8 +59,20 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     },
   })
 
+  const handleSocialLogin = async (provider: "google" | "github") => {
+    try {
+      await authClient.signIn.social({
+        provider,
+        callbackURL: `${window.location.origin}/org-setup`,
+      })
+    } catch (error) {
+      toast.error("Social login failed")
+    }
+  }
+
   return (
     <div className="w-full max-w-sm animate-in space-y-8">
+
       <div className="flex flex-col space-y-1">
         <h1 className="text-2xl font-bold tracking-wide">Join Now!</h1>
         <p className="text-base text-muted-foreground">
@@ -67,15 +81,26 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
       </div>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-2 space-y-2">
-          <Button className="w-full" type="button" variant="outline">
+          <Button
+            className="w-full"
+            type="button"
+            variant="outline"
+            onClick={() => handleSocialLogin("google")}
+          >
             <HugeiconsIcon icon={GoogleIcon} />
             Google
           </Button>
-          <Button className="w-full" type="button" variant="outline">
+          <Button
+            className="w-full"
+            type="button"
+            variant="outline"
+            onClick={() => handleSocialLogin("github")}
+          >
             <HugeiconsIcon icon={Github} />
             GitHub
           </Button>
         </div>
+
         <AuthDivider>OR</AuthDivider>
         <form
           className="space-y-2"
