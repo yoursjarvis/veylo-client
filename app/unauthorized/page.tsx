@@ -9,14 +9,15 @@ import {
 } from "@/components/ui/card"
 import Link from "next/link"
 
-export default function UnauthorizedPage({
+export default async function UnauthorizedPage({
   searchParams,
 }: {
-  searchParams?: { callbackUrl?: string | string[] }
+  searchParams: Promise<{ callbackUrl?: string | string[] }>
 }) {
+  const params = await searchParams
   const callbackUrl =
-    typeof searchParams?.callbackUrl === "string"
-      ? searchParams.callbackUrl
+    typeof params.callbackUrl === "string"
+      ? params.callbackUrl
       : "/dashboard"
 
   const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
@@ -35,10 +36,10 @@ export default function UnauthorizedPage({
           <p className="break-all">Destination: {callbackUrl}</p>
         </CardContent>
         <CardFooter className="flex gap-3">
-          <Button className="flex-1" render={<Link href={loginHref} />}>
+          <Button className="flex-1" nativeButton={false} render={<Link href={loginHref} />}>
             Go to Login
           </Button>
-          <Button variant="outline" className="flex-1" render={<Link href="/" />}>
+          <Button variant="outline" className="flex-1" nativeButton={false} render={<Link href="/" />}>
             Home
           </Button>
         </CardFooter>

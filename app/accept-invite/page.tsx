@@ -1,8 +1,9 @@
 import { DecorIcon } from "@/components/shared/decor-icon"
 import { cn } from "@/lib/utils"
-import { OrgSetupWizard } from "@/features/org/components/org-setup-wizard"
+import { AcceptInvite } from "@/features/org/components/accept-invite"
+import { Suspense } from "react"
 
-export default function OrgSetupPage() {
+export default function AcceptInvitePage() {
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-6 md:px-8 py-12">
       <div className="absolute -inset-y-6 -left-px w-px bg-border" />
@@ -14,7 +15,7 @@ export default function OrgSetupPage() {
 
       <div
         className={cn(
-          "relative flex w-full max-w-lg flex-col justify-between p-6 md:p-8 bg-card rounded-xl border shadow-sm",
+          "relative flex w-full max-w-md flex-col justify-between p-6 md:p-8 bg-card rounded-xl border shadow-sm",
           "dark:bg-[radial-gradient(50%_80%_at_20%_0%,--theme(--color-foreground/.05),transparent)]"
         )}
       >
@@ -25,7 +26,9 @@ export default function OrgSetupPage() {
         <DecorIcon position="top-left" className="hidden sm:block" />
         <DecorIcon position="bottom-right" className="hidden sm:block" />
 
-        <OrgSetupWizard />
+        <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse bg-muted rounded-lg" />}>
+           <AcceptInvite />
+        </Suspense>
       </div>
     </div>
   )

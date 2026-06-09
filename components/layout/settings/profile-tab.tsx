@@ -56,6 +56,7 @@ export function ProfileTab() {
           <Label>Profile Picture</Label>
           <div className="flex items-center gap-6">
             <AvatarUpload
+               initialUrl={user?.image}
                onUploadSuccess={() => queryClient.invalidateQueries({ queryKey: authKeys.me() })}
             />
             <div className="space-y-1">

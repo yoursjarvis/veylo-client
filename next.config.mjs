@@ -2,6 +2,7 @@
 const backendOrigin = process.env.API_BACKEND_URL ?? "http://localhost:4000"
 
 const nextConfig = {
+  allowedDevOrigins: ["veylo.local", "*.veylo.local", "localhost"],
   async rewrites() {
     return [
       {

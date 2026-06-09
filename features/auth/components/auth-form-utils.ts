@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import type { FormOptions, FormValidateOrFn } from "@tanstack/form-core";
+import { zodValidator } from "@tanstack/zod-form-adapter";
 
 export type FieldErrorMessage = {
   message: string
@@ -66,5 +67,8 @@ export function useAuthForm<
   TFormData,
   TOnChange extends undefined | FormValidateOrFn<TFormData>,
 >(options: AuthFormOptions<TFormData, TOnChange>) {
-  return useForm(options)
+  return useForm({
+    ...options,
+    validatorAdapter: zodValidator(),
+  })
 }

@@ -24,12 +24,14 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import {
   Logout01Icon,
   PaintBoardIcon,
   Shield01Icon,
   UserIcon,
+  Building03Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
@@ -38,8 +40,9 @@ import { toast } from "sonner";
 import { AppearanceTab } from "./settings/appearance-tab";
 import { ProfileTab } from "./settings/profile-tab";
 import { SecurityTab } from "./settings/security-tab";
+import { OrganizationTab } from "./settings/organization-tab";
 
-type Tab = "profile" | "security" | "appearance";
+type Tab = "profile" | "security" | "appearance" | "organization";
 
 interface SettingsModalProps {
   open: boolean;
@@ -51,6 +54,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const logout = useLogout();
   const router = useRouter();
+  
+  const { data: activeOrg } = authClient.useActiveOrganization();
 
   const handleLogout = async () => {
     try {
@@ -68,6 +73,10 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     { id: "security", label: "Sessions & Security", icon: Shield01Icon },
     { id: "appearance", label: "Appearance", icon: PaintBoardIcon },
   ];
+
+  if (activeOrg) {
+    menuItems.splice(1, 0, { id: "organization", label: "Organization", icon: Building03Icon });
+  }
 
   return (
     <>
@@ -135,6 +144,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               </header>
               <div className="flex-1 p-8 overflow-y-auto min-h-0">
                 {activeTab === "profile" && <ProfileTab />}
+                {activeTab === "organization" && <OrganizationTab />}
                 {activeTab === "security" && <SecurityTab />}
                 {activeTab === "appearance" && <AppearanceTab />}
               </div>
@@ -142,6 +152,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           </SidebarProvider>
         </DialogContent>
       </Dialog>
+
 
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
         <AlertDialogContent>

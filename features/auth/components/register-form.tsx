@@ -102,8 +102,10 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
         </div>
 
         <AuthDivider>OR</AuthDivider>
-        <form
-          className="space-y-2"
+        <form 
+          className="space-y-2" 
+          noValidate
+          method="POST"
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
