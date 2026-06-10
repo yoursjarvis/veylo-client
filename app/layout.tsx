@@ -37,10 +37,10 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
+          <ThemeToggle />
           <QueryProvider>
             <TooltipProvider>
               <NuqsAdapter>
-                <ThemeToggle />
                 {children}
                 <Toaster />
               </NuqsAdapter>
