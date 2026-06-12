@@ -54,6 +54,11 @@ export const navGroups: SidebarNavGroup[] = [
         icon: <HugeiconsIcon icon={UserMultipleIcon} strokeWidth={2} />,
       },
       {
+        title: "Workspaces",
+        path: "/members/workspaces",
+        icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} />,
+      },
+      {
         title: "Integrations",
         path: "/integrations",
         icon: <HugeiconsIcon icon={Plug01Icon} strokeWidth={2} />,

@@ -3,6 +3,7 @@
 import { footerNavLinks, navGroups } from "@/components/layout/app-shared";
 import { LatestChange } from "@/components/layout/latest-change";
 import { NavGroup } from "@/components/layout/nav-group";
+import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { LogoIcon } from "@/components/shared/logo";
 import {
 	Sidebar,
@@ -30,13 +31,8 @@ export function AppSidebar() {
 			collapsible="icon"
 			variant="sidebar"
 		>
-			<SidebarHeader className="h-14 justify-center border-b px-2">
-				<SidebarMenuButton render={<Link href="/dashboard" />}>
-					<LogoIcon />
-					<span className="font-medium text-foreground!">
-						{process.env.NEXT_PUBLIC_APP_NAME}
-					</span>
-				</SidebarMenuButton>
+			<SidebarHeader className="h-16 justify-center border-b px-2">
+				<WorkspaceSwitcher />
 			</SidebarHeader>
 			<SidebarContent>
 				{navGroups.map((group, index) => (

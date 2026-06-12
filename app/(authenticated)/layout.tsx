@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { FullPageLoader } from "@/components/layout/loading";
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { WorkspaceProvider } from "@/components/providers/workspace-provider";
 
 export default function AuthenticatedLayout({
   children,
@@ -60,8 +61,10 @@ export default function AuthenticatedLayout({
   }, [auth, isLoading]);
 
   return (
-    <AppShell>
-      {isLoading || !orgCheckComplete ? <FullPageLoader /> : children}
-    </AppShell>
+    <WorkspaceProvider>
+      <AppShell>
+        {isLoading || !orgCheckComplete ? <FullPageLoader /> : children}
+      </AppShell>
+    </WorkspaceProvider>
   );
 }
