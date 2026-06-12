@@ -1,7 +1,26 @@
+"use client";
+
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useCurrentUser } from "@/features/auth/hooks/use-auth"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { FullPageLoader } from "@/components/layout/loading"
 
 export default function Page() {
+  const { data: auth, isLoading } = useCurrentUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && auth?.user) {
+      router.replace("/dashboard");
+    }
+  }, [isLoading, auth, router]);
+
+  if (isLoading || auth?.user) {
+    return <FullPageLoader />;
+  }
+
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
       <div className="flex max-w-md w-full flex-col gap-8 text-center">
@@ -12,10 +31,10 @@ export default function Page() {
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button render={<Link href="/login" />} size="lg">
+          <Button render={<Link href="/login" />} size="lg" nativeButton={false}>
             Login
           </Button>
-          <Button render={<Link href="/sign-up" />} variant="outline" size="lg">
+          <Button render={<Link href="/sign-up" />} variant="outline" size="lg" nativeButton={false}>
             Create Account
           </Button>
         </div>

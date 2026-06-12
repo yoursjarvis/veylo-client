@@ -1,7 +1,23 @@
-"use client"
+"use client";
 
-import { Dashboard } from "@/components/dashboard/dashboard"
+import { useWorkspaceContext } from "@/components/providers/workspace-provider";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { FullPageLoader } from "@/components/layout/loading";
 
-export default function DashboardPage() {
-  return <Dashboard />
+export default function DashboardRedirectPage() {
+  const { activeWorkspace, isLoading, workspaces } = useWorkspaceContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (activeWorkspace) {
+        router.replace(`/${activeWorkspace.slug}/dashboard`);
+      } else if (workspaces && workspaces.length === 0) {
+        router.replace("/workspaces"); // No workspaces available, send to workspaces management
+      }
+    }
+  }, [isLoading, activeWorkspace, workspaces, router]);
+
+  return <FullPageLoader />;
 }

@@ -28,7 +28,7 @@ export function AppearanceTab() {
       <div className="space-y-4">
         <Label>Theme Preference</Label>
         <RadioGroup
-          defaultValue={theme}
+          value={theme}
           onValueChange={(value) => setTheme(value as any)}
           className="grid grid-cols-3 gap-4"
         >

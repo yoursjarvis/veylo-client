@@ -85,11 +85,9 @@ export function DashboardInvoices() {
         </Table>
       </CardContent>
       <div className="absolute inset-x-0 bottom-0 flex h-1/5 items-center justify-center bg-background mask-t-from-30%">
-        <Button asChild className="relative" variant="ghost">
-          <a href="/#">
-            View All
-            <ArrowRightIcon aria-hidden="true" />
-          </a>
+        <Button render={<a href="/#" />} className="relative" variant="ghost" nativeButton={false}>
+          View All
+          <ArrowRightIcon aria-hidden="true" />
         </Button>
       </div>
     </DashboardCard>

@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { WorkspaceProvider } from "@/components/providers/workspace-provider";
 
+import { CreateWorkspaceModal } from "@/features/org/components/create-workspace-modal";
+
 export default function AuthenticatedLayout({
   children,
 }: {
@@ -65,6 +67,7 @@ export default function AuthenticatedLayout({
       <AppShell>
         {isLoading || !orgCheckComplete ? <FullPageLoader /> : children}
       </AppShell>
+      <CreateWorkspaceModal />
     </WorkspaceProvider>
   );
 }

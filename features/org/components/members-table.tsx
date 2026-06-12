@@ -230,6 +230,7 @@ export function MembersTable() {
     [banMutation, unbanMutation, revokeMutation, impersonateMutation, refetch]
   )
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: flatData,
     columns,

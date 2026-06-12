@@ -40,6 +40,7 @@ export function LatestChange() {
 				className="w-max px-0 font-light text-xs"
 				size="sm"
 				variant="link"
+				nativeButton={false}
 				render={<Link href={latestChange.readMore.href} />}
 			>
 				{latestChange.readMore.label}

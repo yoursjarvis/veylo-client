@@ -55,7 +55,7 @@ export const navGroups: SidebarNavGroup[] = [
       },
       {
         title: "Workspaces",
-        path: "/members/workspaces",
+        path: "/workspaces",
         icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} />,
       },
       {

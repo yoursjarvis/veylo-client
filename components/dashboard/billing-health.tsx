@@ -37,11 +37,9 @@ export function BillingHealth() {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button asChild variant="ghost">
-              <a href="/#">
-                Review open invoices
-                <ArrowRightIcon aria-hidden="true" />
-              </a>
+            <Button render={<a href="/#" />} variant="ghost" nativeButton={false}>
+              Review open invoices
+              <ArrowRightIcon aria-hidden="true" />
             </Button>
           </EmptyContent>
         </Empty>

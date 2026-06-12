@@ -17,13 +17,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useWorkspaces } from "@/hooks/use-workspaces"
 import { axiosInstance } from "@/lib/axios"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Briefcase02Icon,
   Delete02Icon,
+  Edit01Icon,
   PlusSignIcon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
@@ -32,52 +45,102 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
+import { IconPicker } from "@/components/shared/icon-picker"
 
 export function WorkspaceList() {
-  const { workspaces, isLoading } = useWorkspaceContext()
-  const { createWorkspace } = useWorkspaces() // createWorkspace doesn't need to be in context
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [newWorkspace, setNewWorkspace] = useState({ name: "", slug: "" })
-  const queryClient = useQueryClient()
+  const { workspaces, isLoading, setIsCreateModalOpen } = useWorkspaceContext()
+  const { updateWorkspace, deleteWorkspace } = useWorkspaces()
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingWorkspace, setEditingWorkspace] = useState<{ id: string; name: string; slug: string; icon?: string | File | null } | null>(null)
 
-  const handleCreateWorkspace = async (e: React.FormEvent) => {
+  const uploadIcon = async (workspaceId: string, file: File) => {
+    const formData = new FormData()
+    formData.append("icon", file)
+    const response = await axiosInstance.post(`/media/workspace/${workspaceId}/icon`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    return response.data.data.url
+  }
+
+  const handleUpdateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!editingWorkspace) return
     try {
-      await createWorkspace.mutateAsync(newWorkspace)
-      setIsCreateModalOpen(false)
-      setNewWorkspace({ name: "", slug: "" })
-      toast.success("Workspace created successfully")
+      const isFile = editingWorkspace.icon instanceof File
+      
+      if (isFile && editingWorkspace.icon) {
+        await uploadIcon(editingWorkspace.id, editingWorkspace.icon as File)
+      }
+
+      await updateWorkspace.mutateAsync({
+        id: editingWorkspace.id,
+        data: { 
+          name: editingWorkspace.name, 
+          slug: editingWorkspace.slug,
+          icon: !isFile ? (editingWorkspace.icon as string) : undefined
+        },
+      })
+      
+      setIsEditModalOpen(false)
+      setEditingWorkspace(null)
+      toast.success("Workspace updated successfully")
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create workspace")
+      toast.error(error.response?.data?.message || "Failed to update workspace")
     }
   }
 
-  const deleteWorkspace = useMutation({
-    mutationFn: async (id: string) => {
-      await axiosInstance.delete(`/workspaces/${id}`)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] })
+  const handleDeleteWorkspace = async (id: string) => {
+    try {
+      await deleteWorkspace.mutateAsync(id)
       toast.success("Workspace deleted successfully")
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to delete workspace")
-    },
-  })
+    }
+  }
+
+  const renderIcon = (icon?: string | null, size = 18) => {
+    if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
+    if (icon.startsWith("http") || icon.startsWith("/") || icon.startsWith("blob:")) {
+      return <img src={icon} alt="Workspace Icon" className="h-full w-full object-cover rounded-[inherit]" />
+    }
+    return <span className="leading-none" style={{ fontSize: size }}>{icon}</span>
+  }
 
   if (isLoading) {
-    return <div>Loading workspaces...</div>
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-end">
+          <Skeleton className="h-10 w-36" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="mb-4 h-4 w-32" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+                <div className="mt-6 flex gap-2">
+                  <Skeleton className="h-9 flex-1" />
+                  <Skeleton className="h-9 w-9" />
+                  <Skeleton className="h-9 w-9" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold">Workspaces</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your organization's workspaces and their members.
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
           <HugeiconsIcon icon={PlusSignIcon} size={18} />
           Create Workspace
@@ -92,7 +155,7 @@ export function WorkspaceList() {
                 {workspace.name}
               </CardTitle>
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <HugeiconsIcon icon={Briefcase02Icon} size={18} />
+                {renderIcon(workspace.icon)}
               </div>
             </CardHeader>
             <CardContent>
@@ -111,6 +174,7 @@ export function WorkspaceList() {
                   variant="outline"
                   size="sm"
                   className="flex-1 gap-1"
+                  nativeButton={false}
                   render={<Link href={`/members/workspaces/${workspace.id}`} />}
                 >
                   <HugeiconsIcon icon={UserMultipleIcon} size={14} />
@@ -119,76 +183,122 @@ export function WorkspaceList() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                  className="h-9 w-9"
                   onClick={() => {
-                    if (
-                      confirm("Are you sure you want to delete this workspace?")
-                    ) {
-                      deleteWorkspace.mutate(workspace.id)
-                    }
+                    setEditingWorkspace({
+                      id: workspace.id,
+                      name: workspace.name,
+                      slug: workspace.slug,
+                      icon: workspace.icon,
+                    })
+                    setIsEditModalOpen(true)
                   }}
                 >
-                  <HugeiconsIcon icon={Delete02Icon} size={14} />
+                  <HugeiconsIcon icon={Edit01Icon} size={14} />
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                      >
+                        <HugeiconsIcon icon={Delete02Icon} size={14} />
+                      </Button>
+                    }
+                  />
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will soft-delete the workspace. You can restore it
+                        later if needed.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDeleteWorkspace(workspace.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Create Workspace Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+      {/* Edit Workspace Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent>
-          <form onSubmit={handleCreateWorkspace}>
+          <form onSubmit={handleUpdateWorkspace}>
             <DialogHeader>
-              <DialogTitle>Create Workspace</DialogTitle>
+              <DialogTitle>Edit Workspace</DialogTitle>
               <DialogDescription>
-                Add a new workspace to your organization.
+                Update the workspace details.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Workspace Name</Label>
-                <Input
-                  id="name"
-                  placeholder="Marketing, Engineering, etc."
-                  value={newWorkspace.name}
-                  onChange={(e) => {
-                    setNewWorkspace({
-                      ...newWorkspace,
-                      name: e.target.value,
-                      slug: e.target.value
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, "-")
-                        .replace(/(^-|-$)+/g, ""),
-                    })
-                  }}
-                  required
+            <div className="flex gap-4 py-4">
+              <div className="pt-6">
+                <IconPicker 
+                  value={editingWorkspace?.icon instanceof File ? URL.createObjectURL(editingWorkspace.icon) : editingWorkspace?.icon} 
+                  onChange={(val) => editingWorkspace && setEditingWorkspace({ ...editingWorkspace, icon: val })} 
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="slug">Workspace Slug</Label>
-                <Input
-                  id="slug"
-                  placeholder="marketing"
-                  value={newWorkspace.slug}
-                  onChange={(e) =>
-                    setNewWorkspace({ ...newWorkspace, slug: e.target.value })
-                  }
-                  required
-                />
+              <div className="grid flex-1 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-name">Workspace Name</Label>
+                  <Input
+                    id="edit-name"
+                    value={editingWorkspace?.name || ""}
+                    onChange={(e) => {
+                      if (editingWorkspace) {
+                        setEditingWorkspace({
+                          ...editingWorkspace,
+                          name: e.target.value,
+                          slug: e.target.value
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-")
+                            .replace(/(^-|-$)+/g, ""),
+                        })
+                      }
+                    }}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-slug">Workspace Slug</Label>
+                  <Input
+                    id="edit-slug"
+                    value={editingWorkspace?.slug || ""}
+                    onChange={(e) => {
+                      if (editingWorkspace) {
+                        setEditingWorkspace({
+                          ...editingWorkspace,
+                          slug: e.target.value,
+                        })
+                      }
+                    }}
+                    required
+                  />
+                </div>
               </div>
             </div>
             <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsCreateModalOpen(false)}
+                onClick={() => setIsEditModalOpen(false)}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createWorkspace.isPending}>
-                {createWorkspace.isPending ? "Creating..." : "Create Workspace"}
+              <Button type="submit" disabled={updateWorkspace.isPending}>
+                {updateWorkspace.isPending ? "Updating..." : "Update Workspace"}
               </Button>
             </DialogFooter>
           </form>
