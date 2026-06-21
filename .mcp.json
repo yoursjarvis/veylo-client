@@ -4,7 +4,9 @@
       "command": "npx",
       "args": [
         "shadcn@latest",
-        "mcp"
+        "mcp",
+        "-y",
+        "next-devtools-mcp@latest"
       ]
     }
   }

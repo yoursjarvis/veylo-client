@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
-const backendOrigin = process.env.API_BACKEND_URL ?? "http://localhost:4000"
+const backendOrigin = process.env.API_BACKEND_URL ?? "https://api.veylo.com:4000"
 
 const nextConfig = {
-  allowedDevOrigins: ["veylo.local", "*.veylo.local", "localhost"],
+  allowedDevOrigins: ["veylo.com", "*.veylo.com", "localhost"],
   async rewrites() {
     return [
       {

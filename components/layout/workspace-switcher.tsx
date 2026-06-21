@@ -25,6 +25,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
 import { useState } from "react"
+import { getThumbUrl } from "@/lib/utils"
 
 export function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, setIsCreateModalOpen } =
@@ -47,7 +48,8 @@ export function WorkspaceSwitcher() {
   const renderIcon = (icon?: string | null, size = 18) => {
     if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
     if (icon.startsWith("http") || icon.startsWith("/")) {
-      return <img src={icon} alt="Workspace Icon" className="h-full w-full object-cover rounded-[inherit]" />
+      const thumbUrl = getThumbUrl(icon) || icon
+      return <img src={thumbUrl} alt="Workspace Icon" className="h-full w-full object-cover rounded-[inherit]" />
     }
     return <span className="leading-none" style={{ fontSize: size }}>{icon}</span>
   }
@@ -102,8 +104,8 @@ export function WorkspaceSwitcher() {
               <DropdownMenuLabel className="text-xs text-muted-foreground">
                 Workspaces
               </DropdownMenuLabel>
-              {filteredWorkspaces?.length > 0 ? (
-                filteredWorkspaces.map((workspace) => (
+              {(filteredWorkspaces?.length ?? 0) > 0 ? (
+                filteredWorkspaces?.map((workspace) => (
                   <DropdownMenuItem
                     key={workspace.id}
                     onClick={() => setActiveWorkspace(workspace.id)}

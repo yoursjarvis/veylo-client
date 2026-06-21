@@ -46,6 +46,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
 import { IconPicker } from "@/components/shared/icon-picker"
+import { getThumbUrl } from "@/lib/utils"
 
 export function WorkspaceList() {
   const { workspaces, isLoading, setIsCreateModalOpen } = useWorkspaceContext()
@@ -101,7 +102,8 @@ export function WorkspaceList() {
   const renderIcon = (icon?: string | null, size = 18) => {
     if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
     if (icon.startsWith("http") || icon.startsWith("/") || icon.startsWith("blob:")) {
-      return <img src={icon} alt="Workspace Icon" className="h-full w-full object-cover rounded-[inherit]" />
+      const thumbUrl = icon.startsWith("blob:") ? icon : (getThumbUrl(icon) || icon)
+      return <img src={thumbUrl} alt="Workspace Icon" className="h-full w-full object-cover rounded-[inherit]" />
     }
     return <span className="leading-none" style={{ fontSize: size }}>{icon}</span>
   }
