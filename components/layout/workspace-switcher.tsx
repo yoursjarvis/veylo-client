@@ -65,6 +65,7 @@ export function WorkspaceSwitcher() {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger
+            nativeButton={false}
             render={(props) => (
               <SidebarMenuButton
                 {...props}

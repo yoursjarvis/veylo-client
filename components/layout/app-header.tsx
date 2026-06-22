@@ -15,6 +15,8 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { usePathname } from "next/navigation"
 
+import { NotificationCenter } from "@/components/layout/notification-center"
+
 export function AppHeader() {
   const pathname = usePathname()
   const activeItem = navLinks.find((item) => item.path === pathname)
@@ -39,9 +41,7 @@ export function AppHeader() {
         <Button size="icon-sm" variant="outline">
           <HugeiconsIcon icon={Navigation03Icon} strokeWidth={2} />
         </Button>
-        <Button aria-label="Notifications" size="icon-sm" variant="outline">
-          <HugeiconsIcon icon={Notification03Icon} strokeWidth={2} />
-        </Button>
+        <NotificationCenter />
         <Separator
           className="h-4 data-[orientation=vertical]:self-center"
           orientation="vertical"
