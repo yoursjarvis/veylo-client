@@ -17,6 +17,15 @@ export const orgService = {
     return data;
   },
 
+  updateMemberRole: async (memberId: string, role: string) => {
+    const { data, error } = await authClient.organization.updateMemberRole({
+      memberId,
+      role,
+    });
+    if (error) throw error;
+    return data;
+  },
+
   inviteMember: async (email: string, role: string) => {
     const { data } = await axiosInstance.post("/org/members/invite", {
       email,
@@ -62,5 +71,15 @@ export const orgService = {
       params: { cursor: pageParam, search, role, status },
     });
     return data.data;
+  },
+
+  getPendingInvitations: async () => {
+    const { data } = await axiosInstance.get("/org/invitations");
+    return data.data;
+  },
+
+  revokeInvitation: async (id: string) => {
+    const { data } = await axiosInstance.post(`/org/invitations/${id}/revoke`);
+    return data;
   },
 };

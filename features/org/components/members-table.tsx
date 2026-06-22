@@ -54,11 +54,16 @@ import {
   useMembers,
   useRevokeSessions,
   useUnbanMember,
+  usePendingInvitations,
+  useRevokeInvitation,
+  useUpdateMemberRole,
 } from "../hooks/use-org"
 import { BulkInviteModal } from "./bulk-invite-modal"
 import { InviteMemberModal } from "./invite-member-modal"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 type Member = {
+  id: string
   user: {
     id: string
     name?: string | null
@@ -91,6 +96,7 @@ export function MembersTable() {
   const unbanMutation = useUnbanMember()
   const revokeMutation = useRevokeSessions()
   const impersonateMutation = useImpersonateUser()
+  const updateRoleMutation = useUpdateMemberRole()
 
   const flatData = useMemo(
     () => data?.pages.flatMap((page) => page.members) || [],
@@ -121,11 +127,37 @@ export function MembersTable() {
       }),
       columnHelper.accessor("role", {
         header: "Role",
-        cell: (info) => (
-          <span className="rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground capitalize">
-            {info.getValue()?.replace("_", " ")}
-          </span>
-        ),
+        cell: (info) => {
+          const currentRole = info.getValue()
+          const member = info.row.original
+          return (
+            <Select
+              value={currentRole}
+              onValueChange={async (newRole) => {
+                if (!newRole || newRole === currentRole) return
+                try {
+                  await updateRoleMutation.mutateAsync({ memberId: member.id, role: newRole })
+                  toast.success("Role updated successfully")
+                  refetch()
+                } catch (error: any) {
+                  toast.error(error.message || "Failed to update role")
+                }
+              }}
+              disabled={updateRoleMutation.isPending}
+            >
+              <SelectTrigger className="h-7 w-[140px] text-xs bg-secondary border-none hover:bg-secondary/80 focus:ring-0 capitalize">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ROLES.map((r) => (
+                  <SelectItem key={r.value} value={r.value} className="text-xs">
+                    {r.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )
+        },
       }),
       columnHelper.accessor("user.banned", {
         header: "Status",
@@ -227,7 +259,7 @@ export function MembersTable() {
         },
       }),
     ],
-    [banMutation, unbanMutation, revokeMutation, impersonateMutation, refetch]
+    [banMutation, unbanMutation, revokeMutation, impersonateMutation, updateRoleMutation, refetch]
   )
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -273,71 +305,24 @@ export function MembersTable() {
   const hasFilters = search || role || status
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Search users..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-64"
-          />
-          {/* <Select value={role} onValueChange={(value) => setRole(value || "")}>
-            <SelectTrigger id="role">
-              <SelectValue placeholder="Select a role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="owner">Owner</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="workspace_admin">Workspace Admin</SelectItem>
-              <SelectItem value="project_admin">Project Admin</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
-              <SelectItem value="guest">Guest</SelectItem>
-            </SelectContent>
-          </Select> */}
-
-          <Combobox
-            items={ROLES}
-            value={role}
-            onValueChange={(value) => setRole(value || "")}
+    <Tabs defaultValue="members" className="w-full space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border pb-px gap-4">
+        <TabsList variant="line" className="bg-transparent p-0 gap-6">
+          <TabsTrigger
+            value="members"
+            className="px-1 pb-3 rounded-none font-semibold text-sm"
           >
-            <ComboboxInput placeholder="Select a role" className="w-full" />
-
-            <ComboboxContent>
-              <ComboboxEmpty>No roles found.</ComboboxEmpty>
-
-              <ComboboxList>
-                {(item) => (
-                  <ComboboxItem key={item.value} value={item.value}>
-                    {item.label}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
-
-          <Select
-            value={status}
-            onValueChange={(value) => setStatus(value || "")}
+            Active Members
+          </TabsTrigger>
+          <TabsTrigger
+            value="invitations"
+            className="px-1 pb-3 rounded-none font-semibold text-sm"
           >
-            <SelectTrigger id="status">
-              <SelectValue placeholder="Select a status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="banned">Banned</SelectItem>
-            </SelectContent>
-          </Select>
+            Pending Invitations
+          </TabsTrigger>
+        </TabsList>
 
-          {hasFilters && (
-            <Button variant="ghost" onClick={handleReset} className="h-10 px-3">
-              <HugeiconsIcon icon={Cancel01Icon} className="mr-2 h-4 w-4" />
-              Reset
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pb-2 sm:pb-0">
           <Button variant="outline" onClick={() => setIsBulkInviteOpen(true)}>
             <HugeiconsIcon
               icon={LeftToRightListBulletIcon}
@@ -352,65 +337,123 @@ export function MembersTable() {
         </div>
       </div>
 
-      {flatData.length === 0 && !isLoading ? (
-        <Empty className="my-8">
-          <EmptyTitle>No members found</EmptyTitle>
-          <EmptyDescription>
-            There are no members matching your current filters.
-          </EmptyDescription>
-        </Empty>
-      ) : (
-        <div className="rounded-md border">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b bg-muted/50">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="h-10 px-4 align-middle font-medium text-muted-foreground"
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="p-4 align-middle">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <TabsContent value="members" className="space-y-4 outline-none">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Search users..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-64"
+            />
 
-          {/* Infinite Scroll trigger */}
-          <div
-            ref={observerRef}
-            className="py-4 text-center text-sm text-muted-foreground"
-          >
-            {isFetchingNextPage
-              ? "Loading more..."
-              : hasNextPage
-                ? "Scroll down for more"
-                : "No more members"}
+            <Combobox
+              items={ROLES}
+              value={role}
+              onValueChange={(value) => setRole(value || "")}
+            >
+              <ComboboxInput placeholder="Select a role" className="w-full" />
+
+              <ComboboxContent>
+                <ComboboxEmpty>No roles found.</ComboboxEmpty>
+
+                <ComboboxList>
+                  {(item) => (
+                    <ComboboxItem key={item.value} value={item.value}>
+                      {item.label}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
+
+            <Select
+              value={status}
+              onValueChange={(value) => setStatus(value || "")}
+            >
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select a status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="banned">Banned</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {hasFilters && (
+              <Button variant="ghost" onClick={handleReset} className="h-10 px-3">
+                <HugeiconsIcon icon={Cancel01Icon} className="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+            )}
           </div>
         </div>
-      )}
+
+        {flatData.length === 0 && !isLoading ? (
+          <Empty className="my-8">
+            <EmptyTitle>No members found</EmptyTitle>
+            <EmptyDescription>
+              There are no members matching your current filters.
+            </EmptyDescription>
+          </Empty>
+        ) : (
+          <div className="rounded-md border">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b bg-muted/50">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className="h-10 px-4 align-middle font-medium text-muted-foreground"
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="p-4 align-middle">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Infinite Scroll trigger */}
+            <div
+              ref={observerRef}
+              className="py-4 text-center text-sm text-muted-foreground"
+            >
+              {isFetchingNextPage
+                ? "Loading more..."
+                : hasNextPage
+                  ? "Scroll down for more"
+                  : "No more members"}
+            </div>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="invitations" className="space-y-4 outline-none">
+        <PendingInvitationsList />
+      </TabsContent>
 
       <BulkInviteModal
         open={isBulkInviteOpen}
@@ -423,6 +466,105 @@ export function MembersTable() {
         onOpenChange={setIsInviteOpen}
         onSuccess={() => refetch()}
       />
+    </Tabs>
+  )
+}
+
+function PendingInvitationsList() {
+  const { data: invitations, isLoading } = usePendingInvitations()
+  const revokeMutation = useRevokeInvitation()
+
+  const handleRevoke = (id: string) => {
+    revokeMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success("Invitation revoked successfully")
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to revoke invitation")
+      },
+    })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        Loading pending invitations...
+      </div>
+    )
+  }
+
+  if (!invitations || invitations.length === 0) {
+    return (
+      <Empty className="my-8">
+        <EmptyTitle>No pending invitations</EmptyTitle>
+        <EmptyDescription>
+          There are no pending invitations for this organization.
+        </EmptyDescription>
+      </Empty>
+    )
+  }
+
+  return (
+    <div className="rounded-md border">
+      <table className="w-full text-left text-sm">
+        <thead className="border-b bg-muted/50">
+          <tr>
+            <th className="h-10 px-4 align-middle font-medium text-muted-foreground">
+              Email
+            </th>
+            <th className="h-10 px-4 align-middle font-medium text-muted-foreground">
+              Role
+            </th>
+            <th className="h-10 px-4 align-middle font-medium text-muted-foreground">
+              Status
+            </th>
+            <th className="h-10 px-4 align-middle font-medium text-muted-foreground">
+              Sent At
+            </th>
+            <th className="h-10 px-4 align-middle font-medium text-muted-foreground text-right">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {invitations.map((invite: any) => (
+            <tr
+              key={invite.id}
+              className="border-b transition-colors hover:bg-muted/50"
+            >
+              <td className="p-4 align-middle font-medium">{invite.email}</td>
+              <td className="p-4 align-middle">
+                <span className="rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground capitalize">
+                  {invite.role?.replace("_", " ")}
+                </span>
+              </td>
+              <td className="p-4 align-middle">
+                <span className="rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 px-2 py-1 text-xs font-medium capitalize">
+                  {invite.status}
+                </span>
+              </td>
+              <td className="p-4 align-middle text-muted-foreground">
+                {new Date(invite.createdAt).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </td>
+              <td className="p-4 align-middle text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-3"
+                  disabled={revokeMutation.isPending}
+                  onClick={() => handleRevoke(invite.id)}
+                >
+                  Revoke
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

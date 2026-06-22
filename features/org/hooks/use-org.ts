@@ -1,8 +1,9 @@
-import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { orgService } from "../services/org-service";
 
 export const orgKeys = {
   members: (filters: any) => ["org", "members", filters] as const,
+  invitations: () => ["org", "invitations"] as const,
 };
 
 export function useMembers(filters: { search?: string; role?: string; status?: string }) {
@@ -48,14 +49,50 @@ export function useImpersonateUser() {
 }
 
 export function useBulkInvite() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (file: File) => orgService.bulkInvite(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orgKeys.invitations() });
+    },
   });
 }
 
 export function useInviteMember() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ email, role }: { email: string; role: string }) =>
       orgService.inviteMember(email, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orgKeys.invitations() });
+    },
+  });
+}
+
+export function usePendingInvitations() {
+  return useQuery({
+    queryKey: orgKeys.invitations(),
+    queryFn: () => orgService.getPendingInvitations(),
+  });
+}
+
+export function useRevokeInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => orgService.revokeInvitation(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orgKeys.invitations() });
+    },
+  });
+}
+
+export function useUpdateMemberRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ memberId, role }: { memberId: string; role: string }) =>
+      orgService.updateMemberRole(memberId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["org", "members"] });
+    },
   });
 }

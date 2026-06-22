@@ -20,6 +20,9 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { useRegister } from "../hooks/use-auth"
+import { useQuery } from "@tanstack/react-query"
+import { useEffect } from "react"
+import { orgService } from "@/features/org/services/org-service"
 
 import { registerSchema } from "../types"
 import { toFieldErrors, useAuthForm } from "./auth-form-utils"
@@ -27,11 +30,21 @@ import { Field, FieldError } from "@/components/ui/field"
 
 interface RegisterFormProps {
   callbackUrl?: string
+  invitationId?: string
 }
 
-export function RegisterForm({ callbackUrl }: RegisterFormProps) {
+export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
   const register = useRegister()
   const router = useRouter()
+
+  const { data: invitation, isPending: inviteLoading, error: inviteError } = useQuery({
+    queryKey: ["invitation", invitationId],
+    queryFn: async () => {
+      if (!invitationId) throw new Error("No invitation ID provided");
+      return orgService.getInvitation(invitationId);
+    },
+    enabled: !!invitationId,
+  });
 
   const form = useAuthForm({
     defaultValues: {
@@ -59,24 +72,59 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     },
   })
 
+  useEffect(() => {
+    if (invitation?.email) {
+      form.setFieldValue("email", invitation.email);
+    }
+  }, [invitation, form]);
+
   const handleSocialLogin = async (provider: "google" | "github") => {
     try {
       await authClient.signIn.social({
         provider,
-        callbackURL: `${window.location.origin}/org-setup`,
+        callbackURL: callbackUrl
+          ? `${window.location.origin}${callbackUrl}`
+          : `${window.location.origin}/org-setup`,
       })
     } catch (error) {
       toast.error("Social login failed")
     }
   }
 
+  if (invitationId && inviteLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4 py-8">
+        <div className="size-8 animate-spin rounded-full border-b-2 border-primary" />
+        <p className="text-sm text-muted-foreground">Loading invitation...</p>
+      </div>
+    );
+  }
+
+  if (invitationId && (inviteError || !invitation)) {
+    return (
+      <div className="text-center space-y-4 py-8">
+        <h2 className="text-xl font-semibold text-destructive">Invalid Invitation</h2>
+        <p className="text-muted-foreground">This invitation link is invalid, expired, or has already been used.</p>
+        <Button render={<Link href="/login" />} variant="outline" className="w-full">
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
+
+  const isInvited = !!(invitationId && invitation);
+
   return (
     <div className="w-full max-w-sm animate-in space-y-8">
 
       <div className="flex flex-col space-y-1">
-        <h1 className="text-2xl font-bold tracking-wide">Join Now!</h1>
+        <h1 className="text-2xl font-bold tracking-wide">
+          {isInvited ? `Join ${invitation.organizationName}` : "Join Now!"}
+        </h1>
         <p className="text-base text-muted-foreground">
-          Create your {process.env.NEXT_PUBLIC_APP_NAME} account.
+          {isInvited 
+            ? `Create your account for ${invitation.email}.`
+            : `Create your ${process.env.NEXT_PUBLIC_APP_NAME} account.`}
         </p>
       </div>
       <div className="space-y-4">
@@ -158,28 +206,30 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             )}
           </form.Field>
 
-          <form.Field name="email">
-            {(field) => (
-              <Field>
-                <InputGroup>
-                  <InputGroupInput
-                    placeholder="your.email@example.com"
-                    type="email"
-                    name={field.name}
-                    id={field.name}
-                    value={field.state.value as any}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    autoComplete="email"
-                  />
-                  <InputGroupAddon align="inline-start">
-                    <HugeiconsIcon icon={AtSignIcon} />
-                  </InputGroupAddon>
-                </InputGroup>
-                <FieldError errors={toFieldErrors(field.state.meta.errors)} />
-              </Field>
-            )}
-          </form.Field>
+          {!isInvited && (
+            <form.Field name="email">
+              {(field) => (
+                <Field>
+                  <InputGroup>
+                    <InputGroupInput
+                      placeholder="your.email@example.com"
+                      type="email"
+                      name={field.name}
+                      id={field.name}
+                      value={field.state.value as any}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      autoComplete="email"
+                    />
+                    <InputGroupAddon align="inline-start">
+                      <HugeiconsIcon icon={AtSignIcon} />
+                    </InputGroupAddon>
+                  </InputGroup>
+                  <FieldError errors={toFieldErrors(field.state.meta.errors)} />
+                </Field>
+              )}
+            </form.Field>
+          )}
 
           <form.Field name="password">
             {(field) => (

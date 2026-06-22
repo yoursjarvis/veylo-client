@@ -144,7 +144,7 @@ export function AcceptInvite() {
           <>
             <p className="text-sm text-muted-foreground">You need to sign up or log in to accept this invitation.</p>
             <div className="grid gap-2">
-              <Button render={<Link href={`/sign-up?callbackUrl=${encodeURIComponent(`/accept-invite?id=${invitationId}`)}`} />}>
+              <Button render={<Link href={`/sign-up?invitationId=${invitationId}&callbackUrl=${encodeURIComponent(`/accept-invite?id=${invitationId}`)}`} />}>
                 Sign Up
               </Button>
               <Button variant="outline" render={<Link href={`/login?callbackUrl=${encodeURIComponent(`/accept-invite?id=${invitationId}`)}`} />}>
