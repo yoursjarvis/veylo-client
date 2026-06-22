@@ -18,8 +18,38 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
+import { useWorkspaceContext } from "@/components/providers/workspace-provider";
+import { authClient } from "@/lib/auth-client";
+
 export function AppSidebar() {
 	const pathname = usePathname();
+	const { workspaces } = useWorkspaceContext();
+	const { data: activeMember } = authClient.useActiveMember();
+	const userRole = activeMember?.role;
+	const isOwnerOrAdmin = userRole === "owner" || userRole === "admin";
+
+	const hasNoWorkspaces = workspaces && workspaces.length === 0;
+
+	// Filter navigation groups based on workspace access and role
+	const filteredNavGroups = navGroups.map(group => {
+		if (hasNoWorkspaces) {
+			if (group.label === "WorkSpace") {
+				// Regular user with no workspaces has no workspace dashboard/projects
+				return null;
+			}
+			if (group.label === "Organization") {
+				// Regular user with no workspace should only see "Workspaces" to get the empty state page
+				// Admin/Owner can also see "Members"
+				const filteredItems = group.items.filter(item => {
+					if (item.title === "Workspaces") return true;
+					if (item.title === "Members" && isOwnerOrAdmin) return true;
+					return false;
+				});
+				return { ...group, items: filteredItems };
+			}
+		}
+		return group;
+	}).filter(Boolean) as typeof navGroups;
 
 	return (
 		<Sidebar
@@ -35,7 +65,7 @@ export function AppSidebar() {
 				<WorkspaceSwitcher />
 			</SidebarHeader>
 			<SidebarContent>
-				{navGroups.map((group, index) => (
+				{filteredNavGroups.map((group, index) => (
 					<NavGroup key={`sidebar-group-${index}`} {...group} />
 				))}
 			</SidebarContent>

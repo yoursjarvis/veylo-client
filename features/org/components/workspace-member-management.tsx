@@ -41,7 +41,7 @@ interface OrgMember {
   id: string
   userId: string
   user: {
-    id: true
+    id: string
     name: string
     email: string
     image: string | null

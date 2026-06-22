@@ -48,11 +48,17 @@ import { toast } from "sonner"
 import { IconPicker } from "@/components/shared/icon-picker"
 import { getThumbUrl } from "@/lib/utils"
 
+import { authClient } from "@/lib/auth-client"
+
 export function WorkspaceList() {
   const { workspaces, isLoading, setIsCreateModalOpen } = useWorkspaceContext()
   const { updateWorkspace, deleteWorkspace } = useWorkspaces()
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingWorkspace, setEditingWorkspace] = useState<{ id: string; name: string; slug: string; icon?: string | File | null } | null>(null)
+
+  const { data: activeMember } = authClient.useActiveMember()
+  const userRole = activeMember?.role
+  const isOwnerOrAdmin = userRole === "owner" || userRole === "admin"
 
   const uploadIcon = async (workspaceId: string, file: File) => {
     const formData = new FormData()
@@ -140,14 +146,64 @@ export function WorkspaceList() {
     )
   }
 
+  if (workspaces?.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-card/50 p-12 text-center shadow-xs backdrop-blur-md dark:border-zinc-800">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <HugeiconsIcon icon={Briefcase02Icon} size={32} />
+        </div>
+        <h2 className="text-xl font-semibold tracking-tight">No Workspaces Found</h2>
+        
+        {isOwnerOrAdmin ? (
+          <>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              You are an administrator of this organization. Start by creating a workspace to organize your projects, team, and integrations.
+            </p>
+            <div className="mt-8">
+              <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
+                <HugeiconsIcon icon={PlusSignIcon} size={18} />
+                Create Workspace
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 max-w-md text-sm text-muted-foreground">
+              You haven't been assigned to any workspaces in this organization yet. Please ask your organization administrator or owner to add you to a workspace so you can get started.
+            </p>
+            <div className="mt-8 w-full max-w-md rounded-lg border bg-card/80 p-5 text-left dark:border-zinc-800">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Next steps</p>
+              <ul className="mt-3 space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-start gap-3">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">1</span>
+                  <span>Contact your organization admin or owner (the person who invited you).</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">2</span>
+                  <span>Ask them to assign you to a workspace. They can do this via the workspace members settings.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">3</span>
+                  <span>Once assigned, refresh this page to access your workspace dashboard.</span>
+                </li>
+              </ul>
+            </div>
+          </>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
-          <HugeiconsIcon icon={PlusSignIcon} size={18} />
-          Create Workspace
-        </Button>
-      </div>
+      {isOwnerOrAdmin && (
+        <div className="flex items-center justify-end">
+          <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
+            <HugeiconsIcon icon={PlusSignIcon} size={18} />
+            Create Workspace
+          </Button>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {workspaces?.map((workspace) => (
@@ -171,65 +227,79 @@ export function WorkspaceList() {
                 <HugeiconsIcon icon={UserMultipleIcon} size={14} />
                 <span>{workspace._count?.members || 0} Members</span>
               </div>
-              <div className="mt-6 flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 gap-1"
-                  nativeButton={false}
-                  render={<Link href={`/members/workspaces/${workspace.id}`} />}
-                >
-                  <HugeiconsIcon icon={UserMultipleIcon} size={14} />
-                  Members
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9"
-                  onClick={() => {
-                    setEditingWorkspace({
-                      id: workspace.id,
-                      name: workspace.name,
-                      slug: workspace.slug,
-                      icon: workspace.icon,
-                    })
-                    setIsEditModalOpen(true)
-                  }}
-                >
-                  <HugeiconsIcon icon={Edit01Icon} size={14} />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger
-                    render={
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-9 w-9 text-destructive hover:bg-destructive/10"
-                      >
-                        <HugeiconsIcon icon={Delete02Icon} size={14} />
-                      </Button>
-                    }
-                  />
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will soft-delete the workspace. You can restore it
-                        later if needed.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDeleteWorkspace(workspace.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
+              {isOwnerOrAdmin ? (
+                <div className="mt-6 flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-1"
+                    nativeButton={false}
+                    render={<Link href={`/workspaces/${workspace.id}`} />}
+                  >
+                    <HugeiconsIcon icon={UserMultipleIcon} size={14} />
+                    Members
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => {
+                      setEditingWorkspace({
+                        id: workspace.id,
+                        name: workspace.name,
+                        slug: workspace.slug,
+                        icon: workspace.icon,
+                      })
+                      setIsEditModalOpen(true)
+                    }}
+                  >
+                    <HugeiconsIcon icon={Edit01Icon} size={14} />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger
+                      render={
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                        >
+                          <HugeiconsIcon icon={Delete02Icon} size={14} />
+                        </Button>
+                      }
+                    />
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will soft-delete the workspace. You can restore it
+                          later if needed.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteWorkspace(workspace.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full gap-1"
+                    nativeButton={false}
+                    render={<Link href={`/${workspace.slug}/dashboard`} />}
+                  >
+                    Enter Workspace
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

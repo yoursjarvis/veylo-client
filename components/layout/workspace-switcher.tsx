@@ -27,10 +27,16 @@ import Link from "next/link"
 import { useState } from "react"
 import { getThumbUrl } from "@/lib/utils"
 
+import { authClient } from "@/lib/auth-client"
+
 export function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, setIsCreateModalOpen } =
     useWorkspaceContext()
   const [searchQuery, setSearchQuery] = useState("")
+
+  const { data: activeMember } = authClient.useActiveMember()
+  const userRole = activeMember?.role
+  const isOwnerOrAdmin = userRole === "owner" || userRole === "admin"
 
   if (isLoading) {
     return (
@@ -132,17 +138,19 @@ export function WorkspaceSwitcher() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                className="cursor-pointer gap-2 p-2"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
-                <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                  <HugeiconsIcon icon={PlusSignIcon} size={12} />
-                </div>
-                <div className="font-medium text-muted-foreground">
-                  Create Workspace
-                </div>
-              </DropdownMenuItem>
+              {isOwnerOrAdmin && (
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 p-2"
+                  onClick={() => setIsCreateModalOpen(true)}
+                >
+                  <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                    <HugeiconsIcon icon={PlusSignIcon} size={12} />
+                  </div>
+                  <div className="font-medium text-muted-foreground">
+                    Create Workspace
+                  </div>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 className="cursor-pointer gap-2 p-2"
                 onSelect={() => (window.location.href = "/workspaces")}
