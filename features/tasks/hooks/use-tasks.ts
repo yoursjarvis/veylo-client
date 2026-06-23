@@ -240,6 +240,20 @@ export function useDeleteComment(taskId: string) {
   });
 }
 
+export function useUpdateComment(taskId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ commentId, content }: { commentId: string; content: string }) => {
+      const response = await axiosInstance.patch(`/comments/${commentId}`, { content });
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Comment updated");
+    },
+  });
+}
+
 // --- CUSTOM FIELDS ---
 export function useProjectCustomFields(projectId: string) {
   return useQuery({

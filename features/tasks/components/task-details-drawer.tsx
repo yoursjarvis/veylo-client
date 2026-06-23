@@ -10,6 +10,7 @@ import {
   useDeleteSubtask,
   useCreateComment,
   useDeleteComment,
+  useUpdateComment,
   useProjectCustomFields,
   useTaskDependencies,
   useCreateTaskDependency,
@@ -38,8 +39,14 @@ import {
   CheckCircle2,
   Calendar as CalendarIcon,
   AlertTriangle,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 
 interface TaskDetailsDrawerProps {
   taskId: string | null;
@@ -69,9 +76,17 @@ export function TaskDetailsDrawer({
   const deleteSubtaskMutation = useDeleteSubtask(taskId || "");
   const createCommentMutation = useCreateComment(taskId || "");
   const deleteCommentMutation = useDeleteComment(taskId || "");
+  const updateCommentMutation = useUpdateComment(taskId || "");
 
   const { activeWorkspace } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id;
+  const router = useRouter();
+  const { data: currentUser } = useCurrentUser();
+
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
 
   const { data: dependencies = { blockedBy: [], blocking: [] }, isLoading: isDepsLoading } = useTaskDependencies(taskId);
   const createDepMutation = useCreateTaskDependency(taskId || "");
@@ -169,16 +184,45 @@ export function TaskDetailsDrawer({
     setNewSubtaskTitle("");
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
+  const handleAddComment = (e?: React.FormEvent | React.MouseEvent) => {
+    e?.preventDefault();
+    const cleanContent = newComment.replace(/<[^>]*>/g, "").trim();
+    if (!cleanContent && !newComment.includes("<img")) return;
     createCommentMutation.mutate({ content: newComment.trim() });
     setNewComment("");
   };
 
+  const handleAddReply = (parentId: string) => {
+    const cleanContent = replyContent.replace(/<[^>]*>/g, "").trim();
+    if (!cleanContent && !replyContent.includes("<img")) return;
+    createCommentMutation.mutate(
+      { content: replyContent.trim(), parentId },
+      {
+        onSuccess: () => {
+          setReplyContent("");
+          setReplyingToCommentId(null);
+        },
+      }
+    );
+  };
+
+  const handleUpdateComment = (commentId: string) => {
+    const cleanContent = editingContent.replace(/<[^>]*>/g, "").trim();
+    if (!cleanContent && !editingContent.includes("<img")) return;
+    updateCommentMutation.mutate(
+      { commentId, content: editingContent.trim() },
+      {
+        onSuccess: () => {
+          setEditingContent("");
+          setEditingCommentId(null);
+        },
+      }
+    );
+  };
+
   return (
     <Sheet open={!!taskId} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-[40vw] sm:max-w-[50vw] p-0 flex flex-col h-full bg-card border-l border-border text-foreground">
+      <SheetContent className="w-full data-[side=right]:sm:max-w-[85vw] data-[side=right]:md:max-w-[75vw] data-[side=right]:lg:max-w-[65vw] data-[side=right]:xl:max-w-[55vw] p-0 flex flex-col h-full bg-card border-l border-border text-foreground">
         <SheetHeader className="p-6 border-b border-border flex flex-row items-center justify-between">
           <div>
             <SheetTitle className="text-lg font-bold text-foreground">Task Details</SheetTitle>
@@ -186,6 +230,33 @@ export function TaskDetailsDrawer({
               ID: {task?.id || "Loading..."}
             </SheetDescription>
           </div>
+          {task && (
+            <div className="flex items-center gap-2 pr-6">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs flex items-center gap-1.5"
+                onClick={async () => {
+                  const url = `${window.location.origin}/${activeWorkspace?.slug}/tasks/${task.id}`;
+                  await navigator.clipboard.writeText(url);
+                  toast.success("Task link copied to clipboard");
+                }}
+              >
+                <Copy size={13} /> Copy Link
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs flex items-center gap-1.5"
+                onClick={() => {
+                  router.push(`/${activeWorkspace?.slug}/tasks/${task.id}`);
+                  onClose();
+                }}
+              >
+                <ExternalLink size={13} /> Open Page
+              </Button>
+            </div>
+          )}
         </SheetHeader>
 
         {isLoading ? (
@@ -212,12 +283,13 @@ export function TaskDetailsDrawer({
                   <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
                     <FileText size={14} /> Description
                   </label>
-                  <Textarea
-                    placeholder="Describe this task..."
+                  <RichTextEditor
+                    placeholder="Describe this task... (Use @ to mention, / for blocks, paste images)"
                     value={localDesc}
-                    onChange={(e) => setLocalDesc(e.target.value)}
+                    onChange={setLocalDesc}
                     onBlur={handleDescBlur}
-                    className="min-h-[120px] bg-background border-border focus:border-primary text-foreground placeholder-muted-foreground/60 text-sm"
+                    projectMembers={projectMembers}
+                    minHeight="150px"
                   />
                 </div>
 
@@ -435,46 +507,40 @@ export function TaskDetailsDrawer({
                   <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 border-b border-border pb-2">
                     <MessageSquare size={14} /> Discussion / Comments
                   </label>
-                  <form onSubmit={handleAddComment} className="flex flex-col gap-2">
-                    <Textarea
-                      placeholder="Write a comment... (Supports markdown/text)"
+                  <div className="flex flex-col gap-2">
+                    <RichTextEditor
+                      placeholder="Write a comment... (Supports rich text, @mentions, /commands, paste images)"
                       value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="bg-background border-border text-foreground text-sm min-h-[60px]"
+                      onChange={setNewComment}
+                      projectMembers={projectMembers}
+                      minHeight="80px"
+                      onSubmit={handleAddComment}
                     />
                     <div className="flex justify-end">
-                      <Button type="submit" size="sm" className="text-xs">
+                      <Button type="button" onClick={() => handleAddComment()} size="sm" className="text-xs">
                         Post Comment
                       </Button>
                     </div>
-                  </form>
-                  <div className="space-y-4 mt-2">
-                    {task?.comments?.map((comment: any) => (
-                      <div key={comment.id} className="flex gap-3">
-                        <Avatar className="h-7 w-7 border border-border">
-                          <AvatarImage src={comment.user.image || ""} />
-                          <AvatarFallback className="bg-muted text-foreground text-xs">
-                            {comment.user.name?.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 bg-muted p-3 rounded-lg border border-border">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-xs font-semibold text-foreground">{comment.user.name}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] text-muted-foreground">
-                                {format(new Date(comment.createdAt), "MMM d, h:mm a")}
-                              </span>
-                              <button
-                                onClick={() => deleteCommentMutation.mutate(comment.id)}
-                                className="text-muted-foreground hover:text-destructive"
-                              >
-                                <Trash size={12} />
-                              </button>
-                            </div>
-                          </div>
-                          <p className="text-xs text-foreground whitespace-pre-wrap">{comment.content}</p>
-                        </div>
-                      </div>
+                  </div>
+                  <div className="space-y-6 mt-4">
+                    {buildCommentThreads(task?.comments || []).map((comment: any) => (
+                      <CommentNode
+                        key={comment.id}
+                        comment={comment}
+                        currentUser={currentUser}
+                        projectMembers={projectMembers}
+                        replyingToCommentId={replyingToCommentId}
+                        setReplyingToCommentId={setReplyingToCommentId}
+                        replyContent={replyContent}
+                        setReplyContent={setReplyContent}
+                        handleAddReply={handleAddReply}
+                        editingCommentId={editingCommentId}
+                        setEditingCommentId={setEditingCommentId}
+                        editingContent={editingContent}
+                        setEditingContent={setEditingContent}
+                        handleUpdateComment={handleUpdateComment}
+                        deleteCommentMutation={deleteCommentMutation}
+                      />
                     ))}
                   </div>
                 </div>
@@ -490,13 +556,7 @@ export function TaskDetailsDrawer({
                         <Clock size={12} className="mt-0.5 text-muted-foreground/60 flex-shrink-0" />
                         <div>
                           <span className="font-semibold text-foreground">{activity.user.name} </span>
-                          <span>{activity.action.replace("_", " ")}</span>
-                          {activity.oldValue && (
-                            <span className="text-muted-foreground/80"> from "{activity.oldValue}"</span>
-                          )}
-                          {activity.newValue && (
-                            <span className="text-foreground"> to "{activity.newValue}"</span>
-                          )}
+                          <span>{formatActivityText(activity)}</span>
                           <span className="text-[10px] text-muted-foreground block mt-0.5">
                             {format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}
                           </span>
@@ -710,3 +770,288 @@ export function TaskDetailsDrawer({
     </Sheet>
   );
 }
+
+export const formatActivityText = (activity: any) => {
+  const action = activity.action;
+  const oldValue = activity.oldValue;
+  const newValue = activity.newValue;
+
+  if (action === "comment_added") {
+    return "added a comment";
+  }
+  if (action === "description_changed") {
+    return "updated the description";
+  }
+  if (action === "title_changed") {
+    return `renamed this task to "${newValue}"`;
+  }
+  if (action === "status_changed") {
+    return `changed status from "${oldValue}" to "${newValue}"`;
+  }
+  if (action === "priority_changed") {
+    return `changed priority from "${oldValue}" to "${newValue}"`;
+  }
+  if (action === "assignee_changed") {
+    return newValue ? `assigned to ${newValue}` : "unassigned this task";
+  }
+  if (action === "created") {
+    return "created this task";
+  }
+  if (action === "deleted") {
+    return "deleted this task";
+  }
+
+  // Fallback
+  const actionText = action.replace("_", " ");
+  let valueText = "";
+  if (oldValue && newValue) {
+    valueText = ` from "${oldValue}" to "${newValue}"`;
+  } else if (newValue) {
+    valueText = ` to "${newValue}"`;
+  } else if (oldValue) {
+    valueText = ` (previously "${oldValue}")`;
+  }
+  return `${actionText}${valueText}`;
+};
+
+const CommentNode = ({
+  comment,
+  currentUser,
+  projectMembers,
+  replyingToCommentId,
+  setReplyingToCommentId,
+  replyContent,
+  setReplyContent,
+  handleAddReply,
+  editingCommentId,
+  setEditingCommentId,
+  editingContent,
+  setEditingContent,
+  handleUpdateComment,
+  deleteCommentMutation,
+}: {
+  comment: any;
+  currentUser: any;
+  projectMembers: any[];
+  replyingToCommentId: string | null;
+  setReplyingToCommentId: (id: string | null) => void;
+  replyContent: string;
+  setReplyContent: (content: string) => void;
+  handleAddReply: (parentId: string) => void;
+  editingCommentId: string | null;
+  setEditingCommentId: (id: string | null) => void;
+  editingContent: string;
+  setEditingContent: (content: string) => void;
+  handleUpdateComment: (commentId: string) => void;
+  deleteCommentMutation: any;
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  return (
+    <div className="space-y-3">
+      {/* Comment Card */}
+      <div className="flex gap-3">
+        <Avatar className="h-7 w-7 border border-border flex-shrink-0">
+          <AvatarImage src={comment.user?.image || ""} />
+          <AvatarFallback className="bg-muted text-foreground text-xs">
+            {comment.user?.name?.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 bg-muted/60 p-3 rounded-lg border border-border">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-xs font-semibold text-foreground">
+              {comment.user?.name}
+              {comment.isEdited && (
+                <span className="text-[10px] text-muted-foreground ml-1.5 font-normal italic">
+                  (edited)
+                </span>
+              )}
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">
+                {format(new Date(comment.createdAt), "MMM d, h:mm a")}
+              </span>
+            </div>
+          </div>
+          
+          {editingCommentId === comment.id ? (
+            <div className="space-y-2 mt-2">
+              <RichTextEditor
+                placeholder="Edit comment..."
+                value={editingContent}
+                onChange={setEditingContent}
+                projectMembers={projectMembers}
+                minHeight="80px"
+                onSubmit={() => handleUpdateComment(comment.id)}
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-[10px] h-7 px-2.5"
+                  onClick={() => {
+                    setEditingCommentId(null);
+                    setEditingContent("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="text-[10px] h-7 px-2.5"
+                  onClick={() => handleUpdateComment(comment.id)}
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div 
+                className="text-xs text-foreground ProseMirror max-w-full overflow-hidden mb-2" 
+                dangerouslySetInnerHTML={{ __html: comment.content }}
+              />
+              {/* Actions bar inside comment card */}
+              <div className="flex items-center gap-3 border-t border-border/40 pt-1.5 mt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReplyingToCommentId(comment.id);
+                    setReplyContent("");
+                  }}
+                  className="text-[9px] font-bold text-muted-foreground hover:text-primary uppercase tracking-wider transition-colors"
+                >
+                  Reply
+                </button>
+                {comment.user?.id === currentUser?.user?.id && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCommentId(comment.id);
+                        setEditingContent(comment.content);
+                      }}
+                      className="text-[9px] font-bold text-muted-foreground hover:text-primary uppercase tracking-wider transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteCommentMutation.mutate(comment.id)}
+                      className="text-[9px] font-bold text-muted-foreground hover:text-destructive uppercase tracking-wider transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Inline Reply Editor specifically for this comment */}
+      {replyingToCommentId === comment.id && (
+        <div className="ml-6 pl-3 border-l-2 border-border/60 space-y-2">
+          <RichTextEditor
+            placeholder={`Reply to ${comment.user?.name}...`}
+            value={replyContent}
+            onChange={setReplyContent}
+            projectMembers={projectMembers}
+            minHeight="60px"
+            onSubmit={() => handleAddReply(comment.id)}
+          />
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-[10px] h-7 px-2.5"
+              onClick={() => setReplyingToCommentId(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="text-[10px] h-7 px-2.5"
+              onClick={() => handleAddReply(comment.id)}
+            >
+              Reply
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* View replies button */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="ml-10 mt-1">
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="text-[10px] font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-all"
+          >
+            <MessageSquare size={10} className={isCollapsed ? "" : "opacity-60"} />
+            {isCollapsed ? `Show ${comment.replies.length} replies` : "Hide replies"}
+          </button>
+        </div>
+      )}
+
+      {/* Nested Replies - Recursive Rendering */}
+      {!isCollapsed && comment.replies && comment.replies.length > 0 && (
+        <div className="relative ml-6 mt-2 space-y-4 before:absolute before:left-0 before:top-0 before:bottom-[24px] before:w-[2px] before:bg-border/40">
+          {comment.replies.map((reply: any) => (
+            <div key={reply.id} className="relative pl-6">
+              {/* Elbow connector */}
+              <div className="absolute left-0 top-0 h-[14px] w-[14px] border-l-[2px] border-b-[2px] border-border/40 rounded-bl-md" />
+              <CommentNode
+                comment={reply}
+                currentUser={currentUser}
+                projectMembers={projectMembers}
+                replyingToCommentId={replyingToCommentId}
+                setReplyingToCommentId={setReplyingToCommentId}
+                replyContent={replyContent}
+                setReplyContent={setReplyContent}
+                handleAddReply={handleAddReply}
+                editingCommentId={editingCommentId}
+                setEditingCommentId={setEditingCommentId}
+                editingContent={editingContent}
+                setEditingContent={setEditingContent}
+                handleUpdateComment={handleUpdateComment}
+                deleteCommentMutation={deleteCommentMutation}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const buildCommentThreads = (comments: any[]) => {
+  if (!comments) return [];
+  const commentMap = new Map();
+  const roots: any[] = [];
+
+  comments.forEach((c) => {
+    commentMap.set(c.id, { ...c, replies: [] });
+  });
+
+  comments.forEach((c) => {
+    const mapped = commentMap.get(c.id);
+    if (c.parentId && commentMap.has(c.parentId)) {
+      commentMap.get(c.parentId).replies.push(mapped);
+    } else {
+      roots.push(mapped);
+    }
+  });
+
+  roots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  roots.forEach((root) => {
+    root.replies.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  });
+
+  return roots;
+};

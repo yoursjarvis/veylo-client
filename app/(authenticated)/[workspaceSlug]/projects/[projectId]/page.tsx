@@ -191,6 +191,18 @@ export default function ProjectDetailsPage() {
     }
   }, [urlTaskId]);
 
+  const handleSelectTask = (taskId: string | null) => {
+    setActiveTaskId(taskId);
+    const params = new URLSearchParams(window.location.search);
+    if (taskId) {
+      params.set("taskId", taskId);
+    } else {
+      params.delete("taskId");
+    }
+    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+    router.push(newUrl, { scroll: false });
+  };
+
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
   const { data: tasks } = useProjectTasks(projectId || "");
@@ -1161,7 +1173,7 @@ export default function ProjectDetailsPage() {
           <TabsContent value="timeline" className="space-y-6">
             <ProjectTimeline
               workspaceId={activeWorkspace?.id || ""}
-              onSelectTask={setActiveTaskId}
+              onSelectTask={handleSelectTask}
             />
           </TabsContent>
 
@@ -1178,7 +1190,7 @@ export default function ProjectDetailsPage() {
               sprints={sprints || []}
               projectTemplate={selectedProject?.template || "simple"}
               projectMembers={selectedProject?.members || []}
-              onSelectTask={setActiveTaskId}
+              onSelectTask={handleSelectTask}
             />
           </TabsContent>
 
@@ -1188,7 +1200,7 @@ export default function ProjectDetailsPage() {
               statuses={statuses || []}
               projectMembers={selectedProject?.members || []}
               projectTemplate={selectedProject?.template || "simple"}
-              onSelectTask={setActiveTaskId}
+              onSelectTask={handleSelectTask}
             />
           </TabsContent>
 
@@ -1200,7 +1212,7 @@ export default function ProjectDetailsPage() {
                 sprints={sprints || []}
                 statuses={statuses || []}
                 projectMembers={selectedProject?.members || []}
-                onSelectTask={setActiveTaskId}
+                onSelectTask={handleSelectTask}
               />
             </TabsContent>
           )}
@@ -1224,13 +1236,7 @@ export default function ProjectDetailsPage() {
           projectStatuses={statuses || []}
           projectSprints={sprints || []}
           projectTemplate={selectedProject?.template || "simple"}
-          onClose={() => {
-            setActiveTaskId(null);
-            const params = new URLSearchParams(window.location.search);
-            params.delete("taskId");
-            const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
-            router.push(newUrl);
-          }}
+          onClose={() => handleSelectTask(null)}
         />
       )}
 

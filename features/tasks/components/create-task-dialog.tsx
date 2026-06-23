@@ -18,6 +18,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { axiosInstance } from "@/lib/axios";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -153,11 +154,12 @@ export function CreateTaskDialog({
           {/* Description */}
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground font-semibold">Description</label>
-            <Textarea
-              placeholder="Provide a description..."
+            <RichTextEditor
+              placeholder="Provide a description... (Use @ to mention, / for blocks, paste images)"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bg-background border-border text-foreground text-xs min-h-[90px]"
+              onChange={setDescription}
+              projectMembers={projectMembers}
+              minHeight="100px"
             />
           </div>
 
