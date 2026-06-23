@@ -8,12 +8,11 @@ import { useWorkspaceContext } from "@/components/providers/workspace-provider";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import Image from "next/image";
 import {
   Plus,
   Trash,
-  Key,
   Lock,
-  Unlock,
   Eye,
   EyeOff,
   Copy,
@@ -26,18 +25,14 @@ import {
   Shield,
   FileText,
   UserPlus,
-  MoreVertical,
-  Search,
   Loader2,
   AlertCircle,
-  Eye as ViewIcon,
-  ShieldAlert,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -46,10 +41,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+
 import { Spinner } from "@/components/ui/spinner";
 import { IconPicker } from "@/components/shared/icon-picker";
 import { getThumbUrl } from "@/lib/utils";
@@ -172,7 +166,7 @@ export default function ProjectDetailsPage() {
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
 
   // Queries
-  const { data: selectedProject, isLoading: isProjectDetailLoading } = useQuery<any>({
+  const { data: selectedProject, isLoading: isProjectDetailLoading } = useQuery<LooseRecord>({
     queryKey: ["project", projectId],
     queryFn: async () => {
       const response = await axiosInstance.get(`/projects/${projectId}`);
@@ -187,6 +181,7 @@ export default function ProjectDetailsPage() {
 
   useEffect(() => {
     if (urlTaskId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing URL param to local state
       setActiveTaskId(urlTaskId);
     }
   }, [urlTaskId]);
@@ -208,7 +203,6 @@ export default function ProjectDetailsPage() {
   const { data: tasks } = useProjectTasks(projectId || "");
   const { data: statuses } = useProjectStatuses(projectId || "");
   const { data: sprints } = useProjectSprints(projectId || "");
-  const activeSprint = sprints?.find((s: any) => s.status === "active");
 
   const [newFieldName, setNewFieldName] = useState("");
   const [newFieldType, setNewFieldType] = useState<"text" | "number" | "date" | "select" | "checkbox">("text");
@@ -285,7 +279,7 @@ export default function ProjectDetailsPage() {
       toast.success("Project details updated");
       setIsEditOpen(false);
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update project");
     },
   });
@@ -299,7 +293,7 @@ export default function ProjectDetailsPage() {
       toast.success("Project deleted successfully");
       router.push(`/${workspaceSlug}/projects`);
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to delete project");
     },
   });
@@ -313,7 +307,7 @@ export default function ProjectDetailsPage() {
       toast.success("Project members updated");
       setIsManageMembersOpen(false);
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to assign members");
     },
   });
@@ -326,7 +320,7 @@ export default function ProjectDetailsPage() {
       queryClient.invalidateQueries({ queryKey: ["project", projectId] });
       toast.success("Member removed from project");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to remove member");
     },
   });
@@ -341,7 +335,7 @@ export default function ProjectDetailsPage() {
       setIsAddServiceOpen(false);
       setNewServiceName("");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to add service");
     },
   });
@@ -372,7 +366,7 @@ export default function ProjectDetailsPage() {
       setNewValue("");
       setNewNote("");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to save secret");
     },
   });
@@ -401,7 +395,7 @@ export default function ProjectDetailsPage() {
       queryClient.invalidateQueries({ queryKey: ["files", projectId] });
       toast.success("File uploaded and secured");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Upload failed");
     },
   });
@@ -414,7 +408,7 @@ export default function ProjectDetailsPage() {
       queryClient.invalidateQueries({ queryKey: ["files", projectId] });
       toast.success("File deleted successfully");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to delete file");
     },
   });
@@ -422,11 +416,12 @@ export default function ProjectDetailsPage() {
   // Handle Edit Dialog Prep
   useEffect(() => {
     if (selectedProject) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Prep edit dialog from selected project
       setEditTitle(selectedProject.title || "");
       setEditDesc(selectedProject.description || "");
       setEditIcon(selectedProject.icon || null);
       // Prep selected members
-      const memberIds = selectedProject.members?.map((m: any) => m.userId) || [];
+      const memberIds = selectedProject.members?.map((m: LooseRecord) => m.userId) || [];
       setSelectedMembers(memberIds);
     }
   }, [selectedProject]);
@@ -474,8 +469,8 @@ export default function ProjectDetailsPage() {
     if (icon.startsWith("http") || icon.startsWith("/") || icon.startsWith("blob:")) {
       const thumbUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon;
       return (
-        <div className={`${baseClasses} ${sizeClass} overflow-hidden border bg-background`}>
-          <img src={thumbUrl} alt="Project Icon" className="h-full w-full object-cover" />
+        <div className={`${baseClasses} ${sizeClass} overflow-hidden border bg-background relative`}>
+          <Image src={thumbUrl} alt="Project Icon" fill className="object-cover" />
         </div>
       );
     }
@@ -633,7 +628,7 @@ export default function ProjectDetailsPage() {
                           {customFields && customFields.length === 0 ? (
                             <p className="text-xs text-slate-500 italic">No custom fields defined for this project.</p>
                           ) : (
-                            customFields?.map((field: any) => (
+                            customFields?.map((field: LooseRecord) => (
                               <div key={field.id} className="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-850">
                                 <div className="text-xs">
                                   <p className="font-semibold text-slate-200">{field.name}</p>
@@ -689,7 +684,7 @@ export default function ProjectDetailsPage() {
                               <label className="text-xs text-slate-400 font-semibold">Type</label>
                               <select
                                 value={newFieldType}
-                                onChange={(e) => setNewFieldType(e.target.value as any)}
+                                onChange={(e) => setNewFieldType(e.target.value as "text" | "number" | "date" | "select" | "checkbox")}
                                 className="w-full bg-slate-950 border border-slate-800 rounded-md p-1.5 text-xs text-slate-200 focus:outline-none focus:border-primary h-8"
                               >
                                 <option value="text">Text (Single Line)</option>
@@ -982,7 +977,7 @@ export default function ProjectDetailsPage() {
                     <CardContent className="p-0">
                       {service.items.length === 0 ? (
                         <div className="p-6 text-center text-xs text-muted-foreground">
-                          No credentials stored. Click "Add Secret" above.
+                          No credentials stored. Click &quot;Add Secret&quot; above.
                         </div>
                       ) : (
                         <div className="overflow-x-auto">

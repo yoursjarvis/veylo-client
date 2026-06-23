@@ -11,8 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+import EmojiPicker, { Theme } from "emoji-picker-react";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import {
   ArrowLeft,
@@ -26,6 +29,7 @@ import {
   Calendar as CalendarIcon,
   Copy,
   AlertTriangle,
+  SmilePlus,
 } from "lucide-react";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import {
@@ -38,11 +42,10 @@ import {
   useDeleteComment,
   useUpdateComment,
   useProjectCustomFields,
-  useTaskDependencies,
-  useCreateTaskDependency,
-  useDeleteTaskDependency,
   useProjectStatuses,
   useProjectSprints,
+  useToggleCommentReaction,
+  useReactionUsers,
 } from "@/features/tasks/hooks/use-tasks";
 
 export default function TaskDetailPage() {
@@ -61,7 +64,7 @@ export default function TaskDetailPage() {
   const projectId = task?.projectId;
 
   // Project details for members and template
-  const { data: selectedProject } = useQuery<any>({
+  const { data: selectedProject } = useQuery<LooseRecord>({
     queryKey: ["project", projectId],
     queryFn: async () => {
       const response = await axiosInstance.get(`/projects/${projectId}`);
@@ -83,58 +86,7 @@ export default function TaskDetailPage() {
   const createCommentMutation = useCreateComment(taskId);
   const deleteCommentMutation = useDeleteComment(taskId);
   const updateCommentMutation = useUpdateComment(taskId);
-
-  const { data: dependencies = { blockedBy: [], blocking: [] }, isLoading: isDepsLoading } = useTaskDependencies(taskId);
-  const createDepMutation = useCreateTaskDependency(taskId);
-  const deleteDepMutation = useDeleteTaskDependency(taskId);
-
-  const [isLinking, setIsLinking] = useState(false);
-  const [targetProjectId, setTargetProjectId] = useState("");
-  const [targetTaskId, setTargetTaskId] = useState("");
-  const [depDirection, setDepDirection] = useState<"blocks" | "blocked_by">("blocked_by");
-
-  // Fetch workspace projects for linking dependencies
-  const { data: projects = [] } = useQuery({
-    queryKey: ["projects", workspaceSlug],
-    queryFn: async () => {
-      const response = await axiosInstance.get(`/workspaces/slug/${workspaceSlug}/projects`);
-      return response.data.data;
-    },
-    enabled: isLinking,
-  });
-
-  // Fetch tasks of selected target project
-  const { data: projectTasks = [] } = useQuery({
-    queryKey: ["project-tasks", targetProjectId],
-    queryFn: async () => {
-      const response = await axiosInstance.get(`/projects/${targetProjectId}/tasks`);
-      return response.data.data;
-    },
-    enabled: !!targetProjectId && isLinking,
-  });
-
-  // Filter tasks: exclude current task and already linked tasks
-  const linkedTaskIds = new Set([
-    ...(dependencies.blockedBy || []).map((d: any) => d.task.id),
-    ...(dependencies.blocking || []).map((d: any) => d.task.id),
-    taskId,
-  ]);
-  const availableTasks = projectTasks.filter((t: any) => !linkedTaskIds.has(t.id) && !t.deletedAt);
-
-  const handleLinkDependency = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!targetTaskId) return;
-
-    createDepMutation.mutate(
-      { dependencyTaskId: targetTaskId, direction: depDirection },
-      {
-        onSuccess: () => {
-          setTargetTaskId("");
-          setIsLinking(false);
-        },
-      }
-    );
-  };
+  const toggleReactionMutation = useToggleCommentReaction(taskId);
 
   // Local state
   const [localTitle, setLocalTitle] = useState("");
@@ -144,16 +96,17 @@ export default function TaskDetailPage() {
 
   useEffect(() => {
     if (task) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Needed to sync local state with fetched task data
       setLocalTitle(task.title || "");
       setLocalDesc(task.description || "");
     }
   }, [task]);
 
-  const handleFieldChange = (field: string, value: any) => {
+  const handleFieldChange = (field: string, value: LooseRecord) => {
     updateTaskMutation.mutate({ [field]: value });
   };
 
-  const handleCustomFieldChange = (fieldKey: string, value: any) => {
+  const handleCustomFieldChange = (fieldKey: string, value: LooseRecord) => {
     const existingCustomFields = task?.customFields || {};
     const updated = { ...existingCustomFields, [fieldKey]: value };
     handleFieldChange("customFields", updated);
@@ -318,7 +271,7 @@ export default function TaskDetailPage() {
                 <CheckCircle2 size={14} /> Subtask Checklist
               </label>
               <div className="space-y-2 mb-3">
-                {task.subtasks?.map((subtask: any) => (
+                {task.subtasks?.map((subtask: LooseRecord) => (
                   <div key={subtask.id} className="flex items-center justify-between gap-3 group bg-muted/20 p-2.5 rounded-lg border border-border/40">
                     <div className="flex items-center gap-2.5">
                       <Checkbox
@@ -380,7 +333,7 @@ export default function TaskDetailPage() {
               </div>
 
               <div className="space-y-6 mt-4">
-                {buildCommentThreads(task.comments || []).map((comment: any) => (
+                {buildCommentThreads(task.comments || []).map((comment: LooseRecord) => (
                   <CommentNode
                     key={comment.id}
                     comment={comment}
@@ -397,6 +350,7 @@ export default function TaskDetailPage() {
                     setEditingContent={setEditingContent}
                     handleUpdateComment={handleUpdateComment}
                     deleteCommentMutation={deleteCommentMutation}
+                    toggleReactionMutation={toggleReactionMutation}
                   />
                 ))}
               </div>
@@ -408,7 +362,7 @@ export default function TaskDetailPage() {
                 <Activity size={14} /> Activity Feed
               </label>
               <div className="space-y-3 pl-2">
-                {task.activityLogs?.map((activity: any) => (
+                {task.activityLogs?.map((activity: LooseRecord) => (
                   <div key={activity.id} className="text-xs text-muted-foreground flex items-start gap-2.5">
                     <Clock size={13} className="mt-0.5 text-muted-foreground/60 flex-shrink-0" />
                     <div>
@@ -439,7 +393,7 @@ export default function TaskDetailPage() {
                 onChange={(e) => handleFieldChange("statusId", e.target.value)}
                 className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
               >
-                {projectStatuses.map((st: any) => (
+                {projectStatuses.map((st: LooseRecord) => (
                   <option key={st.id} value={st.id}>
                     {st.name}
                   </option>
@@ -456,7 +410,7 @@ export default function TaskDetailPage() {
                 className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
               >
                 <option value="">Unassigned</option>
-                {projectMembers.map((m: any) => (
+                {projectMembers.map((m: LooseRecord) => (
                   <option key={m.user.id} value={m.user.id}>
                     {m.user.name}
                   </option>
@@ -474,7 +428,7 @@ export default function TaskDetailPage() {
                   className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
                 >
                   <option value="">Backlog</option>
-                  {projectSprints.map((sp: any) => (
+                  {projectSprints.map((sp: LooseRecord) => (
                     <option key={sp.id} value={sp.id}>
                       {sp.name} ({sp.status})
                     </option>
@@ -569,7 +523,7 @@ export default function TaskDetailPage() {
             {customFieldDefinitions && customFieldDefinitions.length > 0 && (
               <div className="space-y-4 border-t border-border pt-4">
                 <span className="text-[10px] uppercase font-bold text-primary block">Custom Properties</span>
-                {customFieldDefinitions.map((fieldDef: any) => {
+                {customFieldDefinitions.map((fieldDef: LooseRecord) => {
                   const fieldValue = task.customFields?.[fieldDef.id] ?? "";
                   return (
                     <div key={fieldDef.id} className="space-y-1.5">
@@ -633,7 +587,7 @@ export default function TaskDetailPage() {
   );
 }
 
-const formatActivityText = (activity: any) => {
+const formatActivityText = (activity: LooseRecord) => {
   const action = activity.action;
   const oldValue = activity.oldValue;
   const newValue = activity.newValue;
@@ -676,6 +630,58 @@ const formatActivityText = (activity: any) => {
   return `${actionText}${valueText}`;
 };
 
+const ReactionChip = ({ commentId, emoji, count, hasReacted, onToggle, togglePending }: LooseRecord) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { data: users, isLoading } = useReactionUsers(commentId, emoji, isOpen);
+
+  return (
+    <TooltipProvider delay={300}>
+      <Tooltip open={isOpen} onOpenChange={setIsOpen}>
+        <TooltipTrigger
+          onClick={() => onToggle(emoji)}
+          className={cn(
+            "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border transition-colors",
+            hasReacted 
+              ? "bg-primary/10 border-primary/30 text-primary" 
+              : "bg-muted/50 border-border/50 hover:bg-muted text-muted-foreground"
+          )}
+        >
+          <span>{emoji}</span>
+          <span>{count}</span>
+        </TooltipTrigger>
+        <TooltipContent side="top" align="center" className="w-auto p-2 min-w-[150px] bg-popover text-popover-foreground border shadow-md">
+           {isLoading || togglePending ? (
+              <div className="space-y-2">
+                 <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                 <div className="flex items-center gap-2">
+                   <div className="h-6 w-6 rounded-full bg-muted animate-pulse" />
+                   <div className="h-3 w-20 bg-muted animate-pulse rounded" />
+                 </div>
+              </div>
+           ) : (
+              <div className="space-y-2">
+                <div className="text-xs font-semibold text-muted-foreground pb-1 border-b border-border/50">
+                  Reacted with {emoji}
+                </div>
+                <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-2">
+                  {users?.map((u: LooseRecord) => (
+                    <div key={u.id} className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5 border border-border">
+                        <AvatarImage src={u.image || ""} />
+                        <AvatarFallback className="text-[9px] bg-muted text-muted-foreground">{u.name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs">{u.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+           )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
 const CommentNode = ({
   comment,
   currentUser,
@@ -691,10 +697,11 @@ const CommentNode = ({
   setEditingContent,
   handleUpdateComment,
   deleteCommentMutation,
+  toggleReactionMutation,
 }: {
-  comment: any;
-  currentUser: any;
-  projectMembers: any[];
+  comment: LooseRecord;
+  currentUser: LooseRecord;
+  projectMembers: LooseRecord[];
   replyingToCommentId: string | null;
   setReplyingToCommentId: (id: string | null) => void;
   replyContent: string;
@@ -705,15 +712,63 @@ const CommentNode = ({
   editingContent: string;
   setEditingContent: (content: string) => void;
   handleUpdateComment: (commentId: string) => void;
-  deleteCommentMutation: any;
+  deleteCommentMutation: LooseAny;
+  toggleReactionMutation: LooseAny;
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
+
+  // Group reactions by emoji
+  const reactionGroups = (comment.reactions || []).reduce((acc: LooseRecord, reaction: LooseRecord) => {
+    if (!acc[reaction.emoji]) {
+      acc[reaction.emoji] = [];
+    }
+    acc[reaction.emoji].push(reaction);
+    return acc;
+  }, {});
+
+  const handleToggleReaction = (emoji: string) => {
+    toggleReactionMutation.mutate({ commentId: comment.id, emoji });
+    setShowEmojiPicker(false);
+  };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 relative">
       {/* Comment Card */}
-      <div className="flex gap-3">
-        <Avatar className="h-8 w-8 border border-border flex-shrink-0">
+      <div 
+        className="flex gap-3 relative group"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {isHovered && (
+          <div className="absolute -top-3 right-2 bg-background border border-border rounded-full shadow-sm flex items-center p-0.5 gap-0.5 z-10">
+            {['❤️', '👍', '🙏', '👎'].map(emoji => (
+              <button 
+                key={emoji}
+                className="w-7 h-7 flex items-center justify-center hover:bg-muted rounded-full transition-colors text-sm"
+                onClick={() => handleToggleReaction(emoji)}
+              >
+                {emoji}
+              </button>
+            ))}
+            <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+              <PopoverTrigger className="w-7 h-7 flex items-center justify-center hover:bg-muted rounded-full transition-colors text-muted-foreground">
+                <SmilePlus size={14} />
+              </PopoverTrigger>
+              <PopoverContent side="top" align="end" className="p-0 border-none bg-transparent shadow-none w-auto">
+                <EmojiPicker 
+                  onEmojiClick={(e) => handleToggleReaction(e.emoji)}
+                  theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
+
+        <Avatar className="h-8 w-8 border border-border flex-shrink-0 mt-1">
           <AvatarImage src={comment.user?.image || ""} />
           <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
             {comment.user?.name?.charAt(0).toUpperCase()}
@@ -811,6 +866,37 @@ const CommentNode = ({
               </div>
             </>
           )}
+
+          {/* Reactions Display */}
+          {Object.keys(reactionGroups).length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {(Object.entries(reactionGroups) as LooseAny).map(([emoji, reactions]: [string, LooseRecord[]]) => {
+                const hasReacted = reactions.some((r: LooseRecord) => r.userId === currentUser?.user?.id);
+                return (
+                  <ReactionChip
+                    key={emoji}
+                    commentId={comment.id}
+                    emoji={emoji}
+                    count={reactions.length}
+                    hasReacted={hasReacted}
+                    onToggle={handleToggleReaction}
+                    togglePending={toggleReactionMutation.isPending && toggleReactionMutation.variables?.emoji === emoji}
+                  />
+                );
+              })}
+              <Popover>
+                <PopoverTrigger className="flex items-center justify-center w-6 h-6 rounded-full bg-muted/50 border border-border/50 hover:bg-muted text-muted-foreground transition-colors self-center">
+                  <SmilePlus size={12} />
+                </PopoverTrigger>
+                <PopoverContent side="top" align="start" className="p-0 border-none bg-transparent shadow-none w-auto">
+                  <EmojiPicker 
+                    onEmojiClick={(e) => handleToggleReaction(e.emoji)}
+                    theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
         </div>
       </div>
 
@@ -864,7 +950,7 @@ const CommentNode = ({
       {/* Nested Replies - Recursive Rendering */}
       {!isCollapsed && comment.replies && comment.replies.length > 0 && (
         <div className="relative ml-6 mt-2 space-y-4 before:absolute before:left-0 before:top-0 before:bottom-[28px] before:w-[2px] before:bg-border/40">
-          {comment.replies.map((reply: any) => (
+          {comment.replies.map((reply: LooseRecord) => (
             <div key={reply.id} className="relative pl-6">
               {/* Elbow connector */}
               <div className="absolute left-0 top-0 h-[16px] w-[16px] border-l-[2px] border-b-[2px] border-border/40 rounded-bl-md" />
@@ -883,6 +969,7 @@ const CommentNode = ({
                 setEditingContent={setEditingContent}
                 handleUpdateComment={handleUpdateComment}
                 deleteCommentMutation={deleteCommentMutation}
+                toggleReactionMutation={toggleReactionMutation}
               />
             </div>
           ))}
@@ -892,10 +979,10 @@ const CommentNode = ({
   );
 };
 
-const buildCommentThreads = (comments: any[]) => {
+const buildCommentThreads = (comments: LooseRecord[]) => {
   if (!comments) return [];
   const commentMap = new Map();
-  const roots: any[] = [];
+  const roots: LooseRecord[] = [];
 
   comments.forEach((c) => {
     commentMap.set(c.id, { ...c, replies: [] });
@@ -912,7 +999,7 @@ const buildCommentThreads = (comments: any[]) => {
 
   roots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   roots.forEach((root) => {
-    root.replies.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    root.replies.sort((a: LooseRecord, b: LooseRecord) => new Date(a.createdAt as string).getTime() - new Date(b.createdAt as string).getTime());
   });
 
   return roots;

@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { useCreateSprint, useUpdateSprint, useCreateTask } from "../hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -14,7 +14,6 @@ import {
   Plus,
   Play,
   CheckCircle,
-  Clock,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -22,10 +21,10 @@ import { axiosInstance } from "@/lib/axios";
 
 interface TaskBacklogProps {
   projectId: string;
-  tasks: any[];
-  sprints: any[];
-  projectMembers: any[];
-  statuses: any[];
+  tasks: { id: string; sprintId: string | null; estimate?: number; type: string; title: string; status: { name: string; category?: string }; assignee?: { name?: string; image?: string } }[];
+  sprints: { id: string; name: string; status: string; goal?: string; startDate?: string; endDate?: string }[];
+  projectMembers: Record<string, unknown>[];
+  statuses: { id: string }[];
   onSelectTask: (taskId: string) => void;
 }
 
@@ -33,7 +32,6 @@ export function TaskBacklog({
   projectId,
   tasks,
   sprints,
-  projectMembers,
   statuses,
   onSelectTask,
 }: TaskBacklogProps) {
@@ -52,7 +50,7 @@ export function TaskBacklog({
   const [quickAddTaskTitle, setQuickAddTaskTitle] = useState("");
 
   // Sprint Completion Wizard state
-  const [completingSprint, setCompletingSprint] = useState<any | null>(null);
+  const [completingSprint, setCompletingSprint] = useState<{ id: string; name: string } | null>(null);
   const [completeDestSprintId, setCompleteDestSprintId] = useState<string>("");
 
   // Toggle sprint card folding
@@ -92,7 +90,7 @@ export function TaskBacklog({
     });
   };
 
-  const handleStartSprint = (sprint: any) => {
+  const handleStartSprint = (sprint: { id: string; name: string }) => {
     // Check if another sprint is active
     const activeSprint = sprints.find((s) => s.status === "active");
     if (activeSprint) {
@@ -106,7 +104,7 @@ export function TaskBacklog({
     });
   };
 
-  const triggerCompleteSprint = (sprint: any) => {
+  const triggerCompleteSprint = (sprint: { id: string; name: string }) => {
     setCompletingSprint(sprint);
     // Find default destination (first planned sprint or backlog)
     const plannedSprints = sprints.filter((s) => s.status === "planned" && s.id !== sprint.id);
@@ -158,7 +156,7 @@ export function TaskBacklog({
     setFoldedSprints((prev) => ({ ...prev, [sprintId]: !prev[sprintId] }));
   };
 
-  const renderTaskCard = (task: any) => (
+  const renderTaskCard = (task: { id: string; type: string; title: string; estimate?: number; status: { name: string; category?: string }; assignee?: { name?: string; image?: string } }) => (
     <div
       key={task.id}
       draggable
@@ -252,7 +250,7 @@ export function TaskBacklog({
                   {/* Goal */}
                   {sprint.goal && (
                     <span className="text-[10px] text-muted-foreground italic max-w-[200px] truncate">
-                      "{sprint.goal}"
+                      &quot;{sprint.goal}&quot;
                     </span>
                   )}
 

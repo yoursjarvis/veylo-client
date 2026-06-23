@@ -37,7 +37,7 @@ import { toast } from "sonner";
 export function SecurityTab() {
   const queryClient = useQueryClient();
   const { data: auth } = useCurrentUser();
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<LooseAny[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [showTwoFactorDialog, setShowTwoFactorDialog] = useState(false);
   const [twoFactorStep, setTwoFactorStep] = useState<"password" | "otp" | "qr" | "verify" | "disable">("password");
@@ -85,6 +85,7 @@ export function SecurityTab() {
   }, [resendTimer]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Fetching initial data
     fetchSessions();
   }, [fetchSessions]);
 
@@ -100,6 +101,7 @@ export function SecurityTab() {
 
   useEffect(() => {
     if (showTwoFactorDialog && twoFactorStep === "otp") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Auto-send OTP when step is reached
       handleSendOtp();
     }
   }, [showTwoFactorDialog, twoFactorStep, handleSendOtp]);
@@ -173,8 +175,8 @@ export function SecurityTab() {
         }
         setTwoFactorStep("qr");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Verification failed");
+    } catch (err) {
+      toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Verification failed");
     }
   };
 
@@ -189,8 +191,8 @@ export function SecurityTab() {
       }
       if (data) {
         setTotpUri(data.totpURI);
-        if ((data as any).backupCodes) {
-          setBackupCodes((data as any).backupCodes);
+        if ((data as { backupCodes?: string[] }).backupCodes) {
+          setBackupCodes((data as { backupCodes?: string[] }).backupCodes || []);
         }
         setTwoFactorStep("qr");
       }
@@ -209,7 +211,7 @@ export function SecurityTab() {
         return;
       }
       if (data) {
-        const incomingCodes = (data as any).backupCodes;
+        const incomingCodes = (data as { backupCodes?: string[] }).backupCodes;
         if (incomingCodes && incomingCodes.length > 0) {
           setBackupCodes(incomingCodes);
         }

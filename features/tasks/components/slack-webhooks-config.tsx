@@ -120,7 +120,7 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {webhooks.map((webhook: any) => (
+                {webhooks.map((webhook: { id: string; channel: string | null; url: string }) => (
                   <div
                     key={webhook.id}
                     className="flex items-center justify-between p-4 hover:bg-muted/15 transition-colors"

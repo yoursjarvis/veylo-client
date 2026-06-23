@@ -11,6 +11,7 @@ import {
   useCreateComment,
   useDeleteComment,
   useUpdateComment,
+  useToggleCommentReaction,
   useProjectCustomFields,
   useTaskDependencies,
   useCreateTaskDependency,
@@ -22,8 +23,6 @@ import { axiosInstance } from "@/lib/axios";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,7 +40,10 @@ import {
   AlertTriangle,
   Copy,
   ExternalLink,
+  SmilePlus,
 } from "lucide-react";
+import EmojiPicker, { Theme } from "emoji-picker-react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { useRouter } from "next/navigation";
@@ -51,9 +53,9 @@ import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 interface TaskDetailsDrawerProps {
   taskId: string | null;
   projectId: string;
-  projectMembers: any[];
-  projectStatuses: any[];
-  projectSprints: any[];
+  projectMembers: LooseRecord[];
+  projectStatuses: LooseRecord[];
+  projectSprints: LooseRecord[];
   projectTemplate: string;
   onClose: () => void;
 }
@@ -77,6 +79,7 @@ export function TaskDetailsDrawer({
   const createCommentMutation = useCreateComment(taskId || "");
   const deleteCommentMutation = useDeleteComment(taskId || "");
   const updateCommentMutation = useUpdateComment(taskId || "");
+  const toggleReactionMutation = useToggleCommentReaction(taskId || "");
 
   const { activeWorkspace } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id;
@@ -119,11 +122,11 @@ export function TaskDetailsDrawer({
 
   // Filter tasks: exclude current task and already linked tasks
   const linkedTaskIds = new Set([
-    ...(dependencies.blockedBy || []).map((d: any) => d.task.id),
-    ...(dependencies.blocking || []).map((d: any) => d.task.id),
+    ...(dependencies.blockedBy || []).map((d: LooseRecord) => d.task.id),
+    ...(dependencies.blocking || []).map((d: LooseRecord) => d.task.id),
     taskId
   ]);
-  const availableTasks = projectTasks.filter((t: any) => !linkedTaskIds.has(t.id) && !t.deletedAt);
+  const availableTasks = projectTasks.filter((t: LooseRecord) => !linkedTaskIds.has(t.id) && !t.deletedAt);
 
   const handleLinkDependency = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,6 +151,7 @@ export function TaskDetailsDrawer({
 
   useEffect(() => {
     if (task) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- required to sync local state
       setLocalTitle(task.title || "");
       setLocalDesc(task.description || "");
     }
@@ -155,11 +159,11 @@ export function TaskDetailsDrawer({
 
   if (!taskId) return null;
 
-  const handleFieldChange = (field: string, value: any) => {
+  const handleFieldChange = (field: string, value: LooseAny) => {
     updateTaskMutation.mutate({ [field]: value });
   };
 
-  const handleCustomFieldChange = (fieldKey: string, value: any) => {
+  const handleCustomFieldChange = (fieldKey: string, value: LooseAny) => {
     const existingCustomFields = task?.customFields || {};
     const updated = { ...existingCustomFields, [fieldKey]: value };
     handleFieldChange("customFields", updated);
@@ -299,7 +303,7 @@ export function TaskDetailsDrawer({
                     <CheckCircle2 size={14} /> Subtask Checklist
                   </label>
                   <div className="space-y-2 mb-3">
-                    {task?.subtasks?.map((subtask: any) => (
+                    {task?.subtasks?.map((subtask: LooseRecord) => (
                       <div key={subtask.id} className="flex items-center justify-between gap-3 group bg-muted/30 p-2 rounded-lg border border-border">
                         <div className="flex items-center gap-2.5">
                           <Checkbox
@@ -368,7 +372,7 @@ export function TaskDetailsDrawer({
                           <label className="text-[10px] text-muted-foreground font-semibold">Relationship</label>
                           <select
                             value={depDirection}
-                            onChange={(e) => setDepDirection(e.target.value as any)}
+                            onChange={(e) => setDepDirection(e.target.value as "blocks" | "blocked_by")}
                             className="w-full bg-background border border-border rounded p-1 text-xs text-foreground focus:outline-none focus:border-primary h-8"
                           >
                             <option value="blocked_by">is blocked by</option>
@@ -386,7 +390,7 @@ export function TaskDetailsDrawer({
                             }}
                             className="w-full bg-background border border-border rounded p-1 text-xs text-foreground focus:outline-none focus:border-primary h-8"
                           >
-                            {projects.map((p: any) => (
+                            {projects.map((p: LooseRecord) => (
                               <option key={p.id} value={p.id}>
                                 {p.title} {p.id === projectId ? "(Current)" : ""}
                               </option>
@@ -404,7 +408,7 @@ export function TaskDetailsDrawer({
                           required
                         >
                           <option value="">Select task...</option>
-                          {availableTasks.map((t: any) => (
+                          {availableTasks.map((t: LooseRecord) => (
                             <option key={t.id} value={t.id}>
                               {t.title} ({t.priority})
                             </option>
@@ -439,7 +443,7 @@ export function TaskDetailsDrawer({
                   {/* Dependencies List */}
                   <div className="space-y-2">
                     {/* Blocked By */}
-                    {dependencies.blockedBy?.map((d: any) => (
+                    {dependencies.blockedBy?.map((d: LooseRecord) => (
                       <div key={d.dependencyId} className="flex items-center justify-between gap-3 bg-muted/20 p-2.5 rounded-lg border border-border text-xs">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="bg-destructive/10 text-destructive text-[9px] font-bold px-1.5 py-0.5 rounded uppercase flex-shrink-0">
@@ -467,7 +471,7 @@ export function TaskDetailsDrawer({
                     ))}
 
                     {/* Blocking */}
-                    {dependencies.blocking?.map((d: any) => (
+                    {dependencies.blocking?.map((d: LooseRecord) => (
                       <div key={d.dependencyId} className="flex items-center justify-between gap-3 bg-muted/20 p-2.5 rounded-lg border border-border text-xs">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="bg-teal-500/10 text-teal-500 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase flex-shrink-0">
@@ -523,7 +527,7 @@ export function TaskDetailsDrawer({
                     </div>
                   </div>
                   <div className="space-y-6 mt-4">
-                    {buildCommentThreads(task?.comments || []).map((comment: any) => (
+                    {buildCommentThreads(task?.comments || []).map((comment: LooseRecord) => (
                       <CommentNode
                         key={comment.id}
                         comment={comment}
@@ -540,6 +544,7 @@ export function TaskDetailsDrawer({
                         setEditingContent={setEditingContent}
                         handleUpdateComment={handleUpdateComment}
                         deleteCommentMutation={deleteCommentMutation}
+                        toggleReactionMutation={toggleReactionMutation}
                       />
                     ))}
                   </div>
@@ -551,7 +556,7 @@ export function TaskDetailsDrawer({
                     <Activity size={14} /> Activity Feed
                   </label>
                   <div className="space-y-3">
-                    {task?.activityLogs?.map((activity: any) => (
+                    {task?.activityLogs?.map((activity: LooseRecord) => (
                       <div key={activity.id} className="text-xs text-muted-foreground flex items-start gap-2">
                         <Clock size={12} className="mt-0.5 text-muted-foreground/60 flex-shrink-0" />
                         <div>
@@ -578,7 +583,7 @@ export function TaskDetailsDrawer({
                   onChange={(e) => handleFieldChange("statusId", e.target.value)}
                   className="w-full bg-card border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
-                  {projectStatuses.map((st: any) => (
+                  {projectStatuses.map((st: LooseRecord) => (
                     <option key={st.id} value={st.id}>
                       {st.name}
                     </option>
@@ -595,7 +600,7 @@ export function TaskDetailsDrawer({
                   className="w-full bg-card border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="">Unassigned</option>
-                  {projectMembers.map((m: any) => (
+                  {projectMembers.map((m: LooseRecord) => (
                     <option key={m.user.id} value={m.user.id}>
                       {m.user.name}
                     </option>
@@ -613,7 +618,7 @@ export function TaskDetailsDrawer({
                     className="w-full bg-card border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-primary"
                   >
                     <option value="">Backlog</option>
-                    {projectSprints.map((sp: any) => (
+                    {projectSprints.map((sp: LooseRecord) => (
                       <option key={sp.id} value={sp.id}>
                         {sp.name} ({sp.status})
                       </option>
@@ -708,7 +713,7 @@ export function TaskDetailsDrawer({
               {customFieldDefinitions && customFieldDefinitions.length > 0 && (
                 <div className="space-y-4 border-t border-border pt-4">
                   <span className="text-[10px] uppercase font-bold text-primary block">Custom Properties</span>
-                  {customFieldDefinitions.map((fieldDef: any) => {
+                  {customFieldDefinitions.map((fieldDef: LooseRecord) => {
                     const fieldValue = task?.customFields?.[fieldDef.id] ?? "";
                     return (
                       <div key={fieldDef.id} className="space-y-1">
@@ -771,7 +776,7 @@ export function TaskDetailsDrawer({
   );
 }
 
-export const formatActivityText = (activity: any) => {
+export const formatActivityText = (activity: LooseRecord) => {
   const action = activity.action;
   const oldValue = activity.oldValue;
   const newValue = activity.newValue;
@@ -829,10 +834,11 @@ const CommentNode = ({
   setEditingContent,
   handleUpdateComment,
   deleteCommentMutation,
+  toggleReactionMutation,
 }: {
-  comment: any;
-  currentUser: any;
-  projectMembers: any[];
+  comment: LooseRecord;
+  currentUser: LooseRecord;
+  projectMembers: LooseRecord[];
   replyingToCommentId: string | null;
   setReplyingToCommentId: (id: string | null) => void;
   replyContent: string;
@@ -843,9 +849,29 @@ const CommentNode = ({
   editingContent: string;
   setEditingContent: (content: string) => void;
   handleUpdateComment: (commentId: string) => void;
-  deleteCommentMutation: any;
+  deleteCommentMutation: LooseAny;
+  toggleReactionMutation: LooseAny;
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const { resolvedTheme } = useTheme();
+
+  // Group reactions by emoji
+  const reactionsMap = new Map<string, { count: number; userHasReacted: boolean }>();
+  if (comment.reactions) {
+    comment.reactions.forEach((reaction: LooseRecord) => {
+      const existing = reactionsMap.get(reaction.emoji) || { count: 0, userHasReacted: false };
+      reactionsMap.set(reaction.emoji, {
+        count: existing.count + 1,
+        userHasReacted: existing.userHasReacted || reaction.userId === currentUser?.user?.id,
+      });
+    });
+  }
+
+  const handleToggleReaction = (emoji: string) => {
+    toggleReactionMutation.mutate({ commentId: comment.id, emoji });
+    setShowEmojiPicker(false);
+  };
 
   return (
     <div className="space-y-3">
@@ -908,11 +934,64 @@ const CommentNode = ({
               </div>
             </div>
           ) : (
-            <>
+            <div className="relative group">
+              {/* Floating Reaction Bar (visible on hover) */}
+              <div className={cn(
+                "absolute -top-7 right-0 transition-opacity bg-background border border-border shadow-sm rounded-full flex items-center p-0.5 gap-0.5 z-10",
+                showEmojiPicker ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              )}>
+                {["❤️", "👍", "🙏", "👎"].map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => handleToggleReaction(emoji)}
+                    className="hover:bg-muted p-1.5 rounded-full transition-colors text-sm leading-none"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+                <div className="w-px h-4 bg-border mx-1" />
+                <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                  <PopoverTrigger className="hover:bg-muted p-1.5 rounded-full transition-colors text-muted-foreground hover:text-foreground">
+                    <SmilePlus size={14} />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-transparent border-none shadow-none" side="top" align="end">
+                    <EmojiPicker
+                      onEmojiClick={(emojiData) => handleToggleReaction(emojiData.emoji)}
+                      theme={resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT}
+                      skinTonesDisabled
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               <div 
                 className="text-xs text-foreground ProseMirror max-w-full overflow-hidden mb-2" 
                 dangerouslySetInnerHTML={{ __html: comment.content }}
               />
+
+              {/* Reactions display */}
+              {Array.from(reactionsMap.entries()).length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {Array.from(reactionsMap.entries()).map(([emoji, data]) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => handleToggleReaction(emoji)}
+                      className={cn(
+                        "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs border transition-colors",
+                        data.userHasReacted 
+                          ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" 
+                          : "bg-muted/50 border-border hover:bg-muted"
+                      )}
+                    >
+                      <span>{emoji}</span>
+                      <span className="text-[10px]">{data.count}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Actions bar inside comment card */}
               <div className="flex items-center gap-3 border-t border-border/40 pt-1.5 mt-1">
                 <button
@@ -925,6 +1004,7 @@ const CommentNode = ({
                 >
                   Reply
                 </button>
+
                 {comment.user?.id === currentUser?.user?.id && (
                   <>
                     <button
@@ -947,7 +1027,7 @@ const CommentNode = ({
                   </>
                 )}
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -1002,7 +1082,7 @@ const CommentNode = ({
       {/* Nested Replies - Recursive Rendering */}
       {!isCollapsed && comment.replies && comment.replies.length > 0 && (
         <div className="relative ml-6 mt-2 space-y-4 before:absolute before:left-0 before:top-0 before:bottom-[24px] before:w-[2px] before:bg-border/40">
-          {comment.replies.map((reply: any) => (
+          {comment.replies.map((reply: LooseRecord) => (
             <div key={reply.id} className="relative pl-6">
               {/* Elbow connector */}
               <div className="absolute left-0 top-0 h-[14px] w-[14px] border-l-[2px] border-b-[2px] border-border/40 rounded-bl-md" />
@@ -1021,6 +1101,7 @@ const CommentNode = ({
                 setEditingContent={setEditingContent}
                 handleUpdateComment={handleUpdateComment}
                 deleteCommentMutation={deleteCommentMutation}
+                toggleReactionMutation={toggleReactionMutation}
               />
             </div>
           ))}
@@ -1030,10 +1111,10 @@ const CommentNode = ({
   );
 };
 
-export const buildCommentThreads = (comments: any[]) => {
+export const buildCommentThreads = (comments: LooseRecord[]) => {
   if (!comments) return [];
   const commentMap = new Map();
-  const roots: any[] = [];
+  const roots: LooseRecord[] = [];
 
   comments.forEach((c) => {
     commentMap.set(c.id, { ...c, replies: [] });
@@ -1050,7 +1131,7 @@ export const buildCommentThreads = (comments: any[]) => {
 
   roots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   roots.forEach((root) => {
-    root.replies.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    root.replies.sort((a: LooseRecord, b: LooseRecord) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   });
 
   return roots;

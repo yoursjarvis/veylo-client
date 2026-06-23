@@ -1,5 +1,4 @@
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from "react";
-import { Heading1, Heading2, Heading3, List, ListOrdered, Quote, Code } from "lucide-react";
 
 export interface SlashCommandListRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
@@ -9,7 +8,7 @@ export interface CommandItem {
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  command: (editor: any, range: any) => void;
+  command: (editor: unknown, range: unknown) => void;
 }
 
 interface SlashCommandListProps {

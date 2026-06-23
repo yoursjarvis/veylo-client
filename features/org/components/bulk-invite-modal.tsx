@@ -33,8 +33,9 @@ export function BulkInviteModal({ open, onOpenChange, onSuccess }: { open: boole
         onOpenChange(false);
         onSuccess();
       },
-      onError: (err: any) => {
-        toast.error(err.response?.data?.message || "Failed to process bulk invite.");
+      onError: (err) => {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        toast.error(axiosError.response?.data?.message || "Failed to process bulk invite.");
       }
     });
   };

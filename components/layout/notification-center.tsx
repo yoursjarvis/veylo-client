@@ -31,14 +31,14 @@ export function NotificationCenter() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
 
-  const { data: notifications = [], refetch } = useNotifications();
+  const { data: notifications = [] } = useNotifications();
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllNotificationsRead();
 
-  const unreadNotifications = notifications.filter((n: any) => !n.isRead);
+  const unreadNotifications = notifications.filter((n: LooseRecord) => !n.isRead);
   const unreadCount = unreadNotifications.length;
 
-  const handleNotificationClick = (n: any) => {
+  const handleNotificationClick = (n: LooseRecord) => {
     // Mark as read
     if (!n.isRead) {
       markReadMutation.mutate(n.id);
@@ -115,7 +115,7 @@ export function NotificationCenter() {
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {notifications.map((n: any) => (
+              {notifications.map((n: LooseRecord) => (
                 <button
                   key={n.id}
                   onClick={() => handleNotificationClick(n)}

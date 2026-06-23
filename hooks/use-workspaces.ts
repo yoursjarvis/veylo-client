@@ -37,7 +37,7 @@ export function useWorkspaces() {
       if (params?.workspaceSlug) {
         const urlWorkspace = workspaces.find((w) => w.slug === params.workspaceSlug);
         if (urlWorkspace) {
-          // eslint-disable-next-line react-hooks/exhaustive-deps
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- required to sync URL with state
           setActiveWorkspaceId(urlWorkspace.id);
           localStorage.setItem("last_used_workspace_id", urlWorkspace.id);
           return;
@@ -47,10 +47,8 @@ export function useWorkspaces() {
       const savedId = localStorage.getItem("last_used_workspace_id");
       const exists = workspaces.find((w) => w.id === savedId);
       if (exists) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         setActiveWorkspaceId(savedId);
       } else {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         setActiveWorkspaceId(workspaces[0].id);
       }
     }

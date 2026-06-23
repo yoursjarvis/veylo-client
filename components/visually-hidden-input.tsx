@@ -34,22 +34,9 @@ function VisuallyHiddenInput<T = InputValue>(
   );
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const prevValueRef = React.useRef<{
-    value: T | boolean | undefined;
-    previous: T | boolean | undefined;
-  }>({
-    value: isCheckInput ? checked : value,
-    previous: isCheckInput ? checked : value,
-  });
-
-  const prevValue = React.useMemo(() => {
-    const currentValue = isCheckInput ? checked : value;
-    if (prevValueRef.current.value !== currentValue) {
-      prevValueRef.current.previous = prevValueRef.current.value;
-      prevValueRef.current.value = currentValue;
-    }
-    return prevValueRef.current.previous;
-  }, [isCheckInput, value, checked]);
+  const prevValueRef = React.useRef<T | boolean | undefined>(
+    isCheckInput ? checked : value
+  );
 
   const [controlSize, setControlSize] = React.useState<{
     width?: number;
@@ -58,6 +45,7 @@ function VisuallyHiddenInput<T = InputValue>(
 
   React.useLayoutEffect(() => {
     if (!control) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizing state with DOM element resize
       setControlSize({});
       return;
     }
@@ -118,12 +106,13 @@ function VisuallyHiddenInput<T = InputValue>(
 
     const setter = descriptor?.set;
 
-    if (prevValue !== currentValue && setter) {
+    if (prevValueRef.current !== currentValue && setter) {
       const event = new Event(eventType, { bubbles });
       setter.call(input, serializedCurrentValue);
       input.dispatchEvent(event);
+      prevValueRef.current = currentValue;
     }
-  }, [prevValue, value, checked, bubbles, isCheckInput]);
+  }, [value, checked, bubbles, isCheckInput]);
 
   const composedStyle = React.useMemo<React.CSSProperties>(() => {
     return {

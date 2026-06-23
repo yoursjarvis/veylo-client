@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -25,9 +25,9 @@ import { useQueryClient } from "@tanstack/react-query";
 interface CreateTaskDialogProps {
   open: boolean;
   projectId: string;
-  projectMembers: any[];
-  projectStatuses: any[];
-  projectSprints: any[];
+  projectMembers: { user: { id: string; name: string } }[];
+  projectStatuses: { id: string; name: string }[];
+  projectSprints: { id: string; name: string; status: string }[];
   projectTemplate: string;
   onOpenChange: (open: boolean) => void;
 }
@@ -55,12 +55,13 @@ export function CreateTaskDialog({
   const [assigneeId, setAssigneeId] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState("");
-  const [customFields, setCustomFields] = useState<Record<string, any>>({});
+  const [customFields, setCustomFields] = useState<LooseRecord>({});
   const [isInitializing, setIsInitializing] = useState(false);
 
   // Auto-initialize statuses if none exist
   useEffect(() => {
     if (open && projectId && projectStatuses && projectStatuses.length === 0 && !isInitializing) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Need to set loading state before async operation
       setIsInitializing(true);
       const defaults = [
         { name: "To Do", category: "todo", order: 0 },
@@ -84,6 +85,7 @@ export function CreateTaskDialog({
   // Reset form status when opened/statuses are available
   useEffect(() => {
     if (projectStatuses && projectStatuses.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Need to synchronize statusId when projectStatuses changes
       setStatusId(projectStatuses[0].id);
     }
   }, [projectStatuses, open]);
@@ -91,6 +93,7 @@ export function CreateTaskDialog({
   // Reset all other fields on close/open
   useEffect(() => {
     if (open) {
+      /* eslint-disable react-hooks/set-state-in-effect -- Need to reset form state when dialog opens */
       setTitle("");
       setDescription("");
       setType("task");
@@ -100,11 +103,12 @@ export function CreateTaskDialog({
       setEstimate(null);
       setDueDate("");
       setCustomFields({});
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open]);
 
-  const handleCustomFieldChange = (fieldId: string, value: any) => {
-    setCustomFields((prev) => ({ ...prev, [fieldId]: value }));
+  const handleCustomFieldChange = (fieldId: string, value: LooseAny) => {
+    setCustomFields((prev: LooseRecord) => ({ ...prev, [fieldId]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -179,7 +183,7 @@ export function CreateTaskDialog({
                     {isInitializing ? "Initializing..." : "No statuses available"}
                   </option>
                 ) : (
-                  projectStatuses.map((st: any) => (
+                  projectStatuses.map((st: { id: string; name: string }) => (
                     <option key={st.id} value={st.id}>
                       {st.name}
                     </option>
@@ -192,7 +196,7 @@ export function CreateTaskDialog({
               <label className="text-xs text-muted-foreground font-semibold">Type</label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as any)}
+                onChange={(e) => setType(e.target.value as "task" | "bug" | "feature")}
                 className="w-full bg-background border border-border rounded-lg p-2 text-xs text-foreground focus:outline-none focus:border-primary h-9"
               >
                 <option value="task">Task</option>
@@ -208,7 +212,7 @@ export function CreateTaskDialog({
               <label className="text-xs text-muted-foreground font-semibold">Priority</label>
               <select
                 value={priority}
-                onChange={(e) => setPriority(e.target.value as any)}
+                onChange={(e) => setPriority(e.target.value as "low" | "medium" | "high" | "urgent")}
                 className="w-full bg-background border border-border rounded-lg p-2 text-xs text-foreground focus:outline-none focus:border-primary h-9"
               >
                 <option value="low">Low</option>
@@ -226,7 +230,7 @@ export function CreateTaskDialog({
                 className="w-full bg-background border border-border rounded-lg p-2 text-xs text-foreground focus:outline-none focus:border-primary h-9"
               >
                 <option value="">Unassigned</option>
-                {projectMembers.map((m: any) => (
+                {projectMembers.map((m: { user: { id: string; name: string } }) => (
                   <option key={m.user.id} value={m.user.id}>
                     {m.user.name}
                   </option>
@@ -246,7 +250,7 @@ export function CreateTaskDialog({
                   className="w-full bg-background border border-border rounded-lg p-2 text-xs text-foreground focus:outline-none focus:border-primary h-9"
                 >
                   <option value="">Backlog</option>
-                  {projectSprints.map((sp: any) => (
+                  {projectSprints.map((sp: { id: string; name: string; status: string }) => (
                     <option key={sp.id} value={sp.id}>
                       {sp.name} ({sp.status})
                     </option>
@@ -307,7 +311,7 @@ export function CreateTaskDialog({
           {customFieldDefinitions && customFieldDefinitions.length > 0 && (
             <div className="space-y-3 border-t border-border pt-3">
               <span className="text-xs uppercase font-bold text-primary block">Custom Properties</span>
-              {customFieldDefinitions.map((fieldDef: any) => {
+              {customFieldDefinitions.map((fieldDef: { id: string; name: string; type: string; options?: string[] }) => {
                 const fieldValue = customFields[fieldDef.id] ?? "";
                 return (
                   <div key={fieldDef.id} className="space-y-1">

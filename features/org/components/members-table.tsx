@@ -139,8 +139,9 @@ export function MembersTable() {
                   await updateRoleMutation.mutateAsync({ memberId: member.id, role: newRole })
                   toast.success("Role updated successfully")
                   refetch()
-                } catch (error: any) {
-                  toast.error(error.message || "Failed to update role")
+                } catch (error) {
+                  const responseError = error as { message?: string };
+                  toast.error(responseError.message || "Failed to update role")
                 }
               }}
               disabled={updateRoleMutation.isPending}
@@ -479,8 +480,9 @@ function PendingInvitationsList() {
       onSuccess: () => {
         toast.success("Invitation revoked successfully")
       },
-      onError: (error: any) => {
-        toast.error(error.message || "Failed to revoke invitation")
+      onError: (error) => {
+        const responseError = error as { message?: string };
+        toast.error(responseError.message || "Failed to revoke invitation")
       },
     })
   }
@@ -527,7 +529,7 @@ function PendingInvitationsList() {
           </tr>
         </thead>
         <tbody>
-          {invitations.map((invite: any) => (
+          {invitations.map((invite: { id: string; email: string; role?: string; status: string; createdAt: string }) => (
             <tr
               key={invite.id}
               className="border-b transition-colors hover:bg-muted/50"

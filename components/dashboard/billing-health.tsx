@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button"
 import {
   CardContent,
@@ -31,13 +32,13 @@ export function BillingHealth() {
             <EmptyMedia variant="icon">
               <CircleCheckIcon aria-hidden="true" />
             </EmptyMedia>
-            <EmptyTitle>You're caught up.</EmptyTitle>
+            <EmptyTitle>You&apos;re caught up.</EmptyTitle>
             <EmptyDescription className="text-xs">
               Balances and payouts look fine. nothing overdue in this snapshot.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button render={<a href="/#" />} variant="ghost" nativeButton={false}>
+            <Button render={<Link href="/#" />} variant="ghost" nativeButton={false}>
               Review open invoices
               <ArrowRightIcon aria-hidden="true" />
             </Button>

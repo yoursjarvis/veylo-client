@@ -8,10 +8,7 @@ import { DecorIcon } from "@/components/shared/decor-icon"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import {
-  Navigation03Icon,
-  Notification03Icon,
-} from "@hugeicons/core-free-icons"
+import { Navigation03Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { usePathname } from "next/navigation"
 

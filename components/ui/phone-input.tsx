@@ -654,7 +654,6 @@ function PhoneInputCountrySelect(props: PhoneInputCountrySelectProps) {
   const {
     disabled: disabledProp,
     className,
-    children,
     onOpenChange: onOpenChangeProp,
     ...popoverProps
   } = props;

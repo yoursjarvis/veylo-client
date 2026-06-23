@@ -393,6 +393,7 @@ function QRCodeDownload(props: QRCodeDownloadProps) {
     asChild,
     className,
     children,
+    onClick: onClickProp,
     ...buttonProps
   } = props;
 
@@ -401,7 +402,7 @@ function QRCodeDownload(props: QRCodeDownloadProps) {
 
   const onClick = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
-      buttonProps.onClick?.(event);
+      onClickProp?.(event);
       if (event.defaultPrevented) return;
 
       const link = document.createElement("a");
@@ -425,7 +426,7 @@ function QRCodeDownload(props: QRCodeDownloadProps) {
         URL.revokeObjectURL(link.href);
       }
     },
-    [dataUrl, svgString, filename, format, buttonProps.onClick],
+    [dataUrl, svgString, filename, format, onClickProp],
   );
 
   const ButtonPrimitive = asChild ? SlotPrimitive.Slot : "button";

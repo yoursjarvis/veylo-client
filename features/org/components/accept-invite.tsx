@@ -69,8 +69,9 @@ export function AcceptInvite() {
          window.location.href = "/dashboard"; // Fallback
       }
 
-    } catch (error: any) {
-      toast.error(error.message || "An unexpected error occurred");
+    } catch (error) {
+      const responseError = error as { message?: string };
+      toast.error(responseError.message || "An unexpected error occurred");
     } finally {
       setAccepting(false);
     }

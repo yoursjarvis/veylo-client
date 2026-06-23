@@ -2,7 +2,7 @@ import { useMutation, useQueryClient, useInfiniteQuery, useQuery } from "@tansta
 import { orgService } from "../services/org-service";
 
 export const orgKeys = {
-  members: (filters: any) => ["org", "members", filters] as const,
+  members: (filters: Record<string, unknown>) => ["org", "members", filters] as const,
   invitations: () => ["org", "invitations"] as const,
 };
 
@@ -16,7 +16,6 @@ export function useMembers(filters: { search?: string; role?: string; status?: s
 }
 
 export function useBanMember() {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, reason }: { userId: string; reason?: string }) =>
       orgService.banMember(userId, reason),
@@ -27,7 +26,6 @@ export function useBanMember() {
 }
 
 export function useUnbanMember() {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => orgService.unbanMember(userId),
     onSuccess: () => {

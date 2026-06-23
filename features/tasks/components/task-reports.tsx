@@ -18,9 +18,21 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/u
 import { Users, BarChart3 } from "lucide-react";
 
 interface TaskReportsProps {
-  tasks: any[];
-  sprints: any[];
-  projectMembers: any[];
+  tasks: {
+    deletedAt?: string | null;
+    assigneeId?: string | null;
+    sprintId?: string | null;
+    status?: { category: string };
+    estimate?: number;
+  }[];
+  sprints: {
+    id: string;
+    status: string;
+    name: string;
+  }[];
+  projectMembers: {
+    user: { id: string; name: string };
+  }[];
   projectTemplate: string;
 }
 

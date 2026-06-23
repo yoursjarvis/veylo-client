@@ -29,7 +29,7 @@ export function AppearanceTab() {
         <Label>Theme Preference</Label>
         <RadioGroup
           value={theme}
-          onValueChange={(value) => setTheme(value as any)}
+          onValueChange={(value) => setTheme(value as "dark" | "light" | "system")}
           className="grid grid-cols-3 gap-4"
         >
           {themes.map((item) => (

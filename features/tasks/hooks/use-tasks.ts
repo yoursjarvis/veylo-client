@@ -3,7 +3,7 @@ import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
 
 // --- TASKS ---
-export function useProjectTasks(projectId: string, filters: Record<string, any> = {}) {
+export function useProjectTasks(projectId: string, filters: Record<string, unknown> = {}) {
   return useQuery({
     queryKey: ["tasks", projectId, filters],
     queryFn: async () => {
@@ -29,7 +29,7 @@ export function useTaskDetails(taskId: string | null) {
 export function useCreateTask(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await axiosInstance.post(`/projects/${projectId}/tasks`, data);
       return response.data.data;
     },
@@ -37,7 +37,7 @@ export function useCreateTask(projectId: string) {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
       toast.success("Task created successfully");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to create task");
     },
   });
@@ -46,16 +46,16 @@ export function useCreateTask(projectId: string) {
 export function useUpdateTask(projectId: string, taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await axiosInstance.patch(`/tasks/${taskId}`, data);
       return response.data.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
       queryClient.invalidateQueries({ queryKey: ["task", taskId] });
       toast.success("Task updated");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update task");
     },
   });
@@ -89,7 +89,7 @@ export function useProjectSprints(projectId: string) {
 export function useCreateSprint(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await axiosInstance.post(`/projects/${projectId}/sprints`, data);
       return response.data.data;
     },
@@ -103,7 +103,7 @@ export function useCreateSprint(projectId: string) {
 export function useUpdateSprint(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
       const response = await axiosInstance.patch(`/sprints/${id}`, data);
       return response.data.data;
     },
@@ -112,7 +112,7 @@ export function useUpdateSprint(projectId: string) {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
       toast.success("Sprint updated");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update sprint");
     },
   });
@@ -133,7 +133,7 @@ export function useProjectStatuses(projectId: string) {
 export function useCreateStatus(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await axiosInstance.post(`/projects/${projectId}/statuses`, data);
       return response.data.data;
     },
@@ -147,7 +147,7 @@ export function useCreateStatus(projectId: string) {
 export function useUpdateStatus(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
       await axiosInstance.patch(`/statuses/${id}`, data);
     },
     onSuccess: () => {
@@ -167,7 +167,7 @@ export function useDeleteStatus(projectId: string) {
       queryClient.invalidateQueries({ queryKey: ["statuses", projectId] });
       toast.success("Status deleted");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to delete status");
     },
   });
@@ -177,7 +177,7 @@ export function useDeleteStatus(projectId: string) {
 export function useCreateSubtask(taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await axiosInstance.post(`/tasks/${taskId}/subtasks`, data);
       return response.data.data;
     },
@@ -190,7 +190,7 @@ export function useCreateSubtask(taskId: string) {
 export function useUpdateSubtask(taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
       const response = await axiosInstance.patch(`/subtasks/${id}`, data);
       return response.data.data;
     },
@@ -216,7 +216,7 @@ export function useDeleteSubtask(taskId: string) {
 export function useCreateComment(taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await axiosInstance.post(`/tasks/${taskId}/comments`, data);
       return response.data.data;
     },
@@ -254,6 +254,31 @@ export function useUpdateComment(taskId: string) {
   });
 }
 
+export function useToggleCommentReaction(taskId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ commentId, emoji }: { commentId: string; emoji: string }) => {
+      const response = await axiosInstance.post(`/comments/${commentId}/reactions`, { emoji });
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["reaction-users"] });
+    },
+  });
+}
+
+export function useReactionUsers(commentId: string, emoji: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ["reaction-users", commentId, emoji],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/comments/${commentId}/reactions/${encodeURIComponent(emoji)}/users`);
+      return response.data.data;
+    },
+    enabled: enabled && !!commentId && !!emoji,
+  });
+}
+
 // --- CUSTOM FIELDS ---
 export function useProjectCustomFields(projectId: string) {
   return useQuery({
@@ -269,7 +294,7 @@ export function useProjectCustomFields(projectId: string) {
 export function useCreateCustomField(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await axiosInstance.post(`/projects/${projectId}/custom-fields`, data);
       return response.data.data;
     },
@@ -354,7 +379,7 @@ export function useCreateSlackWebhook(projectId: string) {
       queryClient.invalidateQueries({ queryKey: ["slack-webhooks", projectId] });
       toast.success("Slack integration added successfully");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to add Slack integration");
     },
   });
@@ -398,7 +423,7 @@ export function useCreateTaskDependency(taskId: string) {
       queryClient.invalidateQueries({ queryKey: ["task", taskId] });
       toast.success("Dependency linked successfully");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to link dependency");
     },
   });

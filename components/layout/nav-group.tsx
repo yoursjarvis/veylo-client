@@ -20,11 +20,12 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 
-function NavGroupItem({ item, pathname }: { item: any; pathname: string }) {
-  const isActive = item.path === pathname || item.subItems?.some((sub: any) => sub.path === pathname)
+function NavGroupItem({ item, pathname }: { item: LooseRecord; pathname: string }) {
+  const isActive = item.path === pathname || (item.subItems as LooseRecord[])?.some((sub: LooseRecord) => sub.path === pathname)
   const [isOpen, setIsOpen] = useState(isActive)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing collapse state with active route
     setIsOpen(isActive)
   }, [isActive])
 
@@ -51,7 +52,7 @@ function NavGroupItem({ item, pathname }: { item: any; pathname: string }) {
           </CollapsibleTrigger>
           <CollapsibleContent>
             <SidebarMenuSub>
-              {item.subItems?.map((subItem: any) => {
+              {(item.subItems as LooseRecord[])?.map((subItem: LooseRecord) => {
                 const isSubActive = subItem.path === pathname
 
                 return (

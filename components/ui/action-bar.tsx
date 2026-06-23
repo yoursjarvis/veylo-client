@@ -155,6 +155,7 @@ function ActionBar(props: ActionBarProps) {
   const dir = dirProp ?? contextDir;
 
   React.useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Safe on mount
     setMounted(true);
   }, []);
 
@@ -401,6 +402,7 @@ function ActionBarGroup(props: DivProps) {
   const element = useRender({
     defaultTagName: "div",
     props: mergeProps<"div">(
+      // eslint-disable-next-line react-hooks/refs -- mergeProps safely handles refs
       {
         role: "group" as const,
         dir,
@@ -482,8 +484,8 @@ function ActionBarItem(props: ActionBarItemProps) {
   }, [focusContext, itemId, disabled]);
 
   const onClick: ActionBarItemProps["onClick"] = React.useCallback(
-    (event: any) => {
-      onClickProp?.(event);
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      onClickProp?.(event as LooseAny);
       if (event.defaultPrevented) return;
 
       const item = itemRef.current;
@@ -508,8 +510,8 @@ function ActionBarItem(props: ActionBarItemProps) {
   );
 
   const onFocus: ActionBarItemProps["onFocus"] = React.useCallback(
-    (event: any) => {
-      onFocusProp?.(event);
+    (event: React.FocusEvent<HTMLButtonElement>) => {
+      onFocusProp?.(event as LooseAny);
       if (event.defaultPrevented) return;
 
       focusContext.onItemFocus(itemId);
@@ -519,8 +521,8 @@ function ActionBarItem(props: ActionBarItemProps) {
   );
 
   const onKeyDown: ActionBarItemProps["onKeyDown"] = React.useCallback(
-    (event: any) => {
-      onKeyDownProp?.(event);
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      onKeyDownProp?.(event as LooseAny);
       if (event.defaultPrevented) return;
 
       if (event.key === "Tab" && event.shiftKey) {
@@ -572,8 +574,8 @@ function ActionBarItem(props: ActionBarItemProps) {
   );
 
   const onMouseDown: ActionBarItemProps["onMouseDown"] = React.useCallback(
-    (event: any) => {
-      onMouseDownProp?.(event);
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      onMouseDownProp?.(event as LooseAny);
       if (event.defaultPrevented) return;
 
       isMouseClickRef.current = true;
@@ -619,7 +621,7 @@ function ActionBarClose({
   const { onOpenChange } = useActionBarContext(CLOSE_NAME);
 
   const onCloseClick: ActionBarCloseProps["onClick"] = React.useCallback(
-    (event: any) => {
+    (event: React.MouseEvent<HTMLButtonElement>) => {
       onClick?.(event);
       if (event.defaultPrevented) return;
 

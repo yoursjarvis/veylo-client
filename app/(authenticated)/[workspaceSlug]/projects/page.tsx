@@ -8,6 +8,7 @@ import { useWorkspaceContext } from "@/components/providers/workspace-provider";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import Image from "next/image";
 import { Plus, FileText, Loader2, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -128,7 +129,7 @@ export default function ProjectsPage() {
       setNewProjectDesc("");
       setNewProjectIcon(null);
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to create project");
     },
   });
@@ -145,8 +146,8 @@ export default function ProjectsPage() {
     if (icon.startsWith("http") || icon.startsWith("/") || icon.startsWith("blob:")) {
       const thumbUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon;
       return (
-        <div className={`${baseClasses} ${sizeClass} overflow-hidden border bg-background`}>
-          <img src={thumbUrl} alt="Project Icon" className="h-full w-full object-cover" />
+        <div className={`${baseClasses} ${sizeClass} overflow-hidden border bg-background relative`}>
+          <Image src={thumbUrl} alt="Project Icon" fill className="object-cover" />
         </div>
       );
     }

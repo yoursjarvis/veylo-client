@@ -41,8 +41,8 @@ import {
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
+import Image from "next/image"
 import { useState } from "react"
 import { toast } from "sonner"
 import { IconPicker } from "@/components/shared/icon-picker"
@@ -91,8 +91,9 @@ export function WorkspaceList() {
       setIsEditModalOpen(false)
       setEditingWorkspace(null)
       toast.success("Workspace updated successfully")
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update workspace")
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Failed to update workspace")
     }
   }
 
@@ -100,8 +101,9 @@ export function WorkspaceList() {
     try {
       await deleteWorkspace.mutateAsync(id)
       toast.success("Workspace deleted successfully")
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to delete workspace")
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Failed to delete workspace")
     }
   }
 
@@ -109,7 +111,7 @@ export function WorkspaceList() {
     if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
     if (icon.startsWith("http") || icon.startsWith("/") || icon.startsWith("blob:")) {
       const thumbUrl = icon.startsWith("blob:") ? icon : (getThumbUrl(icon) || icon)
-      return <img src={thumbUrl} alt="Workspace Icon" className="h-full w-full object-cover rounded-[inherit]" />
+      return <Image src={thumbUrl} alt="Workspace Icon" width={size} height={size} className="h-full w-full object-cover rounded-[inherit]" />
     }
     return <span className="leading-none" style={{ fontSize: size }}>{icon}</span>
   }
@@ -169,7 +171,7 @@ export function WorkspaceList() {
         ) : (
           <>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              You haven't been assigned to any workspaces in this organization yet. Please ask your organization administrator or owner to add you to a workspace so you can get started.
+              You haven&apos;t been assigned to any workspaces in this organization yet. Please ask your organization administrator or owner to add you to a workspace so you can get started.
             </p>
             <div className="mt-8 w-full max-w-md rounded-lg border bg-card/80 p-5 text-left dark:border-zinc-800">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Next steps</p>

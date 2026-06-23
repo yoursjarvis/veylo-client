@@ -5,9 +5,17 @@ export interface MentionListRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
 }
 
+interface MentionItem {
+  user: {
+    id: string;
+    name?: string;
+    image?: string;
+  };
+}
+
 interface MentionListProps {
-  items: any[];
-  command: (item: any) => void;
+  items: MentionItem[];
+  command: (item: { id: string; label?: string }) => void;
 }
 
 export const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) => {

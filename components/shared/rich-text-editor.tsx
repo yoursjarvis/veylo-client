@@ -36,7 +36,7 @@ const SlashCommand = Extension.create({
     return {
       suggestion: {
         char: "/",
-        command: ({ editor, range, props }: any) => {
+        command: ({ editor, range, props }: { editor: LooseAny; range: LooseAny; props: { command: (editor: LooseAny, range: LooseAny) => void } }) => {
           props.command(editor, range);
         },
       },
@@ -57,7 +57,7 @@ interface RichTextEditorProps {
   onChange: (value: string) => void;
   onBlur?: () => void;
   placeholder?: string;
-  projectMembers?: any[];
+  projectMembers?: { user: { id: string; name?: string; image?: string } }[];
   className?: string;
   minHeight?: string;
   onSubmit?: () => void;
@@ -76,7 +76,7 @@ export function RichTextEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Helper: upload image and insert in editor
-  const uploadAndInsertImage = async (file: File, view: any) => {
+  const uploadAndInsertImage = async (file: File, view: LooseAny) => {
     const formData = new FormData();
     formData.append("file", file);
 
@@ -86,7 +86,7 @@ export function RichTextEditor({
 
     toast.promise(promise, {
       loading: "Uploading image...",
-      success: (response: any) => {
+      success: (response: { data: { data: { url: string } } }) => {
         const url = response.data.data.url;
         const { schema } = view.state;
         const node = schema.nodes.image.create({ src: url });
@@ -131,11 +131,11 @@ export function RichTextEditor({
               .slice(0, 10);
           },
           render: () => {
-            let component: any;
+            let component: LooseAny;
             let popup: TippyInstance[];
 
             return {
-              onStart: (props: any) => {
+              onStart: (props: LooseRecord) => {
                 component = new ReactRenderer(MentionList, {
                   props,
                   editor: props.editor,
@@ -154,7 +154,7 @@ export function RichTextEditor({
                 });
               },
 
-              onUpdate(props: any) {
+              onUpdate(props: LooseRecord) {
                 component.updateProps(props);
 
                 if (!props.clientRect) return;
@@ -164,13 +164,13 @@ export function RichTextEditor({
                 });
               },
 
-              onKeyDown(props: any) {
+              onKeyDown(props: { event: KeyboardEvent }) {
                 if (props.event.key === "Escape") {
                   popup[0].hide();
                   return true;
                 }
 
-                return component.ref?.onKeyDown(props);
+                return component?.ref?.onKeyDown(props) || false;
               },
 
               onExit() {
@@ -190,7 +190,7 @@ export function RichTextEditor({
                 title: "Heading 1",
                 description: "Big section heading",
                 icon: Heading1,
-                command: (ed, range) => {
+                command: (ed: LooseAny, range: LooseAny) => {
                   ed.chain().focus().deleteRange(range).setNode("heading", { level: 1 }).run();
                 },
               },
@@ -198,7 +198,7 @@ export function RichTextEditor({
                 title: "Heading 2",
                 description: "Medium section heading",
                 icon: Heading2,
-                command: (ed, range) => {
+                command: (ed: LooseAny, range: LooseAny) => {
                   ed.chain().focus().deleteRange(range).setNode("heading", { level: 2 }).run();
                 },
               },
@@ -206,7 +206,7 @@ export function RichTextEditor({
                 title: "Heading 3",
                 description: "Small section heading",
                 icon: Heading3,
-                command: (ed, range) => {
+                command: (ed: LooseAny, range: LooseAny) => {
                   ed.chain().focus().deleteRange(range).setNode("heading", { level: 3 }).run();
                 },
               },
@@ -214,7 +214,7 @@ export function RichTextEditor({
                 title: "Bullet List",
                 description: "Create a simple bulleted list",
                 icon: List,
-                command: (ed, range) => {
+                command: (ed: LooseAny, range: LooseAny) => {
                   ed.chain().focus().deleteRange(range).toggleBulletList().run();
                 },
               },
@@ -222,7 +222,7 @@ export function RichTextEditor({
                 title: "Numbered List",
                 description: "Create a list with numbering",
                 icon: ListOrdered,
-                command: (ed, range) => {
+                command: (ed: LooseAny, range: LooseAny) => {
                   ed.chain().focus().deleteRange(range).toggleOrderedList().run();
                 },
               },
@@ -230,7 +230,7 @@ export function RichTextEditor({
                 title: "Blockquote",
                 description: "Insert a quote block",
                 icon: Quote,
-                command: (ed, range) => {
+                command: (ed: LooseAny, range: LooseAny) => {
                   ed.chain().focus().deleteRange(range).toggleBlockquote().run();
                 },
               },
@@ -238,7 +238,7 @@ export function RichTextEditor({
                 title: "Code Block",
                 description: "Insert a code block",
                 icon: Code,
-                command: (ed, range) => {
+                command: (ed: LooseAny, range: LooseAny) => {
                   ed.chain().focus().deleteRange(range).toggleCodeBlock().run();
                 },
               },
@@ -249,11 +249,11 @@ export function RichTextEditor({
               .slice(0, 10);
           },
           render: () => {
-            let component: any;
+            let component: LooseAny;
             let popup: TippyInstance[];
 
             return {
-              onStart: (props: any) => {
+              onStart: (props: LooseRecord) => {
                 component = new ReactRenderer(SlashCommandList, {
                   props,
                   editor: props.editor,
@@ -272,7 +272,7 @@ export function RichTextEditor({
                 });
               },
 
-              onUpdate(props: any) {
+              onUpdate(props: LooseRecord) {
                 component.updateProps(props);
 
                 if (!props.clientRect) return;
@@ -282,13 +282,13 @@ export function RichTextEditor({
                 });
               },
 
-              onKeyDown(props: any) {
+              onKeyDown(props: { event: KeyboardEvent }) {
                 if (props.event.key === "Escape") {
                   popup[0].hide();
                   return true;
                 }
 
-                return component.ref?.onKeyDown(props);
+                return component?.ref?.onKeyDown(props) || false;
               },
 
               onExit() {

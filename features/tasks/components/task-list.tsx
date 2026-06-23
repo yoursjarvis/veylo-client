@@ -22,9 +22,20 @@ import {
 } from "lucide-react";
 
 interface TaskListProps {
-  tasks: any[];
-  statuses: any[];
-  projectMembers: any[];
+  tasks: {
+    id: string;
+    title: string;
+    description?: string;
+    statusId?: string;
+    priority: string;
+    type: string;
+    status: { name: string };
+    assignee?: { image?: string; name?: string };
+    dueDate?: string;
+    estimate?: string | number;
+  }[];
+  statuses: { id: string; name: string }[];
+  projectMembers?: unknown[];
   projectTemplate: string;
   onSelectTask: (taskId: string) => void;
 }
@@ -32,7 +43,6 @@ interface TaskListProps {
 export function TaskList({
   tasks,
   statuses,
-  projectMembers,
   projectTemplate,
   onSelectTask,
 }: TaskListProps) {
@@ -111,7 +121,7 @@ export function TaskList({
           className="bg-background border border-border rounded px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
         >
           <option value="">All Statuses</option>
-          {statuses.map((st: any) => (
+          {statuses.map((st: { id: string; name: string }) => (
             <option key={st.id} value={st.id}>
               {st.name}
             </option>

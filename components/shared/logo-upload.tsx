@@ -17,6 +17,7 @@ export function LogoUpload({ initialUrl, onUploadSuccess }: LogoUploadProps) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronize state with prop
     setUrl(initialUrl || null)
   }, [initialUrl])
 
@@ -39,7 +40,7 @@ export function LogoUpload({ initialUrl, onUploadSuccess }: LogoUploadProps) {
       setUrl(newUrl)
       toast.success("Logo uploaded successfully")
       if (onUploadSuccess) onUploadSuccess(newUrl)
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload logo")
     } finally {
       setLoading(false)

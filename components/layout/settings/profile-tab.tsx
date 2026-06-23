@@ -35,7 +35,7 @@ export function ProfileTab() {
 
       toast.success("Profile updated successfully");
       queryClient.invalidateQueries({ queryKey: authKeys.me() });
-    } catch (err) {
+    } catch {
       toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);

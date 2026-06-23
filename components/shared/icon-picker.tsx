@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import NextImage from "next/image"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Image01Icon, SmileIcon, Briefcase02Icon, Camera01Icon } from "@hugeicons/core-free-icons"
@@ -119,7 +120,7 @@ export function IconPicker({ value, onChange, disabled }: IconPickerProps) {
   const renderCurrentIcon = () => {
     if (!value) return <HugeiconsIcon icon={Briefcase02Icon} className="h-6 w-6 text-muted-foreground" />
     if (value.startsWith("http") || value.startsWith("/") || value.startsWith("blob:")) {
-      return <img src={value} alt="Icon" className="h-full w-full rounded-md object-cover" />
+      return <NextImage src={value} alt="Icon" width={48} height={48} className="h-full w-full rounded-md object-cover" />
     }
     return <span className="text-xl leading-none">{value}</span>
   }

@@ -61,7 +61,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         provider,
         callbackURL: `${window.location.origin}/org-setup`,
       })
-    } catch (error) {
+    } catch {
       toast.error("Social login failed")
     }
   }
@@ -118,7 +118,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                     type="email"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value as any}
+                    value={field.state.value as string}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="email"
@@ -142,7 +142,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                       type="password"
                       name={field.name}
                       id={field.name}
-                      value={field.state.value as any}
+                      value={field.state.value as string}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       autoComplete="current-password"

@@ -23,7 +23,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
+import { useLogout } from "@/features/auth/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import {

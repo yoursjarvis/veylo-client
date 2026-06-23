@@ -3,18 +3,14 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
-import { Badge } from "@/components/ui/badge";
 import {
-  Calendar,
   ChevronLeft,
   ChevronRight,
-  Folder,
-  Layers,
   Search,
   Sparkles,
   AlertCircle,
@@ -43,6 +39,20 @@ interface ProjectTimelineProps {
   onSelectTask: (taskId: string) => void;
 }
 
+type TimelineTask = {
+  id: string;
+  title: string;
+  projectTitle: string;
+  type: string;
+  priority: string;
+  status: { name: string; category: string };
+  createdAt: string;
+  dueDate?: string;
+  blockedByDependencies?: LooseAny[];
+  assignee?: { name?: string; image?: string };
+  deletedAt?: string;
+};
+
 type ZoomLevel = "weeks" | "months" | "quarters";
 
 export function ProjectTimeline({
@@ -66,7 +76,7 @@ export function ProjectTimeline({
 
   // 2. Fetch tasks for all projects in parallel
   const taskResults = useQueries({
-    queries: projects.map((p: any) => ({
+    queries: projects.map((p: { id: string; title: string }) => ({
       queryKey: ["tasks", p.id],
       queryFn: async () => {
         const response = await axiosInstance.get(`/projects/${p.id}/tasks`);
@@ -84,12 +94,12 @@ export function ProjectTimeline({
 
   // 3. Combine tasks across all projects
   const allProjectsTasks = useMemo(() => {
-    const list: any[] = [];
+    const list: TimelineTask[] = [];
     taskResults.forEach((r) => {
-      const data = r.data as any;
+      const data = r.data as { projectTitle: string; tasks: Omit<TimelineTask, "projectTitle">[] } | undefined;
       if (data) {
         const { projectTitle, tasks } = data;
-        tasks?.forEach((t: any) => {
+        tasks?.forEach((t: Omit<TimelineTask, "projectTitle">) => {
           list.push({
             ...t,
             projectTitle,
@@ -104,7 +114,7 @@ export function ProjectTimeline({
   const { startDate, endDate, columns } = useMemo(() => {
     let start: Date;
     let end: Date;
-    let cols: any[] = [];
+    const cols: { start: Date; end: Date; label: string; subLabel: string; parentLabel: string }[] = [];
 
     if (zoom === "weeks") {
       // 16 columns of weeks. Base date centered (index 4)
@@ -317,7 +327,7 @@ export function ProjectTimeline({
 
             {/* Task Row List */}
             <div className="divide-y divide-border/60">
-              {filteredTasks.map((task: any) => (
+              {filteredTasks.map((task: TimelineTask) => (
                 <div
                   key={task.id}
                   className="h-12 px-4 flex items-center gap-2.5 hover:bg-muted/15 transition-colors cursor-pointer min-w-0"
@@ -408,7 +418,7 @@ export function ProjectTimeline({
 
               {/* TIMELINE GRID BODY */}
               <div className="divide-y divide-border/60 relative">
-                {filteredTasks.map((task: any) => {
+                {filteredTasks.map((task: TimelineTask) => {
                   // Task schedules
                   const start = new Date(task.createdAt);
                   const end = task.dueDate ? new Date(task.dueDate) : addDays(start, 7);
@@ -467,7 +477,7 @@ export function ProjectTimeline({
                           }`}
                         >
                           <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            {task.blockedByDependencies?.length > 0 && (
+                            {(task.blockedByDependencies?.length || 0) > 0 && (
                               <Lock className="h-3 w-3 flex-shrink-0 animate-pulse text-red-200" />
                             )}
                             <span className="truncate pr-2 select-none">

@@ -33,7 +33,7 @@ export function OrgSetupWizard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     ...( {
       defaultValues: {
         name: "",
@@ -41,7 +41,7 @@ export function OrgSetupWizard() {
         workspaceName: "",
       },
       validatorAdapter: zodValidator(),
-      onSubmit: async ({ value }: any) => {
+      onSubmit: async ({ value }: { value: { name: string, slug: string, workspaceName: string } }) => {
         try {
           const formData = new FormData();
           formData.append("name", value.name);
@@ -81,7 +81,7 @@ export function OrgSetupWizard() {
           }
         }
       },
-    } as any),
+    }),
   });
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +111,7 @@ export function OrgSetupWizard() {
 
   const nextStep = async () => {
     // Simple manual validation for step 1
-    const values = form.state.values as any;
+    const values = form.state.values as { name: string, slug: string };
     if (values.name.length < 2 || !/^[a-z0-9-]+$/.test(values.slug)) {
        form.validateAllFields("change");
        return;
@@ -177,7 +177,7 @@ export function OrgSetupWizard() {
               name="name"
               validators={{ onChange: orgSetupSchema.shape.name }}
               listeners={{
-                onChange: ({ value }: any) => {
+                onChange: ({ value }: { value: string }) => {
                   const currentSlug = form.getFieldValue("slug");
                   // Auto-update slug if it's empty or matches the auto-generated pattern of the old name
                   if (!currentSlug || currentSlug === autoGenerateSlug(value.slice(0, -1))) {
@@ -195,7 +195,7 @@ export function OrgSetupWizard() {
                   <Input
                     id={field.name}
                     placeholder="e.g. Acme Corp"
-                    value={field.state.value as any}
+                    value={field.state.value as string}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                   />
@@ -219,7 +219,7 @@ export function OrgSetupWizard() {
                       id={field.name}
                       className="rounded-l-none"
                       placeholder="acme-corp"
-                      value={field.state.value as any}
+                      value={field.state.value as string}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value.toLowerCase())}
                     />
@@ -253,7 +253,7 @@ export function OrgSetupWizard() {
                   <Input
                     id={field.name}
                     placeholder="e.g. Engineering, Marketing"
-                    value={field.state.value as any}
+                    value={field.state.value as string}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                   />

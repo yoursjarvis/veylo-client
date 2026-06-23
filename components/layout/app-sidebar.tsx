@@ -4,7 +4,6 @@ import { footerNavLinks, navGroups } from "@/components/layout/app-shared";
 import { LatestChange } from "@/components/layout/latest-change";
 import { NavGroup } from "@/components/layout/nav-group";
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
-import { LogoIcon } from "@/components/shared/logo";
 import {
 	Sidebar,
 	SidebarContent,

@@ -1,6 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import Image from "next/image";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function OrganizationTab() {
 
   useEffect(() => {
     if (activeOrg) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronize form state with fetched data
       setName(activeOrg.name);
     }
   }, [activeOrg]);
@@ -41,7 +43,7 @@ export function OrganizationTab() {
 
       toast.success("Organization updated successfully");
       refetch();
-    } catch (err) {
+    } catch {
       toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -57,8 +59,8 @@ export function OrganizationTab() {
   }
 
   // Determine user role
-  const currentUserRole = activeOrg.members?.find((m: any) => m.userId === auth?.user?.id)?.role;
-  const isOwnerOrAdmin = currentUserRole === "owner" || currentUserRole === "admin" || (activeOrg as any).role === "owner" || (activeOrg as any).role === "admin";
+  const currentUserRole = activeOrg.members?.find((m: { userId?: string; role?: string }) => m.userId === auth?.user?.id)?.role;
+  const isOwnerOrAdmin = currentUserRole === "owner" || currentUserRole === "admin" || (activeOrg as { role?: string }).role === "owner" || (activeOrg as { role?: string }).role === "admin";
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -86,7 +88,7 @@ export function OrganizationTab() {
             ) : (
               <div className="h-24 w-24 rounded-lg bg-muted flex items-center justify-center border-2 border-border overflow-hidden">
                 {activeOrg.logo ? (
-                  <img src={activeOrg.logo} alt="Org Logo" className="object-contain h-full w-full" />
+                  <Image src={activeOrg.logo} alt="Org Logo" width={96} height={96} className="object-contain h-full w-full" />
                 ) : (
                   <span className="text-muted-foreground text-xs">No Logo</span>
                 )}

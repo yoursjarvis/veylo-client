@@ -89,7 +89,7 @@ export function ForgotPasswordForm() {
                 <Input
                   id={field.name}
                   type="email"
-                  value={field.state.value as any}
+                  value={field.state.value as string}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="name@example.com"

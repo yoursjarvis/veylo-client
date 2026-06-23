@@ -86,7 +86,7 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
           ? `${window.location.origin}${callbackUrl}`
           : `${window.location.origin}/org-setup`,
       })
-    } catch (error) {
+    } catch {
       toast.error("Social login failed")
     }
   }
@@ -169,7 +169,7 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
                     type="text"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value as any}
+                    value={field.state.value as string}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="given-name"
@@ -192,7 +192,7 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
                     type="text"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value as any}
+                    value={field.state.value as string}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="family-name"
@@ -216,7 +216,7 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
                       type="email"
                       name={field.name}
                       id={field.name}
-                      value={field.state.value as any}
+                      value={field.state.value as string}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       autoComplete="email"
@@ -240,7 +240,7 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
                     type="password"
                     name={field.name}
                     id={field.name}
-                    value={field.state.value as any}
+                    value={field.state.value as string}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="new-password"

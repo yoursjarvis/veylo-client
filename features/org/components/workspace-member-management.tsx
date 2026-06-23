@@ -59,7 +59,7 @@ export function WorkspaceMemberManagement({
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
 
   // Fetch Workspace Details
-  const { data: workspaces } = useQuery<any[]>({
+  const { data: workspaces } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["workspaces"],
   })
   const workspace = workspaces?.find((w) => w.id === workspaceId)
@@ -79,7 +79,7 @@ export function WorkspaceMemberManagement({
 
   // Fetch Organization Members for invitation
   const { data: orgMembersData, isLoading: isLoadingOrgMembers } =
-    useQuery<any>({
+    useQuery<{ members: OrgMember[] }>({
       queryKey: ["org-members", searchTerm],
       queryFn: async () => {
         const response = await axiosInstance.get(`/org/members`, {
@@ -105,8 +105,9 @@ export function WorkspaceMemberManagement({
       setSelectedUserIds([])
       toast.success("Members added successfully")
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to add members")
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Failed to add members")
     },
   })
 
@@ -121,8 +122,9 @@ export function WorkspaceMemberManagement({
       queryClient.invalidateQueries({ queryKey: ["workspaces"] })
       toast.success("Member removed successfully")
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to remove member")
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Failed to remove member")
     },
   })
 
@@ -232,7 +234,7 @@ export function WorkspaceMemberManagement({
                     No members found
                   </div>
                 ) : (
-                  orgMembersData?.members?.map((member: any) => {
+                  orgMembersData?.members?.map((member: OrgMember) => {
                     const isAlreadyInWorkspace = members?.some(
                       (m) => m.userId === member.user.id
                     )

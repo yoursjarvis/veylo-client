@@ -49,8 +49,9 @@ export function CreateWorkspaceModal() {
       setIsCreateModalOpen(false)
       setNewWorkspace({ name: "", slug: "" })
       toast.success("Workspace created successfully")
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create workspace")
+    } catch (error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      toast.error(axiosError.response?.data?.message || "Failed to create workspace")
     }
   }
 

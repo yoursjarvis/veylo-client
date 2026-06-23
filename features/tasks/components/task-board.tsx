@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { useCreateTask } from "../hooks/use-tasks";
-import { Card } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,10 @@ import {
 
 interface TaskBoardProps {
   projectId: string;
-  tasks: any[];
-  statuses: any[];
-  projectMembers: any[];
-  sprints: any[];
+  tasks: { id: string; sprintId: string | null; statusId: string; type: string; title: string; priority: string; estimate?: number; dueDate?: string; assignee?: { name?: string; image?: string } }[];
+  statuses: { id: string; name: string }[];
+  projectMembers: Record<string, unknown>[];
+  sprints: Record<string, unknown>[];
   projectTemplate: string;
   activeSprintId?: string | null;
   onSelectTask: (taskId: string) => void;
@@ -31,8 +31,6 @@ export function TaskBoard({
   projectId,
   tasks,
   statuses,
-  projectMembers,
-  sprints,
   projectTemplate,
   activeSprintId,
   onSelectTask,
@@ -107,7 +105,7 @@ export function TaskBoard({
 
   return (
     <div className="flex-1 flex gap-4 overflow-x-auto min-h-0 py-2">
-      {statuses.map((status: any) => {
+      {statuses.map((status: { id: string; name: string }) => {
         const columnTasks = boardTasks.filter((t) => t.statusId === status.id);
         return (
           <div
@@ -180,7 +178,7 @@ export function TaskBoard({
                   Drag tasks here
                 </div>
               ) : (
-                columnTasks.map((task: any) => (
+                columnTasks.map((task: { id: string; sprintId: string | null; statusId: string; type: string; title: string; priority: string; estimate?: number; dueDate?: string; assignee?: { name?: string; image?: string } }) => (
                   <div
                     key={task.id}
                     draggable
