@@ -3,8 +3,10 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { useCreateTask } from "../hooks/use-tasks";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/reui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +37,23 @@ export function TaskBoard({
   activeSprintId,
   onSelectTask,
 }: TaskBoardProps) {
+  const queryClient = useQueryClient();
   const createTaskMutation = useCreateTask(projectId);
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, statusId }: { taskId: string; statusId: string }) => {
+      const response = await axiosInstance.patch(`/tasks/${taskId}`, { statusId });
+      return response.data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["task", variables.taskId] });
+      toast.success("Task status updated");
+    },
+    onError: (err: LooseAny) => {
+      toast.error(err.response?.data?.message || "Failed to update task status");
+    },
+  });
 
   // Tracks which column has an active "quick add" text field
   const [quickAddStatusId, setQuickAddStatusId] = useState<string | null>(null);
@@ -82,13 +100,13 @@ export function TaskBoard({
   const getPriorityBadge = (prio: string) => {
     switch (prio) {
       case "urgent":
-        return <Badge className="bg-red-950 text-red-400 border border-red-800 text-[10px] uppercase font-bold py-0">Urgent</Badge>;
+        return <Badge variant="destructive-light">Urgent</Badge>;
       case "high":
-        return <Badge className="bg-amber-950 text-amber-400 border border-amber-800 text-[10px] uppercase font-bold py-0">High</Badge>;
+        return <Badge variant="rose-light">High</Badge>;
       case "medium":
-        return <Badge className="bg-yellow-950 text-yellow-500 border border-yellow-800/40 text-[10px] uppercase font-bold py-0">Medium</Badge>;
+        return <Badge variant="info-light" className="uppercase font-bold">Medium</Badge>;
       default:
-        return <Badge className="bg-muted text-muted-foreground text-[10px] uppercase font-bold py-0">Low</Badge>;
+        return <Badge variant="default" className="uppercase font-bold">Low</Badge>;
     }
   };
 
@@ -115,11 +133,7 @@ export function TaskBoard({
               e.preventDefault();
               const taskId = e.dataTransfer.getData("text/plain");
               if (!taskId) return;
-              // Trigger local mutate for drag-and-drop
-              axiosInstance.patch(`/tasks/${taskId}`, { statusId: status.id }).then(() => {
-                // Invalidate query
-                window.location.reload(); // Simple refetch fallback
-              });
+              updateTaskMutation.mutate({ taskId, statusId: status.id });
             }}
             className="w-[280px] flex-shrink-0 flex flex-col bg-card rounded-xl border border-border p-3 h-full max-h-[70vh] shadow-lg backdrop-blur-md"
           >
@@ -130,6 +144,7 @@ export function TaskBoard({
                 <Badge className="bg-muted hover:bg-muted text-muted-foreground text-[10px] px-1.5 py-0">
                   {columnTasks.length}
                 </Badge>
+
               </div>
               <Button
                 variant="ghost"

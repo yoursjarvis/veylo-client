@@ -443,3 +443,182 @@ export function useDeleteTaskDependency(taskId: string) {
   });
 }
 
+// --- EPICS ---
+export function useProjectEpics(projectId: string) {
+  return useQuery({
+    queryKey: ["epics", projectId],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/projects/${projectId}/epics`);
+      return response.data.data;
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useEpicDetails(epicId: string | null) {
+  return useQuery({
+    queryKey: ["epic", epicId],
+    queryFn: async () => {
+      if (!epicId) return null;
+      const response = await axiosInstance.get(`/epics/${epicId}`);
+      return response.data.data;
+    },
+    enabled: !!epicId,
+  });
+}
+
+export function useCreateEpic(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const response = await axiosInstance.post(`/projects/${projectId}/epics`, data);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["epics", projectId] });
+      toast.success("Epic created successfully");
+    },
+  });
+}
+
+export function useUpdateEpic(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+      const response = await axiosInstance.patch(`/epics/${id}`, data);
+      return response.data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["epics", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["epic", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      toast.success("Epic updated");
+    },
+  });
+}
+
+export function useDeleteEpic(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (epicId: string) => {
+      await axiosInstance.delete(`/epics/${epicId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["epics", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      toast.success("Epic deleted");
+    },
+  });
+}
+
+// --- LABELS ---
+export function useProjectLabels(projectId: string) {
+  return useQuery({
+    queryKey: ["labels", projectId],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/projects/${projectId}/labels`);
+      return response.data.data;
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useCreateLabel(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const response = await axiosInstance.post(`/projects/${projectId}/labels`, data);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
+      toast.success("Label created");
+    },
+  });
+}
+
+export function useUpdateLabel(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+      const response = await axiosInstance.patch(`/labels/${id}`, data);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      toast.success("Label updated");
+    },
+  });
+}
+
+export function useDeleteLabel(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (labelId: string) => {
+      await axiosInstance.delete(`/labels/${labelId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      toast.success("Label deleted");
+    },
+  });
+}
+
+// --- MILESTONES ---
+export function useProjectMilestones(projectId: string) {
+  return useQuery({
+    queryKey: ["milestones", projectId],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/projects/${projectId}/milestones`);
+      return response.data.data;
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useCreateMilestone(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const response = await axiosInstance.post(`/projects/${projectId}/milestones`, data);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["milestones", projectId] });
+      toast.success("Milestone created");
+    },
+  });
+}
+
+export function useUpdateMilestone(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+      const response = await axiosInstance.patch(`/milestones/${id}`, data);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["milestones", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      toast.success("Milestone updated");
+    },
+  });
+}
+
+export function useDeleteMilestone(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (milestoneId: string) => {
+      await axiosInstance.delete(`/milestones/${milestoneId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["milestones", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      toast.success("Milestone deleted");
+    },
+  });
+}
+
+

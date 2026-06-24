@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { format } from "date-fns";
+import { format, isPast, isToday } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,11 @@ import {
   Bug,
   Sparkles,
   ChevronRight,
-  Clock,
+  ChevronDown,
+  Calendar,
+  AlertCircle,
+  CheckCircle2,
+  Circle
 } from "lucide-react";
 
 interface TaskListProps {
@@ -51,6 +55,16 @@ export function TaskList({
   const [priorityFilter, setPriorityFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
 
+  // Track collapsed status sections
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (statusId: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [statusId]: !prev[statusId],
+    }));
+  };
+
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -66,13 +80,13 @@ export function TaskList({
   const getPriorityBadge = (prio: string) => {
     switch (prio) {
       case "urgent":
-        return <Badge className="bg-red-950 text-red-400 border border-red-800 text-[10px] uppercase font-bold py-0.5">Urgent</Badge>;
+        return <Badge className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Urgent</Badge>;
       case "high":
-        return <Badge className="bg-amber-950 text-amber-400 border border-amber-800 text-[10px] uppercase font-bold py-0.5">High</Badge>;
+        return <Badge className="bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">High</Badge>;
       case "medium":
-        return <Badge className="bg-yellow-950 text-yellow-500 border border-yellow-800/40 text-[10px] uppercase font-bold py-0.5">Medium</Badge>;
+        return <Badge className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Medium</Badge>;
       default:
-        return <Badge className="bg-muted text-muted-foreground text-[10px] uppercase font-bold py-0.5">Low</Badge>;
+        return <Badge className="bg-muted border border-border text-muted-foreground text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Low</Badge>;
     }
   };
 
@@ -80,27 +94,44 @@ export function TaskList({
     switch (type) {
       case "bug":
         return (
-          <div className="flex items-center gap-1.5 text-xs text-red-400 font-semibold">
+          <div className="flex items-center gap-1.5 text-xs text-red-500 dark:text-red-400 font-semibold">
             <Bug size={12} /> <span>Bug</span>
           </div>
         );
       case "feature":
         return (
-          <div className="flex items-center gap-1.5 text-xs text-violet-400 font-semibold">
+          <div className="flex items-center gap-1.5 text-xs text-violet-500 dark:text-violet-400 font-semibold">
             <Sparkles size={12} /> <span>Feature</span>
           </div>
         );
       default:
         return (
-          <div className="flex items-center gap-1.5 text-xs text-foreground font-semibold">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
             <ChevronRight size={12} /> <span>Task</span>
           </div>
         );
     }
   };
 
+  const getDueDateDisplay = (dueDateStr?: string) => {
+    if (!dueDateStr) return <span className="text-muted-foreground">-</span>;
+    const date = new Date(dueDateStr);
+    const past = isPast(date) && !isToday(date);
+    return (
+      <div className={`flex items-center gap-1.5 text-xs font-medium ${past ? "text-rose-500" : "text-muted-foreground"}`}>
+        <Calendar size={12} className={past ? "text-rose-500" : "text-muted-foreground"} />
+        <span>{format(date, "MMM d")}</span>
+      </div>
+    );
+  };
+
+  // Group tasks by status for the Asana style sections
+  // If a task statusId is not in statuses list, it goes to the first status or a default list
+  const activeStatuses = statuses.length > 0 ? statuses : [{ id: "unknown", name: "Backlog" }];
+
   return (
-    <div className="space-y-4 flex-1 flex flex-col min-h-0">
+    <div className="space-y-6 flex-1 flex flex-col min-h-0">
+
       {/* Filters Toolbar */}
       <div className="flex flex-wrap gap-3 items-center bg-card p-3 rounded-xl border border-border">
         {/* Search */}
@@ -110,7 +141,7 @@ export function TaskList({
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-background border-border text-xs text-foreground"
+            className="pl-9 bg-background border-border text-xs text-foreground placeholder-muted-foreground focus-visible:ring-primary"
           />
         </div>
 
@@ -118,10 +149,10 @@ export function TaskList({
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-background border border-border rounded px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+          className="bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
         >
           <option value="">All Statuses</option>
-          {statuses.map((st: { id: string; name: string }) => (
+          {statuses.map((st) => (
             <option key={st.id} value={st.id}>
               {st.name}
             </option>
@@ -132,7 +163,7 @@ export function TaskList({
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="bg-background border border-border rounded px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+          className="bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
         >
           <option value="">All Priorities</option>
           <option value="low">Low</option>
@@ -145,7 +176,7 @@ export function TaskList({
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="bg-background border border-border rounded px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+          className="bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
         >
           <option value="">All Types</option>
           <option value="task">Task</option>
@@ -154,83 +185,142 @@ export function TaskList({
         </select>
       </div>
 
-      {/* Table Content */}
-      <div className="flex-1 overflow-y-auto border border-border rounded-xl bg-background">
-        <Table>
-          <TableHeader className="bg-card sticky top-0 border-b border-border">
-            <TableRow className="hover:bg-transparent border-border">
-              <TableHead className="text-muted-foreground font-semibold text-xs">Title</TableHead>
-              <TableHead className="text-muted-foreground font-semibold text-xs w-[120px]">Type</TableHead>
-              <TableHead className="text-muted-foreground font-semibold text-xs w-[120px]">Status</TableHead>
-              <TableHead className="text-muted-foreground font-semibold text-xs w-[110px]">Priority</TableHead>
-              <TableHead className="text-muted-foreground font-semibold text-xs w-[140px]">Assignee</TableHead>
-              <TableHead className="text-muted-foreground font-semibold text-xs w-[110px]">Due Date</TableHead>
-              {projectTemplate !== "simple" && (
-                <TableHead className="text-muted-foreground font-semibold text-xs w-[80px]">Est.</TableHead>
+      {/* Grouped Table Sections */}
+      <div className="space-y-4 overflow-y-auto pr-1">
+        {activeStatuses.map((status) => {
+          const statusTasks = filteredTasks.filter((t) => t.statusId === status.id || (!t.statusId && status.id === activeStatuses[0].id));
+          const isCollapsed = collapsedSections[status.id];
+          const hasTasks = statusTasks.length > 0;
+
+          // Don't show empty statuses if we are filtering, unless it's the only status
+          if (statusFilter && statusFilter !== status.id && !hasTasks) return null;
+
+          return (
+            <div key={status.id} className="border border-border bg-card rounded-xl overflow-hidden shadow-sm">
+
+              {/* Group Header */}
+              <div
+                onClick={() => toggleSection(status.id)}
+                className="flex items-center gap-2.5 px-4 py-3 bg-muted/50 border-b border-border cursor-pointer select-none group"
+              >
+                {isCollapsed ? (
+                  <ChevronRight size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                ) : (
+                  <ChevronDown size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                )}
+                <span className="text-xs font-extrabold uppercase tracking-widest text-foreground">{status.name}</span>
+                <span className="text-[10px] bg-muted border border-border text-muted-foreground font-bold px-2 py-0.5 rounded-full">
+                  {statusTasks.length}
+                </span>
+              </div>
+
+              {/* Group Table View */}
+              {!isCollapsed && (
+                <div className="overflow-x-auto w-full">
+                  <Table>
+                    <TableHeader className="bg-muted/20 border-b border-border">
+                      <TableRow className="hover:bg-transparent border-border">
+                        <TableHead className="text-muted-foreground font-bold text-[10px] uppercase tracking-wider pl-4">Task Name</TableHead>
+                        <TableHead className="text-muted-foreground font-bold text-[10px] uppercase tracking-wider w-[140px]">Assignee</TableHead>
+                        <TableHead className="text-muted-foreground font-bold text-[10px] uppercase tracking-wider w-[120px]">Due Date</TableHead>
+                        <TableHead className="text-muted-foreground font-bold text-[10px] uppercase tracking-wider w-[110px]">Priority</TableHead>
+                        <TableHead className="text-muted-foreground font-bold text-[10px] uppercase tracking-wider w-[110px]">Category</TableHead>
+                        {projectTemplate !== "simple" && (
+                          <TableHead className="text-muted-foreground font-bold text-[10px] uppercase tracking-wider w-[80px]">Est.</TableHead>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {statusTasks.length === 0 ? (
+                        <TableRow className="hover:bg-transparent">
+                          <TableCell
+                            colSpan={projectTemplate === "simple" ? 5 : 6}
+                            className="h-14 text-center text-muted-foreground text-xs italic"
+                          >
+                            No tasks in this section.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        statusTasks.map((task) => {
+                          const isDone = task.status?.name?.toLowerCase() === "done" || task.status?.name?.toLowerCase() === "completed";
+                          return (
+                            <TableRow
+                              key={task.id}
+                              onClick={() => onSelectTask(task.id)}
+                              className="hover:bg-muted/50 border-border cursor-pointer transition-colors"
+                            >
+                              {/* Task Title with Checkbox */}
+                              <TableCell className="font-semibold text-foreground text-xs py-3 pl-4 max-w-[280px]">
+                                <div className="flex items-center gap-2.5">
+                                  {isDone ? (
+                                    <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                                  ) : (
+                                    <Circle size={16} className="text-muted-foreground hover:text-primary transition-colors shrink-0" />
+                                  )}
+                                  <span className={`truncate ${isDone ? "line-through text-muted-foreground font-normal" : "text-foreground"}`}>
+                                    {task.title}
+                                  </span>
+                                </div>
+                              </TableCell>
+
+                              {/* Assignee */}
+                              <TableCell className="py-3">
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-5.5 w-5.5 border border-border">
+                                    <AvatarImage src={task.assignee?.image || ""} />
+                                    <AvatarFallback className="bg-muted text-muted-foreground text-[8px] font-bold">
+                                      {task.assignee?.name ? task.assignee.name.charAt(0).toUpperCase() : "?"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-xs text-foreground truncate max-w-[100px]">
+                                    {task.assignee?.name || <span className="text-muted-foreground italic">Unassigned</span>}
+                                  </span>
+                                </div>
+                              </TableCell>
+
+                              {/* Due Date */}
+                              <TableCell className="py-3">
+                                {getDueDateDisplay(task.dueDate)}
+                              </TableCell>
+
+                              {/* Priority */}
+                              <TableCell className="py-3">
+                                {getPriorityBadge(task.priority)}
+                              </TableCell>
+
+                              {/* Category */}
+                              <TableCell className="py-3">
+                                {getTypeBadge(task.type)}
+                              </TableCell>
+
+                              {/* Estimate */}
+                              {projectTemplate !== "simple" && (
+                                <TableCell className="py-3 font-mono text-xs text-foreground">
+                                  {task.estimate ?? <span className="text-muted-foreground">-</span>}
+                                </TableCell>
+                              )}
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTasks.length === 0 ? (
-              <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={projectTemplate === "simple" ? 6 : 7}
-                  className="h-28 text-center text-muted-foreground text-xs"
-                >
-                  No tasks match the selected filters.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredTasks.map((task) => (
-                <TableRow
-                  key={task.id}
-                  onClick={() => onSelectTask(task.id)}
-                  className="hover:bg-muted border-border cursor-pointer"
-                >
-                  <TableCell className="font-semibold text-foreground text-xs py-3 max-w-[200px] truncate">
-                    {task.title}
-                  </TableCell>
-                  <TableCell className="py-3">{getTypeBadge(task.type)}</TableCell>
-                  <TableCell className="py-3">
-                    <Badge className="bg-muted text-foreground border border-border text-[10px] px-2 py-0">
-                      {task.status.name}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-3">{getPriorityBadge(task.priority)}</TableCell>
-                  <TableCell className="py-3">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-5 w-5 border border-border">
-                        <AvatarImage src={task.assignee?.image || ""} />
-                        <AvatarFallback className="bg-muted text-muted-foreground text-[8px] font-bold">
-                          {task.assignee?.name ? task.assignee.name.charAt(0).toUpperCase() : "-"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs text-foreground truncate max-w-[100px]">
-                        {task.assignee?.name || <span className="text-muted-foreground text-[10px]">Unassigned</span>}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3">
-                    {task.dueDate ? (
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Clock size={12} className="text-muted-foreground/60" />
-                        <span>{format(new Date(task.dueDate), "MMM d, yyyy")}</span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground/60 text-xs">-</span>
-                    )}
-                  </TableCell>
-                  {projectTemplate !== "simple" && (
-                    <TableCell className="py-3 font-mono text-xs text-foreground">
-                      {task.estimate ?? "-"}
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+
+            </div>
+          );
+        })}
+
+        {filteredTasks.length === 0 && (
+          <div className="text-center py-12 border border-dashed border-border rounded-xl bg-muted/20">
+            <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-xs font-semibold text-muted-foreground">No tasks match your search criteria</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Try clearing filters or checking other task boards.</p>
+          </div>
+        )}
       </div>
+
     </div>
   );
 }

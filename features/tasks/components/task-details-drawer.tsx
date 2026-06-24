@@ -57,6 +57,9 @@ interface TaskDetailsDrawerProps {
   projectStatuses: LooseRecord[];
   projectSprints: LooseRecord[];
   projectTemplate: string;
+  projectEpics?: LooseRecord[];
+  projectMilestones?: LooseRecord[];
+  projectLabels?: LooseRecord[];
   onClose: () => void;
 }
 
@@ -67,6 +70,9 @@ export function TaskDetailsDrawer({
   projectStatuses,
   projectSprints,
   projectTemplate,
+  projectEpics = [],
+  projectMilestones = [],
+  projectLabels = [],
   onClose,
 }: TaskDetailsDrawerProps) {
   const { data: task, isLoading } = useTaskDetails(taskId);
@@ -709,6 +715,76 @@ export function TaskDetailsDrawer({
                 </Popover>
               </div>
 
+              {/* Epic */}
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground block">Epic / Goal</span>
+                <select
+                  value={task?.epicId || ""}
+                  onChange={(e) => handleFieldChange("epicId", e.target.value || null)}
+                  className="w-full bg-card border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-primary"
+                >
+                  <option value="">No Epic</option>
+                  {projectEpics.map((ep: LooseRecord) => (
+                    <option key={ep.id} value={ep.id}>
+                      {ep.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Milestone */}
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground block">Milestone</span>
+                <select
+                  value={task?.milestoneId || ""}
+                  onChange={(e) => handleFieldChange("milestoneId", e.target.value || null)}
+                  className="w-full bg-card border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-primary"
+                >
+                  <option value="">No Milestone</option>
+                  {projectMilestones.map((ms: LooseRecord) => (
+                    <option key={ms.id} value={ms.id}>
+                      {ms.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Labels */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground block">Labels</span>
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {projectLabels.map((lbl: LooseRecord) => {
+                    const taskLabels = task?.labels || [];
+                    const isSelected = taskLabels.some((tl: LooseRecord) => tl.labelId === lbl.id);
+                    return (
+                      <button
+                        key={lbl.id}
+                        type="button"
+                        onClick={() => {
+                          const currentIds = taskLabels.map((tl: LooseRecord) => tl.labelId);
+                          const nextIds = isSelected
+                            ? currentIds.filter((id: string) => id !== lbl.id)
+                            : [...currentIds, lbl.id];
+                          handleFieldChange("labelIds", nextIds);
+                        }}
+                        className={cn(
+                          "text-[9px] font-bold px-2 py-0.5 rounded-full border transition-all",
+                          isSelected
+                            ? "shadow-sm border-transparent"
+                            : "bg-transparent text-muted-foreground border-border hover:bg-muted"
+                        )}
+                        style={isSelected ? { backgroundColor: lbl.color } : {}}
+                      >
+                        {lbl.name}
+                      </button>
+                    );
+                  })}
+                  {projectLabels.length === 0 && (
+                    <span className="text-[10px] text-muted-foreground italic">No labels created</span>
+                  )}
+                </div>
+              </div>
+
               {/* Custom Fields Editor */}
               {customFieldDefinitions && customFieldDefinitions.length > 0 && (
                 <div className="space-y-4 border-t border-border pt-4">
@@ -899,7 +975,7 @@ const CommentNode = ({
               </span>
             </div>
           </div>
-          
+
           {editingCommentId === comment.id ? (
             <div className="space-y-2 mt-2">
               <RichTextEditor
@@ -965,8 +1041,8 @@ const CommentNode = ({
                 </Popover>
               </div>
 
-              <div 
-                className="text-xs text-foreground ProseMirror max-w-full overflow-hidden mb-2" 
+              <div
+                className="text-xs text-foreground ProseMirror max-w-full overflow-hidden mb-2"
                 dangerouslySetInnerHTML={{ __html: comment.content }}
               />
 
@@ -980,8 +1056,8 @@ const CommentNode = ({
                       onClick={() => handleToggleReaction(emoji)}
                       className={cn(
                         "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs border transition-colors",
-                        data.userHasReacted 
-                          ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" 
+                        data.userHasReacted
+                          ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
                           : "bg-muted/50 border-border hover:bg-muted"
                       )}
                     >

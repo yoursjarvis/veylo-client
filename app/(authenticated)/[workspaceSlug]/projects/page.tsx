@@ -9,7 +9,7 @@ import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import Image from "next/image";
-import { Plus, FileText, Loader2, AlertCircle } from "lucide-react";
+import { Plus, FileText, Loader2, AlertCircle, Layers, Kanban, UserPlus, Megaphone, DollarSign, Map, ClipboardList } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { IconPicker } from "@/components/shared/icon-picker";
-import { getThumbUrl } from "@/lib/utils";
+import { getThumbUrl, cn } from "@/lib/utils";
 
 interface Project {
   id: string;
@@ -53,6 +53,37 @@ interface WorkspaceMember {
   };
 }
 
+interface ProjectTemplate {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  category: string;
+  isSystem: boolean;
+  config: Record<string, unknown>;
+}
+
+const getTemplateIcon = (iconName: string | null) => {
+  switch (iconName) {
+    case "Layers":
+      return <Layers className="h-5 w-5" />;
+    case "Kanban":
+      return <Kanban className="h-5 w-5" />;
+    case "UserPlus":
+      return <UserPlus className="h-5 w-5" />;
+    case "Megaphone":
+      return <Megaphone className="h-5 w-5" />;
+    case "DollarSign":
+      return <DollarSign className="h-5 w-5" />;
+    case "Map":
+      return <Map className="h-5 w-5" />;
+    case "ClipboardList":
+    default:
+      return <ClipboardList className="h-5 w-5" />;
+  }
+};
+
 export default function ProjectsPage() {
   const params = useParams<{ workspaceSlug: string }>();
   const router = useRouter();
@@ -67,6 +98,7 @@ export default function ProjectsPage() {
   const [newProjectTitle, setNewProjectTitle] = useState("");
   const [newProjectDesc, setNewProjectDesc] = useState("");
   const [newProjectIcon, setNewProjectIcon] = useState<string | File | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState("general-project");
 
   // Queries
   const { data: projects, isLoading: isProjectsLoading } = useQuery<Project[]>({
@@ -89,6 +121,14 @@ export default function ProjectsPage() {
     enabled: !!activeWorkspace,
   });
 
+  const { data: templates } = useQuery<ProjectTemplate[]>({
+    queryKey: ["project-templates"],
+    queryFn: async () => {
+      const response = await axiosInstance.get("/project-templates");
+      return response.data.data;
+    },
+  });
+
   // Permissions Check
   const userRole = activeMember?.role;
   const isOrgAdmin = userRole === "owner" || userRole === "admin";
@@ -107,12 +147,13 @@ export default function ProjectsPage() {
 
   // Mutations
   const createProjectMutation = useMutation({
-    mutationFn: async (data: { title: string; description?: string; icon?: string | File | null }) => {
+    mutationFn: async (data: { title: string; description?: string; icon?: string | File | null; template: string }) => {
       const isFile = data.icon instanceof File;
       const res = await axiosInstance.post(`/workspaces/${activeWorkspace?.id}/projects`, {
         title: data.title,
         description: data.description,
         icon: !isFile ? (data.icon as string | null) : undefined,
+        template: data.template,
       });
       const createdProject = res.data.data;
       if (isFile && data.icon) {
@@ -128,6 +169,7 @@ export default function ProjectsPage() {
       setNewProjectTitle("");
       setNewProjectDesc("");
       setNewProjectIcon(null);
+      setSelectedTemplate("general-project");
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to create project");
@@ -197,53 +239,106 @@ export default function ProjectsPage() {
                   </Button>
                 }
               />
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[650px] bg-card border-border text-foreground">
                 <DialogHeader>
                   <DialogTitle>Create Project</DialogTitle>
                   <DialogDescription>
                     Add a new project to the workspace. Fill in the details below.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <label htmlFor="title" className="text-sm font-semibold">
-                      Title <span className="text-destructive">*</span>
-                    </label>
-                    <Input
-                      id="title"
-                      placeholder="e.g. Payment Gateway Integration"
-                      value={newProjectTitle}
-                      onChange={(e) => setNewProjectTitle(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="desc" className="text-sm font-semibold">
-                      Description
-                    </label>
-                    <Textarea
-                      id="desc"
-                      placeholder="Project description, objectives, or helpful details..."
-                      value={newProjectDesc}
-                      onChange={(e) => setNewProjectDesc(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="icon" className="text-sm font-semibold">
-                      Project Icon
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <IconPicker
-                        value={newProjectIcon instanceof File ? URL.createObjectURL(newProjectIcon) : (newProjectIcon as string | null)}
-                        onChange={(val) => setNewProjectIcon(val)}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+                  {/* Identity Fields */}
+                  <div className="space-y-4">
+                    <div className="grid gap-1.5">
+                      <label htmlFor="title" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Title <span className="text-destructive">*</span>
+                      </label>
+                      <Input
+                        id="title"
+                        placeholder="e.g. Payment Gateway Integration"
+                        value={newProjectTitle}
+                        onChange={(e) => setNewProjectTitle(e.target.value)}
+                        className="bg-background border-border text-xs h-9"
                       />
-                      <span className="text-xs text-muted-foreground">
-                        Choose an emoji or upload an image.
-                      </span>
+                    </div>
+                    <div className="grid gap-1.5">
+                      <label htmlFor="desc" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Description
+                      </label>
+                      <Textarea
+                        id="desc"
+                        placeholder="Project description, objectives, or helpful details..."
+                        value={newProjectDesc}
+                        onChange={(e) => setNewProjectDesc(e.target.value)}
+                        className="bg-background border-border text-xs min-h-[100px]"
+                      />
+                    </div>
+                    <div className="grid gap-1.5">
+                      <label htmlFor="icon" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Project Icon
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <IconPicker
+                          value={newProjectIcon instanceof File ? URL.createObjectURL(newProjectIcon) : (newProjectIcon as string | null)}
+                          onChange={(val) => setNewProjectIcon(val)}
+                        />
+                        <span className="text-[11px] text-muted-foreground leading-normal">
+                          Choose an emoji or upload an image logo.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Template Picker Grid */}
+                  <div className="space-y-3 flex flex-col min-h-0">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Select Project Template
+                    </label>
+                    <div className="flex-1 overflow-y-auto max-h-[260px] pr-1 space-y-2">
+                      {templates?.map((tpl) => {
+                        const isSelected = selectedTemplate === tpl.slug;
+                        return (
+                          <button
+                            key={tpl.id}
+                            type="button"
+                            onClick={() => setSelectedTemplate(tpl.slug)}
+                            className={cn(
+                              "w-full text-left p-3 rounded-lg border text-xs transition-all flex items-start gap-3",
+                              isSelected
+                                ? "bg-primary/10 border-primary shadow-sm"
+                                : "bg-background border-border hover:bg-muted/50"
+                            )}
+                          >
+                            <div className={cn(
+                              "p-2 rounded-lg border",
+                              isSelected ? "bg-primary/20 border-primary/30" : "bg-card border-border"
+                            )}>
+                              {getTemplateIcon(tpl.icon)}
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-semibold text-foreground text-xs leading-none">{tpl.name}</span>
+                                <Badge variant="outline" className="text-[9px] uppercase py-0 leading-none">
+                                  {tpl.category}
+                                </Badge>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+                                {tpl.description}
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                      {templates?.length === 0 && (
+                        <div className="py-6 text-center text-xs text-muted-foreground italic border rounded-lg border-dashed">
+                          No project templates found
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+                <DialogFooter className="border-t border-border pt-4">
+                  <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="text-xs h-9">
                     Cancel
                   </Button>
                   <Button
@@ -253,11 +348,13 @@ export default function ProjectsPage() {
                         title: newProjectTitle,
                         description: newProjectDesc,
                         icon: newProjectIcon || "📁",
+                        template: selectedTemplate,
                       })
                     }
+                    className="text-xs h-9"
                   >
                     {createProjectMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create
+                    Create Project
                   </Button>
                 </DialogFooter>
               </DialogContent>

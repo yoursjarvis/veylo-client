@@ -65,9 +65,10 @@ interface IconPickerProps {
   value?: string | null
   onChange: (value: string | File) => void
   disabled?: boolean
+  children?: React.ReactNode
 }
 
-export function IconPicker({ value, onChange, disabled }: IconPickerProps) {
+export function IconPicker({ value, onChange, disabled, children }: IconPickerProps) {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState<"emoji" | "image">("emoji")
 
@@ -130,13 +131,17 @@ export function IconPicker({ value, onChange, disabled }: IconPickerProps) {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={
-            <button
-              type="button"
-              disabled={disabled}
-              className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/50 transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {renderCurrentIcon()}
-            </button>
+            children ? (
+              children as React.ReactElement
+            ) : (
+              <button
+                type="button"
+                disabled={disabled}
+                className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/50 transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {renderCurrentIcon()}
+              </button>
+            )
           }
         />
         <PopoverContent className="w-64 p-2" align="start">

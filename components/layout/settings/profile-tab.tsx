@@ -2,7 +2,7 @@
 
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,37 +10,50 @@ import { toast } from "sonner";
 import { AvatarUpload } from "@/components/shared/avatar-upload";
 import { useQueryClient } from "@tanstack/react-query";
 import { authKeys } from "@/features/auth/hooks/use-auth";
+import { useForm } from "@tanstack/react-form";
 
 export function ProfileTab() {
   const { data: auth } = useCurrentUser();
   const queryClient = useQueryClient();
-  const [firstName, setFirstName] = useState(auth?.user?.firstName || "");
-  const [lastName, setLastName] = useState(auth?.user?.lastName || "");
   const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const user = auth?.user;
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await authClient.updateUser({
-        name: `${firstName} ${lastName}`.trim(),
-      });
+  const form = useForm({
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+    },
+    onSubmit: async ({ value }) => {
+      setLoading(true);
+      setValidationErrors({});
+      try {
+        const { error } = await authClient.updateUser({
+          name: `${value.firstName} ${value.lastName}`.trim(),
+        });
 
-      if (error) {
-        toast.error(error.message || "Failed to update profile");
-        return;
+        if (error) {
+          toast.error(error.message || "Failed to update profile");
+          return;
+        }
+
+        toast.success("Profile updated successfully");
+        queryClient.invalidateQueries({ queryKey: authKeys.me() });
+      } catch {
+        toast.error("An unexpected error occurred");
+      } finally {
+        setLoading(false);
       }
+    },
+  });
 
-      toast.success("Profile updated successfully");
-      queryClient.invalidateQueries({ queryKey: authKeys.me() });
-    } catch {
-      toast.error("An unexpected error occurred");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (user) {
+      form.setFieldValue("firstName", user.firstName || "");
+      form.setFieldValue("lastName", user.lastName || "");
     }
-  };
+  }, [user, form]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -68,26 +81,92 @@ export function ProfileTab() {
           </div>
         </div>
 
-        <form onSubmit={handleUpdateProfile} className="space-y-4 max-w-md">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-4 max-w-md"
+        >
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                id="firstName"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="John"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                id="lastName"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Doe"
-              />
-            </div>
+            <form.Field
+              name="firstName"
+              validators={{
+                onChange: ({ value }) => {
+                  if (!value.trim()) return "First name is required";
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => {
+                const fieldErrors: string[] = [];
+                field.state.meta.errors.forEach((err) => {
+                  if (err) fieldErrors.push(String(err));
+                });
+                if (validationErrors.firstName) fieldErrors.push(validationErrors.firstName);
+                const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+                return (
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        setValidationErrors((prev) => ({ ...prev, firstName: "" }));
+                      }}
+                      placeholder="John"
+                      aria-invalid={hasError}
+                    />
+                    {hasError && (
+                      <p className="text-[11px] text-rose-500 font-medium mt-1">
+                        {fieldErrors.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                );
+              }}
+            </form.Field>
+
+            <form.Field
+              name="lastName"
+              validators={{
+                onChange: ({ value }) => {
+                  if (!value.trim()) return "Last name is required";
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => {
+                const fieldErrors: string[] = [];
+                field.state.meta.errors.forEach((err) => {
+                  if (err) fieldErrors.push(String(err));
+                });
+                if (validationErrors.lastName) fieldErrors.push(validationErrors.lastName);
+                const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+                return (
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        setValidationErrors((prev) => ({ ...prev, lastName: "" }));
+                      }}
+                      placeholder="Doe"
+                      aria-invalid={hasError}
+                    />
+                    {hasError && (
+                      <p className="text-[11px] text-rose-500 font-medium mt-1">
+                        {fieldErrors.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                );
+              }}
+            </form.Field>
           </div>
 
           <div className="space-y-2">

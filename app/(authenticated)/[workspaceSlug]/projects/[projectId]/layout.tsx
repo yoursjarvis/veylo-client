@@ -1,0 +1,722 @@
+"use client"
+
+import React, { createContext, useContext, useState, useEffect } from "react"
+import {
+  useParams,
+  useRouter,
+  useSearchParams,
+  usePathname,
+} from "next/navigation"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { axiosInstance } from "@/lib/axios"
+import { useWorkspaceContext } from "@/components/providers/workspace-provider"
+import { useCurrentUser } from "@/features/auth/hooks/use-auth"
+import { authClient } from "@/lib/auth-client"
+import { toast } from "sonner"
+import Link from "next/link"
+import {
+  Plus,
+  ArrowLeft,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle2,
+  Circle,
+  X,
+} from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status"
+import { IconPicker } from "@/components/shared/icon-picker"
+import { getThumbUrl } from "@/lib/utils"
+import Image from "next/image"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+import {
+  useProjectStatuses,
+  useProjectSprints,
+  useProjectCustomFields,
+  useProjectEpics,
+  useProjectLabels,
+  useProjectMilestones,
+  useProjectTasks,
+} from "@/features/tasks/hooks/use-tasks"
+import { TaskDetailsDrawer } from "@/features/tasks/components/task-details-drawer"
+import { CreateTaskDialog } from "@/features/tasks/components/create-task-dialog"
+
+interface ProjectContextType {
+  workspaceSlug: string
+  projectId: string
+  selectedProject: LooseRecord | null
+  statuses: LooseRecord[] | undefined
+  sprints: LooseRecord[] | undefined
+  customFields: LooseRecord[] | undefined
+  epics: LooseRecord[] | undefined
+  labels: LooseRecord[] | undefined
+  milestones: LooseRecord[] | undefined
+  isWorkspaceAdmin: boolean
+  activeTaskId: string | null
+  handleSelectTask: (taskId: string | null) => void
+  isCreateTaskOpen: boolean
+  setIsCreateTaskOpen: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const ProjectContext = createContext<ProjectContextType | undefined>(undefined)
+
+export function useProject() {
+  const context = useContext(ProjectContext)
+  if (!context) {
+    throw new Error("useProject must be used within a ProjectLayout")
+  }
+  return context
+}
+
+interface WorkspaceMember {
+  id: string
+  userId: string
+  role: string
+  user: {
+    id: string
+    name: string
+    email: string
+    image: string | null
+  }
+}
+
+export default function ProjectLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const { workspaceSlug, projectId } = useParams<{
+    workspaceSlug: string
+    projectId: string
+  }>()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
+  const { activeWorkspace, isLoading: isWorkspaceLoading } =
+    useWorkspaceContext()
+  const { data: auth } = useCurrentUser()
+  const currentUser = auth?.user as
+    | { id?: string; name?: string; email?: string }
+    | undefined
+  const { data: activeMember } = authClient.useActiveMember()
+
+  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false)
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
+
+  const [projectStatus, setProjectStatus] = useState<string>("on_track")
+  useEffect(() => {
+    const updateStatus = () => {
+      if (projectId) {
+        const saved = localStorage.getItem(`veylo-project-status-${projectId}`)
+        if (saved) setProjectStatus(saved)
+      }
+    }
+    updateStatus()
+    window.addEventListener("storage", updateStatus)
+    window.addEventListener("project-status-updated", updateStatus)
+    return () => {
+      window.removeEventListener("storage", updateStatus)
+      window.removeEventListener("project-status-updated", updateStatus)
+    }
+  }, [projectId])
+
+  const urlTaskId = searchParams.get("taskId")
+  useEffect(() => {
+    if (urlTaskId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing URL param to local state
+      setActiveTaskId(urlTaskId)
+    } else {
+      setActiveTaskId(null)
+    }
+  }, [urlTaskId])
+
+  const handleSelectTask = (taskId: string | null) => {
+    setActiveTaskId(taskId)
+    const params = new URLSearchParams(window.location.search)
+    if (taskId) {
+      params.set("taskId", taskId)
+    } else {
+      params.delete("taskId")
+    }
+    const newUrl = params.toString()
+      ? `${window.location.pathname}?${params.toString()}`
+      : window.location.pathname
+    router.push(newUrl, { scroll: false })
+  }
+
+  // Queries
+  const { data: selectedProject, isLoading: isProjectDetailLoading } =
+    useQuery<LooseRecord>({
+      queryKey: ["project", projectId],
+      queryFn: async () => {
+        const response = await axiosInstance.get(`/projects/${projectId}`)
+        return response.data.data
+      },
+      enabled: !!projectId,
+    })
+
+  const { data: statuses } = useProjectStatuses(projectId || "")
+  const { data: sprints } = useProjectSprints(projectId || "")
+  const { data: customFields } = useProjectCustomFields(projectId || "")
+  const { data: epics } = useProjectEpics(projectId || "")
+  const { data: labels } = useProjectLabels(projectId || "")
+  const { data: milestones } = useProjectMilestones(projectId || "")
+
+  const { data: workspaceMembers } = useQuery<WorkspaceMember[]>({
+    queryKey: ["workspace-members", activeWorkspace?.id],
+    queryFn: async () => {
+      if (!activeWorkspace) return []
+      const response = await axiosInstance.get(
+        `/workspaces/${activeWorkspace.id}/members`
+      )
+      return response.data.data
+    },
+    enabled: !!activeWorkspace,
+  })
+
+  const { data: templateDetails } = useQuery<LooseRecord>({
+    queryKey: ["project-template", selectedProject?.template],
+    queryFn: async () => {
+      if (!selectedProject?.template) return null
+      const response = await axiosInstance.get(
+        `/project-templates/${selectedProject.template}`
+      )
+      return response.data.data
+    },
+    enabled: !!selectedProject?.template,
+  })
+
+  const { data: projectTasks } = useProjectTasks(projectId || "")
+
+  const hasTasks = (projectTasks || []).length > 0
+  const hasMembers = (selectedProject?.members || []).length > 1
+  const isScrum =
+    selectedProject?.template === "scrum" ||
+    selectedProject?.template === "software-scrum"
+  const hasActiveSprint =
+    isScrum &&
+    (sprints || []).some((s: { status?: string }) => s.status === "active")
+
+  const onboardingSteps = [
+    {
+      id: "task",
+      label: "Add your first task",
+      completed: hasTasks,
+      href: null,
+      action: () => setIsCreateTaskOpen(true),
+    },
+    {
+      id: "member",
+      label: "Invite a team member",
+      completed: hasMembers,
+      href: `/${workspaceSlug}/projects/${projectId}/settings/members`,
+      action: null,
+    },
+    ...(isScrum
+      ? [
+          {
+            id: "sprint",
+            label: "Start your first sprint",
+            completed: hasActiveSprint,
+            href: `/${workspaceSlug}/projects/${projectId}/backlog`,
+            action: null,
+          },
+        ]
+      : []),
+  ]
+
+  const allCompleted = onboardingSteps.every((step) => step.completed)
+
+  const [isOnboardingDismissed, setIsOnboardingDismissed] = useState(false)
+
+  useEffect(() => {
+    if (projectId) {
+      const dismissed = localStorage.getItem(
+        `veylo-onboarding-dismissed-${projectId}`
+      )
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing dismissed status to state
+      setIsOnboardingDismissed(dismissed === "true")
+    }
+  }, [projectId])
+
+  const handleDismissOnboarding = () => {
+    localStorage.setItem(`veylo-onboarding-dismissed-${projectId}`, "true")
+    setIsOnboardingDismissed(true)
+  }
+
+  const showOnboarding = !isOnboardingDismissed && !allCompleted
+  const completedCount = onboardingSteps.filter((s) => s.completed).length
+  const totalCount = onboardingSteps.length
+  const progressPercent =
+    totalCount > 0 ? (completedCount / totalCount) * 100 : 0
+
+  // Permissions Check
+  const userRole = activeMember?.role
+  const isOrgAdmin = userRole === "owner" || userRole === "admin"
+  const myWorkspaceMember = workspaceMembers?.find(
+    (m) => m.userId === currentUser?.id
+  )
+  const isWorkspaceAdmin = isOrgAdmin || myWorkspaceMember?.role === "admin"
+
+  // Upload project icon helper
+  const uploadProjectIcon = async (projId: string, file: File) => {
+    const formData = new FormData()
+    formData.append("icon", file)
+    const response = await axiosInstance.post(
+      `/media/project/${projId}/icon`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    )
+    return response.data.data.url
+  }
+
+  // Mutation for project icon update
+  const updateProjectIconMutation = useMutation({
+    mutationFn: async (icon: string | File | null) => {
+      const isFile = icon instanceof File
+      const patchData = {
+        icon: !isFile ? (icon as string | null) : undefined,
+      }
+      const res = await axiosInstance.patch(`/projects/${projectId}`, patchData)
+      const updatedProject = res.data.data
+      if (isFile && icon) {
+        const iconUrl = await uploadProjectIcon(projectId!, icon as File)
+        updatedProject.icon = iconUrl
+      }
+      return updatedProject
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["projects", activeWorkspace?.id],
+      })
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+      toast.success("Project icon updated")
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(
+        err.response?.data?.message || "Failed to update project icon"
+      )
+    },
+  })
+
+  const renderProjectIcon = (
+    icon?: string | null,
+    sizeClass = "h-14 w-14",
+    textClass = "text-3xl"
+  ) => {
+    const baseClasses = `flex items-center justify-center rounded-xl transition-all duration-300 shadow-md backdrop-blur`
+    if (!icon) {
+      return (
+        <span className={`${baseClasses} ${sizeClass} ${textClass}`}>📁</span>
+      )
+    }
+    if (
+      icon.startsWith("http") ||
+      icon.startsWith("/") ||
+      icon.startsWith("blob:")
+    ) {
+      const thumbUrl = icon.startsWith("blob:")
+        ? icon
+        : getThumbUrl(icon) || icon
+      return (
+        <div className={`${baseClasses} ${sizeClass} relative overflow-hidden`}>
+          <Image
+            src={thumbUrl}
+            alt="Project Icon"
+            fill
+            className="object-cover"
+          />
+        </div>
+      )
+    }
+    return (
+      <span className={`${baseClasses} ${sizeClass} ${textClass} leading-none`}>
+        {icon}
+      </span>
+    )
+  }
+
+  if (isWorkspaceLoading || isProjectDetailLoading) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center">
+        <Spinner className="size-8" />
+      </div>
+    )
+  }
+
+  if (!activeWorkspace) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] w-full flex-col items-center justify-center p-4">
+        <AlertCircle className="mb-4 h-12 w-12 animate-bounce text-muted-foreground" />
+        <h2 className="text-xl font-semibold">No Workspace Selected</h2>
+        <p className="mt-2 max-w-md text-center text-muted-foreground">
+          Please select or create a workspace to view projects.
+        </p>
+      </div>
+    )
+  }
+
+  // Navigation Setup
+  const basePath = `/${workspaceSlug}/projects/${projectId}`
+  const navLinks = [
+    { name: "Overview", path: basePath },
+    { name: "List", path: `${basePath}/list` },
+    { name: "Board", path: `${basePath}/board` },
+    ...(selectedProject?.template === "scrum"
+      ? [{ name: "Backlog", path: `${basePath}/backlog` }]
+      : []),
+    { name: "Timeline", path: `${basePath}/timeline` },
+    { name: "Epics", path: `${basePath}/epics` },
+    { name: "Reports", path: `${basePath}/reports` },
+    { name: "Files", path: `${basePath}/files` },
+    ...(isWorkspaceAdmin
+      ? [{ name: "Settings", path: `${basePath}/settings/general` }]
+      : []),
+  ]
+
+  const settingsLinks = [
+    { name: "General", path: `${basePath}/settings/general` },
+    { name: "Members", path: `${basePath}/settings/members` },
+    { name: "Vault", path: `${basePath}/settings/vault` },
+    { name: "Fields", path: `${basePath}/settings/fields` },
+    { name: "Webhooks", path: `${basePath}/settings/webhooks` },
+  ]
+
+  const isLinkActive = (linkPath: string) => {
+    if (linkPath === basePath) {
+      return pathname === basePath
+    }
+    if (linkPath.includes("/settings/general")) {
+      return pathname.includes("/settings")
+    }
+    return pathname === linkPath
+  }
+
+  return (
+    <ProjectContext.Provider
+      value={{
+        workspaceSlug,
+        projectId,
+        selectedProject,
+        statuses,
+        sprints,
+        customFields,
+        epics,
+        labels,
+        milestones,
+        isWorkspaceAdmin,
+        activeTaskId,
+        handleSelectTask,
+        isCreateTaskOpen,
+        setIsCreateTaskOpen,
+      }}
+    >
+      <div className="flex min-h-[calc(100vh-4rem)] w-full flex-col bg-background text-foreground">
+        {/* Main Content Area */}
+        <div className="ml-2 flex min-h-screen flex-1 flex-col overflow-x-hidden">
+          {/* Header */}
+          <header className="flex shrink-0 flex-col gap-4 border-b border-border bg-card/80 px-8 pt-5 backdrop-blur-md">
+            {/* Title & Actions Row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="group relative">
+                  {isWorkspaceAdmin ? (
+                    <IconPicker
+                      value={
+                        updateProjectIconMutation.isPending
+                          ? null
+                          : selectedProject?.icon
+                      }
+                      onChange={(val) => {
+                        updateProjectIconMutation.mutate(val)
+                      }}
+                    >
+                      <div className="cursor-pointer transition-opacity hover:opacity-85">
+                        {renderProjectIcon(
+                          selectedProject?.icon,
+                          "h-12 w-12",
+                          "text-2.5xl"
+                        )}
+                      </div>
+                    </IconPicker>
+                  ) : (
+                    renderProjectIcon(
+                      selectedProject?.icon,
+                      "h-12 w-12",
+                      "text-2.5xl"
+                    )
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    <Link
+                      href={`/${workspaceSlug}/projects`}
+                      className="flex items-center gap-1 transition-colors hover:text-foreground"
+                    >
+                      <ArrowLeft className="h-3 w-3" /> Projects
+                    </Link>
+                    <span>/</span>
+                    <span className="font-semibold text-foreground">
+                      {selectedProject?.title}
+                    </span>
+                  </div>
+                  <h1 className="mt-1 flex items-center gap-2.5 text-xl font-bold tracking-tight text-foreground">
+                    {selectedProject?.title}
+                    {selectedProject?.template === "scrum" && (
+                      <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[9px] font-bold tracking-wider text-foreground uppercase">
+                        Scrum
+                      </span>
+                    )}
+                    {/* Status Badge */}
+                    <Status
+                      variant={
+                        projectStatus === "on_track"
+                          ? "success"
+                          : projectStatus === "at_risk"
+                            ? "warning"
+                            : "destructive"
+                      }
+                      className="rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-semibold text-foreground shadow-sm"
+                    >
+                      <StatusIndicator />
+                      <StatusLabel className="py-1 uppercase font-bold">
+                        {projectStatus === "on_track"
+                          ? "On Track"
+                          : projectStatus === "at_risk"
+                            ? "At Risk"
+                            : "Off Track"}
+                      </StatusLabel>
+                    </Status>
+                  </h1>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                {/* Overlapping member avatars stack */}
+                <div className="mr-2 flex items-center -space-x-1.5">
+                  {(selectedProject?.members || [])
+                    .slice(0, 4)
+                    .map((member: LooseAny) => (
+                      <Avatar
+                        key={member.id}
+                        className="h-7 w-7 border-2 border-background transition-all hover:scale-105"
+                      >
+                        <AvatarImage src={member.user?.image || ""} />
+                        <AvatarFallback className="bg-muted text-[9px] font-extrabold text-muted-foreground">
+                          {member.user?.name
+                            ? member.user.name.charAt(0).toUpperCase()
+                            : "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
+                  {(selectedProject?.members || []).length > 4 && (
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-[9px] font-extrabold text-muted-foreground">
+                      +{(selectedProject?.members || []).length - 4}
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  onClick={() => setIsCreateTaskOpen(true)}
+                  variant="default"
+                >
+                  <Plus size={14} className="mr-1.5 h-4 w-4" /> Create Task
+                </Button>
+              </div>
+            </div>
+
+            {/* Navigation Tabs Row */}
+            <div className="-mx-8 flex scrollbar-none items-center justify-between overflow-x-auto border-t border-border/50 px-8 pt-2">
+              <nav className="flex items-center gap-6">
+                {navLinks.map((link) => {
+                  const isActive = isLinkActive(link.path)
+                  return (
+                    <Link key={link.path} href={link.path}>
+                      <span
+                        className={`flex cursor-pointer items-center gap-1.5 border-b-2 pt-0.5 pb-2.5 text-xs font-semibold tracking-wider uppercase transition-all duration-200 ${
+                          isActive
+                            ? "border-primary font-bold text-primary"
+                            : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                        }`}
+                      >
+                        {link.name}
+                      </span>
+                    </Link>
+                  )
+                })}
+              </nav>
+            </div>
+          </header>
+
+          {/* Settings Sub-Navbar (only when on a settings subpage) */}
+          {pathname.includes("/settings") && (
+            <div className="flex scrollbar-none items-center gap-2 overflow-x-auto border-b border-border bg-card/45 px-8 py-2">
+              <span className="mr-3 text-[10px] font-extrabold tracking-wider text-muted-foreground uppercase">
+                Settings Module:
+              </span>
+              <div className="flex gap-2">
+                {settingsLinks.map((link) => {
+                  const isActive = pathname === link.path
+                  return (
+                    <Link key={link.path} href={link.path}>
+                      <span
+                        className={`cursor-pointer rounded-md border px-3 py-1 text-xs font-medium transition-all duration-150 ${
+                          isActive
+                            ? "border-border bg-muted text-foreground shadow-sm"
+                            : "border-transparent bg-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                        }`}
+                      >
+                        {link.name}
+                      </span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Children View Content */}
+          <main className="flex-1 overflow-y-auto bg-background p-8">
+            <div className="mx-auto space-y-6">
+              {showOnboarding && (
+                <div className="relative overflow-hidden rounded-xl p-6 backdrop-blur-md transition-all duration-300">
+                  {/* Background glowing gradient */}
+                  <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl" />
+                  <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl" />
+
+                  <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-2 w-2 animate-pulse rounded-full bg-indigo-500" />
+                        <h3 className="text-sm font-bold tracking-wider uppercase">
+                          Getting Started Guide
+                        </h3>
+                      </div>
+                      <h2 className="text-lg font-bold">
+                        {templateDetails?.config?.guidance?.welcome ||
+                          "Welcome to your new workspace!"}
+                      </h2>
+                      <p className="max-w-xl text-xs text-slate-400">
+                        {templateDetails?.config?.guidance?.firstStep ||
+                          "Complete these quick setup tasks to onboard your team."}
+                      </p>
+
+                      {/* Progress Bar */}
+                      <div className="max-w-sm space-y-1.5 pt-2">
+                        <div className="flex justify-between text-[10px] font-semibold text-slate-400">
+                          <span>Setup Progress</span>
+                          <span>
+                            {completedCount}/{totalCount} completed
+                          </span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full border border-1">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500 ease-out"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Onboarding steps list */}
+                    <div className="flex min-w-[280px] flex-col gap-2">
+                      {onboardingSteps.map((step) => {
+                        const Icon = step.completed ? CheckCircle2 : Circle
+                        const buttonStyles = `flex items-center gap-3 p-3 rounded-lg border text-left text-xs font-medium transition-all ${
+                          step.completed
+                            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
+                            : "bg-slate-100/80 border-slate-200 text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-200/80 dark:bg-slate-900/50 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800/40"
+                        }`
+                        if (step.href) {
+                          return (
+                            <Link
+                              key={step.id}
+                              href={step.href}
+                              className={buttonStyles}
+                            >
+                              <Icon
+                                className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-emerald-400" : "text-slate-500"}`}
+                              />
+                              <span className="flex-1">{step.label}</span>
+                              {!step.completed && (
+                                <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
+                              )}
+                            </Link>
+                          )
+                        }
+                        return (
+                          <button
+                            key={step.id}
+                            type="button"
+                            onClick={step.action || undefined}
+                            className={buttonStyles}
+                          >
+                            <Icon
+                              className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-emerald-400" : "text-slate-500"}`}
+                            />
+                            <span className="flex-1">{step.label}</span>
+                            {!step.completed && (
+                              <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Close button */}
+                  <Button
+                    onClick={handleDismissOnboarding}
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-3 right-3"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              {children}
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Global Drawers & Dialogs */}
+      {activeTaskId && (
+        <TaskDetailsDrawer
+          taskId={activeTaskId}
+          projectId={projectId!}
+          projectMembers={selectedProject?.members || []}
+          projectStatuses={statuses || []}
+          projectSprints={sprints || []}
+          projectTemplate={selectedProject?.template || "simple"}
+          projectEpics={epics || []}
+          projectMilestones={milestones || []}
+          projectLabels={labels || []}
+          onClose={() => handleSelectTask(null)}
+        />
+      )}
+
+      {isCreateTaskOpen && (
+        <CreateTaskDialog
+          open={isCreateTaskOpen}
+          projectId={projectId!}
+          projectMembers={selectedProject?.members || []}
+          projectStatuses={statuses || []}
+          projectSprints={sprints || []}
+          projectTemplate={selectedProject?.template || "simple"}
+          projectEpics={epics || []}
+          projectMilestones={milestones || []}
+          projectLabels={labels || []}
+          onOpenChange={setIsCreateTaskOpen}
+        />
+      )}
+    </ProjectContext.Provider>
+  )
+}

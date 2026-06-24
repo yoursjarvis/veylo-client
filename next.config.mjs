@@ -2,6 +2,15 @@
 const backendOrigin = process.env.API_BACKEND_URL ?? "https://api.veylo.com:4000"
 
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.veylo.com',
+        port: '4000',
+      },
+    ],
+  },
   allowedDevOrigins: ["veylo.com", "*.veylo.com", "localhost"],
   async rewrites() {
     return [

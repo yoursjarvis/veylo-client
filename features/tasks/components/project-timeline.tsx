@@ -464,9 +464,9 @@ export function ProjectTimeline({
                             width: `${widthPercent}%`,
                           }}
                           onClick={() => onSelectTask(task.id)}
-                          className={`absolute h-7 rounded-lg px-2.5 flex items-center justify-between text-[10px] font-bold text-white shadow-sm cursor-pointer select-none transition-all hover:scale-[1.01] hover:brightness-105 z-10 ${
+                          className={`absolute h-7 rounded-lg px-2.5 flex items-center justify-between text-[10px] font-bold shadow-sm cursor-pointer select-none transition-all hover:scale-[1.01] hover:brightness-105 z-10 ${
                             task.status.category === "done"
-                              ? "bg-green-500/70 border border-green-500/30 line-through text-white/90"
+                              ? "bg-green-500/70 border border-green-500/30 line-through"
                               : task.priority === "urgent"
                               ? "bg-red-500 border border-red-400"
                               : task.priority === "high"
@@ -484,7 +484,7 @@ export function ProjectTimeline({
                               {task.title}
                             </span>
                           </div>
-                          
+
                           <div className="flex items-center gap-1.5 flex-shrink-0">
                             <span className="text-[8.5px] opacity-90 select-none">
                               {task.dueDate ? format(new Date(task.dueDate), "d MMM") : "No due date"}

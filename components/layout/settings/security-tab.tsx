@@ -18,6 +18,7 @@ import { QRCode, QRCodeCanvas } from "@/components/ui/qr-code";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
 import { axiosInstance } from "@/lib/axios";
+import { useForm } from "@tanstack/react-form";
 import { cn } from "@/lib/utils";
 import {
   Delete02Icon,
@@ -49,8 +50,41 @@ export function SecurityTab() {
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [showBackupCodes, setShowBackupCodes] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
-  const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [resendTimer, setResendTimer] = useState(0);
+  const [passwordValidationErrors, setPasswordValidationErrors] = useState<Record<string, string>>({});
+
+  const passwordForm = useForm({
+    defaultValues: {
+      current: "",
+      new: "",
+      confirm: "",
+    },
+    onSubmit: async ({ value }) => {
+      setPasswordValidationErrors({});
+      if (value.new !== value.confirm) {
+        toast.error("Passwords do not match");
+        return;
+      }
+      setChangingPassword(true);
+      try {
+        const { error } = await authClient.changePassword({
+          currentPassword: value.current,
+          newPassword: value.new,
+          revokeOtherSessions: true,
+        });
+        if (error) {
+          toast.error(error.message || "Failed to change password");
+          return;
+        }
+        toast.success("Password changed successfully");
+        passwordForm.reset();
+      } catch {
+        toast.error("An error occurred");
+      } finally {
+        setChangingPassword(false);
+      }
+    },
+  });
 
   const isTwoFactorEnabled = !!auth?.user?.twoFactorEnabled;
 
@@ -249,31 +283,58 @@ export function SecurityTab() {
     }
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwords.new !== passwords.confirm) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    setChangingPassword(true);
-    try {
-      const { error } = await authClient.changePassword({
-        currentPassword: passwords.current,
-        newPassword: passwords.new,
-        revokeOtherSessions: true,
-      });
-      if (error) {
-        toast.error(error.message || "Failed to change password");
-        return;
+
+
+  const displayedSessions = [...sessions];
+  if (auth?.session && !displayedSessions.some((s) => s.id === auth.session?.id)) {
+    const ua = auth.session.userAgent || (typeof window !== "undefined" ? window.navigator.userAgent : "");
+    
+    let os = (auth.session as LooseAny).os || "";
+    let browser = (auth.session as LooseAny).browser || "";
+    let deviceName = (auth.session as LooseAny).deviceName || "";
+    
+    if (!os || !browser || !deviceName) {
+      const uaLower = ua.toLowerCase();
+      if (!os) {
+        if (uaLower.includes("win")) os = "Windows";
+        else if (uaLower.includes("mac")) os = "macOS";
+        else if (uaLower.includes("linux")) os = "Linux";
+        else if (uaLower.includes("android")) os = "Android";
+        else if (uaLower.includes("iphone") || uaLower.includes("ipad") || uaLower.includes("ipod")) os = "iOS";
+        else os = "Unknown OS";
       }
-      toast.success("Password changed successfully");
-      setPasswords({ current: "", new: "", confirm: "" });
-    } catch {
-      toast.error("An error occurred");
-    } finally {
-      setChangingPassword(false);
+      
+      if (!browser) {
+        if (uaLower.includes("chrome") || uaLower.includes("crios")) browser = "Chrome";
+        else if (uaLower.includes("safari") && !uaLower.includes("chrome") && !uaLower.includes("crios")) browser = "Safari";
+        else if (uaLower.includes("firefox") || uaLower.includes("fxios")) browser = "Firefox";
+        else if (uaLower.includes("edge") || uaLower.includes("edg")) browser = "Edge";
+        else browser = "Unknown Browser";
+      }
+      
+      if (!deviceName) {
+        if (uaLower.includes("iphone")) deviceName = "iPhone";
+        else if (uaLower.includes("ipad")) deviceName = "iPad";
+        else if (uaLower.includes("android")) deviceName = "Android Device";
+        else if (uaLower.includes("macintosh")) deviceName = "Mac";
+        else if (uaLower.includes("win")) deviceName = "Windows PC";
+        else deviceName = os.includes("macOS") ? "MacBook Pro" : os.includes("iOS") || os.includes("Android") ? "Smartphone" : "Desktop Computer";
+      }
     }
-  };
+    
+    displayedSessions.push({
+      id: auth.session.id,
+      token: auth.session.token || "",
+      userId: auth.session.userId,
+      ipAddress: auth.session.ipAddress || "127.0.0.1",
+      userAgent: ua,
+      deviceName,
+      browser,
+      os,
+      createdAt: (auth.session as LooseAny).createdAt || new Date().toISOString(),
+      updatedAt: (auth.session as LooseAny).updatedAt || new Date().toISOString(),
+    });
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
@@ -345,34 +406,132 @@ export function SecurityTab() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
-                <div className="space-y-2">
-                  <Label htmlFor="current-password">Current Password</Label>
-                  <Input
-                    id="current-password"
-                    type="password"
-                    value={passwords.current}
-                    onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    value={passwords.new}
-                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm New Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={passwords.confirm}
-                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                  />
-                </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  passwordForm.handleSubmit();
+                }}
+                className="space-y-4 max-w-md"
+              >
+                <passwordForm.Field
+                  name="current"
+                  validators={{
+                    onChange: ({ value }) => {
+                      if (!value) return "Current password is required";
+                      return undefined;
+                    },
+                  }}
+                >
+                  {(field) => {
+                    const fieldErrors: string[] = [];
+                    field.state.meta.errors.forEach((err) => {
+                      if (err) fieldErrors.push(String(err));
+                    });
+                    if (passwordValidationErrors.current) fieldErrors.push(passwordValidationErrors.current);
+                    const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+                    return (
+                      <div className="space-y-2">
+                        <Label htmlFor="current-password">Current Password</Label>
+                        <Input
+                          id="current-password"
+                          type="password"
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            setPasswordValidationErrors((prev) => ({ ...prev, current: "" }));
+                          }}
+                          aria-invalid={hasError}
+                        />
+                        {hasError && (
+                          <p className="text-[11px] text-rose-500 font-medium mt-1">
+                            {fieldErrors.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }}
+                </passwordForm.Field>
+
+                <passwordForm.Field
+                  name="new"
+                  validators={{
+                    onChange: ({ value }) => {
+                      if (!value) return "New password is required";
+                      if (value.length < 8) return "Password must be at least 8 characters long";
+                      return undefined;
+                    },
+                  }}
+                >
+                  {(field) => {
+                    const fieldErrors: string[] = [];
+                    field.state.meta.errors.forEach((err) => {
+                      if (err) fieldErrors.push(String(err));
+                    });
+                    if (passwordValidationErrors.new) fieldErrors.push(passwordValidationErrors.new);
+                    const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+                    return (
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">New Password</Label>
+                        <Input
+                          id="new-password"
+                          type="password"
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            setPasswordValidationErrors((prev) => ({ ...prev, new: "" }));
+                          }}
+                          aria-invalid={hasError}
+                        />
+                        {hasError && (
+                          <p className="text-[11px] text-rose-500 font-medium mt-1">
+                            {fieldErrors.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }}
+                </passwordForm.Field>
+
+                <passwordForm.Field
+                  name="confirm"
+                  validators={{
+                    onChange: ({ value }) => {
+                      if (!value) return "Please confirm your new password";
+                      return undefined;
+                    },
+                  }}
+                >
+                  {(field) => {
+                    const fieldErrors: string[] = [];
+                    field.state.meta.errors.forEach((err) => {
+                      if (err) fieldErrors.push(String(err));
+                    });
+                    if (passwordValidationErrors.confirm) fieldErrors.push(passwordValidationErrors.confirm);
+                    const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+                    return (
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Confirm New Password</Label>
+                        <Input
+                          id="confirm-password"
+                          type="password"
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            setPasswordValidationErrors((prev) => ({ ...prev, confirm: "" }));
+                          }}
+                          aria-invalid={hasError}
+                        />
+                        {hasError && (
+                          <p className="text-[11px] text-rose-500 font-medium mt-1">
+                            {fieldErrors.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }}
+                </passwordForm.Field>
+
                 <Button type="submit" disabled={changingPassword}>
                   {changingPassword ? "Updating..." : "Update Password"}
                 </Button>
@@ -402,11 +561,11 @@ export function SecurityTab() {
           <CardContent>
             {loadingSessions ? (
                <div className="py-4 text-center text-sm text-muted-foreground">Loading sessions...</div>
-            ) : sessions.length === 0 ? (
+            ) : displayedSessions.length === 0 ? (
                <div className="py-4 text-center text-sm text-muted-foreground">No active sessions.</div>
             ) : (
               <div className="space-y-4">
-                {[...sessions]
+                {[...displayedSessions]
                   .sort((a, b) => {
                     if (a.id === auth?.session?.id) return -1;
                     if (b.id === auth?.session?.id) return 1;

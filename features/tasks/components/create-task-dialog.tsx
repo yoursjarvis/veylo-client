@@ -30,6 +30,9 @@ interface CreateTaskDialogProps {
   projectSprints: { id: string; name: string; status: string }[];
   projectTemplate: string;
   onOpenChange: (open: boolean) => void;
+  projectEpics?: { id: string; title: string }[];
+  projectMilestones?: { id: string; title: string }[];
+  projectLabels?: { id: string; name: string; color: string }[];
 }
 
 export function CreateTaskDialog({
@@ -40,6 +43,9 @@ export function CreateTaskDialog({
   projectSprints,
   projectTemplate,
   onOpenChange,
+  projectEpics = [],
+  projectMilestones = [],
+  projectLabels = [],
 }: CreateTaskDialogProps) {
   const createTaskMutation = useCreateTask(projectId);
   const { data: customFieldDefinitions } = useProjectCustomFields(projectId);
@@ -52,6 +58,9 @@ export function CreateTaskDialog({
   const [type, setType] = useState<"task" | "bug" | "feature">("task");
   const [priority, setPriority] = useState<"low" | "medium" | "high" | "urgent">("medium");
   const [sprintId, setSprintId] = useState<string | null>(null);
+  const [epicId, setEpicId] = useState<string | null>(null);
+  const [milestoneId, setMilestoneId] = useState<string | null>(null);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [assigneeId, setAssigneeId] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState("");
@@ -99,6 +108,9 @@ export function CreateTaskDialog({
       setType("task");
       setPriority("medium");
       setSprintId(null);
+      setEpicId(null);
+      setMilestoneId(null);
+      setSelectedLabels([]);
       setAssigneeId(null);
       setEstimate(null);
       setDueDate("");
@@ -109,6 +121,12 @@ export function CreateTaskDialog({
 
   const handleCustomFieldChange = (fieldId: string, value: LooseAny) => {
     setCustomFields((prev: LooseRecord) => ({ ...prev, [fieldId]: value }));
+  };
+
+  const handleLabelToggle = (labelId: string) => {
+    setSelectedLabels((prev) =>
+      prev.includes(labelId) ? prev.filter((id) => id !== labelId) : [...prev, labelId]
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -123,6 +141,9 @@ export function CreateTaskDialog({
         type,
         priority,
         sprintId: sprintId || null,
+        epicId: epicId || null,
+        milestoneId: milestoneId || null,
+        labelIds: selectedLabels,
         assigneeId: assigneeId || null,
         estimate: estimate,
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
@@ -306,6 +327,69 @@ export function CreateTaskDialog({
               </Popover>
             </div>
           </div>
+
+          {/* Epic & Milestone */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground font-semibold">Epic / Goal</label>
+              <select
+                value={epicId || ""}
+                onChange={(e) => setEpicId(e.target.value || null)}
+                className="w-full bg-background border border-border rounded-lg p-2 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+              >
+                <option value="">No Epic</option>
+                {projectEpics.map((ep) => (
+                  <option key={ep.id} value={ep.id}>
+                    {ep.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground font-semibold">Milestone</label>
+              <select
+                value={milestoneId || ""}
+                onChange={(e) => setMilestoneId(e.target.value || null)}
+                className="w-full bg-background border border-border rounded-lg p-2 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+              >
+                <option value="">No Milestone</option>
+                {projectMilestones.map((ms) => (
+                  <option key={ms.id} value={ms.id}>
+                    {ms.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Labels */}
+          {projectLabels && projectLabels.length > 0 && (
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground font-semibold block">Labels</label>
+              <div className="flex flex-wrap gap-2">
+                {projectLabels.map((lbl) => {
+                  const isSelected = selectedLabels.includes(lbl.id);
+                  return (
+                    <button
+                      key={lbl.id}
+                      type="button"
+                      onClick={() => handleLabelToggle(lbl.id)}
+                      className={cn(
+                        "text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all",
+                        isSelected
+                          ? "shadow-sm border-transparent"
+                          : "bg-transparent text-muted-foreground border-border hover:bg-muted"
+                      )}
+                      style={isSelected ? { backgroundColor: lbl.color } : {}}
+                    >
+                      {lbl.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Dynamic Custom Fields Section */}
           {customFieldDefinitions && customFieldDefinitions.length > 0 && (

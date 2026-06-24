@@ -9,46 +9,51 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { LogoUpload } from "@/components/shared/logo-upload";
+import { useForm } from "@tanstack/react-form";
 
 export function OrganizationTab() {
   const { data: auth } = useCurrentUser();
   const { data: activeOrg, isPending, refetch } = authClient.useActiveOrganization();
-  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  const form = useForm({
+    defaultValues: {
+      name: activeOrg?.name || "",
+    },
+    onSubmit: async ({ value }) => {
+      if (!activeOrg) return;
+
+      setLoading(true);
+      setValidationErrors({});
+      try {
+        const { error } = await authClient.organization.update({
+          organizationId: activeOrg.id,
+          data: {
+            name: value.name.trim(),
+          },
+        });
+
+        if (error) {
+          toast.error(error.message || "Failed to update organization");
+          return;
+        }
+
+        toast.success("Organization updated successfully");
+        refetch();
+      } catch {
+        toast.error("An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
 
   useEffect(() => {
     if (activeOrg) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronize form state with fetched data
-      setName(activeOrg.name);
+      form.setFieldValue("name", activeOrg.name || "");
     }
-  }, [activeOrg]);
-
-  const handleUpdateOrganization = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeOrg) return;
-
-    setLoading(true);
-    try {
-      const { error } = await authClient.organization.update({
-        organizationId: activeOrg.id,
-        data: {
-          name: name.trim(),
-        },
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to update organization");
-        return;
-      }
-
-      toast.success("Organization updated successfully");
-      refetch();
-    } catch {
-      toast.error("An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [activeOrg, form]);
 
   if (isPending) {
     return <div className="text-sm text-muted-foreground animate-pulse">Loading organization details...</div>;
@@ -88,7 +93,7 @@ export function OrganizationTab() {
             ) : (
               <div className="h-24 w-24 rounded-lg bg-muted flex items-center justify-center border-2 border-border overflow-hidden">
                 {activeOrg.logo ? (
-                  <Image src={activeOrg.logo} alt="Org Logo" width={96} height={96} className="object-contain h-full w-full" />
+                   <Image src={activeOrg.logo} alt="Org Logo" width={96} height={96} className="object-contain h-full w-full" />
                 ) : (
                   <span className="text-muted-foreground text-xs">No Logo</span>
                 )}
@@ -103,18 +108,53 @@ export function OrganizationTab() {
           </div>
         </div>
 
-        <form onSubmit={handleUpdateOrganization} className="space-y-4 max-w-md">
-          <div className="space-y-2">
-            <Label htmlFor="orgName">Organization Name</Label>
-            <Input
-              id="orgName"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Acme Corp"
-              required
-              disabled={!isOwnerOrAdmin}
-            />
-          </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-4 max-w-md"
+        >
+          <form.Field
+            name="name"
+            validators={{
+              onChange: ({ value }) => {
+                if (!value.trim()) return "Organization name is required";
+                return undefined;
+              },
+            }}
+          >
+            {(field) => {
+              const fieldErrors: string[] = [];
+              field.state.meta.errors.forEach((err) => {
+                if (err) fieldErrors.push(String(err));
+              });
+              if (validationErrors.name) fieldErrors.push(validationErrors.name);
+              const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+              return (
+                <div className="space-y-2">
+                  <Label htmlFor="orgName">Organization Name</Label>
+                  <Input
+                    id="orgName"
+                    value={field.state.value}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value);
+                      setValidationErrors((prev) => ({ ...prev, name: "" }));
+                    }}
+                    placeholder="Acme Corp"
+                    disabled={!isOwnerOrAdmin}
+                    aria-invalid={hasError}
+                  />
+                  {hasError && (
+                    <p className="text-[11px] text-rose-500 font-medium mt-1">
+                      {fieldErrors.join(", ")}
+                    </p>
+                  )}
+                </div>
+              );
+            }}
+          </form.Field>
 
           <div className="space-y-2">
             <Label htmlFor="orgSlug">URL Slug</Label>

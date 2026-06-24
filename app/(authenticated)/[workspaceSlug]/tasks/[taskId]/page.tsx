@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useForm } from "@tanstack/react-form";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -91,8 +92,39 @@ export default function TaskDetailPage() {
   // Local state
   const [localTitle, setLocalTitle] = useState("");
   const [localDesc, setLocalDesc] = useState("");
-  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [subtaskValidationErrors, setSubtaskValidationErrors] = useState<Record<string, string>>({});
+
+  const subtaskForm = useForm({
+    defaultValues: {
+      title: "",
+    },
+    onSubmit: async ({ value }) => {
+      setSubtaskValidationErrors({});
+      if (!value.title.trim()) return;
+      createSubtaskMutation.mutate(
+        { title: value.title.trim() },
+        {
+          onSuccess: () => {
+            subtaskForm.reset();
+          },
+          onError: (error: unknown) => {
+            const err = error as { response?: { data?: { details?: Array<{ field: string; message: string }>; message?: string } } };
+            const errorDetails = err.response?.data?.details;
+            if (Array.isArray(errorDetails)) {
+              const errors: Record<string, string> = {};
+              errorDetails.forEach((d) => {
+                errors[d.field] = d.message;
+              });
+              setSubtaskValidationErrors(errors);
+            } else {
+              toast.error(err.response?.data?.message || "Failed to add subtask");
+            }
+          },
+        }
+      );
+    },
+  });
 
   useEffect(() => {
     if (task) {
@@ -124,12 +156,7 @@ export default function TaskDetailPage() {
     }
   };
 
-  const handleAddSubtask = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSubtaskTitle.trim()) return;
-    createSubtaskMutation.mutate({ title: newSubtaskTitle.trim() });
-    setNewSubtaskTitle("");
-  };
+
 
   const handleAddComment = (e?: React.FormEvent | React.MouseEvent) => {
     e?.preventDefault();
@@ -297,16 +324,56 @@ export default function TaskDetailPage() {
                   </div>
                 ))}
               </div>
-              <form onSubmit={handleAddSubtask} className="flex gap-2">
-                <Input
-                  value={newSubtaskTitle}
-                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                  placeholder="Add a subtask..."
-                  className="bg-background border-border text-xs h-8 focus:outline-none"
-                />
-                <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs">
-                  <Plus size={14} className="mr-1" /> Add
-                </Button>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  subtaskForm.handleSubmit();
+                }}
+                className="flex flex-col gap-1.5"
+              >
+                <subtaskForm.Field
+                  name="title"
+                  validators={{
+                    onChange: ({ value }) => {
+                      if (!value.trim()) return "Subtask title is required";
+                      return undefined;
+                    },
+                  }}
+                >
+                  {(field) => {
+                    const fieldErrors: string[] = [];
+                    field.state.meta.errors.forEach((err) => {
+                      if (err) fieldErrors.push(String(err));
+                    });
+                    if (subtaskValidationErrors.title) fieldErrors.push(subtaskValidationErrors.title);
+                    const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+                    return (
+                      <div className="space-y-1 w-full">
+                        <div className="flex gap-2 w-full">
+                          <Input
+                            value={field.state.value}
+                            onChange={(e) => {
+                              field.handleChange(e.target.value);
+                              setSubtaskValidationErrors((prev) => ({ ...prev, title: "" }));
+                            }}
+                            placeholder="Add a subtask..."
+                            className="flex-1 bg-background border-border text-xs h-8 focus:outline-none"
+                            aria-invalid={hasError}
+                          />
+                          <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs shrink-0">
+                            <Plus size={14} className="mr-1" /> Add
+                          </Button>
+                        </div>
+                        {hasError && (
+                          <p className="text-[11px] text-rose-500 font-medium mt-0.5">
+                            {fieldErrors.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }}
+                </subtaskForm.Field>
               </form>
             </div>
 
