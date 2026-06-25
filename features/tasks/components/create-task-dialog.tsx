@@ -11,6 +11,17 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+} from "@/components/ui/combobox";
+import { InputGroupAddon } from "@/components/ui/input-group";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -21,11 +32,13 @@ import { format } from "date-fns";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { axiosInstance } from "@/lib/axios";
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 interface CreateTaskDialogProps {
   open: boolean;
   projectId: string;
-  projectMembers: { user: { id: string; name: string } }[];
+  projectMembers: { user: { id: string; name: string; image?: string | null } }[];
   projectStatuses: { id: string; name: string }[];
   projectSprints: { id: string; name: string; status: string }[];
   projectTemplate: string;
@@ -47,6 +60,8 @@ export function CreateTaskDialog({
   projectMilestones = [],
   projectLabels = [],
 }: CreateTaskDialogProps) {
+  const params = useParams();
+  const workspaceSlug = params?.workspaceSlug as string;
   const createTaskMutation = useCreateTask(projectId);
   const { data: customFieldDefinitions } = useProjectCustomFields(projectId);
   const queryClient = useQueryClient();
@@ -62,6 +77,35 @@ export function CreateTaskDialog({
   const [milestoneId, setMilestoneId] = useState<string | null>(null);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [assigneeId, setAssigneeId] = useState<string | null>(null);
+  const [assigneeInputValue, setAssigneeInputValue] = useState("");
+
+  useEffect(() => {
+    if (assigneeId) {
+      const member = projectMembers.find((m) => m.user.id === assigneeId);
+      if (member) {
+        setAssigneeInputValue(member.user.name);
+      } else {
+        setAssigneeInputValue("");
+      }
+    } else {
+      setAssigneeInputValue("");
+    }
+  }, [assigneeId, projectMembers]);
+
+  const filteredMembers = projectMembers.filter((m) => {
+    const selectedMember = projectMembers.find((pm) => pm.user.id === assigneeId);
+    if (selectedMember && selectedMember.user.name === assigneeInputValue) {
+      return true;
+    }
+    return m.user.name.toLowerCase().includes(assigneeInputValue.toLowerCase());
+  });
+
+  const showUnassigned = !assigneeInputValue || "unassigned".includes(assigneeInputValue.toLowerCase()) || (
+    (() => {
+      const selectedMember = projectMembers.find((pm) => pm.user.id === assigneeId);
+      return selectedMember && selectedMember.user.name === assigneeInputValue;
+    })()
+  );
   const [estimate, setEstimate] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState("");
   const [customFields, setCustomFields] = useState<LooseRecord>({});
@@ -157,6 +201,11 @@ export function CreateTaskDialog({
     );
   };
 
+  const selectedMember = projectMembers.find((m) => m.user.id === assigneeId);
+  const comboboxValue = selectedMember
+    ? { value: selectedMember.user.id, label: selectedMember.user.name }
+    : { value: "unassigned", label: "Unassigned" };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border border-border text-foreground p-6 max-h-[85vh] overflow-y-auto sm:max-w-[550px]">
@@ -245,18 +294,72 @@ export function CreateTaskDialog({
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground font-semibold">Assignee</label>
-              <select
-                value={assigneeId || ""}
-                onChange={(e) => setAssigneeId(e.target.value || null)}
-                className="w-full bg-background border border-border rounded-lg p-2 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+              <Combobox
+                value={comboboxValue}
+                onValueChange={(val: any) => setAssigneeId(val?.value === "unassigned" ? null : (val?.value || null))}
+                inputValue={assigneeInputValue}
+                onInputValueChange={setAssigneeInputValue}
+                isItemEqualToValue={(a: any, b: any) => a?.value === b?.value}
               >
-                <option value="">Unassigned</option>
-                {projectMembers.map((m: { user: { id: string; name: string } }) => (
-                  <option key={m.user.id} value={m.user.id}>
-                    {m.user.name}
-                  </option>
-                ))}
-              </select>
+                <ComboboxInput
+                  className="w-full bg-background border-border rounded-lg text-xs text-foreground focus:outline-none focus:border-primary h-9 flex items-center"
+                  placeholder="Search assignee..."
+                >
+                  <InputGroupAddon align="inline-start">
+                    {assigneeId ? (
+                      (() => {
+                        const member = projectMembers.find((m) => m.user.id === assigneeId);
+                        return member ? (
+                           <Avatar className="h-5 w-5 ml-1">
+                            <AvatarImage src={member.user.image || ""} />
+                            <AvatarFallback className="text-[9px]">
+                              {member.user.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <Avatar className="h-5 w-5 ml-1">
+                            <AvatarFallback className="text-[9px]">?</AvatarFallback>
+                          </Avatar>
+                        );
+                      })()
+                    ) : (
+                      <Avatar className="h-5 w-5 ml-1">
+                        <AvatarFallback className="text-[9px]">?</AvatarFallback>
+                      </Avatar>
+                    )}
+                  </InputGroupAddon>
+                </ComboboxInput>
+                <ComboboxContent className="w-full bg-card border border-border rounded-lg shadow-lg">
+                  <ComboboxList className="max-h-56 overflow-y-auto">
+                    {showUnassigned && (
+                      <ComboboxItem value={{ value: "unassigned", label: "Unassigned" }}>
+                        <span className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarFallback className="text-[9px]">?</AvatarFallback>
+                          </Avatar>
+                          <span>Unassigned</span>
+                        </span>
+                      </ComboboxItem>
+                    )}
+                    {filteredMembers.map((m) => (
+                      <ComboboxItem key={m.user.id} value={{ value: m.user.id, label: m.user.name }}>
+                        <span className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={m.user.image || ""} />
+                            <AvatarFallback className="text-[9px]">
+                              {m.user.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{m.user.name}</span>
+                        </span>
+                      </ComboboxItem>
+                    ))}
+                    {filteredMembers.length === 0 && !showUnassigned && (
+                      <ComboboxEmpty>No members found</ComboboxEmpty>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
           </div>
 
@@ -364,9 +467,9 @@ export function CreateTaskDialog({
           </div>
 
           {/* Labels */}
-          {projectLabels && projectLabels.length > 0 && (
-            <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground font-semibold block">Labels</label>
+          <div className="space-y-1.5">
+            <label className="text-xs text-muted-foreground font-semibold block">Labels</label>
+            {projectLabels && projectLabels.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {projectLabels.map((lbl) => {
                   const isSelected = selectedLabels.includes(lbl.id);
@@ -388,8 +491,19 @@ export function CreateTaskDialog({
                   );
                 })}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-[10px] text-muted-foreground italic">
+                No labels created.{" "}
+                <Link
+                  href={`/${workspaceSlug}/projects/${projectId}/settings/labels`}
+                  className="text-primary hover:underline"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Create labels in Settings
+                </Link>
+              </p>
+            )}
+          </div>
 
           {/* Dynamic Custom Fields Section */}
           {customFieldDefinitions && customFieldDefinitions.length > 0 && (

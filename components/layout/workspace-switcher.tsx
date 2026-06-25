@@ -17,22 +17,28 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getThumbUrl } from "@/lib/utils"
 import {
+  ArrowDown01Icon,
   Briefcase02Icon,
   PlusSignIcon,
   Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import Link from "next/link"
 import Image from "next/image"
+import Link from "next/link"
 import { useState } from "react"
-import { getThumbUrl } from "@/lib/utils"
 
 import { authClient } from "@/lib/auth-client"
 
 export function WorkspaceSwitcher() {
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, setIsCreateModalOpen } =
-    useWorkspaceContext()
+  const {
+    workspaces,
+    activeWorkspace,
+    setActiveWorkspace,
+    isLoading,
+    setIsCreateModalOpen,
+  } = useWorkspaceContext()
   const [searchQuery, setSearchQuery] = useState("")
 
   const { data: activeMember } = authClient.useActiveMember()
@@ -56,9 +62,21 @@ export function WorkspaceSwitcher() {
     if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
     if (icon.startsWith("http") || icon.startsWith("/")) {
       const thumbUrl = getThumbUrl(icon) || icon
-      return <Image src={thumbUrl} alt="Workspace Icon" width={40} height={40} className="h-full w-full object-cover rounded-[inherit]" />
+      return (
+        <Image
+          src={thumbUrl}
+          alt="Workspace Icon"
+          width={40}
+          height={40}
+          className="h-full w-full rounded-[inherit] object-cover"
+        />
+      )
     }
-    return <span className="leading-none" style={{ fontSize: size }}>{icon}</span>
+    return (
+      <span className="leading-none" style={{ fontSize: size }}>
+        {icon}
+      </span>
+    )
   }
 
   return (
@@ -72,7 +90,7 @@ export function WorkspaceSwitcher() {
                 {...props}
                 render={(sbProps) => <div {...sbProps} />}
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="border data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   {renderIcon(activeWorkspace?.icon)}
@@ -86,9 +104,9 @@ export function WorkspaceSwitcher() {
                   </span>
                 </div>
                 <HugeiconsIcon
-                  icon={PlusSignIcon}
+                  icon={ArrowDown01Icon}
                   size={16}
-                  className="ml-auto rotate-45"
+                  className="ml-auto"
                 />
               </SidebarMenuButton>
             )}

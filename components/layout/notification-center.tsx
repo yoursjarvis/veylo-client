@@ -23,6 +23,9 @@ import {
   RefreshCw,
   AlertCircle,
   FileText,
+  FolderPlus,
+  ThumbsUp,
+  UserMinus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -44,9 +47,11 @@ export function NotificationCenter() {
       markReadMutation.mutate(n.id);
     }
 
-    // Redirect to task drawer iftaskId exists
+    // Redirect to task drawer or project
     if (n.taskId && workspaceSlug) {
       router.push(`/${workspaceSlug}/projects?taskId=${n.taskId}`);
+    } else if (n.projectId && workspaceSlug) {
+      router.push(`/${workspaceSlug}/projects/${n.projectId}`);
     }
   };
 
@@ -62,6 +67,14 @@ export function NotificationCenter() {
         return <MessageSquare className="h-4 w-4 text-muted-foreground" />;
       case "dependency":
         return <AlertCircle className="h-4 w-4 text-amber-400" />;
+      case "project_added":
+        return <FolderPlus className="h-4 w-4 text-emerald-400" />;
+      case "reply":
+        return <MessageSquare className="h-4 w-4 text-pink-400" />;
+      case "reaction":
+        return <ThumbsUp className="h-4 w-4 text-yellow-400" />;
+      case "assignment_removed":
+        return <UserMinus className="h-4 w-4 text-rose-400" />;
       default:
         return <FileText className="h-4 w-4 text-muted-foreground" />;
     }

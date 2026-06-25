@@ -57,7 +57,7 @@ interface RichTextEditorProps {
   onChange: (value: string) => void;
   onBlur?: () => void;
   placeholder?: string;
-  projectMembers?: { user: { id: string; name?: string; image?: string } }[];
+  projectMembers?: { user: { id: string; name?: string; image?: string | null } }[];
   className?: string;
   minHeight?: string;
   onSubmit?: () => void;

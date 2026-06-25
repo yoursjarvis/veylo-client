@@ -1,23 +1,32 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { useForm } from "@tanstack/react-form";
-import { axiosInstance } from "@/lib/axios";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import EmojiPicker, { Theme } from "emoji-picker-react";
-import { useCurrentUser } from "@/features/auth/hooks/use-auth";
+import React, { useState, useEffect } from "react"
+import { format } from "date-fns"
+import { useParams, useRouter } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
+import { useForm } from "@tanstack/react-form"
+import { axiosInstance } from "@/lib/axios"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip"
+import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils"
+import { useTheme } from "next-themes"
+import EmojiPicker, { Theme } from "emoji-picker-react"
+import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import {
   ArrowLeft,
   Trash,
@@ -31,8 +40,8 @@ import {
   Copy,
   AlertTriangle,
   SmilePlus,
-} from "lucide-react";
-import { RichTextEditor } from "@/components/shared/rich-text-editor";
+} from "lucide-react"
+import { RichTextEditor } from "@/components/shared/rich-text-editor"
 import {
   useTaskDetails,
   useUpdateTask,
@@ -47,211 +56,265 @@ import {
   useProjectSprints,
   useToggleCommentReaction,
   useReactionUsers,
-} from "@/features/tasks/hooks/use-tasks";
+} from "@/features/tasks/hooks/use-tasks"
 
 export default function TaskDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const workspaceSlug = params.workspaceSlug as string;
-  const taskId = params.taskId as string;
+  const params = useParams()
+  const router = useRouter()
+  const workspaceSlug = params.workspaceSlug as string
+  const taskId = params.taskId as string
 
-  const { data: currentUser } = useCurrentUser();
-  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
-  const [replyContent, setReplyContent] = useState("");
-  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editingContent, setEditingContent] = useState("");
+  const { data: currentUser } = useCurrentUser()
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(
+    null
+  )
+  const [replyContent, setReplyContent] = useState("")
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
+  const [editingContent, setEditingContent] = useState("")
 
-  const { data: task, isLoading: isTaskLoading } = useTaskDetails(taskId);
-  const projectId = task?.projectId;
+  const { data: task, isLoading: isTaskLoading } = useTaskDetails(taskId)
+  const projectId = task?.projectId
 
   // Project details for members and template
   const { data: selectedProject } = useQuery<LooseRecord>({
     queryKey: ["project", projectId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/projects/${projectId}`);
-      return response.data.data;
+      const response = await axiosInstance.get(`/projects/${projectId}`)
+      return response.data.data
     },
     enabled: !!projectId,
-  });
+  })
 
-  const { data: customFieldDefinitions } = useProjectCustomFields(projectId || "");
-  const { data: projectStatuses = [] } = useProjectStatuses(projectId || "");
-  const { data: projectSprints = [] } = useProjectSprints(projectId || "");
-  const projectMembers = selectedProject?.members || [];
-  const projectTemplate = selectedProject?.template || "simple";
+  const { data: customFieldDefinitions } = useProjectCustomFields(
+    projectId || ""
+  )
+  const { data: projectStatuses = [] } = useProjectStatuses(projectId || "")
+  const completedStatus =
+    projectStatuses.find(
+      (st: any) =>
+        st.name.toLowerCase() === "done" ||
+        st.name.toLowerCase() === "completed" ||
+        st.name.toLowerCase() === "complete"
+    ) || projectStatuses[projectStatuses.length - 1]
+  const isCompleted = task?.statusId === completedStatus?.id
 
-  const updateTaskMutation = useUpdateTask(projectId || "", taskId);
-  const createSubtaskMutation = useCreateSubtask(taskId);
-  const updateSubtaskMutation = useUpdateSubtask(taskId);
-  const deleteSubtaskMutation = useDeleteSubtask(taskId);
-  const createCommentMutation = useCreateComment(taskId);
-  const deleteCommentMutation = useDeleteComment(taskId);
-  const updateCommentMutation = useUpdateComment(taskId);
-  const toggleReactionMutation = useToggleCommentReaction(taskId);
+  const { data: projectSprints = [] } = useProjectSprints(projectId || "")
+  const projectMembers = selectedProject?.members || []
+  const projectTemplate = selectedProject?.template || "simple"
+
+  const updateTaskMutation = useUpdateTask(projectId || "", taskId)
+  const createSubtaskMutation = useCreateSubtask(taskId)
+  const updateSubtaskMutation = useUpdateSubtask(taskId)
+  const deleteSubtaskMutation = useDeleteSubtask(taskId)
+  const createCommentMutation = useCreateComment(taskId)
+  const deleteCommentMutation = useDeleteComment(taskId)
+  const updateCommentMutation = useUpdateComment(taskId)
+  const toggleReactionMutation = useToggleCommentReaction(taskId)
 
   // Local state
-  const [localTitle, setLocalTitle] = useState("");
-  const [localDesc, setLocalDesc] = useState("");
-  const [newComment, setNewComment] = useState("");
-  const [subtaskValidationErrors, setSubtaskValidationErrors] = useState<Record<string, string>>({});
+  const [localTitle, setLocalTitle] = useState("")
+  const [localDesc, setLocalDesc] = useState("")
+  const [newComment, setNewComment] = useState("")
+  const [subtaskValidationErrors, setSubtaskValidationErrors] = useState<
+    Record<string, string>
+  >({})
 
   const subtaskForm = useForm({
     defaultValues: {
       title: "",
     },
     onSubmit: async ({ value }) => {
-      setSubtaskValidationErrors({});
-      if (!value.title.trim()) return;
+      setSubtaskValidationErrors({})
+      if (!value.title.trim()) return
       createSubtaskMutation.mutate(
         { title: value.title.trim() },
         {
           onSuccess: () => {
-            subtaskForm.reset();
+            subtaskForm.reset()
           },
           onError: (error: unknown) => {
-            const err = error as { response?: { data?: { details?: Array<{ field: string; message: string }>; message?: string } } };
-            const errorDetails = err.response?.data?.details;
+            const err = error as {
+              response?: {
+                data?: {
+                  details?: Array<{ field: string; message: string }>
+                  message?: string
+                }
+              }
+            }
+            const errorDetails = err.response?.data?.details
             if (Array.isArray(errorDetails)) {
-              const errors: Record<string, string> = {};
+              const errors: Record<string, string> = {}
               errorDetails.forEach((d) => {
-                errors[d.field] = d.message;
-              });
-              setSubtaskValidationErrors(errors);
+                errors[d.field] = d.message
+              })
+              setSubtaskValidationErrors(errors)
             } else {
-              toast.error(err.response?.data?.message || "Failed to add subtask");
+              toast.error(
+                err.response?.data?.message || "Failed to add subtask"
+              )
             }
           },
         }
-      );
+      )
     },
-  });
+  })
 
   useEffect(() => {
     if (task) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Needed to sync local state with fetched task data
-      setLocalTitle(task.title || "");
-      setLocalDesc(task.description || "");
+      setLocalTitle(task.title || "")
+      setLocalDesc(task.description || "")
     }
-  }, [task]);
+  }, [task])
 
   const handleFieldChange = (field: string, value: LooseRecord) => {
-    updateTaskMutation.mutate({ [field]: value });
-  };
+    updateTaskMutation.mutate({ [field]: value })
+  }
 
   const handleCustomFieldChange = (fieldKey: string, value: LooseRecord) => {
-    const existingCustomFields = task?.customFields || {};
-    const updated = { ...existingCustomFields, [fieldKey]: value };
-    handleFieldChange("customFields", updated);
-  };
+    const existingCustomFields = task?.customFields || {}
+    const updated = { ...existingCustomFields, [fieldKey]: value }
+    handleFieldChange("customFields", updated)
+  }
 
   const handleTitleBlur = () => {
     if (localTitle.trim() && localTitle !== task?.title) {
-      handleFieldChange("title", localTitle.trim());
+      handleFieldChange("title", localTitle.trim())
     }
-  };
+  }
 
   const handleDescBlur = () => {
     if (localDesc !== task?.description) {
-      handleFieldChange("description", localDesc);
+      handleFieldChange("description", localDesc)
     }
-  };
-
-
+  }
 
   const handleAddComment = (e?: React.FormEvent | React.MouseEvent) => {
-    e?.preventDefault();
-    const cleanContent = newComment.replace(/<[^>]*>/g, "").trim();
-    if (!cleanContent && !newComment.includes("<img")) return;
-    createCommentMutation.mutate({ content: newComment.trim() });
-    setNewComment("");
-  };
+    e?.preventDefault()
+    const cleanContent = newComment.replace(/<[^>]*>/g, "").trim()
+    if (!cleanContent && !newComment.includes("<img")) return
+    createCommentMutation.mutate({ content: newComment.trim() })
+    setNewComment("")
+  }
 
   const handleAddReply = (parentId: string) => {
-    const cleanContent = replyContent.replace(/<[^>]*>/g, "").trim();
-    if (!cleanContent && !replyContent.includes("<img")) return;
+    const cleanContent = replyContent.replace(/<[^>]*>/g, "").trim()
+    if (!cleanContent && !replyContent.includes("<img")) return
     createCommentMutation.mutate(
       { content: replyContent.trim(), parentId },
       {
         onSuccess: () => {
-          setReplyContent("");
-          setReplyingToCommentId(null);
+          setReplyContent("")
+          setReplyingToCommentId(null)
         },
       }
-    );
-  };
+    )
+  }
 
   const handleUpdateComment = (commentId: string) => {
-    const cleanContent = editingContent.replace(/<[^>]*>/g, "").trim();
-    if (!cleanContent && !editingContent.includes("<img")) return;
+    const cleanContent = editingContent.replace(/<[^>]*>/g, "").trim()
+    if (!cleanContent && !editingContent.includes("<img")) return
     updateCommentMutation.mutate(
       { commentId, content: editingContent.trim() },
       {
         onSuccess: () => {
-          setEditingContent("");
-          setEditingCommentId(null);
+          setEditingContent("")
+          setEditingCommentId(null)
         },
       }
-    );
-  };
+    )
+  }
 
   const copyTaskUrl = async () => {
-    const url = window.location.href;
-    await navigator.clipboard.writeText(url);
-    toast.success("Task link copied to clipboard");
-  };
+    const url = window.location.href
+    await navigator.clipboard.writeText(url)
+    toast.success("Task link copied to clipboard")
+  }
 
   if (isTaskLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[500px]">
-        <span className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></span>
+      <div className="flex min-h-[500px] flex-1 items-center justify-center">
+        <span className="h-10 w-10 animate-spin rounded-full border-b-2 border-primary"></span>
       </div>
-    );
+    )
   }
 
   if (!task) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] space-y-4 text-foreground bg-background">
+      <div className="flex min-h-[400px] flex-1 flex-col items-center justify-center space-y-4 bg-background text-foreground">
         <AlertTriangle className="h-12 w-12 text-destructive" />
         <h3 className="text-lg font-bold">Task not found</h3>
-        <p className="text-sm text-muted-foreground">The task you are looking for does not exist or has been deleted.</p>
-        <Button onClick={() => router.push(`/${workspaceSlug}/dashboard`)}>Go to Dashboard</Button>
+        <p className="text-sm text-muted-foreground">
+          The task you are looking for does not exist or has been deleted.
+        </p>
+        <Button onClick={() => router.push(`/${workspaceSlug}/dashboard`)}>
+          Go to Dashboard
+        </Button>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="flex-1 bg-background text-foreground min-h-screen">
+    <div className="min-h-screen flex-1 bg-background text-foreground">
       {/* Top Breadcrumbs & Action Bar */}
-      <div className="border-b border-border bg-card/40 py-4 px-6 md:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="border-b border-border bg-card/40 px-6 py-4 md:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => router.push(`/${workspaceSlug}/projects/${projectId}`)}
+              onClick={() =>
+                router.push(`/${workspaceSlug}/projects/${projectId}`)
+              }
               title="Back to project"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="min-w-0">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                 <span>Projects</span>
                 <span>/</span>
-                <span className="truncate max-w-[150px]">{selectedProject?.title || "Project"}</span>
+                <span className="max-w-[150px] truncate">
+                  {selectedProject?.title || "Project"}
+                </span>
                 <span>/</span>
                 <span>Task Details</span>
               </div>
-              <h2 className="text-xs font-semibold text-muted-foreground mt-0.5 truncate">
+              <h2 className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">
                 ID: {task.id}
               </h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
+              variant={isCompleted ? "secondary" : "default"}
+              size="sm"
+              className="flex h-8 items-center gap-1.5 text-xs"
+              onClick={() => {
+                if (!completedStatus) return
+                if (isCompleted) {
+                  const firstStatus = projectStatuses[0]
+                  if (firstStatus) {
+                    handleFieldChange("statusId", firstStatus.id)
+                  }
+                } else {
+                  handleFieldChange("statusId", completedStatus.id)
+                }
+              }}
+            >
+              <CheckCircle2
+                size={13}
+                className={
+                  isCompleted ? "fill-green-500/10 text-green-500" : ""
+                }
+              />
+              {isCompleted ? "Completed" : "Mark Complete"}
+            </Button>
+            <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs flex items-center gap-1.5"
+              className="flex h-8 items-center gap-1.5 text-xs"
               onClick={copyTaskUrl}
             >
               <Copy size={13} /> Copy Link
@@ -261,25 +324,23 @@ export default function TaskDetailPage() {
       </div>
 
       {/* Main Responsive Grid Layout */}
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          
+      <div className="mx-auto max-w-7xl px-6 py-8 md:px-8">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
           {/* Left Columns (Main content) */}
-          <div className="lg:col-span-2 space-y-6">
-            
+          <div className="space-y-6 lg:col-span-2">
             {/* Title */}
             <div>
               <Input
                 value={localTitle}
                 onChange={(e) => setLocalTitle(e.target.value)}
                 onBlur={handleTitleBlur}
-                className="text-2xl font-bold bg-transparent border-transparent hover:border-border focus:border-primary focus:ring-1 focus:ring-primary px-2 py-1 h-auto text-foreground w-full focus:outline-none"
+                className="h-auto w-full border-transparent bg-transparent px-2 py-1 text-2xl font-bold text-foreground hover:border-border focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
 
             {/* Description */}
-            <div className="bg-card/30 p-5 rounded-xl border border-border">
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
+            <div className="rounded-xl border border-border bg-card/30 p-5">
+              <label className="mb-3 flex items-center gap-1.5 text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 <FileText size={14} /> Description
               </label>
               <RichTextEditor
@@ -293,13 +354,16 @@ export default function TaskDetailPage() {
             </div>
 
             {/* Subtasks checklist */}
-            <div className="bg-card/30 p-5 rounded-xl border border-border">
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
+            <div className="rounded-xl border border-border bg-card/30 p-5">
+              <label className="mb-3 flex items-center gap-1.5 text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 <CheckCircle2 size={14} /> Subtask Checklist
               </label>
-              <div className="space-y-2 mb-3">
+              <div className="mb-3 space-y-2">
                 {task.subtasks?.map((subtask: LooseRecord) => (
-                  <div key={subtask.id} className="flex items-center justify-between gap-3 group bg-muted/20 p-2.5 rounded-lg border border-border/40">
+                  <div
+                    key={subtask.id}
+                    className="group flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-muted/20 p-2.5"
+                  >
                     <div className="flex items-center gap-2.5">
                       <Checkbox
                         checked={subtask.isCompleted}
@@ -309,15 +373,17 @@ export default function TaskDetailPage() {
                             data: { isCompleted: !!checked },
                           })
                         }
-                        className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                        className="border-border data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                       />
-                      <span className={`text-sm ${subtask.isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                      <span
+                        className={`text-sm ${subtask.isCompleted ? "text-muted-foreground line-through" : "text-foreground"}`}
+                      >
                         {subtask.title}
                       </span>
                     </div>
                     <button
                       onClick={() => deleteSubtaskMutation.mutate(subtask.id)}
-                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                      className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
                     >
                       <Trash size={14} />
                     </button>
@@ -326,9 +392,9 @@ export default function TaskDetailPage() {
               </div>
               <form
                 onSubmit={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  subtaskForm.handleSubmit();
+                  e.preventDefault()
+                  e.stopPropagation()
+                  subtaskForm.handleSubmit()
                 }}
                 className="flex flex-col gap-1.5"
               >
@@ -336,53 +402,63 @@ export default function TaskDetailPage() {
                   name="title"
                   validators={{
                     onChange: ({ value }) => {
-                      if (!value.trim()) return "Subtask title is required";
-                      return undefined;
+                      if (!value.trim()) return "Subtask title is required"
+                      return undefined
                     },
                   }}
                 >
                   {(field) => {
-                    const fieldErrors: string[] = [];
+                    const fieldErrors: string[] = []
                     field.state.meta.errors.forEach((err) => {
-                      if (err) fieldErrors.push(String(err));
-                    });
-                    if (subtaskValidationErrors.title) fieldErrors.push(subtaskValidationErrors.title);
-                    const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+                      if (err) fieldErrors.push(String(err))
+                    })
+                    if (subtaskValidationErrors.title)
+                      fieldErrors.push(subtaskValidationErrors.title)
+                    const hasError =
+                      field.state.meta.isTouched && !!fieldErrors.length
                     return (
-                      <div className="space-y-1 w-full">
-                        <div className="flex gap-2 w-full">
+                      <div className="w-full space-y-1">
+                        <div className="flex w-full gap-2">
                           <Input
                             value={field.state.value}
                             onChange={(e) => {
-                              field.handleChange(e.target.value);
-                              setSubtaskValidationErrors((prev) => ({ ...prev, title: "" }));
+                              field.handleChange(e.target.value)
+                              setSubtaskValidationErrors((prev) => ({
+                                ...prev,
+                                title: "",
+                              }))
                             }}
                             placeholder="Add a subtask..."
-                            className="flex-1 bg-background border-border text-xs h-8 focus:outline-none"
+                            className="h-8 flex-1 border-border bg-background text-xs focus:outline-none"
                             aria-invalid={hasError}
                           />
-                          <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs shrink-0">
+                          <Button
+                            type="submit"
+                            size="sm"
+                            variant="secondary"
+                            className="h-8 shrink-0 text-xs"
+                          >
                             <Plus size={14} className="mr-1" /> Add
                           </Button>
                         </div>
                         {hasError && (
-                          <p className="text-[11px] text-rose-500 font-medium mt-0.5">
+                          <p className="mt-0.5 text-[11px] font-medium text-rose-500">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
                       </div>
-                    );
+                    )
                   }}
                 </subtaskForm.Field>
               </form>
             </div>
 
             {/* Comments & Discussion */}
-            <div className="bg-card/30 p-5 rounded-xl border border-border space-y-4">
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 border-b border-border pb-2">
+            <div className="space-y-4 rounded-xl border border-border bg-card/30 p-5">
+              <label className="flex items-center gap-1.5 border-b border-border pb-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 <MessageSquare size={14} /> Discussion / Comments
               </label>
-              
+
               <div className="flex flex-col gap-2">
                 <RichTextEditor
                   placeholder="Write a comment... (Supports rich text, @mentions, /commands, paste images)"
@@ -393,72 +469,91 @@ export default function TaskDetailPage() {
                   onSubmit={handleAddComment}
                 />
                 <div className="flex justify-end">
-                  <Button type="button" onClick={() => handleAddComment()} size="sm" className="text-xs">
+                  <Button
+                    type="button"
+                    onClick={() => handleAddComment()}
+                    size="sm"
+                    className="text-xs"
+                  >
                     Post Comment
                   </Button>
                 </div>
               </div>
 
-              <div className="space-y-6 mt-4">
-                {buildCommentThreads(task.comments || []).map((comment: LooseRecord) => (
-                  <CommentNode
-                    key={comment.id}
-                    comment={comment}
-                    currentUser={currentUser}
-                    projectMembers={projectMembers}
-                    replyingToCommentId={replyingToCommentId}
-                    setReplyingToCommentId={setReplyingToCommentId}
-                    replyContent={replyContent}
-                    setReplyContent={setReplyContent}
-                    handleAddReply={handleAddReply}
-                    editingCommentId={editingCommentId}
-                    setEditingCommentId={setEditingCommentId}
-                    editingContent={editingContent}
-                    setEditingContent={setEditingContent}
-                    handleUpdateComment={handleUpdateComment}
-                    deleteCommentMutation={deleteCommentMutation}
-                    toggleReactionMutation={toggleReactionMutation}
-                  />
-                ))}
+              <div className="mt-4 space-y-6">
+                {buildCommentThreads(task.comments || []).map(
+                  (comment: LooseRecord) => (
+                    <CommentNode
+                      key={comment.id}
+                      comment={comment}
+                      currentUser={currentUser}
+                      projectMembers={projectMembers}
+                      replyingToCommentId={replyingToCommentId}
+                      setReplyingToCommentId={setReplyingToCommentId}
+                      replyContent={replyContent}
+                      setReplyContent={setReplyContent}
+                      handleAddReply={handleAddReply}
+                      editingCommentId={editingCommentId}
+                      setEditingCommentId={setEditingCommentId}
+                      editingContent={editingContent}
+                      setEditingContent={setEditingContent}
+                      handleUpdateComment={handleUpdateComment}
+                      deleteCommentMutation={deleteCommentMutation}
+                      toggleReactionMutation={toggleReactionMutation}
+                    />
+                  )
+                )}
               </div>
             </div>
 
             {/* Activity Feed */}
-            <div className="bg-card/30 p-5 rounded-xl border border-border space-y-4">
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 border-b border-border pb-2">
+            <div className="space-y-4 rounded-xl border border-border bg-card/30 p-5">
+              <label className="flex items-center gap-1.5 border-b border-border pb-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 <Activity size={14} /> Activity Feed
               </label>
               <div className="space-y-3 pl-2">
                 {task.activityLogs?.map((activity: LooseRecord) => (
-                  <div key={activity.id} className="text-xs text-muted-foreground flex items-start gap-2.5">
-                    <Clock size={13} className="mt-0.5 text-muted-foreground/60 flex-shrink-0" />
+                  <div
+                    key={activity.id}
+                    className="flex items-start gap-2.5 text-xs text-muted-foreground"
+                  >
+                    <Clock
+                      size={13}
+                      className="mt-0.5 flex-shrink-0 text-muted-foreground/60"
+                    />
                     <div>
-                      <span className="font-semibold text-foreground">{activity.user.name} </span>
+                      <span className="font-semibold text-foreground">
+                        {activity.user.name}{" "}
+                      </span>
                       <span>{formatActivityText(activity)}</span>
-                      <span className="text-[10px] text-muted-foreground/80 block mt-0.5">
-                        {format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}
+                      <span className="mt-0.5 block text-[10px] text-muted-foreground/80">
+                        {format(
+                          new Date(activity.createdAt),
+                          "MMM d, yyyy h:mm a"
+                        )}
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-
           </div>
 
           {/* Right Sidebar Columns (Metadata Parameters) */}
-          <div className="lg:col-span-1 bg-card/30 p-5 rounded-xl border border-border space-y-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">
+          <div className="space-y-6 rounded-xl border border-border bg-card/30 p-5 lg:col-span-1">
+            <h3 className="border-b border-border pb-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
               Metadata Settings
             </h3>
 
             {/* Status */}
             <div className="space-y-1.5">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground block">Status</span>
+              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
+                Status
+              </span>
               <select
                 value={task.statusId}
                 onChange={(e) => handleFieldChange("statusId", e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
               >
                 {projectStatuses.map((st: LooseRecord) => (
                   <option key={st.id} value={st.id}>
@@ -470,11 +565,15 @@ export default function TaskDetailPage() {
 
             {/* Assignee */}
             <div className="space-y-1.5">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground block">Assignee</span>
+              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
+                Assignee
+              </span>
               <select
                 value={task.assigneeId || ""}
-                onChange={(e) => handleFieldChange("assigneeId", e.target.value || null)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+                onChange={(e) =>
+                  handleFieldChange("assigneeId", e.target.value || null)
+                }
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
               >
                 <option value="">Unassigned</option>
                 {projectMembers.map((m: LooseRecord) => (
@@ -488,11 +587,15 @@ export default function TaskDetailPage() {
             {/* Sprint (Scrum Only) */}
             {projectTemplate === "scrum" && (
               <div className="space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Work Cycle / Sprint</span>
+                <span className="block text-[10px] font-bold text-muted-foreground uppercase">
+                  Work Cycle / Sprint
+                </span>
                 <select
                   value={task.sprintId || ""}
-                  onChange={(e) => handleFieldChange("sprintId", e.target.value || null)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+                  onChange={(e) =>
+                    handleFieldChange("sprintId", e.target.value || null)
+                  }
+                  className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
                 >
                   <option value="">Backlog</option>
                   {projectSprints.map((sp: LooseRecord) => (
@@ -506,11 +609,13 @@ export default function TaskDetailPage() {
 
             {/* Task Type */}
             <div className="space-y-1.5">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground block">Type</span>
+              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
+                Type
+              </span>
               <select
                 value={task.type}
                 onChange={(e) => handleFieldChange("type", e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
               >
                 <option value="task">Task</option>
                 <option value="bug">Bug (Defect)</option>
@@ -520,11 +625,13 @@ export default function TaskDetailPage() {
 
             {/* Priority */}
             <div className="space-y-1.5">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground block">Priority</span>
+              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
+                Priority
+              </span>
               <select
                 value={task.priority}
                 onChange={(e) => handleFieldChange("priority", e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -536,7 +643,9 @@ export default function TaskDetailPage() {
             {/* Estimate (Hours / Points) */}
             {projectTemplate !== "simple" && (
               <div className="space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Estimate (Points/Hours)</span>
+                <span className="block text-[10px] font-bold text-muted-foreground uppercase">
+                  Estimate (Points/Hours)
+                </span>
                 <Input
                   type="number"
                   value={task.estimate ?? ""}
@@ -546,7 +655,7 @@ export default function TaskDetailPage() {
                       e.target.value ? parseFloat(e.target.value) : null
                     )
                   }
-                  className="bg-background border-border text-xs h-9 text-foreground focus:outline-none"
+                  className="h-9 border-border bg-background text-xs text-foreground focus:outline-none"
                   placeholder="Estimate value..."
                 />
               </div>
@@ -554,7 +663,9 @@ export default function TaskDetailPage() {
 
             {/* Due Date */}
             <div className="space-y-1.5">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground block">Due Date</span>
+              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
+                Due Date
+              </span>
               <Popover>
                 <PopoverTrigger
                   render={
@@ -562,12 +673,16 @@ export default function TaskDetailPage() {
                       type="button"
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal text-xs h-9 bg-background border-border text-foreground px-3",
+                        "h-9 w-full justify-start border-border bg-background px-3 text-left text-xs font-normal text-foreground",
                         !task.dueDate && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                      {task.dueDate ? format(new Date(task.dueDate), "MMM d, yyyy") : <span>No due date</span>}
+                      {task.dueDate ? (
+                        format(new Date(task.dueDate), "MMM d, yyyy")
+                      ) : (
+                        <span>No due date</span>
+                      )}
                     </Button>
                   }
                 />
@@ -589,26 +704,36 @@ export default function TaskDetailPage() {
             {/* Custom Fields Editor */}
             {customFieldDefinitions && customFieldDefinitions.length > 0 && (
               <div className="space-y-4 border-t border-border pt-4">
-                <span className="text-[10px] uppercase font-bold text-primary block">Custom Properties</span>
+                <span className="block text-[10px] font-bold text-primary uppercase">
+                  Custom Properties
+                </span>
                 {customFieldDefinitions.map((fieldDef: LooseRecord) => {
-                  const fieldValue = task.customFields?.[fieldDef.id] ?? "";
+                  const fieldValue = task.customFields?.[fieldDef.id] ?? ""
                   return (
                     <div key={fieldDef.id} className="space-y-1.5">
-                      <span className="text-[10px] font-semibold text-muted-foreground block">{fieldDef.name}</span>
+                      <span className="block text-[10px] font-semibold text-muted-foreground">
+                        {fieldDef.name}
+                      </span>
                       {fieldDef.type === "checkbox" ? (
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="mt-1 flex items-center gap-2">
                           <Checkbox
                             checked={!!fieldValue}
-                            onCheckedChange={(checked) => handleCustomFieldChange(fieldDef.id, !!checked)}
+                            onCheckedChange={(checked) =>
+                              handleCustomFieldChange(fieldDef.id, !!checked)
+                            }
                             className="border-border"
                           />
-                          <span className="text-xs text-muted-foreground">Yes / Active</span>
+                          <span className="text-xs text-muted-foreground">
+                            Yes / Active
+                          </span>
                         </div>
                       ) : fieldDef.type === "select" ? (
                         <select
                           value={fieldValue}
-                          onChange={(e) => handleCustomFieldChange(fieldDef.id, e.target.value)}
-                          className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary h-9"
+                          onChange={(e) =>
+                            handleCustomFieldChange(fieldDef.id, e.target.value)
+                          }
+                          className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
                         >
                           <option value="">Choose Option</option>
                           {fieldDef.options?.map((opt: string) => (
@@ -619,7 +744,13 @@ export default function TaskDetailPage() {
                         </select>
                       ) : (
                         <Input
-                          type={fieldDef.type === "number" ? "number" : fieldDef.type === "date" ? "date" : "text"}
+                          type={
+                            fieldDef.type === "number"
+                              ? "number"
+                              : fieldDef.type === "date"
+                                ? "date"
+                                : "text"
+                          }
                           value={
                             fieldDef.type === "date" && fieldValue
                               ? format(new Date(fieldValue), "yyyy-MM-dd")
@@ -631,75 +762,80 @@ export default function TaskDetailPage() {
                               fieldDef.type === "number"
                                 ? parseFloat(e.target.value) || 0
                                 : fieldDef.type === "date"
-                                ? e.target.value
-                                  ? new Date(e.target.value).toISOString()
-                                  : ""
-                                : e.target.value
+                                  ? e.target.value
+                                    ? new Date(e.target.value).toISOString()
+                                    : ""
+                                  : e.target.value
                             )
                           }
-                          className="bg-background border-border text-xs h-9 text-foreground focus:outline-none"
+                          className="h-9 border-border bg-background text-xs text-foreground focus:outline-none"
                         />
                       )}
                     </div>
-                  );
+                  )
                 })}
               </div>
             )}
-            
           </div>
-          
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 const formatActivityText = (activity: LooseRecord) => {
-  const action = activity.action;
-  const oldValue = activity.oldValue;
-  const newValue = activity.newValue;
+  const action = activity.action
+  const oldValue = activity.oldValue
+  const newValue = activity.newValue
 
   if (action === "comment_added") {
-    return "added a comment";
+    return "added a comment"
   }
   if (action === "description_changed") {
-    return "updated the description";
+    return "updated the description"
   }
   if (action === "title_changed") {
-    return `renamed this task to "${newValue}"`;
+    return `renamed this task to "${newValue}"`
   }
   if (action === "status_changed") {
-    return `changed status from "${oldValue}" to "${newValue}"`;
+    return `changed status from "${oldValue}" to "${newValue}"`
   }
   if (action === "priority_changed") {
-    return `changed priority from "${oldValue}" to "${newValue}"`;
+    return `changed priority from "${oldValue}" to "${newValue}"`
   }
   if (action === "assignee_changed") {
-    return newValue ? `assigned to ${newValue}` : "unassigned this task";
+    return newValue ? `assigned to ${newValue}` : "unassigned this task"
   }
   if (action === "created") {
-    return "created this task";
+    return "created this task"
   }
   if (action === "deleted") {
-    return "deleted this task";
+    return "deleted this task"
   }
 
   // Fallback
-  const actionText = action.replace("_", " ");
-  let valueText = "";
+  const actionText = action.replace("_", " ")
+  let valueText = ""
   if (oldValue && newValue) {
-    valueText = ` from "${oldValue}" to "${newValue}"`;
+    valueText = ` from "${oldValue}" to "${newValue}"`
   } else if (newValue) {
-    valueText = ` to "${newValue}"`;
+    valueText = ` to "${newValue}"`
   } else if (oldValue) {
-    valueText = ` (previously "${oldValue}")`;
+    valueText = ` (previously "${oldValue}")`
   }
-  return `${actionText}${valueText}`;
-};
+  return `${actionText}${valueText}`
+}
 
-const ReactionChip = ({ commentId, emoji, count, hasReacted, onToggle, togglePending }: LooseRecord) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { data: users, isLoading } = useReactionUsers(commentId, emoji, isOpen);
+const ReactionChip = ({
+  commentId,
+  emoji,
+  count,
+  hasReacted,
+  onToggle,
+  togglePending,
+}: LooseRecord) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const { data: users, isLoading } = useReactionUsers(commentId, emoji, isOpen)
 
   return (
     <TooltipProvider delay={300}>
@@ -707,47 +843,53 @@ const ReactionChip = ({ commentId, emoji, count, hasReacted, onToggle, togglePen
         <TooltipTrigger
           onClick={() => onToggle(emoji)}
           className={cn(
-            "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border transition-colors",
-            hasReacted 
-              ? "bg-primary/10 border-primary/30 text-primary" 
-              : "bg-muted/50 border-border/50 hover:bg-muted text-muted-foreground"
+            "flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-medium transition-colors",
+            hasReacted
+              ? "border-primary/30 bg-primary/10 text-primary"
+              : "border-border/50 bg-muted/50 text-muted-foreground hover:bg-muted"
           )}
         >
           <span>{emoji}</span>
           <span>{count}</span>
         </TooltipTrigger>
-        <TooltipContent side="top" align="center" className="w-auto p-2 min-w-[150px] bg-popover text-popover-foreground border shadow-md">
-           {isLoading || togglePending ? (
-              <div className="space-y-2">
-                 <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                 <div className="flex items-center gap-2">
-                   <div className="h-6 w-6 rounded-full bg-muted animate-pulse" />
-                   <div className="h-3 w-20 bg-muted animate-pulse rounded" />
-                 </div>
+        <TooltipContent
+          side="top"
+          align="center"
+          className="w-auto min-w-[150px] border bg-popover p-2 text-popover-foreground shadow-md"
+        >
+          {isLoading || togglePending ? (
+            <div className="space-y-2">
+              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 animate-pulse rounded-full bg-muted" />
+                <div className="h-3 w-20 animate-pulse rounded bg-muted" />
               </div>
-           ) : (
-              <div className="space-y-2">
-                <div className="text-xs font-semibold text-muted-foreground pb-1 border-b border-border/50">
-                  Reacted with {emoji}
-                </div>
-                <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-2">
-                  {users?.map((u: LooseRecord) => (
-                    <div key={u.id} className="flex items-center gap-2">
-                      <Avatar className="h-5 w-5 border border-border">
-                        <AvatarImage src={u.image || ""} />
-                        <AvatarFallback className="text-[9px] bg-muted text-muted-foreground">{u.name?.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs">{u.name}</span>
-                    </div>
-                  ))}
-                </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="border-b border-border/50 pb-1 text-xs font-semibold text-muted-foreground">
+                Reacted with {emoji}
               </div>
-           )}
+              <div className="flex max-h-[200px] flex-col gap-2 overflow-y-auto pr-2">
+                {users?.map((u: LooseRecord) => (
+                  <div key={u.id} className="flex items-center gap-2">
+                    <Avatar className="h-5 w-5 border border-border">
+                      <AvatarImage src={u.image || ""} />
+                      <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
+                        {u.name?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs">{u.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  );
-};
+  )
+}
 
 const CommentNode = ({
   comment,
@@ -766,67 +908,74 @@ const CommentNode = ({
   deleteCommentMutation,
   toggleReactionMutation,
 }: {
-  comment: LooseRecord;
-  currentUser: LooseRecord;
-  projectMembers: LooseRecord[];
-  replyingToCommentId: string | null;
-  setReplyingToCommentId: (id: string | null) => void;
-  replyContent: string;
-  setReplyContent: (content: string) => void;
-  handleAddReply: (parentId: string) => void;
-  editingCommentId: string | null;
-  setEditingCommentId: (id: string | null) => void;
-  editingContent: string;
-  setEditingContent: (content: string) => void;
-  handleUpdateComment: (commentId: string) => void;
-  deleteCommentMutation: LooseAny;
-  toggleReactionMutation: LooseAny;
+  comment: LooseRecord
+  currentUser: LooseRecord
+  projectMembers: LooseRecord[]
+  replyingToCommentId: string | null
+  setReplyingToCommentId: (id: string | null) => void
+  replyContent: string
+  setReplyContent: (content: string) => void
+  handleAddReply: (parentId: string) => void
+  editingCommentId: string | null
+  setEditingCommentId: (id: string | null) => void
+  editingContent: string
+  setEditingContent: (content: string) => void
+  handleUpdateComment: (commentId: string) => void
+  deleteCommentMutation: LooseAny
+  toggleReactionMutation: LooseAny
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const { resolvedTheme } = useTheme();
-  const isDarkMode = resolvedTheme === "dark";
+  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isHovered, setIsHovered] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const { resolvedTheme } = useTheme()
+  const isDarkMode = resolvedTheme === "dark"
 
   // Group reactions by emoji
-  const reactionGroups = (comment.reactions || []).reduce((acc: LooseRecord, reaction: LooseRecord) => {
-    if (!acc[reaction.emoji]) {
-      acc[reaction.emoji] = [];
-    }
-    acc[reaction.emoji].push(reaction);
-    return acc;
-  }, {});
+  const reactionGroups = (comment.reactions || []).reduce(
+    (acc: LooseRecord, reaction: LooseRecord) => {
+      if (!acc[reaction.emoji]) {
+        acc[reaction.emoji] = []
+      }
+      acc[reaction.emoji].push(reaction)
+      return acc
+    },
+    {}
+  )
 
   const handleToggleReaction = (emoji: string) => {
-    toggleReactionMutation.mutate({ commentId: comment.id, emoji });
-    setShowEmojiPicker(false);
-  };
+    toggleReactionMutation.mutate({ commentId: comment.id, emoji })
+    setShowEmojiPicker(false)
+  }
 
   return (
-    <div className="space-y-3 relative">
+    <div className="relative space-y-3">
       {/* Comment Card */}
-      <div 
-        className="flex gap-3 relative group"
+      <div
+        className="group relative flex gap-3"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {isHovered && (
-          <div className="absolute -top-3 right-2 bg-background border border-border rounded-full shadow-sm flex items-center p-0.5 gap-0.5 z-10">
-            {['❤️', '👍', '🙏', '👎'].map(emoji => (
-              <button 
+          <div className="absolute -top-3 right-2 z-10 flex items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm">
+            {["❤️", "👍", "🙏", "👎"].map((emoji) => (
+              <button
                 key={emoji}
-                className="w-7 h-7 flex items-center justify-center hover:bg-muted rounded-full transition-colors text-sm"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-sm transition-colors hover:bg-muted"
                 onClick={() => handleToggleReaction(emoji)}
               >
                 {emoji}
               </button>
             ))}
             <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-              <PopoverTrigger className="w-7 h-7 flex items-center justify-center hover:bg-muted rounded-full transition-colors text-muted-foreground">
+              <PopoverTrigger className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted">
                 <SmilePlus size={14} />
               </PopoverTrigger>
-              <PopoverContent side="top" align="end" className="p-0 border-none bg-transparent shadow-none w-auto">
-                <EmojiPicker 
+              <PopoverContent
+                side="top"
+                align="end"
+                className="w-auto border-none bg-transparent p-0 shadow-none"
+              >
+                <EmojiPicker
                   onEmojiClick={(e) => handleToggleReaction(e.emoji)}
                   theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
                 />
@@ -835,31 +984,31 @@ const CommentNode = ({
           </div>
         )}
 
-        <Avatar className="h-8 w-8 border border-border flex-shrink-0 mt-1">
+        <Avatar className="mt-1 h-8 w-8 flex-shrink-0 border border-border">
           <AvatarImage src={comment.user?.image || ""} />
-          <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
+          <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
             {comment.user?.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 bg-muted/40 p-3.5 rounded-xl border border-border/40">
-          <div className="flex justify-between items-center mb-1">
+        <div className="flex-1 rounded-xl border border-border/40 bg-muted/40 p-3.5">
+          <div className="mb-1 flex items-center justify-between">
             <span className="text-xs font-bold text-foreground">
               {comment.user?.name}
               {comment.isEdited && (
-                <span className="text-[10px] text-muted-foreground ml-1.5 font-normal italic">
+                <span className="ml-1.5 text-[10px] font-normal text-muted-foreground italic">
                   (edited)
                 </span>
               )}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground font-medium">
+              <span className="text-[10px] font-medium text-muted-foreground">
                 {format(new Date(comment.createdAt), "MMM d, h:mm a")}
               </span>
             </div>
           </div>
-          
+
           {editingCommentId === comment.id ? (
-            <div className="space-y-2 mt-2">
+            <div className="mt-2 space-y-2">
               <RichTextEditor
                 placeholder="Edit comment..."
                 value={editingContent}
@@ -873,10 +1022,10 @@ const CommentNode = ({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="text-[10px] h-7 px-2.5"
+                  className="h-7 px-2.5 text-[10px]"
                   onClick={() => {
-                    setEditingCommentId(null);
-                    setEditingContent("");
+                    setEditingCommentId(null)
+                    setEditingContent("")
                   }}
                 >
                   Cancel
@@ -884,7 +1033,7 @@ const CommentNode = ({
                 <Button
                   type="button"
                   size="sm"
-                  className="text-[10px] h-7 px-2.5"
+                  className="h-7 px-2.5 text-[10px]"
                   onClick={() => handleUpdateComment(comment.id)}
                 >
                   Save
@@ -893,19 +1042,19 @@ const CommentNode = ({
             </div>
           ) : (
             <>
-              <div 
-                className="text-xs text-foreground ProseMirror max-w-full overflow-hidden mb-2" 
+              <div
+                className="ProseMirror mb-2 max-w-full overflow-hidden text-xs text-foreground"
                 dangerouslySetInnerHTML={{ __html: comment.content }}
               />
               {/* Actions bar inside comment card */}
-              <div className="flex items-center gap-3 border-t border-border/40 pt-1.5 mt-1">
+              <div className="mt-1 flex items-center gap-3 border-t border-border/40 pt-1.5">
                 <button
                   type="button"
                   onClick={() => {
-                    setReplyingToCommentId(comment.id);
-                    setReplyContent("");
+                    setReplyingToCommentId(comment.id)
+                    setReplyContent("")
                   }}
-                  className="text-[10px] font-bold text-muted-foreground hover:text-primary uppercase tracking-wider transition-colors"
+                  className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase transition-colors hover:text-primary"
                 >
                   Reply
                 </button>
@@ -914,17 +1063,17 @@ const CommentNode = ({
                     <button
                       type="button"
                       onClick={() => {
-                        setEditingCommentId(comment.id);
-                        setEditingContent(comment.content);
+                        setEditingCommentId(comment.id)
+                        setEditingContent(comment.content)
                       }}
-                      className="text-[10px] font-bold text-muted-foreground hover:text-primary uppercase tracking-wider transition-colors"
+                      className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase transition-colors hover:text-primary"
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteCommentMutation.mutate(comment.id)}
-                      className="text-[10px] font-bold text-muted-foreground hover:text-destructive uppercase tracking-wider transition-colors"
+                      className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase transition-colors hover:text-destructive"
                     >
                       Delete
                     </button>
@@ -936,27 +1085,38 @@ const CommentNode = ({
 
           {/* Reactions Display */}
           {Object.keys(reactionGroups).length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {(Object.entries(reactionGroups) as LooseAny).map(([emoji, reactions]: [string, LooseRecord[]]) => {
-                const hasReacted = reactions.some((r: LooseRecord) => r.userId === currentUser?.user?.id);
-                return (
-                  <ReactionChip
-                    key={emoji}
-                    commentId={comment.id}
-                    emoji={emoji}
-                    count={reactions.length}
-                    hasReacted={hasReacted}
-                    onToggle={handleToggleReaction}
-                    togglePending={toggleReactionMutation.isPending && toggleReactionMutation.variables?.emoji === emoji}
-                  />
-                );
-              })}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {(Object.entries(reactionGroups) as LooseAny).map(
+                ([emoji, reactions]: [string, LooseRecord[]]) => {
+                  const hasReacted = reactions.some(
+                    (r: LooseRecord) => r.userId === currentUser?.user?.id
+                  )
+                  return (
+                    <ReactionChip
+                      key={emoji}
+                      commentId={comment.id}
+                      emoji={emoji}
+                      count={reactions.length}
+                      hasReacted={hasReacted}
+                      onToggle={handleToggleReaction}
+                      togglePending={
+                        toggleReactionMutation.isPending &&
+                        toggleReactionMutation.variables?.emoji === emoji
+                      }
+                    />
+                  )
+                }
+              )}
               <Popover>
-                <PopoverTrigger className="flex items-center justify-center w-6 h-6 rounded-full bg-muted/50 border border-border/50 hover:bg-muted text-muted-foreground transition-colors self-center">
+                <PopoverTrigger className="flex h-6 w-6 items-center justify-center self-center rounded-full border border-border/50 bg-muted/50 text-muted-foreground transition-colors hover:bg-muted">
                   <SmilePlus size={12} />
                 </PopoverTrigger>
-                <PopoverContent side="top" align="start" className="p-0 border-none bg-transparent shadow-none w-auto">
-                  <EmojiPicker 
+                <PopoverContent
+                  side="top"
+                  align="start"
+                  className="w-auto border-none bg-transparent p-0 shadow-none"
+                >
+                  <EmojiPicker
                     onEmojiClick={(e) => handleToggleReaction(e.emoji)}
                     theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
                   />
@@ -969,7 +1129,7 @@ const CommentNode = ({
 
       {/* Inline Reply Editor specifically for this comment */}
       {replyingToCommentId === comment.id && (
-        <div className="ml-8 pl-3 border-l-2 border-border/60 space-y-2">
+        <div className="ml-8 space-y-2 border-l-2 border-border/60 pl-3">
           <RichTextEditor
             placeholder={`Reply to ${comment.user?.name}...`}
             value={replyContent}
@@ -983,7 +1143,7 @@ const CommentNode = ({
               type="button"
               variant="ghost"
               size="sm"
-              className="text-[10px] h-7 px-2.5"
+              className="h-7 px-2.5 text-[10px]"
               onClick={() => setReplyingToCommentId(null)}
             >
               Cancel
@@ -991,7 +1151,7 @@ const CommentNode = ({
             <Button
               type="button"
               size="sm"
-              className="text-[10px] h-7 px-2.5"
+              className="h-7 px-2.5 text-[10px]"
               onClick={() => handleAddReply(comment.id)}
             >
               Reply
@@ -1002,25 +1162,30 @@ const CommentNode = ({
 
       {/* View replies button */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-10 mt-1">
+        <div className="mt-1 ml-10">
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-[10px] font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-all"
+            className="flex items-center gap-1 text-[10px] font-bold text-primary transition-all hover:text-primary/80"
           >
-            <MessageSquare size={10} className={isCollapsed ? "" : "opacity-60"} />
-            {isCollapsed ? `Show ${comment.replies.length} replies` : "Hide replies"}
+            <MessageSquare
+              size={10}
+              className={isCollapsed ? "" : "opacity-60"}
+            />
+            {isCollapsed
+              ? `Show ${comment.replies.length} replies`
+              : "Hide replies"}
           </button>
         </div>
       )}
 
       {/* Nested Replies - Recursive Rendering */}
       {!isCollapsed && comment.replies && comment.replies.length > 0 && (
-        <div className="relative ml-6 mt-2 space-y-4 before:absolute before:left-0 before:top-0 before:bottom-[28px] before:w-[2px] before:bg-border/40">
+        <div className="relative mt-2 ml-6 space-y-4 before:absolute before:top-0 before:bottom-[28px] before:left-0 before:w-[2px] before:bg-border/40">
           {comment.replies.map((reply: LooseRecord) => (
             <div key={reply.id} className="relative pl-6">
               {/* Elbow connector */}
-              <div className="absolute left-0 top-0 h-[16px] w-[16px] border-l-[2px] border-b-[2px] border-border/40 rounded-bl-md" />
+              <div className="absolute top-0 left-0 h-[16px] w-[16px] rounded-bl-md border-b-[2px] border-l-[2px] border-border/40" />
               <CommentNode
                 comment={reply}
                 currentUser={currentUser}
@@ -1043,31 +1208,37 @@ const CommentNode = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
 const buildCommentThreads = (comments: LooseRecord[]) => {
-  if (!comments) return [];
-  const commentMap = new Map();
-  const roots: LooseRecord[] = [];
+  if (!comments) return []
+  const commentMap = new Map()
+  const roots: LooseRecord[] = []
 
   comments.forEach((c) => {
-    commentMap.set(c.id, { ...c, replies: [] });
-  });
+    commentMap.set(c.id, { ...c, replies: [] })
+  })
 
   comments.forEach((c) => {
-    const mapped = commentMap.get(c.id);
+    const mapped = commentMap.get(c.id)
     if (c.parentId && commentMap.has(c.parentId)) {
-      commentMap.get(c.parentId).replies.push(mapped);
+      commentMap.get(c.parentId).replies.push(mapped)
     } else {
-      roots.push(mapped);
+      roots.push(mapped)
     }
-  });
+  })
 
-  roots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  roots.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
   roots.forEach((root) => {
-    root.replies.sort((a: LooseRecord, b: LooseRecord) => new Date(a.createdAt as string).getTime() - new Date(b.createdAt as string).getTime());
-  });
+    root.replies.sort(
+      (a: LooseRecord, b: LooseRecord) =>
+        new Date(a.createdAt as string).getTime() -
+        new Date(b.createdAt as string).getTime()
+    )
+  })
 
-  return roots;
-};
+  return roots
+}

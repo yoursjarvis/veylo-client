@@ -385,6 +385,7 @@ export default function ProjectLayout({
     { name: "Members", path: `${basePath}/settings/members` },
     { name: "Vault", path: `${basePath}/settings/vault` },
     { name: "Fields", path: `${basePath}/settings/fields` },
+    { name: "Labels", path: `${basePath}/settings/labels` },
     { name: "Webhooks", path: `${basePath}/settings/webhooks` },
   ]
 
