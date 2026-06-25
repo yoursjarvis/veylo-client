@@ -315,14 +315,14 @@ export function TaskBoard({
         return (
           <Badge
             variant="outline"
-            className="border-orange-500/30 bg-orange-500/5 text-orange-500"
+            className="border-warning/30 bg-warning/5 text-warning"
           >
             High
           </Badge>
         )
       case "medium":
         return (
-          <Badge variant="secondary" className="font-bold uppercase">
+          <Badge variant="secondary" className="font-bold uppercase text-info bg-info/10">
             Medium
           </Badge>
         )
@@ -341,9 +341,9 @@ export function TaskBoard({
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "bug":
-        return <Bug className="h-3.5 w-3.5 text-red-500" />
+        return <Bug className="h-3.5 w-3.5 text-destructive" />
       case "feature":
-        return <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+        return <Sparkles className="h-3.5 w-3.5 text-info" />
       default:
         return <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
     }
@@ -608,8 +608,8 @@ function TaskCard({
             className={cn(
               "mt-0.5 flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors",
               statusId === completedStatusId
-                ? "border-green-500 bg-green-500 text-white"
-                : "border-muted-foreground/40 text-transparent hover:border-green-500 hover:bg-green-500/10 hover:text-green-500"
+                ? "border-success bg-success text-success-foreground"
+                : "border-muted-foreground/40 text-transparent hover:border-success hover:bg-success/10 hover:text-success"
             )}
           >
             <CheckCircle2 className="h-3 w-3" />

@@ -28,6 +28,13 @@ import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { IconPicker } from "@/components/shared/icon-picker";
 import { getThumbUrl, cn } from "@/lib/utils";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+} from "@/components/ui/combobox";
 
 interface Project {
   id: string;
@@ -67,20 +74,20 @@ interface ProjectTemplate {
 const getTemplateIcon = (iconName: string | null) => {
   switch (iconName) {
     case "Layers":
-      return <Layers className="h-5 w-5" />;
+      return <Layers className="h-4 w-4" />;
     case "Kanban":
-      return <Kanban className="h-5 w-5" />;
+      return <Kanban className="h-4 w-4" />;
     case "UserPlus":
-      return <UserPlus className="h-5 w-5" />;
+      return <UserPlus className="h-4 w-4" />;
     case "Megaphone":
-      return <Megaphone className="h-5 w-5" />;
+      return <Megaphone className="h-4 w-4" />;
     case "DollarSign":
-      return <DollarSign className="h-5 w-5" />;
+      return <DollarSign className="h-4 w-4" />;
     case "Map":
-      return <Map className="h-5 w-5" />;
+      return <Map className="h-4 w-4" />;
     case "ClipboardList":
     default:
-      return <ClipboardList className="h-5 w-5" />;
+      return <ClipboardList className="h-4 w-4" />;
   }
 };
 
@@ -177,7 +184,7 @@ export default function ProjectsPage() {
   });
 
   const renderProjectIcon = (icon?: string | null, sizeClass = "h-12 w-12", textClass = "text-2xl") => {
-    const baseClasses = `flex items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110`;
+    const baseClasses = `flex items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-105 border border-border shadow-xs`;
     if (!icon) {
       return (
         <span className={`${baseClasses} ${sizeClass} bg-secondary ${textClass}`}>
@@ -188,7 +195,7 @@ export default function ProjectsPage() {
     if (icon.startsWith("http") || icon.startsWith("/") || icon.startsWith("blob:")) {
       const thumbUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon;
       return (
-        <div className={`${baseClasses} ${sizeClass} overflow-hidden border bg-background relative`}>
+        <div className={`${baseClasses} ${sizeClass} overflow-hidden bg-background relative`}>
           <Image src={thumbUrl} alt="Project Icon" fill className="object-cover" />
         </div>
       );
@@ -202,18 +209,18 @@ export default function ProjectsPage() {
 
   if (isWorkspaceLoading || isProjectsLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center">
-        <Spinner className="size-8" />
+      <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center bg-background">
+        <Spinner className="size-8 text-primary" />
       </div>
     );
   }
 
   if (!activeWorkspace) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] w-full flex-col items-center justify-center p-4">
+      <div className="flex h-[calc(100vh-4rem)] w-full flex-col items-center justify-center p-6 bg-background">
         <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">No Workspace Selected</h2>
-        <p className="text-muted-foreground mt-2 text-center max-w-md">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">No Workspace Selected</h2>
+        <p className="text-sm text-muted-foreground mt-1.5 text-center max-w-sm">
           Please select or create a workspace to view projects.
         </p>
       </div>
@@ -221,12 +228,12 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background p-6">
+    <div className="min-h-[calc(100vh-4rem)] bg-background p-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">Projects</h1>
-            <p className="text-muted-foreground mt-1">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Projects</h1>
+            <p className="text-sm text-muted-foreground">
               Manage your workspace projects, secure keys vaults, and document drives.
             </p>
           </div>
@@ -239,101 +246,103 @@ export default function ProjectsPage() {
                   </Button>
                 }
               />
-              <DialogContent className="sm:max-w-[650px] bg-card border-border text-foreground">
-                <DialogHeader>
-                  <DialogTitle>Create Project</DialogTitle>
-                  <DialogDescription>
+              <DialogContent className="sm:max-w-[450px] bg-card border border-border text-foreground p-6 shadow-lg">
+                <DialogHeader className="space-y-1.5 pb-4 border-b border-border">
+                  <DialogTitle className="text-lg font-bold tracking-tight text-foreground">Create Project</DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground">
                     Add a new project to the workspace. Fill in the details below.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-                  {/* Identity Fields */}
-                  <div className="space-y-4">
-                    <div className="grid gap-1.5">
-                      <label htmlFor="title" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Title <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        id="title"
-                        placeholder="e.g. Payment Gateway Integration"
-                        value={newProjectTitle}
-                        onChange={(e) => setNewProjectTitle(e.target.value)}
-                        className="bg-background border-border text-xs h-9"
-                      />
-                    </div>
-                    <div className="grid gap-1.5">
-                      <label htmlFor="desc" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Description
-                      </label>
-                      <Textarea
-                        id="desc"
-                        placeholder="Project description, objectives, or helpful details..."
-                        value={newProjectDesc}
-                        onChange={(e) => setNewProjectDesc(e.target.value)}
-                        className="bg-background border-border text-xs min-h-[100px]"
-                      />
-                    </div>
-                    <div className="grid gap-1.5">
-                      <label htmlFor="icon" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Project Icon
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <IconPicker
-                          value={newProjectIcon instanceof File ? URL.createObjectURL(newProjectIcon) : (newProjectIcon as string | null)}
-                          onChange={(val) => setNewProjectIcon(val)}
-                        />
-                        <span className="text-[11px] text-muted-foreground leading-normal">
-                          Choose an emoji or upload an image logo.
-                        </span>
-                      </div>
-                    </div>
+                <div className="space-y-4 py-4">
+                  {/* Title Field */}
+                  <div className="grid gap-1.5">
+                    <label htmlFor="title" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Title <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="title"
+                      placeholder="e.g. Payment Gateway Integration"
+                      value={newProjectTitle}
+                      onChange={(e) => setNewProjectTitle(e.target.value)}
+                      className="bg-background border border-border text-xs h-9 rounded-lg"
+                    />
                   </div>
 
-                  {/* Template Picker Grid */}
-                  <div className="space-y-3 flex flex-col min-h-0">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Select Project Template
+                  {/* Description Field */}
+                  <div className="grid gap-1.5">
+                    <label htmlFor="desc" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Description
                     </label>
-                    <div className="flex-1 overflow-y-auto max-h-[260px] pr-1 space-y-2">
-                      {templates?.map((tpl) => {
-                        const isSelected = selectedTemplate === tpl.slug;
-                        return (
-                          <button
-                            key={tpl.id}
-                            type="button"
-                            onClick={() => setSelectedTemplate(tpl.slug)}
-                            className={cn(
-                              "w-full text-left p-3 rounded-lg border text-xs transition-all flex items-start gap-3",
-                              isSelected
-                                ? "bg-primary/10 border-primary shadow-sm"
-                                : "bg-background border-border hover:bg-muted/50"
-                            )}
-                          >
-                            <div className={cn(
-                              "p-2 rounded-lg border",
-                              isSelected ? "bg-primary/20 border-primary/30" : "bg-card border-border"
-                            )}>
-                              {getTemplateIcon(tpl.icon)}
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="font-semibold text-foreground text-xs leading-none">{tpl.name}</span>
-                                <Badge variant="outline" className="text-[9px] uppercase py-0 leading-none">
+                    <Textarea
+                      id="desc"
+                      placeholder="Project description, objectives, or helpful details..."
+                      value={newProjectDesc}
+                      onChange={(e) => setNewProjectDesc(e.target.value)}
+                      className="bg-background border border-border text-xs min-h-[80px] rounded-lg"
+                    />
+                  </div>
+
+                  {/* Template Picker */}
+                  <div className="grid gap-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Project Template
+                    </label>
+                    <Combobox
+                      value={selectedTemplate}
+                      onValueChange={(val) => {
+                        if (val) setSelectedTemplate(val);
+                      }}
+                    >
+                      <ComboboxInput
+                        placeholder="Select a template..."
+                        className="w-full bg-background border border-border text-xs h-9"
+                        showTrigger
+                      />
+                      <ComboboxContent className="bg-popover border border-border">
+                        <ComboboxList>
+                          {templates?.map((tpl) => (
+                            <ComboboxItem key={tpl.id} value={tpl.slug}>
+                              <div className="flex items-center gap-2.5 w-full">
+                                <span className="shrink-0 text-muted-foreground">
+                                  {getTemplateIcon(tpl.icon)}
+                                </span>
+                                <div className="flex flex-col text-left min-w-0">
+                                  <span className="font-semibold text-xs text-foreground truncate">{tpl.name}</span>
+                                  {tpl.description && (
+                                    <span className="text-[10px] text-muted-foreground line-clamp-1 truncate max-w-[200px]">
+                                      {tpl.description}
+                                    </span>
+                                  )}
+                                </div>
+                                <Badge variant="outline" className="text-[8px] uppercase py-0 px-1 ml-auto shrink-0 leading-none">
                                   {tpl.category}
                                 </Badge>
                               </div>
-                              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
-                                {tpl.description}
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                      {templates?.length === 0 && (
-                        <div className="py-6 text-center text-xs text-muted-foreground italic border rounded-lg border-dashed">
-                          No project templates found
-                        </div>
-                      )}
+                            </ComboboxItem>
+                          ))}
+                          {templates?.length === 0 && (
+                            <ComboboxItem disabled value="">
+                              No templates found
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                  </div>
+
+                  {/* Icon Selector */}
+                  <div className="grid gap-1.5">
+                    <label htmlFor="icon" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Project Icon
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <IconPicker
+                        value={newProjectIcon instanceof File ? URL.createObjectURL(newProjectIcon) : (newProjectIcon as string | null)}
+                        onChange={(val) => setNewProjectIcon(val)}
+                      />
+                      <span className="text-xs text-muted-foreground leading-normal">
+                        Choose an emoji or upload an image logo.
+                      </span>
                     </div>
                   </div>
                 </div>

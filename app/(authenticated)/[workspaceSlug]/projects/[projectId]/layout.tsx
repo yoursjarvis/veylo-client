@@ -586,39 +586,39 @@ export default function ProjectLayout({
           <main className="flex-1 overflow-y-auto bg-background p-8">
             <div className="mx-auto space-y-6">
               {showOnboarding && (
-                <div className="relative overflow-hidden rounded-xl p-6 backdrop-blur-md transition-all duration-300">
-                  {/* Background glowing gradient */}
-                  <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl" />
-                  <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl" />
+                <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xs backdrop-blur-md transition-all duration-300">
+                  {/* Background glowing gradient using theme colors */}
+                  <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/5 blur-3xl" />
+                  <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
 
                   <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="flex h-2 w-2 animate-pulse rounded-full bg-indigo-500" />
-                        <h3 className="text-sm font-bold tracking-wider uppercase">
+                        <span className="flex h-2 w-2 animate-pulse rounded-full bg-primary" />
+                        <h3 className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
                           Getting Started Guide
                         </h3>
                       </div>
-                      <h2 className="text-lg font-bold">
+                      <h2 className="text-lg font-bold text-foreground">
                         {templateDetails?.config?.guidance?.welcome ||
                           "Welcome to your new workspace!"}
                       </h2>
-                      <p className="max-w-xl text-xs text-slate-400">
+                      <p className="max-w-xl text-xs text-muted-foreground">
                         {templateDetails?.config?.guidance?.firstStep ||
                           "Complete these quick setup tasks to onboard your team."}
                       </p>
 
                       {/* Progress Bar */}
                       <div className="max-w-sm space-y-1.5 pt-2">
-                        <div className="flex justify-between text-[10px] font-semibold text-slate-400">
+                        <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
                           <span>Setup Progress</span>
                           <span>
                             {completedCount}/{totalCount} completed
                           </span>
                         </div>
-                        <div className="h-2 w-full overflow-hidden rounded-full border border-1">
+                        <div className="h-2 w-full overflow-hidden rounded-full border border-border bg-background">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500 ease-out"
+                            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
                             style={{ width: `${progressPercent}%` }}
                           />
                         </div>
@@ -631,8 +631,8 @@ export default function ProjectLayout({
                         const Icon = step.completed ? CheckCircle2 : Circle
                         const buttonStyles = `flex items-center gap-3 p-3 rounded-lg border text-left text-xs font-medium transition-all ${
                           step.completed
-                            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
-                            : "bg-slate-100/80 border-slate-200 text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-200/80 dark:bg-slate-900/50 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800/40"
+                            ? "bg-success/5 border-success/20 text-success hover:bg-success/10"
+                            : "bg-background border-border text-foreground hover:bg-muted"
                         }`
                         if (step.href) {
                           return (
@@ -642,11 +642,11 @@ export default function ProjectLayout({
                               className={buttonStyles}
                             >
                               <Icon
-                                className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-emerald-400" : "text-slate-500"}`}
+                                className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-success" : "text-muted-foreground"}`}
                               />
                               <span className="flex-1">{step.label}</span>
                               {!step.completed && (
-                                <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
+                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                               )}
                             </Link>
                           )
@@ -659,11 +659,11 @@ export default function ProjectLayout({
                             className={buttonStyles}
                           >
                             <Icon
-                              className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-emerald-400" : "text-slate-500"}`}
+                              className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-success" : "text-muted-foreground"}`}
                             />
                             <span className="flex-1">{step.label}</span>
                             {!step.completed && (
-                              <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                             )}
                           </button>
                         )
@@ -674,9 +674,9 @@ export default function ProjectLayout({
                   {/* Close button */}
                   <Button
                     onClick={handleDismissOnboarding}
-                    variant="destructive"
+                    variant="ghost"
                     size="icon"
-                    className="absolute top-3 right-3"
+                    className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-4 w-4" />
                   </Button>

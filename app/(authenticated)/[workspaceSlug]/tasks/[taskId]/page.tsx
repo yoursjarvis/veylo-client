@@ -12,6 +12,15 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+} from "@/components/ui/combobox"
+import { InputGroupAddon } from "@/components/ui/input-group"
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -118,6 +127,11 @@ export default function TaskDetailPage() {
   const [subtaskValidationErrors, setSubtaskValidationErrors] = useState<
     Record<string, string>
   >({})
+  const [statusInputValue, setStatusInputValue] = useState("")
+  const [assigneeInputValue, setAssigneeInputValue] = useState("")
+  const [sprintInputValue, setSprintInputValue] = useState("")
+  const [typeInputValue, setTypeInputValue] = useState("")
+  const [priorityInputValue, setPriorityInputValue] = useState("")
 
   const subtaskForm = useForm({
     defaultValues: {
@@ -166,6 +180,26 @@ export default function TaskDetailPage() {
       setLocalDesc(task.description || "")
     }
   }, [task])
+
+  useEffect(() => {
+    if (task?.assigneeId) {
+      const member = projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)
+      if (member) setAssigneeInputValue(member.user.name)
+      else setAssigneeInputValue("")
+    } else {
+      setAssigneeInputValue("")
+    }
+  }, [task?.assigneeId, projectMembers])
+
+  const filteredMembers = projectMembers.filter((m: LooseRecord) => {
+    const selectedMember = projectMembers.find((pm: LooseRecord) => pm.user.id === task?.assigneeId)
+    if (selectedMember && selectedMember.user.name === assigneeInputValue) return true
+    return m.user.name?.toLowerCase().includes(assigneeInputValue.toLowerCase())
+  })
+  const showUnassigned = !assigneeInputValue || "unassigned".includes(assigneeInputValue.toLowerCase()) || (() => {
+    const selectedMember = projectMembers.find((pm: LooseRecord) => pm.user.id === task?.assigneeId)
+    return selectedMember && selectedMember.user.name === assigneeInputValue
+  })()
 
   const handleFieldChange = (field: string, value: LooseRecord) => {
     updateTaskMutation.mutate({ [field]: value })
@@ -306,7 +340,7 @@ export default function TaskDetailPage() {
               <CheckCircle2
                 size={13}
                 className={
-                  isCompleted ? "fill-green-500/10 text-green-500" : ""
+                  isCompleted ? "fill-success/10 text-success" : ""
                 }
               />
               {isCompleted ? "Completed" : "Mark Complete"}
@@ -442,7 +476,7 @@ export default function TaskDetailPage() {
                           </Button>
                         </div>
                         {hasError && (
-                          <p className="mt-0.5 text-[11px] font-medium text-rose-500">
+                          <p className="mt-0.5 text-[11px] font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -550,17 +584,27 @@ export default function TaskDetailPage() {
               <span className="block text-[10px] font-bold text-muted-foreground uppercase">
                 Status
               </span>
-              <select
-                value={task.statusId}
-                onChange={(e) => handleFieldChange("statusId", e.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
+              <Combobox
+                value={task.statusId ? { value: task.statusId, label: projectStatuses.find((s: LooseRecord) => s.id === task.statusId)?.name || "" } : null}
+                onValueChange={(val: any) => handleFieldChange("statusId", val?.value)}
+                inputValue={statusInputValue}
+                onInputValueChange={setStatusInputValue}
               >
-                {projectStatuses.map((st: LooseRecord) => (
-                  <option key={st.id} value={st.id}>
-                    {st.name}
-                  </option>
-                ))}
-              </select>
+                <ComboboxInput
+                  className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
+                  placeholder="Select status..."
+                />
+                <ComboboxContent>
+                  <ComboboxList>
+                    {projectStatuses.map((st: LooseRecord) => (
+                      <ComboboxItem key={st.id} value={{ value: st.id, label: st.name }}>
+                        {st.name}
+                      </ComboboxItem>
+                    ))}
+                    <ComboboxEmpty>No statuses found</ComboboxEmpty>
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
 
             {/* Assignee */}
@@ -568,20 +612,52 @@ export default function TaskDetailPage() {
               <span className="block text-[10px] font-bold text-muted-foreground uppercase">
                 Assignee
               </span>
-              <select
-                value={task.assigneeId || ""}
-                onChange={(e) =>
-                  handleFieldChange("assigneeId", e.target.value || null)
-                }
-                className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
+              <Combobox
+                value={task.assigneeId ? { value: task.assigneeId, label: projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)?.user?.name || "" } : null}
+                onValueChange={(val: any) => handleFieldChange("assigneeId", val?.value || null)}
+                inputValue={assigneeInputValue}
+                onInputValueChange={setAssigneeInputValue}
               >
-                <option value="">Unassigned</option>
-                {projectMembers.map((m: LooseRecord) => (
-                  <option key={m.user.id} value={m.user.id}>
-                    {m.user.name}
-                  </option>
-                ))}
-              </select>
+                <ComboboxInput
+                  className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
+                  placeholder="Select assignee..."
+                >
+                  {task.assigneeId && (() => {
+                    const member = projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)
+                    return member ? (
+                      <InputGroupAddon align="inline-start">
+                        <Avatar className="h-5 w-5 border border-border">
+                          <AvatarImage src={member.user.image || ""} />
+                          <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
+                            {member.user.name?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </InputGroupAddon>
+                    ) : null
+                  })()}
+                </ComboboxInput>
+                <ComboboxContent>
+                  <ComboboxList>
+                    {showUnassigned && (
+                      <ComboboxItem value={{ value: "", label: "Unassigned" }}>
+                        Unassigned
+                      </ComboboxItem>
+                    )}
+                    {filteredMembers.map((m: LooseRecord) => (
+                      <ComboboxItem key={m.user.id} value={{ value: m.user.id, label: m.user.name }}>
+                        <Avatar className="h-5 w-5 border border-border">
+                          <AvatarImage src={m.user.image || ""} />
+                          <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
+                            {m.user.name?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {m.user.name}
+                      </ComboboxItem>
+                    ))}
+                    <ComboboxEmpty>No members found</ComboboxEmpty>
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
 
             {/* Sprint (Scrum Only) */}
@@ -590,20 +666,30 @@ export default function TaskDetailPage() {
                 <span className="block text-[10px] font-bold text-muted-foreground uppercase">
                   Work Cycle / Sprint
                 </span>
-                <select
-                  value={task.sprintId || ""}
-                  onChange={(e) =>
-                    handleFieldChange("sprintId", e.target.value || null)
-                  }
-                  className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
+                <Combobox
+                  value={task.sprintId ? { value: task.sprintId, label: projectSprints.find((s: LooseRecord) => s.id === task.sprintId)?.name || "" } : null}
+                  onValueChange={(val: any) => handleFieldChange("sprintId", val?.value || null)}
+                  inputValue={sprintInputValue}
+                  onInputValueChange={setSprintInputValue}
                 >
-                  <option value="">Backlog</option>
-                  {projectSprints.map((sp: LooseRecord) => (
-                    <option key={sp.id} value={sp.id}>
-                      {sp.name} ({sp.status})
-                    </option>
-                  ))}
-                </select>
+                  <ComboboxInput
+                    className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
+                    placeholder="Select sprint..."
+                  />
+                  <ComboboxContent>
+                    <ComboboxList>
+                      <ComboboxItem value={{ value: "", label: "Backlog" }}>
+                        Backlog
+                      </ComboboxItem>
+                      {projectSprints.map((sp: LooseRecord) => (
+                        <ComboboxItem key={sp.id} value={{ value: sp.id, label: `${sp.name} (${sp.status})` }}>
+                          {sp.name} ({sp.status})
+                        </ComboboxItem>
+                      ))}
+                      <ComboboxEmpty>No sprints found</ComboboxEmpty>
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
             )}
 
@@ -612,15 +698,25 @@ export default function TaskDetailPage() {
               <span className="block text-[10px] font-bold text-muted-foreground uppercase">
                 Type
               </span>
-              <select
-                value={task.type}
-                onChange={(e) => handleFieldChange("type", e.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
+              <Combobox
+                value={task.type ? { value: task.type, label: task.type === "bug" ? "Bug (Defect)" : task.type === "feature" ? "Feature" : "Task" } : null}
+                onValueChange={(val: any) => handleFieldChange("type", val?.value)}
+                inputValue={typeInputValue}
+                onInputValueChange={setTypeInputValue}
               >
-                <option value="task">Task</option>
-                <option value="bug">Bug (Defect)</option>
-                <option value="feature">Feature</option>
-              </select>
+                <ComboboxInput
+                  className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
+                  placeholder="Select type..."
+                />
+                <ComboboxContent>
+                  <ComboboxList>
+                    <ComboboxItem value={{ value: "task", label: "Task" }}>Task</ComboboxItem>
+                    <ComboboxItem value={{ value: "bug", label: "Bug (Defect)" }}>Bug (Defect)</ComboboxItem>
+                    <ComboboxItem value={{ value: "feature", label: "Feature" }}>Feature</ComboboxItem>
+                    <ComboboxEmpty>No types found</ComboboxEmpty>
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
 
             {/* Priority */}
@@ -628,16 +724,26 @@ export default function TaskDetailPage() {
               <span className="block text-[10px] font-bold text-muted-foreground uppercase">
                 Priority
               </span>
-              <select
-                value={task.priority}
-                onChange={(e) => handleFieldChange("priority", e.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
+              <Combobox
+                value={task.priority ? { value: task.priority, label: task.priority.charAt(0).toUpperCase() + task.priority.slice(1) } : null}
+                onValueChange={(val: any) => handleFieldChange("priority", val?.value)}
+                inputValue={priorityInputValue}
+                onInputValueChange={setPriorityInputValue}
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
+                <ComboboxInput
+                  className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
+                  placeholder="Select priority..."
+                />
+                <ComboboxContent>
+                  <ComboboxList>
+                    <ComboboxItem value={{ value: "low", label: "Low" }}>Low</ComboboxItem>
+                    <ComboboxItem value={{ value: "medium", label: "Medium" }}>Medium</ComboboxItem>
+                    <ComboboxItem value={{ value: "high", label: "High" }}>High</ComboboxItem>
+                    <ComboboxItem value={{ value: "urgent", label: "Urgent" }}>Urgent</ComboboxItem>
+                    <ComboboxEmpty>No priorities found</ComboboxEmpty>
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
 
             {/* Estimate (Hours / Points) */}
@@ -728,20 +834,27 @@ export default function TaskDetailPage() {
                           </span>
                         </div>
                       ) : fieldDef.type === "select" ? (
-                        <select
-                          value={fieldValue}
-                          onChange={(e) =>
-                            handleCustomFieldChange(fieldDef.id, e.target.value)
+                        <Combobox
+                          value={fieldValue ? { value: fieldValue, label: fieldValue } : null}
+                          onValueChange={(val: any) =>
+                            handleCustomFieldChange(fieldDef.id, val?.value || "")
                           }
-                          className="h-9 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:border-primary focus:outline-none"
                         >
-                          <option value="">Choose Option</option>
-                          {fieldDef.options?.map((opt: string) => (
-                            <option key={opt} value={opt}>
-                              {opt}
-                            </option>
-                          ))}
-                        </select>
+                          <ComboboxInput
+                            className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
+                            placeholder="Choose option..."
+                          />
+                          <ComboboxContent>
+                            <ComboboxList>
+                              {fieldDef.options?.map((opt: string) => (
+                                <ComboboxItem key={opt} value={{ value: opt, label: opt }}>
+                                  {opt}
+                                </ComboboxItem>
+                              ))}
+                              <ComboboxEmpty>No options found</ComboboxEmpty>
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
                       ) : (
                         <Input
                           type={

@@ -31,13 +31,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select"
+
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Combobox,
@@ -136,6 +130,16 @@ export function TaskDetailsDrawer({
   const [editingContent, setEditingContent] = useState("")
 
   const [assigneeInputValue, setAssigneeInputValue] = useState("")
+  const [statusInputValue, setStatusInputValue] = useState("")
+  const [sprintInputValue, setSprintInputValue] = useState("")
+  const [typeInputValue, setTypeInputValue] = useState("")
+  const [priorityInputValue, setPriorityInputValue] = useState("")
+  const [epicInputValue, setEpicInputValue] = useState("")
+  const [milestoneInputValue, setMilestoneInputValue] = useState("")
+  const [customFieldInputValues, setCustomFieldInputValues] = useState<Record<string, string>>({})
+  const [depDirectionInputValue, setDepDirectionInputValue] = useState("")
+  const [depProjectInputValue, setDepProjectInputValue] = useState("")
+  const [depTaskInputValue, setDepTaskInputValue] = useState("")
 
   useEffect(() => {
     if (task?.assigneeId) {
@@ -354,7 +358,7 @@ export function TaskDetailsDrawer({
                 <CheckCircle2
                   size={13}
                   className={
-                    isCompleted ? "fill-green-500/10 text-green-500" : ""
+                    isCompleted ? "fill-success/10 text-success" : ""
                   }
                 />
                 {isCompleted ? "Completed" : "Mark Complete"}
@@ -476,7 +480,7 @@ export function TaskDetailsDrawer({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between border-b border-border pb-2">
                     <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                      <AlertTriangle size={14} className="text-amber-500" />{" "}
+                      <AlertTriangle size={14} className="text-warning" />{" "}
                       Linked Issues (Dependencies)
                     </label>
                     {!isLinking && (
@@ -506,39 +510,54 @@ export function TaskDetailsDrawer({
                           <label className="text-[10px] font-semibold text-muted-foreground">
                             Relationship
                           </label>
-                          <select
-                            value={depDirection}
-                            onChange={(e) =>
-                              setDepDirection(
-                                e.target.value as "blocks" | "blocked_by"
-                              )
-                            }
-                            className="h-8 w-full rounded border border-border bg-background p-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                          <Combobox
+                            value={depDirection ? { value: depDirection, label: depDirection === "blocked_by" ? "is blocked by" : "blocks" } : null}
+                            onValueChange={(val: any) => setDepDirection(val?.value as "blocks" | "blocked_by")}
+                            inputValue={depDirectionInputValue}
+                            onInputValueChange={setDepDirectionInputValue}
                           >
-                            <option value="blocked_by">is blocked by</option>
-                            <option value="blocks">blocks</option>
-                          </select>
+                            <ComboboxInput
+                              className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                              placeholder="Select relationship..."
+                            />
+                            <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                              <ComboboxList className="max-h-56 overflow-y-auto">
+                                <ComboboxItem value={{ value: "blocked_by", label: "is blocked by" }}>is blocked by</ComboboxItem>
+                                <ComboboxItem value={{ value: "blocks", label: "blocks" }}>blocks</ComboboxItem>
+                                <ComboboxEmpty>No options found</ComboboxEmpty>
+                              </ComboboxList>
+                            </ComboboxContent>
+                          </Combobox>
                         </div>
 
                         <div className="space-y-1">
                           <label className="text-[10px] font-semibold text-muted-foreground">
                             Project
                           </label>
-                          <select
-                            value={targetProjectId}
-                            onChange={(e) => {
-                              setTargetProjectId(e.target.value)
+                          <Combobox
+                            value={targetProjectId ? { value: targetProjectId, label: projects.find((p: LooseRecord) => p.id === targetProjectId)?.title + (targetProjectId === projectId ? " (Current)" : "") || "" } : null}
+                            onValueChange={(val: any) => {
+                              setTargetProjectId(val?.value || projectId)
                               setTargetTaskId("")
                             }}
-                            className="h-8 w-full rounded border border-border bg-background p-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                            inputValue={depProjectInputValue}
+                            onInputValueChange={setDepProjectInputValue}
                           >
-                            {projects.map((p: LooseRecord) => (
-                              <option key={p.id} value={p.id}>
-                                {p.title}{" "}
-                                {p.id === projectId ? "(Current)" : ""}
-                              </option>
-                            ))}
-                          </select>
+                            <ComboboxInput
+                              className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                              placeholder="Select project..."
+                            />
+                            <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                              <ComboboxList className="max-h-56 overflow-y-auto">
+                                {projects.map((p: LooseRecord) => (
+                                  <ComboboxItem key={p.id} value={{ value: p.id, label: p.title + (p.id === projectId ? " (Current)" : "") }}>
+                                    {p.title} {p.id === projectId ? "(Current)" : ""}
+                                  </ComboboxItem>
+                                ))}
+                                <ComboboxEmpty>No projects found</ComboboxEmpty>
+                              </ComboboxList>
+                            </ComboboxContent>
+                          </Combobox>
                         </div>
                       </div>
 
@@ -546,19 +565,27 @@ export function TaskDetailsDrawer({
                         <label className="text-[10px] font-semibold text-muted-foreground">
                           Target Task
                         </label>
-                        <select
-                          value={targetTaskId}
-                          onChange={(e) => setTargetTaskId(e.target.value)}
-                          className="h-8 w-full rounded border border-border bg-background p-1 text-xs text-foreground focus:border-primary focus:outline-none"
-                          required
+                        <Combobox
+                          value={targetTaskId ? { value: targetTaskId, label: availableTasks.find((t: LooseRecord) => t.id === targetTaskId)?.title || "" } : null}
+                          onValueChange={(val: any) => setTargetTaskId(val?.value || "")}
+                          inputValue={depTaskInputValue}
+                          onInputValueChange={setDepTaskInputValue}
                         >
-                          <option value="">Select task...</option>
-                          {availableTasks.map((t: LooseRecord) => (
-                            <option key={t.id} value={t.id}>
-                              {t.title} ({t.priority})
-                            </option>
-                          ))}
-                        </select>
+                          <ComboboxInput
+                            className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                            placeholder="Select task..."
+                          />
+                          <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                            <ComboboxList className="max-h-56 overflow-y-auto">
+                              {availableTasks.map((t: LooseRecord) => (
+                                <ComboboxItem key={t.id} value={{ value: t.id, label: `${t.title} (${t.priority})` }}>
+                                  {t.title} ({t.priority})
+                                </ComboboxItem>
+                              ))}
+                              <ComboboxEmpty>No tasks found</ComboboxEmpty>
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
                       </div>
 
                       <div className="flex justify-end gap-2 text-xs">
@@ -629,7 +656,7 @@ export function TaskDetailsDrawer({
                         className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/20 p-2.5 text-xs"
                       >
                         <div className="flex min-w-0 items-center gap-2">
-                          <span className="flex-shrink-0 rounded bg-teal-500/10 px-1.5 py-0.5 text-[9px] font-bold text-teal-500 uppercase">
+                          <span className="flex-shrink-0 rounded bg-info/10 px-1.5 py-0.5 text-[9px] font-bold text-info uppercase">
                             Blocks
                           </span>
                           <div className="min-w-0">
@@ -757,19 +784,27 @@ export function TaskDetailsDrawer({
                 <span className="block text-[10px] font-semibold text-muted-foreground uppercase">
                   Status
                 </span>
-                <select
-                  value={task?.statusId}
-                  onChange={(e) =>
-                    handleFieldChange("statusId", e.target.value)
-                  }
-                  className="w-full rounded border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                <Combobox
+                  value={task?.statusId ? { value: task.statusId, label: projectStatuses.find((s: LooseRecord) => s.id === task.statusId)?.name || "" } : null}
+                  onValueChange={(val: any) => handleFieldChange("statusId", val?.value)}
+                  inputValue={statusInputValue}
+                  onInputValueChange={setStatusInputValue}
                 >
-                  {projectStatuses.map((st: LooseRecord) => (
-                    <option key={st.id} value={st.id}>
-                      {st.name}
-                    </option>
-                  ))}
-                </select>
+                  <ComboboxInput
+                    className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                    placeholder="Select status..."
+                  />
+                  <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                    <ComboboxList className="max-h-56 overflow-y-auto">
+                      {projectStatuses.map((st: LooseRecord) => (
+                        <ComboboxItem key={st.id} value={{ value: st.id, label: st.name }}>
+                          {st.name}
+                        </ComboboxItem>
+                      ))}
+                      <ComboboxEmpty>No statuses found</ComboboxEmpty>
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
 
               <div className="space-y-1">
@@ -868,20 +903,28 @@ export function TaskDetailsDrawer({
                   <span className="block text-[10px] font-semibold text-muted-foreground uppercase">
                     Work Cycle / Sprint
                   </span>
-                  <select
-                    value={task?.sprintId || ""}
-                    onChange={(e) =>
-                      handleFieldChange("sprintId", e.target.value || null)
-                    }
-                    className="w-full rounded border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                  <Combobox
+                    value={task?.sprintId ? { value: task.sprintId, label: projectSprints.find((s: LooseRecord) => s.id === task.sprintId)?.name || "" } : { value: "", label: "Backlog" }}
+                    onValueChange={(val: any) => handleFieldChange("sprintId", val?.value || null)}
+                    inputValue={sprintInputValue}
+                    onInputValueChange={setSprintInputValue}
                   >
-                    <option value="">Backlog</option>
-                    {projectSprints.map((sp: LooseRecord) => (
-                      <option key={sp.id} value={sp.id}>
-                        {sp.name} ({sp.status})
-                      </option>
-                    ))}
-                  </select>
+                    <ComboboxInput
+                      className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                      placeholder="Select sprint..."
+                    />
+                    <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                      <ComboboxList className="max-h-56 overflow-y-auto">
+                        <ComboboxItem value={{ value: "", label: "Backlog" }}>Backlog</ComboboxItem>
+                        {projectSprints.map((sp: LooseRecord) => (
+                          <ComboboxItem key={sp.id} value={{ value: sp.id, label: `${sp.name} (${sp.status})` }}>
+                            {sp.name} ({sp.status})
+                          </ComboboxItem>
+                        ))}
+                        <ComboboxEmpty>No sprints found</ComboboxEmpty>
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
                 </div>
               )}
 
@@ -890,15 +933,25 @@ export function TaskDetailsDrawer({
                 <span className="block text-[10px] font-semibold text-muted-foreground uppercase">
                   Type
                 </span>
-                <select
-                  value={task?.type}
-                  onChange={(e) => handleFieldChange("type", e.target.value)}
-                  className="w-full rounded border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                <Combobox
+                  value={task?.type ? { value: task.type, label: task.type === "bug" ? "Bug (Defect)" : task.type === "feature" ? "Feature" : "Task" } : null}
+                  onValueChange={(val: any) => handleFieldChange("type", val?.value)}
+                  inputValue={typeInputValue}
+                  onInputValueChange={setTypeInputValue}
                 >
-                  <option value="task">Task</option>
-                  <option value="bug">Bug (Defect)</option>
-                  <option value="feature">Feature</option>
-                </select>
+                  <ComboboxInput
+                    className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                    placeholder="Select type..."
+                  />
+                  <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                    <ComboboxList className="max-h-56 overflow-y-auto">
+                      <ComboboxItem value={{ value: "task", label: "Task" }}>Task</ComboboxItem>
+                      <ComboboxItem value={{ value: "bug", label: "Bug (Defect)" }}>Bug (Defect)</ComboboxItem>
+                      <ComboboxItem value={{ value: "feature", label: "Feature" }}>Feature</ComboboxItem>
+                      <ComboboxEmpty>No types found</ComboboxEmpty>
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
 
               {/* Priority */}
@@ -906,18 +959,26 @@ export function TaskDetailsDrawer({
                 <span className="block text-[10px] font-semibold text-muted-foreground uppercase">
                   Priority
                 </span>
-                <select
-                  value={task?.priority}
-                  onChange={(e) =>
-                    handleFieldChange("priority", e.target.value)
-                  }
-                  className="w-full rounded border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                <Combobox
+                  value={task?.priority ? { value: task.priority, label: task.priority.charAt(0).toUpperCase() + task.priority.slice(1) } : null}
+                  onValueChange={(val: any) => handleFieldChange("priority", val?.value)}
+                  inputValue={priorityInputValue}
+                  onInputValueChange={setPriorityInputValue}
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
+                  <ComboboxInput
+                    className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                    placeholder="Select priority..."
+                  />
+                  <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                    <ComboboxList className="max-h-56 overflow-y-auto">
+                      <ComboboxItem value={{ value: "low", label: "Low" }}>Low</ComboboxItem>
+                      <ComboboxItem value={{ value: "medium", label: "Medium" }}>Medium</ComboboxItem>
+                      <ComboboxItem value={{ value: "high", label: "High" }}>High</ComboboxItem>
+                      <ComboboxItem value={{ value: "urgent", label: "Urgent" }}>Urgent</ComboboxItem>
+                      <ComboboxEmpty>No priorities found</ComboboxEmpty>
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
 
               {/* Estimate (Hours / Points) */}
@@ -988,20 +1049,28 @@ export function TaskDetailsDrawer({
                 <span className="block text-[10px] font-semibold text-muted-foreground uppercase">
                   Epic / Goal
                 </span>
-                <select
-                  value={task?.epicId || ""}
-                  onChange={(e) =>
-                    handleFieldChange("epicId", e.target.value || null)
-                  }
-                  className="w-full rounded border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                <Combobox
+                  value={task?.epicId ? { value: task.epicId, label: projectEpics.find((e: LooseRecord) => e.id === task.epicId)?.title || "" } : { value: "", label: "No Epic" }}
+                  onValueChange={(val: any) => handleFieldChange("epicId", val?.value || null)}
+                  inputValue={epicInputValue}
+                  onInputValueChange={setEpicInputValue}
                 >
-                  <option value="">No Epic</option>
-                  {projectEpics.map((ep: LooseRecord) => (
-                    <option key={ep.id} value={ep.id}>
-                      {ep.title}
-                    </option>
-                  ))}
-                </select>
+                  <ComboboxInput
+                    className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                    placeholder="Select epic..."
+                  />
+                  <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                    <ComboboxList className="max-h-56 overflow-y-auto">
+                      <ComboboxItem value={{ value: "", label: "No Epic" }}>No Epic</ComboboxItem>
+                      {projectEpics.map((ep: LooseRecord) => (
+                        <ComboboxItem key={ep.id} value={{ value: ep.id, label: ep.title }}>
+                          {ep.title}
+                        </ComboboxItem>
+                      ))}
+                      <ComboboxEmpty>No epics found</ComboboxEmpty>
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
 
               {/* Milestone */}
@@ -1009,20 +1078,28 @@ export function TaskDetailsDrawer({
                 <span className="block text-[10px] font-semibold text-muted-foreground uppercase">
                   Milestone
                 </span>
-                <select
-                  value={task?.milestoneId || ""}
-                  onChange={(e) =>
-                    handleFieldChange("milestoneId", e.target.value || null)
-                  }
-                  className="w-full rounded border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                <Combobox
+                  value={task?.milestoneId ? { value: task.milestoneId, label: projectMilestones.find((m: LooseRecord) => m.id === task.milestoneId)?.title || "" } : { value: "", label: "No Milestone" }}
+                  onValueChange={(val: any) => handleFieldChange("milestoneId", val?.value || null)}
+                  inputValue={milestoneInputValue}
+                  onInputValueChange={setMilestoneInputValue}
                 >
-                  <option value="">No Milestone</option>
-                  {projectMilestones.map((ms: LooseRecord) => (
-                    <option key={ms.id} value={ms.id}>
-                      {ms.title}
-                    </option>
-                  ))}
-                </select>
+                  <ComboboxInput
+                    className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                    placeholder="Select milestone..."
+                  />
+                  <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                    <ComboboxList className="max-h-56 overflow-y-auto">
+                      <ComboboxItem value={{ value: "", label: "No Milestone" }}>No Milestone</ComboboxItem>
+                      {projectMilestones.map((ms: LooseRecord) => (
+                        <ComboboxItem key={ms.id} value={{ value: ms.id, label: ms.title }}>
+                          {ms.title}
+                        </ComboboxItem>
+                      ))}
+                      <ComboboxEmpty>No milestones found</ComboboxEmpty>
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
 
               {/* Labels */}
@@ -1103,23 +1180,27 @@ export function TaskDetailsDrawer({
                             </span>
                           </div>
                         ) : fieldDef.type === "select" ? (
-                          <select
-                            value={fieldValue}
-                            onChange={(e) =>
-                              handleCustomFieldChange(
-                                fieldDef.id,
-                                e.target.value
-                              )
-                            }
-                            className="w-full rounded border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:border-primary focus:outline-none"
+                          <Combobox
+                            value={fieldValue ? { value: fieldValue, label: fieldValue } : null}
+                            onValueChange={(val: any) => handleCustomFieldChange(fieldDef.id, val?.value || "")}
+                            inputValue={customFieldInputValues[fieldDef.id] || ""}
+                            onInputValueChange={(v: string) => setCustomFieldInputValues(prev => ({ ...prev, [fieldDef.id]: v }))}
                           >
-                            <option value="">Choose Option</option>
-                            {fieldDef.options?.map((opt: string) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
+                            <ComboboxInput
+                              className="flex h-8 w-full items-center rounded border border-border bg-card text-xs text-foreground"
+                              placeholder="Choose option..."
+                            />
+                            <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                              <ComboboxList className="max-h-56 overflow-y-auto">
+                                {fieldDef.options?.map((opt: string) => (
+                                  <ComboboxItem key={opt} value={{ value: opt, label: opt }}>
+                                    {opt}
+                                  </ComboboxItem>
+                                ))}
+                                <ComboboxEmpty>No options found</ComboboxEmpty>
+                              </ComboboxList>
+                            </ComboboxContent>
+                          </Combobox>
                         ) : (
                           <Input
                             type={

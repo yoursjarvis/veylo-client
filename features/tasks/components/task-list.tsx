@@ -24,6 +24,13 @@ import {
   CheckCircle2,
   Circle
 } from "lucide-react";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+} from "@/components/ui/combobox";
 
 interface TaskListProps {
   tasks: {
@@ -80,11 +87,11 @@ export function TaskList({
   const getPriorityBadge = (prio: string) => {
     switch (prio) {
       case "urgent":
-        return <Badge className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Urgent</Badge>;
+        return <Badge className="bg-destructive/10 border border-destructive/20 text-destructive text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Urgent</Badge>;
       case "high":
-        return <Badge className="bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">High</Badge>;
+        return <Badge className="bg-warning/10 border border-warning/20 text-warning text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">High</Badge>;
       case "medium":
-        return <Badge className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Medium</Badge>;
+        return <Badge className="bg-info/10 border border-info/20 text-info text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Medium</Badge>;
       default:
         return <Badge className="bg-muted border border-border text-muted-foreground text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Low</Badge>;
     }
@@ -94,14 +101,14 @@ export function TaskList({
     switch (type) {
       case "bug":
         return (
-          <div className="flex items-center gap-1.5 text-xs text-red-500 dark:text-red-400 font-semibold">
-            <Bug size={12} /> <span>Bug</span>
+          <div className="flex items-center gap-1.5 text-xs text-destructive font-semibold">
+            <Bug size={12} className="text-destructive" /> <span>Bug</span>
           </div>
         );
       case "feature":
         return (
-          <div className="flex items-center gap-1.5 text-xs text-violet-500 dark:text-violet-400 font-semibold">
-            <Sparkles size={12} /> <span>Feature</span>
+          <div className="flex items-center gap-1.5 text-xs text-info font-semibold">
+            <Sparkles size={12} className="text-info" /> <span>Feature</span>
           </div>
         );
       default:
@@ -118,15 +125,13 @@ export function TaskList({
     const date = new Date(dueDateStr);
     const past = isPast(date) && !isToday(date);
     return (
-      <div className={`flex items-center gap-1.5 text-xs font-medium ${past ? "text-rose-500" : "text-muted-foreground"}`}>
-        <Calendar size={12} className={past ? "text-rose-500" : "text-muted-foreground"} />
+      <div className={`flex items-center gap-1.5 text-xs font-medium ${past ? "text-destructive" : "text-muted-foreground"}`}>
+        <Calendar size={12} className={past ? "text-destructive" : "text-muted-foreground"} />
         <span>{format(date, "MMM d")}</span>
       </div>
     );
   };
 
-  // Group tasks by status for the Asana style sections
-  // If a task statusId is not in statuses list, it goes to the first status or a default list
   const activeStatuses = statuses.length > 0 ? statuses : [{ id: "unknown", name: "Backlog" }];
 
   return (
@@ -146,43 +151,67 @@ export function TaskList({
         </div>
 
         {/* Status Filter */}
-        <select
+        <Combobox
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+          onValueChange={(val) => setStatusFilter(val ?? "")}
         >
-          <option value="">All Statuses</option>
-          {statuses.map((st) => (
-            <option key={st.id} value={st.id}>
-              {st.name}
-            </option>
-          ))}
-        </select>
+          <ComboboxInput
+            placeholder="All Statuses"
+            className="w-[140px] bg-background border border-border text-xs"
+            showTrigger
+          />
+          <ComboboxContent className="bg-popover border border-border">
+            <ComboboxList>
+              <ComboboxItem value="">All Statuses</ComboboxItem>
+              {statuses.map((st) => (
+                <ComboboxItem key={st.id} value={st.id}>
+                  {st.name}
+                </ComboboxItem>
+              ))}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
 
         {/* Priority Filter */}
-        <select
+        <Combobox
           value={priorityFilter}
-          onChange={(e) => setPriorityFilter(e.target.value)}
-          className="bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+          onValueChange={(val) => setPriorityFilter(val ?? "")}
         >
-          <option value="">All Priorities</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="urgent">Urgent</option>
-        </select>
+          <ComboboxInput
+            placeholder="All Priorities"
+            className="w-[140px] bg-background border border-border text-xs"
+            showTrigger
+          />
+          <ComboboxContent className="bg-popover border border-border">
+            <ComboboxList>
+              <ComboboxItem value="">All Priorities</ComboboxItem>
+              <ComboboxItem value="low">Low</ComboboxItem>
+              <ComboboxItem value="medium">Medium</ComboboxItem>
+              <ComboboxItem value="high">High</ComboboxItem>
+              <ComboboxItem value="urgent">Urgent</ComboboxItem>
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
 
         {/* Type Filter */}
-        <select
+        <Combobox
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+          onValueChange={(val) => setTypeFilter(val ?? "")}
         >
-          <option value="">All Types</option>
-          <option value="task">Task</option>
-          <option value="bug">Bug</option>
-          <option value="feature">Feature</option>
-        </select>
+          <ComboboxInput
+            placeholder="All Types"
+            className="w-[130px] bg-background border border-border text-xs"
+            showTrigger
+          />
+          <ComboboxContent className="bg-popover border border-border">
+            <ComboboxList>
+              <ComboboxItem value="">All Types</ComboboxItem>
+              <ComboboxItem value="task">Task</ComboboxItem>
+              <ComboboxItem value="bug">Bug</ComboboxItem>
+              <ComboboxItem value="feature">Feature</ComboboxItem>
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
       </div>
 
       {/* Grouped Table Sections */}
@@ -218,7 +247,7 @@ export function TaskList({
               {!isCollapsed && (
                 <div className="overflow-x-auto w-full">
                   <Table>
-                    <TableHeader className="bg-muted/20 border-b border-border">
+                    <TableHeader className="bg-muted/10 border-b border-border">
                       <TableRow className="hover:bg-transparent border-border">
                         <TableHead className="text-muted-foreground font-bold text-[10px] uppercase tracking-wider pl-4">Task Name</TableHead>
                         <TableHead className="text-muted-foreground font-bold text-[10px] uppercase tracking-wider w-[140px]">Assignee</TableHead>
@@ -247,13 +276,13 @@ export function TaskList({
                             <TableRow
                               key={task.id}
                               onClick={() => onSelectTask(task.id)}
-                              className="hover:bg-muted/50 border-border cursor-pointer transition-colors"
+                              className="hover:bg-muted/30 border-border cursor-pointer transition-colors"
                             >
                               {/* Task Title with Checkbox */}
                               <TableCell className="font-semibold text-foreground text-xs py-3 pl-4 max-w-[280px]">
                                 <div className="flex items-center gap-2.5">
                                   {isDone ? (
-                                    <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                                    <CheckCircle2 size={16} className="text-success shrink-0" />
                                   ) : (
                                     <Circle size={16} className="text-muted-foreground hover:text-primary transition-colors shrink-0" />
                                   )}
@@ -324,3 +353,4 @@ export function TaskList({
     </div>
   );
 }
+
