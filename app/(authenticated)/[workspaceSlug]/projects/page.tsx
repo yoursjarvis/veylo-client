@@ -8,7 +8,6 @@ import { useWorkspaceContext } from "@/components/providers/workspace-provider";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
-import Image from "next/image";
 import { Plus, FileText, Loader2, AlertCircle, Layers, Kanban, UserPlus, Megaphone, DollarSign, Map, ClipboardList } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -193,10 +192,19 @@ export default function ProjectsPage() {
       );
     }
     if (icon.startsWith("http") || icon.startsWith("/") || icon.startsWith("blob:")) {
-      const thumbUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon;
+      const imageUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon;
       return (
         <div className={`${baseClasses} ${sizeClass} overflow-hidden bg-background relative`}>
-          <Image src={thumbUrl} alt="Project Icon" fill className="object-cover" />
+          <img
+            src={imageUrl}
+            onError={(e) => {
+              if (imageUrl !== icon && icon) {
+                e.currentTarget.src = icon
+              }
+            }}
+            alt="Project Icon"
+            className="h-full w-full object-cover"
+          />
         </div>
       );
     }

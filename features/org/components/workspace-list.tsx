@@ -42,7 +42,6 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
-import Image from "next/image"
 import { useState } from "react"
 import { toast } from "sonner"
 import { IconPicker } from "@/components/shared/icon-picker"
@@ -110,8 +109,20 @@ export function WorkspaceList() {
   const renderIcon = (icon?: string | null, size = 18) => {
     if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
     if (icon.startsWith("http") || icon.startsWith("/") || icon.startsWith("blob:")) {
-      const thumbUrl = icon.startsWith("blob:") ? icon : (getThumbUrl(icon) || icon)
-      return <Image src={thumbUrl} alt="Workspace Icon" width={size} height={size} className="h-full w-full object-cover rounded-[inherit]" />
+      const imageUrl = icon.startsWith("blob:") ? icon : (getThumbUrl(icon) || icon)
+      return (
+        <img
+          src={imageUrl}
+          onError={(e) => {
+            if (imageUrl !== icon && icon) {
+              e.currentTarget.src = icon
+            }
+          }}
+          alt="Workspace Icon"
+          className="h-full w-full object-cover rounded-[inherit]"
+          style={{ width: size, height: size }}
+        />
+      )
     }
     return <span className="leading-none" style={{ fontSize: size }}>{icon}</span>
   }

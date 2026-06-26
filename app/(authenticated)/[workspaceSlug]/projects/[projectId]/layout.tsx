@@ -29,7 +29,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status"
 import { IconPicker } from "@/components/shared/icon-picker"
 import { getThumbUrl } from "@/lib/utils"
-import Image from "next/image"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import {
@@ -321,16 +320,20 @@ export default function ProjectLayout({
       icon.startsWith("/") ||
       icon.startsWith("blob:")
     ) {
-      const thumbUrl = icon.startsWith("blob:")
+      const imageUrl = icon.startsWith("blob:")
         ? icon
         : getThumbUrl(icon) || icon
       return (
         <div className={`${baseClasses} ${sizeClass} relative overflow-hidden`}>
-          <Image
-            src={thumbUrl}
+          <img
+            src={imageUrl}
+            onError={(e) => {
+              if (imageUrl !== icon && icon) {
+                e.currentTarget.src = icon
+              }
+            }}
             alt="Project Icon"
-            fill
-            className="object-cover"
+            className="h-full w-full object-cover"
           />
         </div>
       )

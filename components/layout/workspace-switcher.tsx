@@ -25,7 +25,6 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -61,13 +60,16 @@ export function WorkspaceSwitcher() {
   const renderIcon = (icon?: string | null, size = 18) => {
     if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
     if (icon.startsWith("http") || icon.startsWith("/")) {
-      const thumbUrl = getThumbUrl(icon) || icon
+      const imageUrl = getThumbUrl(icon) || icon
       return (
-        <Image
-          src={thumbUrl}
+        <img
+          src={imageUrl}
+          onError={(e) => {
+            if (imageUrl !== icon && icon) {
+              e.currentTarget.src = icon
+            }
+          }}
           alt="Workspace Icon"
-          width={40}
-          height={40}
           className="h-full w-full rounded-[inherit] object-cover"
         />
       )
