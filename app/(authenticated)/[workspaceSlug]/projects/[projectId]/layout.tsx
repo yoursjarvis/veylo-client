@@ -325,6 +325,7 @@ export default function ProjectLayout({
         : getThumbUrl(icon) || icon
       return (
         <div className={`${baseClasses} ${sizeClass} relative overflow-hidden`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
             onError={(e) => {
@@ -425,103 +426,109 @@ export default function ProjectLayout({
         {/* Main Content Area */}
         <div className="ml-2 flex min-h-screen flex-1 flex-col overflow-x-hidden">
           {/* Header */}
-          <header className="flex shrink-0 flex-col gap-4 border-b border-border bg-card/80 px-8 pt-5 backdrop-blur-md">
-            {/* Title & Actions Row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="group relative">
-                  {isWorkspaceAdmin ? (
-                    <IconPicker
-                      value={
-                        updateProjectIconMutation.isPending
-                          ? null
-                          : selectedProject?.icon
-                      }
-                      onChange={(val) => {
-                        updateProjectIconMutation.mutate(val)
-                      }}
-                    >
-                      <div className="cursor-pointer transition-opacity hover:opacity-85">
-                        {renderProjectIcon(
-                          selectedProject?.icon,
-                          "h-12 w-12",
-                          "text-2.5xl"
-                        )}
-                      </div>
-                    </IconPicker>
-                  ) : (
-                    renderProjectIcon(
-                      selectedProject?.icon,
-                      "h-12 w-12",
-                      "text-2.5xl"
-                    )
-                  )}
+          <header className="flex shrink-0 flex-col gap-4 border-b border-border bg-card/85 px-8 pt-5 pb-0 backdrop-blur-md">
+            {/* Top Row: Back Navigation, Breadcrumb, Project Title, Status & Actions */}
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              {/* Left Side: Back Navigation, Breadcrumb, Project Icon, Project name, Project status badge */}
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href={`/${workspaceSlug}/projects`}
+                  className="group flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
+                  aria-label="Back to projects"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+                </Link>
+
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Projects</span>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                    <Link
-                      href={`/${workspaceSlug}/projects`}
-                      className="flex items-center gap-1 transition-colors hover:text-foreground"
-                    >
-                      <ArrowLeft className="h-3 w-3" /> Projects
-                    </Link>
-                    <span>/</span>
-                    <span className="font-semibold text-foreground">
-                      {selectedProject?.title}
-                    </span>
-                  </div>
-                  <h1 className="mt-1 flex items-center gap-2.5 text-xl font-bold tracking-tight text-foreground">
-                    {selectedProject?.title}
-                    {selectedProject?.template === "scrum" && (
-                      <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[9px] font-bold tracking-wider text-foreground uppercase">
-                        Scrum
-                      </span>
+
+                <div className="flex items-center gap-2">
+                  <div className="group relative shrink-0">
+                    {isWorkspaceAdmin ? (
+                      <IconPicker
+                        value={
+                          updateProjectIconMutation.isPending
+                            ? null
+                            : selectedProject?.icon
+                        }
+                        onChange={(val) => {
+                          updateProjectIconMutation.mutate(val)
+                        }}
+                      >
+                        <div className="cursor-pointer transition-opacity hover:opacity-85">
+                          {renderProjectIcon(
+                            selectedProject?.icon,
+                            "h-7 w-7 rounded-md",
+                            "text-sm"
+                          )}
+                        </div>
+                      </IconPicker>
+                    ) : (
+                      renderProjectIcon(
+                        selectedProject?.icon,
+                        "h-7 w-7 rounded-md",
+                        "text-sm"
+                      )
                     )}
-                    {/* Status Badge */}
-                    <Status
-                      variant={
-                        projectStatus === "on_track"
-                          ? "success"
-                          : projectStatus === "at_risk"
-                            ? "warning"
-                            : "destructive"
-                      }
-                      className="rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-semibold text-foreground shadow-sm"
-                    >
-                      <StatusIndicator />
-                      <StatusLabel className="py-1 uppercase font-bold">
-                        {projectStatus === "on_track"
-                          ? "On Track"
-                          : projectStatus === "at_risk"
-                            ? "At Risk"
-                            : "Off Track"}
-                      </StatusLabel>
-                    </Status>
+                  </div>
+
+                  <h1 className="text-base font-semibold tracking-tight text-foreground">
+                    {selectedProject?.title}
                   </h1>
+
+                  {selectedProject?.template === "scrum" && (
+                    <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium tracking-wide text-muted-foreground">
+                      Scrum
+                    </span>
+                  )}
+
+                  {/* Status Badge */}
+                  <Status
+                    variant={
+                      projectStatus === "on_track"
+                        ? "success"
+                        : projectStatus === "at_risk"
+                          ? "warning"
+                          : "destructive"
+                    }
+                    className="rounded-full border border-border/20 bg-muted/40 px-2 py-0.5 text-[9px] font-medium text-foreground/90 shadow-xs"
+                  >
+                    <StatusIndicator />
+                    <StatusLabel className="py-0.5 uppercase font-bold text-[8px] tracking-wide">
+                      {projectStatus === "on_track"
+                        ? "On Track"
+                        : projectStatus === "at_risk"
+                          ? "At Risk"
+                          : "Off Track"}
+                    </StatusLabel>
+                  </Status>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              {/* Right Side: Member Avatars and Single "New Task" primary CTA */}
+              <div className="flex items-center gap-3">
                 {/* Overlapping member avatars stack */}
-                <div className="mr-2 flex items-center -space-x-1.5">
+                <div className="flex items-center -space-x-1.5">
                   {(selectedProject?.members || [])
-                    .slice(0, 4)
+                    .slice(0, 5)
                     .map((member: LooseAny) => (
                       <Avatar
                         key={member.id}
-                        className="h-7 w-7 border-2 border-background transition-all hover:scale-105"
+                        className="h-6 w-6 border-2 border-background transition-all hover:scale-105"
                       >
                         <AvatarImage src={member.user?.image || ""} />
-                        <AvatarFallback className="bg-muted text-[9px] font-extrabold text-muted-foreground">
+                        <AvatarFallback className="bg-muted text-[8px] font-extrabold text-muted-foreground">
                           {member.user?.name
                             ? member.user.name.charAt(0).toUpperCase()
                             : "?"}
                         </AvatarFallback>
                       </Avatar>
                     ))}
-                  {(selectedProject?.members || []).length > 4 && (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-[9px] font-extrabold text-muted-foreground">
-                      +{(selectedProject?.members || []).length - 4}
+                  {(selectedProject?.members || []).length > 5 && (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-[8px] font-extrabold text-muted-foreground">
+                      +{(selectedProject?.members || []).length - 5}
                     </div>
                   )}
                 </div>
@@ -529,24 +536,27 @@ export default function ProjectLayout({
                 <Button
                   onClick={() => setIsCreateTaskOpen(true)}
                   variant="default"
+                  size="sm"
+                  className="h-8 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/95 shadow-xs"
                 >
-                  <Plus size={14} className="mr-1.5 h-4 w-4" /> Create Task
+                  <Plus size={14} className="h-3.5 w-3.5" />
+                  <span>New Task</span>
                 </Button>
               </div>
             </div>
 
             {/* Navigation Tabs Row */}
-            <div className="-mx-8 flex scrollbar-none items-center justify-between overflow-x-auto border-t border-border/50 px-8 pt-2">
-              <nav className="flex items-center gap-6">
+            <div className="-mx-8 mt-2 flex scrollbar-none items-center justify-between overflow-x-auto border-t border-border/20 px-8 pt-1">
+              <nav className="flex items-center gap-5">
                 {navLinks.map((link) => {
                   const isActive = isLinkActive(link.path)
                   return (
                     <Link key={link.path} href={link.path}>
                       <span
-                        className={`flex cursor-pointer items-center gap-1.5 border-b-2 pt-0.5 pb-2.5 text-xs font-semibold tracking-wider uppercase transition-all duration-200 ${
+                        className={`flex cursor-pointer items-center gap-1 border-b-2 pt-2 pb-2.5 text-xs font-medium transition-all duration-150 ${
                           isActive
-                            ? "border-primary font-bold text-primary"
-                            : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                            ? "border-primary font-semibold text-primary"
+                            : "border-transparent text-muted-foreground hover:border-border/60 hover:text-foreground"
                         }`}
                       >
                         {link.name}

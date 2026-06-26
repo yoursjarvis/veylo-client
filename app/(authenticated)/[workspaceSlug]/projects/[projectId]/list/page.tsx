@@ -6,13 +6,52 @@ import { useProjectTasks } from "@/features/tasks/hooks/use-tasks";
 import { TaskList } from "@/features/tasks/components/task-list";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { Search, SlidersHorizontal, Plus, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import {
   Filters,
   FiltersContent,
   type Filter,
   type FilterFieldConfig,
 } from "@/components/reui/filters";
+
+interface StatusOption {
+  id: string;
+  name: string;
+}
+
+interface EpicOption {
+  id: string;
+  title: string;
+}
+
+interface MilestoneOption {
+  id: string;
+  title: string;
+}
+
+interface LabelOption {
+  id: string;
+  name: string;
+}
+
+interface MemberOption {
+  user: {
+    id: string;
+    name: string;
+  };
+}
+
+interface TaskItem {
+  id: string;
+  title: string;
+  description?: string;
+  statusId?: string;
+  priority: string;
+  type: string;
+  assignee?: { id?: string; name?: string };
+  assigneeId?: string;
+  [key: string]: unknown;
+}
 
 export default function ListPage() {
   const {
@@ -23,7 +62,6 @@ export default function ListPage() {
     epics,
     labels,
     milestones,
-    setIsCreateTaskOpen,
   } = useProject();
 
   const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
@@ -36,7 +74,7 @@ export default function ListPage() {
         key: "statusId",
         label: "Status",
         type: "select",
-        options: (statuses || []).map((st: any) => ({
+        options: ((statuses || []) as StatusOption[]).map((st) => ({
           value: st.id,
           label: st.name,
         })),
@@ -68,7 +106,7 @@ export default function ListPage() {
         type: "select",
         options: [
           { value: "null", label: "No Epic" },
-          ...(epics || []).map((ep: any) => ({
+          ...((epics || []) as EpicOption[]).map((ep) => ({
             value: ep.id,
             label: ep.title,
           })),
@@ -80,7 +118,7 @@ export default function ListPage() {
         type: "select",
         options: [
           { value: "null", label: "No Milestone" },
-          ...(milestones || []).map((ms: any) => ({
+          ...((milestones || []) as MilestoneOption[]).map((ms) => ({
             value: ms.id,
             label: ms.title,
           })),
@@ -90,7 +128,7 @@ export default function ListPage() {
         key: "labelId",
         label: "Label",
         type: "multiselect",
-        options: (labels || []).map((lbl: any) => ({
+        options: ((labels || []) as LabelOption[]).map((lbl) => ({
           value: lbl.id,
           label: lbl.name,
         })),
@@ -101,7 +139,7 @@ export default function ListPage() {
         type: "select",
         options: [
           { value: "null", label: "Unassigned" },
-          ...membersList.map((m: any) => ({
+          ...((membersList || []) as MemberOption[]).map((m) => ({
             value: m.user.id,
             label: m.user.name,
           })),
@@ -132,7 +170,7 @@ export default function ListPage() {
 
   const filteredTasks = useMemo(() => {
     if (!tasks) return [];
-    return tasks.filter((task: any) => {
+    return (tasks as TaskItem[]).filter((task) => {
       // 1. Search filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
@@ -186,30 +224,29 @@ export default function ListPage() {
     <div className="flex flex-col gap-6 h-full bg-background text-foreground">
       {/* Search and Filters Toolbar */}
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3 bg-card border border-border p-2 rounded-xl shadow-xs transition-shadow duration-200 focus-within:shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
           {/* Unified search bar */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
             <input
               type="text"
-              placeholder="Search tasks by title, description, assignee..."
+              placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent pl-9 pr-8 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-0 border-0"
+              className="w-full bg-muted/40 hover:bg-muted/65 focus:bg-background border border-border/60 focus:border-ring rounded-lg pl-9 pr-8 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/60 transition-colors focus:outline-hidden focus:ring-1 focus:ring-ring"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
 
-          <div className="h-6 w-px bg-border/60" />
-
-          {/* Action buttons */}
+          {/* Action buttons (Filters only) */}
           <div className="flex items-center gap-2">
             <Filters
               filters={activeFilters}
@@ -220,10 +257,10 @@ export default function ListPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-2 h-8 text-xs font-semibold border-border hover:bg-accent hover:text-accent-foreground"
+                  className="gap-2 h-8.5 text-xs font-medium border-border/80 hover:bg-muted hover:text-foreground"
                 >
-                  <SlidersHorizontal className="size-3.5" />
-                  <span>Filters</span>
+                  <SlidersHorizontal className="size-3.5 text-muted-foreground/80" />
+                  <span>Filter</span>
                   {activeFilters.length > 0 && (
                     <span className="flex items-center justify-center bg-primary text-primary-foreground rounded-full h-4 min-w-4 px-1 text-[10px] font-bold">
                       {activeFilters.length}
@@ -232,15 +269,6 @@ export default function ListPage() {
                 </Button>
               }
             />
-
-            <Button
-              onClick={() => setIsCreateTaskOpen(true)}
-              size="sm"
-              className="gap-1.5 h-8 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/95"
-            >
-              <Plus className="size-3.5" />
-              <span>New Task</span>
-            </Button>
           </div>
         </div>
 

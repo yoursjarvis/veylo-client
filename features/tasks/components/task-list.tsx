@@ -53,18 +53,46 @@ export function TaskRow({
   const getPriorityBadge = (prio: string) => {
     switch (prio) {
       case "urgent":
-        return <Badge variant="destructive-light">Urgent</Badge>;
+        return (
+          <Badge
+            variant="destructive-light"
+            size="sm"
+            radius="default"
+            className="px-2 py-0.5 text-[10px] font-medium tracking-normal border-none"
+          >
+            Urgent
+          </Badge>
+        );
       case "high":
-        return <Badge variant="rose-light">High</Badge>;
+        return (
+          <Badge
+            variant="rose-light"
+            size="sm"
+            radius="default"
+            className="px-2 py-0.5 text-[10px] font-medium tracking-normal border-none"
+          >
+            High
+          </Badge>
+        );
       case "medium":
         return (
-          <Badge variant="info-light" className="font-bold uppercase">
+          <Badge
+            variant="info-light"
+            size="sm"
+            radius="default"
+            className="px-2 py-0.5 text-[10px] font-medium tracking-normal border-none"
+          >
             Medium
           </Badge>
         );
       default:
         return (
-          <Badge variant="default" className="font-bold uppercase">
+          <Badge
+            variant="invert-light"
+            size="sm"
+            radius="default"
+            className="px-2 py-0.5 text-[10px] font-medium tracking-normal border-none text-muted-foreground/70"
+          >
             Low
           </Badge>
         );
@@ -77,9 +105,9 @@ export function TaskRow({
         return (
           <Badge
             variant="destructive-light"
-            size="xs"
+            size="sm"
             radius="default"
-            className="gap-1 px-1.5 py-0.5 text-[10px] font-semibold"
+            className="gap-1 px-2 py-0.5 text-[10px] font-medium border-none"
           >
             <Bug size={11} className="text-destructive shrink-0" />
             <span>Bug</span>
@@ -89,9 +117,9 @@ export function TaskRow({
         return (
           <Badge
             variant="info-light"
-            size="xs"
+            size="sm"
             radius="default"
-            className="gap-1 px-1.5 py-0.5 text-[10px] font-semibold"
+            className="gap-1 px-2 py-0.5 text-[10px] font-medium border-none"
           >
             <Sparkles size={11} className="text-info shrink-0" />
             <span>Feature</span>
@@ -101,11 +129,11 @@ export function TaskRow({
         return (
           <Badge
             variant="invert-light"
-            size="xs"
+            size="sm"
             radius="default"
-            className="gap-1 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/40"
+            className="gap-1 px-2 py-0.5 text-[10px] font-medium border-none text-muted-foreground/75"
           >
-            <ChevronRight size={11} className="shrink-0" />
+            <ChevronRight size={11} className="shrink-0 text-muted-foreground/50" />
             <span>Task</span>
           </Badge>
         );
@@ -119,15 +147,15 @@ export function TaskRow({
     return (
       <div
         className={cn(
-          "flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium transition-colors border",
+          "flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-medium transition-colors h-4.5",
           past
-            ? "bg-destructive/10 border-destructive/20 text-destructive font-semibold"
-            : "bg-muted/30 border-border/40 text-muted-foreground"
+            ? "bg-destructive/10 text-destructive dark:bg-destructive/20"
+            : "bg-muted text-muted-foreground"
         )}
       >
         <Calendar
           size={11}
-          className={cn("shrink-0", past ? "text-destructive" : "text-muted-foreground")}
+          className={cn("shrink-0", past ? "text-destructive" : "text-muted-foreground/60")}
         />
         <span>{format(date, "MMM d")}</span>
       </div>
@@ -137,6 +165,10 @@ export function TaskRow({
   const taskLabels = (task.labels || [])
     .map((tl) => projectLabels.find((pl) => pl.id === tl.labelId))
     .filter(Boolean) as { id: string; name: string; color?: string }[];
+
+  const plainDescription = task.description
+    ? task.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
+    : "";
 
   return (
     <div
@@ -149,89 +181,105 @@ export function TaskRow({
       }}
       tabIndex={0}
       className={cn(
-        "group flex items-center justify-between py-2.5 px-3 hover:bg-muted/30 border-b border-border/30 cursor-pointer select-none transition-all duration-150 rounded-lg outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-muted/50 mb-1"
+        "group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-border/40 bg-card hover:bg-muted/30 hover:border-border/80 shadow-xs hover:shadow-sm cursor-pointer transition-all duration-200 select-none mb-2.5 outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-muted/50"
       )}
     >
-      {/* Left Column: Status check and Task Title & Labels */}
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      {/* Left Column: Status check and Task Title, Description preview & Labels */}
+      <div className="flex items-start gap-3 min-w-0 flex-1">
         {/* Status checkbox */}
         <div
           onClick={(e) => {
             e.stopPropagation();
             onSelectTask(task.id);
           }}
-          className="shrink-0 cursor-pointer p-0.5 rounded-full hover:bg-muted/85 transition-colors"
+          className="shrink-0 cursor-pointer mt-0.5 p-0.5 rounded-full hover:bg-muted/85 transition-colors"
         >
           {isDone ? (
             <CheckCircle2
-              size={16}
-              className="text-success hover:scale-110 transition-transform duration-100"
+              size={18}
+              className="text-success hover:scale-105 transition-transform duration-100"
             />
           ) : (
             <Circle
-              size={16}
-              className="text-muted-foreground hover:text-primary hover:scale-110 transition-all duration-100"
+              size={18}
+              className="text-muted-foreground hover:text-primary hover:scale-105 transition-all duration-100"
             />
           )}
         </div>
 
-        {/* Task Title */}
-        <span
-          className={cn(
-            "text-sm font-medium tracking-tight truncate max-w-[400px]",
-            isDone ? "line-through text-muted-foreground/60 font-normal" : "text-foreground"
-          )}
-        >
-          {task.title}
-        </span>
+        {/* Title, Description and Labels column */}
+        <div className="flex flex-col min-w-0 flex-1 gap-1">
+          <span
+            className={cn(
+              "text-sm font-semibold tracking-tight text-foreground truncate",
+              isDone ? "line-through text-muted-foreground/60 font-normal" : ""
+            )}
+          >
+            {task.title}
+          </span>
 
-        {/* Labels stack */}
-        {taskLabels.length > 0 && (
-          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
-            {taskLabels.map((lbl) => (
-              <span
-                key={lbl.id}
-                className="inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-bold tracking-wide transition-all"
-                style={{
-                  backgroundColor: lbl.color ? `${lbl.color}12` : "rgba(59, 130, 246, 0.08)",
-                  color: lbl.color || "#3b82f6",
-                  borderColor: lbl.color ? `${lbl.color}25` : "rgba(59, 130, 246, 0.2)",
-                }}
-              >
-                {lbl.name}
-              </span>
-            ))}
-          </div>
-        )}
+          {/* Description Preview */}
+          {plainDescription && (
+            <p className="text-xs text-muted-foreground/80 line-clamp-1 max-w-[650px] font-normal leading-relaxed">
+              {plainDescription}
+            </p>
+          )}
+
+          {/* Labels stack */}
+          {taskLabels.length > 0 && (
+            <div className="flex items-center gap-1.5 shrink-0 flex-wrap pt-1">
+              {taskLabels.map((lbl) => (
+                <span
+                  key={lbl.id}
+                  className="inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-semibold tracking-wide transition-all"
+                  style={{
+                    backgroundColor: lbl.color ? `${lbl.color}12` : "rgba(59, 130, 246, 0.08)",
+                    color: lbl.color || "#3b82f6",
+                    borderColor: lbl.color ? `${lbl.color}25` : "rgba(59, 130, 246, 0.2)",
+                  }}
+                >
+                  {lbl.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Right Column: Metadata stack */}
-      <div className="flex items-center gap-4 shrink-0">
-        {/* Estimate */}
-        {projectTemplate !== "simple" && task.estimate !== undefined && task.estimate !== null && (
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-border/40 bg-muted/20 text-[11px] text-muted-foreground font-mono">
-            <Clock size={11} className="shrink-0" />
-            <span>{task.estimate}h</span>
-          </div>
-        )}
+      <div className="flex items-center gap-4 shrink-0 justify-between sm:justify-end self-stretch sm:self-auto pt-2 sm:pt-0 border-t border-border/20 sm:border-0">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          {/* Estimate */}
+          {projectTemplate !== "simple" && task.estimate !== undefined && task.estimate !== null && (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-sm border border-border/40 bg-muted/20 text-[10px] text-muted-foreground font-mono h-4.5">
+              <Clock size={11} className="shrink-0" />
+              <span>{task.estimate}h</span>
+            </div>
+          )}
 
-        {/* Category (Type) Badge */}
-        {getTypeBadge(task.type)}
+          {/* Category (Type) Badge */}
+          {getTypeBadge(task.type)}
 
-        {/* Due Date */}
-        {getDueDateDisplay(task.dueDate)}
+          {/* Due Date */}
+          {getDueDateDisplay(task.dueDate)}
 
-        {/* Priority Badge */}
-        {getPriorityBadge(task.priority)}
+          {/* Priority Badge */}
+          {getPriorityBadge(task.priority)}
 
-        {/* Assignee Avatar */}
-        <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6 border border-border shadow-xs hover:scale-105 transition-transform duration-100">
+          {/* Assignee Avatar */}
+          <Avatar className="h-5 w-5 border border-border shadow-xs shrink-0 transition-transform duration-100 hover:scale-110">
             <AvatarImage src={task.assignee?.image || ""} />
-            <AvatarFallback className="bg-muted text-muted-foreground text-[9px] font-extrabold">
+            <AvatarFallback className="bg-muted text-muted-foreground text-[8px] font-bold">
               {task.assignee?.name ? task.assignee.name.charAt(0).toUpperCase() : "?"}
             </AvatarFallback>
           </Avatar>
+        </div>
+
+        {/* Hover Action Indicator */}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pl-2 shrink-0 hidden sm:block">
+          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 hover:bg-primary/20">
+            Open
+          </span>
         </div>
       </div>
     </div>
@@ -258,7 +306,7 @@ export function StatusSection({
   onToggle,
 }: StatusSectionProps) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2 mb-6">
       {/* Section Header */}
       <div
         onClick={onToggle}
@@ -272,10 +320,10 @@ export function StatusSection({
               <ChevronDown size={14} className="transition-transform duration-150" />
             )}
           </div>
-          <h3 className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground/80 group-hover:text-foreground transition-colors duration-150">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 group-hover:text-foreground transition-colors duration-150">
             {status.name}
           </h3>
-          <span className="text-[10px] bg-muted/80 border border-border/40 text-muted-foreground/80 font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+          <span className="text-[10px] bg-muted/60 text-muted-foreground font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center ml-1">
             {tasks.length}
           </span>
         </div>
@@ -292,8 +340,8 @@ export function StatusSection({
             className="overflow-hidden pl-1 pr-1"
           >
             {tasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 px-4 text-center border border-dashed border-border/30 rounded-xl bg-card/10 my-1">
-                <p className="text-xs font-semibold text-muted-foreground/60 italic">
+              <div className="flex flex-col items-center justify-center py-6 px-4 text-center border border-dashed border-border/30 rounded-xl bg-muted/5 my-1.5">
+                <p className="text-xs font-medium text-muted-foreground/70">
                   No tasks in this section
                 </p>
               </div>
