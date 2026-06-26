@@ -49,6 +49,8 @@ import {
   Copy,
   AlertTriangle,
   SmilePlus,
+  MoreHorizontal,
+  ExternalLink,
 } from "lucide-react"
 import { RichTextEditor } from "@/components/shared/rich-text-editor"
 import {
@@ -65,7 +67,16 @@ import {
   useProjectSprints,
   useToggleCommentReaction,
   useReactionUsers,
+  useProjectEpics,
+  useProjectMilestones,
+  useProjectLabels,
 } from "@/features/tasks/hooks/use-tasks"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 
 export default function TaskDetailPage() {
   const params = useParams()
@@ -108,6 +119,9 @@ export default function TaskDetailPage() {
   const isCompleted = task?.statusId === completedStatus?.id
 
   const { data: projectSprints = [] } = useProjectSprints(projectId || "")
+  const { data: projectEpics = [] } = useProjectEpics(projectId || "")
+  const { data: projectMilestones = [] } = useProjectMilestones(projectId || "")
+  const { data: projectLabels = [] } = useProjectLabels(projectId || "")
   const projectMembers = selectedProject?.members || []
   const projectTemplate = selectedProject?.template || "simple"
 
@@ -132,6 +146,8 @@ export default function TaskDetailPage() {
   const [sprintInputValue, setSprintInputValue] = useState("")
   const [typeInputValue, setTypeInputValue] = useState("")
   const [priorityInputValue, setPriorityInputValue] = useState("")
+  const [epicInputValue, setEpicInputValue] = useState("")
+  const [milestoneInputValue, setMilestoneInputValue] = useState("")
 
   const subtaskForm = useForm({
     defaultValues: {
@@ -291,8 +307,8 @@ export default function TaskDetailPage() {
   return (
     <div className="min-h-screen flex-1 bg-background text-foreground">
       {/* Top Breadcrumbs & Action Bar */}
-      <div className="border-b border-border bg-card/40 px-6 py-4 md:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-b border-border bg-card/40 px-6 py-3.5 md:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -315,16 +331,13 @@ export default function TaskDetailPage() {
                 <span>/</span>
                 <span>Task Details</span>
               </div>
-              <h2 className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">
-                ID: {task.id}
-              </h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant={isCompleted ? "secondary" : "default"}
               size="sm"
-              className="flex h-8 items-center gap-1.5 text-xs"
+              className="flex h-8 items-center gap-1.5 text-xs font-medium"
               onClick={() => {
                 if (!completedStatus) return
                 if (isCompleted) {
@@ -345,58 +358,85 @@ export default function TaskDetailPage() {
               />
               {isCompleted ? "Completed" : "Mark Complete"}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex h-8 items-center gap-1.5 text-xs"
-              onClick={copyTaskUrl}
-            >
-              <Copy size={13} /> Copy Link
-            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                nativeButton={false}
+                render={(props) => (
+                  <Button
+                    {...props}
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                )}
+              />
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={copyTaskUrl} className="text-xs">
+                  <Copy className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  Copy Link
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => router.push(`/${workspaceSlug}/projects/${projectId}`)}
+                  className="text-xs"
+                >
+                  <ArrowLeft className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  Back to Project
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
 
       {/* Main Responsive Grid Layout */}
       <div className="mx-auto max-w-7xl px-6 py-8 md:px-8">
-        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
           {/* Left Columns (Main content) */}
-          <div className="space-y-6 lg:col-span-2">
-            {/* Title */}
-            <div>
+          <div className="flex-1 min-w-0 space-y-8">
+            {/* Title & Task ID */}
+            <div className="space-y-1.5 px-0.5">
               <Input
                 value={localTitle}
                 onChange={(e) => setLocalTitle(e.target.value)}
                 onBlur={handleTitleBlur}
-                className="h-auto w-full border-transparent bg-transparent px-2 py-1 text-2xl font-bold text-foreground hover:border-border focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+                className="h-auto w-full border-transparent bg-transparent px-1.5 py-1 text-3xl font-bold tracking-tight text-foreground hover:bg-muted/20 focus:bg-background focus:border-border/40 focus:ring-0 focus:outline-none transition-all rounded-lg"
               />
+              <div className="flex items-center gap-2 px-1.5 text-xs text-muted-foreground">
+                <span>Task ID:</span>
+                <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-[10px] text-foreground font-semibold">{task.id}</span>
+              </div>
             </div>
 
             {/* Description */}
-            <div className="rounded-xl border border-border bg-card/30 p-5">
-              <label className="mb-3 flex items-center gap-1.5 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                <FileText size={14} /> Description
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                <FileText size={14} className="text-muted-foreground/70" /> Description
               </label>
-              <RichTextEditor
-                placeholder="Describe this task... (Use @ to mention, / for blocks, paste images)"
-                value={localDesc}
-                onChange={setLocalDesc}
-                onBlur={handleDescBlur}
-                projectMembers={projectMembers}
-                minHeight="200px"
-              />
+              <div className="px-0.5">
+                <RichTextEditor
+                  placeholder="Describe this task... (Use @ to mention, / for blocks, paste images)"
+                  value={localDesc}
+                  onChange={setLocalDesc}
+                  onBlur={handleDescBlur}
+                  projectMembers={projectMembers}
+                  minHeight="200px"
+                />
+              </div>
             </div>
 
             {/* Subtasks checklist */}
-            <div className="rounded-xl border border-border bg-card/30 p-5">
-              <label className="mb-3 flex items-center gap-1.5 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                <CheckCircle2 size={14} /> Subtask Checklist
-              </label>
-              <div className="mb-3 space-y-2">
+            <div className="border-t border-border/60 pt-6 space-y-4">
+              <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                <CheckCircle2 size={14} className="text-muted-foreground/70" /> Subtask Checklist
+              </h3>
+              <div className="space-y-1 pl-0.5">
                 {task.subtasks?.map((subtask: LooseRecord) => (
                   <div
                     key={subtask.id}
-                    className="group flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-muted/20 p-2.5"
+                    className="group flex items-center justify-between gap-3 rounded-lg py-1.5 px-2 hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
                       <Checkbox
@@ -410,7 +450,7 @@ export default function TaskDetailPage() {
                         className="border-border data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                       />
                       <span
-                        className={`text-sm ${subtask.isCompleted ? "text-muted-foreground line-through" : "text-foreground"}`}
+                        className={`text-sm ${subtask.isCompleted ? "text-muted-foreground line-through font-normal" : "text-foreground font-medium"}`}
                       >
                         {subtask.title}
                       </span>
@@ -463,14 +503,14 @@ export default function TaskDetailPage() {
                               }))
                             }}
                             placeholder="Add a subtask..."
-                            className="h-8 flex-1 border-border bg-background text-xs focus:outline-none"
+                            className="h-8 flex-1 border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                             aria-invalid={hasError}
                           />
                           <Button
                             type="submit"
                             size="sm"
                             variant="secondary"
-                            className="h-8 shrink-0 text-xs"
+                            className="h-8 shrink-0 text-xs px-3"
                           >
                             <Plus size={14} className="mr-1" /> Add
                           </Button>
@@ -488,10 +528,10 @@ export default function TaskDetailPage() {
             </div>
 
             {/* Comments & Discussion */}
-            <div className="space-y-4 rounded-xl border border-border bg-card/30 p-5">
-              <label className="flex items-center gap-1.5 border-b border-border pb-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                <MessageSquare size={14} /> Discussion / Comments
-              </label>
+            <div className="border-t border-border/60 pt-6 space-y-6">
+              <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                <MessageSquare size={14} className="text-muted-foreground/70" /> Discussion / Comments
+              </h3>
 
               <div className="flex flex-col gap-2">
                 <RichTextEditor
@@ -507,14 +547,14 @@ export default function TaskDetailPage() {
                     type="button"
                     onClick={() => handleAddComment()}
                     size="sm"
-                    className="text-xs"
+                    className="text-xs px-3"
                   >
                     Post Comment
                   </Button>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-6">
+              <div className="space-y-4">
                 {buildCommentThreads(task.comments || []).map(
                   (comment: LooseRecord) => (
                     <CommentNode
@@ -541,11 +581,11 @@ export default function TaskDetailPage() {
             </div>
 
             {/* Activity Feed */}
-            <div className="space-y-4 rounded-xl border border-border bg-card/30 p-5">
-              <label className="flex items-center gap-1.5 border-b border-border pb-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                <Activity size={14} /> Activity Feed
-              </label>
-              <div className="space-y-3 pl-2">
+            <div className="border-t border-border/60 pt-6 space-y-4">
+              <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                <Activity size={14} className="text-muted-foreground/70" /> Activity Feed
+              </h3>
+              <div className="space-y-3 pl-1">
                 {task.activityLogs?.map((activity: LooseRecord) => (
                   <div
                     key={activity.id}
@@ -574,320 +614,470 @@ export default function TaskDetailPage() {
           </div>
 
           {/* Right Sidebar Columns (Metadata Parameters) */}
-          <div className="space-y-6 rounded-xl border border-border bg-card/30 p-5 lg:col-span-1">
-            <h3 className="border-b border-border pb-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Metadata Settings
-            </h3>
+          <div className="space-y-6 lg:w-[280px] lg:flex-shrink-0">
+            {/* Group 1: Status, Assignee, Type, Priority */}
+            <div className="space-y-3.5">
+              <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
+                Properties
+              </h3>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                {/* Status */}
+                <span className="text-muted-foreground font-medium">Status</span>
+                <div>
+                  <Combobox
+                    value={task.statusId ? { value: task.statusId, label: projectStatuses.find((s: LooseRecord) => s.id === task.statusId)?.name || "" } : null}
+                    onValueChange={(val: any) => handleFieldChange("statusId", val?.value)}
+                    inputValue={statusInputValue}
+                    onInputValueChange={setStatusInputValue}
+                  >
+                    <ComboboxInput
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      placeholder="Select status..."
+                    />
+                    <ComboboxContent>
+                      <ComboboxList>
+                        {projectStatuses.map((st: LooseRecord) => (
+                          <ComboboxItem key={st.id} value={{ value: st.id, label: st.name }}>
+                            {st.name}
+                          </ComboboxItem>
+                        ))}
+                        <ComboboxEmpty>No statuses found</ComboboxEmpty>
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
 
-            {/* Status */}
-            <div className="space-y-1.5">
-              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
-                Status
-              </span>
-              <Combobox
-                value={task.statusId ? { value: task.statusId, label: projectStatuses.find((s: LooseRecord) => s.id === task.statusId)?.name || "" } : null}
-                onValueChange={(val: any) => handleFieldChange("statusId", val?.value)}
-                inputValue={statusInputValue}
-                onInputValueChange={setStatusInputValue}
-              >
-                <ComboboxInput
-                  className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
-                  placeholder="Select status..."
-                />
-                <ComboboxContent>
-                  <ComboboxList>
-                    {projectStatuses.map((st: LooseRecord) => (
-                      <ComboboxItem key={st.id} value={{ value: st.id, label: st.name }}>
-                        {st.name}
-                      </ComboboxItem>
-                    ))}
-                    <ComboboxEmpty>No statuses found</ComboboxEmpty>
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
-            </div>
-
-            {/* Assignee */}
-            <div className="space-y-1.5">
-              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
-                Assignee
-              </span>
-              <Combobox
-                value={task.assigneeId ? { value: task.assigneeId, label: projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)?.user?.name || "" } : null}
-                onValueChange={(val: any) => handleFieldChange("assigneeId", val?.value || null)}
-                inputValue={assigneeInputValue}
-                onInputValueChange={setAssigneeInputValue}
-              >
-                <ComboboxInput
-                  className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
-                  placeholder="Select assignee..."
-                >
-                  {task.assigneeId && (() => {
-                    const member = projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)
-                    return member ? (
-                      <InputGroupAddon align="inline-start">
-                        <Avatar className="h-5 w-5 border border-border">
-                          <AvatarImage src={member.user.image || ""} />
-                          <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
-                            {member.user.name?.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </InputGroupAddon>
-                    ) : null
-                  })()}
-                </ComboboxInput>
-                <ComboboxContent>
-                  <ComboboxList>
-                    {showUnassigned && (
-                      <ComboboxItem value={{ value: "", label: "Unassigned" }}>
-                        Unassigned
-                      </ComboboxItem>
-                    )}
-                    {filteredMembers.map((m: LooseRecord) => (
-                      <ComboboxItem key={m.user.id} value={{ value: m.user.id, label: m.user.name }}>
-                        <Avatar className="h-5 w-5 border border-border">
-                          <AvatarImage src={m.user.image || ""} />
-                          <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
-                            {m.user.name?.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        {m.user.name}
-                      </ComboboxItem>
-                    ))}
-                    <ComboboxEmpty>No members found</ComboboxEmpty>
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
-            </div>
-
-            {/* Sprint (Scrum Only) */}
-            {projectTemplate === "scrum" && (
-              <div className="space-y-1.5">
-                <span className="block text-[10px] font-bold text-muted-foreground uppercase">
-                  Work Cycle / Sprint
-                </span>
-                <Combobox
-                  value={task.sprintId ? { value: task.sprintId, label: projectSprints.find((s: LooseRecord) => s.id === task.sprintId)?.name || "" } : null}
-                  onValueChange={(val: any) => handleFieldChange("sprintId", val?.value || null)}
-                  inputValue={sprintInputValue}
-                  onInputValueChange={setSprintInputValue}
-                >
-                  <ComboboxInput
-                    className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
-                    placeholder="Select sprint..."
-                  />
-                  <ComboboxContent>
-                    <ComboboxList>
-                      <ComboboxItem value={{ value: "", label: "Backlog" }}>
-                        Backlog
-                      </ComboboxItem>
-                      {projectSprints.map((sp: LooseRecord) => (
-                        <ComboboxItem key={sp.id} value={{ value: sp.id, label: `${sp.name} (${sp.status})` }}>
-                          {sp.name} ({sp.status})
-                        </ComboboxItem>
-                      ))}
-                      <ComboboxEmpty>No sprints found</ComboboxEmpty>
-                    </ComboboxList>
-                  </ComboboxContent>
-                </Combobox>
-              </div>
-            )}
-
-            {/* Task Type */}
-            <div className="space-y-1.5">
-              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
-                Type
-              </span>
-              <Combobox
-                value={task.type ? { value: task.type, label: task.type === "bug" ? "Bug (Defect)" : task.type === "feature" ? "Feature" : "Task" } : null}
-                onValueChange={(val: any) => handleFieldChange("type", val?.value)}
-                inputValue={typeInputValue}
-                onInputValueChange={setTypeInputValue}
-              >
-                <ComboboxInput
-                  className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
-                  placeholder="Select type..."
-                />
-                <ComboboxContent>
-                  <ComboboxList>
-                    <ComboboxItem value={{ value: "task", label: "Task" }}>Task</ComboboxItem>
-                    <ComboboxItem value={{ value: "bug", label: "Bug (Defect)" }}>Bug (Defect)</ComboboxItem>
-                    <ComboboxItem value={{ value: "feature", label: "Feature" }}>Feature</ComboboxItem>
-                    <ComboboxEmpty>No types found</ComboboxEmpty>
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
-            </div>
-
-            {/* Priority */}
-            <div className="space-y-1.5">
-              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
-                Priority
-              </span>
-              <Combobox
-                value={task.priority ? { value: task.priority, label: task.priority.charAt(0).toUpperCase() + task.priority.slice(1) } : null}
-                onValueChange={(val: any) => handleFieldChange("priority", val?.value)}
-                inputValue={priorityInputValue}
-                onInputValueChange={setPriorityInputValue}
-              >
-                <ComboboxInput
-                  className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
-                  placeholder="Select priority..."
-                />
-                <ComboboxContent>
-                  <ComboboxList>
-                    <ComboboxItem value={{ value: "low", label: "Low" }}>Low</ComboboxItem>
-                    <ComboboxItem value={{ value: "medium", label: "Medium" }}>Medium</ComboboxItem>
-                    <ComboboxItem value={{ value: "high", label: "High" }}>High</ComboboxItem>
-                    <ComboboxItem value={{ value: "urgent", label: "Urgent" }}>Urgent</ComboboxItem>
-                    <ComboboxEmpty>No priorities found</ComboboxEmpty>
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
-            </div>
-
-            {/* Estimate (Hours / Points) */}
-            {projectTemplate !== "simple" && (
-              <div className="space-y-1.5">
-                <span className="block text-[10px] font-bold text-muted-foreground uppercase">
-                  Estimate (Points/Hours)
-                </span>
-                <Input
-                  type="number"
-                  value={task.estimate ?? ""}
-                  onChange={(e) =>
-                    handleFieldChange(
-                      "estimate",
-                      e.target.value ? parseFloat(e.target.value) : null
-                    )
-                  }
-                  className="h-9 border-border bg-background text-xs text-foreground focus:outline-none"
-                  placeholder="Estimate value..."
-                />
-              </div>
-            )}
-
-            {/* Due Date */}
-            <div className="space-y-1.5">
-              <span className="block text-[10px] font-bold text-muted-foreground uppercase">
-                Due Date
-              </span>
-              <Popover>
-                <PopoverTrigger
-                  render={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "h-9 w-full justify-start border-border bg-background px-3 text-left text-xs font-normal text-foreground",
-                        !task.dueDate && "text-muted-foreground"
-                      )}
+                {/* Assignee */}
+                <span className="text-muted-foreground font-medium">Assignee</span>
+                <div>
+                  <Combobox
+                    value={task.assigneeId ? { value: task.assigneeId, label: projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)?.user?.name || "" } : null}
+                    onValueChange={(val: any) => handleFieldChange("assigneeId", val?.value || null)}
+                    inputValue={assigneeInputValue}
+                    onInputValueChange={setAssigneeInputValue}
+                  >
+                    <ComboboxInput
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      placeholder="Select assignee..."
                     >
-                      <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                      {task.dueDate ? (
-                        format(new Date(task.dueDate), "MMM d, yyyy")
-                      ) : (
-                        <span>No due date</span>
-                      )}
-                    </Button>
-                  }
-                />
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={task.dueDate ? new Date(task.dueDate) : undefined}
-                    onSelect={(date) =>
-                      handleFieldChange(
-                        "dueDate",
-                        date ? date.toISOString() : null
-                      )
-                    }
-                  />
-                </PopoverContent>
-              </Popover>
+                      {task.assigneeId && (() => {
+                        const member = projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)
+                        return member ? (
+                          <InputGroupAddon align="inline-start">
+                            <Avatar className="h-5 w-5 border border-border">
+                              <AvatarImage src={member.user.image || ""} />
+                              <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
+                                {member.user.name?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </InputGroupAddon>
+                        ) : null
+                      })()}
+                    </ComboboxInput>
+                    <ComboboxContent>
+                      <ComboboxList>
+                        {showUnassigned && (
+                          <ComboboxItem value={{ value: "", label: "Unassigned" }}>
+                            Unassigned
+                          </ComboboxItem>
+                        )}
+                        {filteredMembers.map((m: LooseRecord) => (
+                          <ComboboxItem key={m.user.id} value={{ value: m.user.id, label: m.user.name }}>
+                            <Avatar className="h-5 w-5 border border-border">
+                              <AvatarImage src={m.user.image || ""} />
+                              <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
+                                {m.user.name?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {m.user.name}
+                          </ComboboxItem>
+                        ))}
+                        <ComboboxEmpty>No members found</ComboboxEmpty>
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
+
+                {/* Type */}
+                <span className="text-muted-foreground font-medium">Type</span>
+                <div>
+                  <Combobox
+                    value={task.type ? { value: task.type, label: task.type === "bug" ? "Bug (Defect)" : task.type === "feature" ? "Feature" : "Task" } : null}
+                    onValueChange={(val: any) => handleFieldChange("type", val?.value)}
+                    inputValue={typeInputValue}
+                    onInputValueChange={setTypeInputValue}
+                  >
+                    <ComboboxInput
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      placeholder="Select type..."
+                    />
+                    <ComboboxContent>
+                      <ComboboxList>
+                        <ComboboxItem value={{ value: "task", label: "Task" }}>Task</ComboboxItem>
+                        <ComboboxItem value={{ value: "bug", label: "Bug (Defect)" }}>Bug (Defect)</ComboboxItem>
+                        <ComboboxItem value={{ value: "feature", label: "Feature" }}>Feature</ComboboxItem>
+                        <ComboboxEmpty>No types found</ComboboxEmpty>
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
+
+                {/* Priority */}
+                <span className="text-muted-foreground font-medium">Priority</span>
+                <div>
+                  <Combobox
+                    value={task.priority ? { value: task.priority, label: task.priority.charAt(0).toUpperCase() + task.priority.slice(1) } : null}
+                    onValueChange={(val: any) => handleFieldChange("priority", val?.value)}
+                    inputValue={priorityInputValue}
+                    onInputValueChange={setPriorityInputValue}
+                  >
+                    <ComboboxInput
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      placeholder="Select priority..."
+                    />
+                    <ComboboxContent>
+                      <ComboboxList>
+                        <ComboboxItem value={{ value: "low", label: "Low" }}>Low</ComboboxItem>
+                        <ComboboxItem value={{ value: "medium", label: "Medium" }}>Medium</ComboboxItem>
+                        <ComboboxItem value={{ value: "high", label: "High" }}>High</ComboboxItem>
+                        <ComboboxItem value={{ value: "urgent", label: "Urgent" }}>Urgent</ComboboxItem>
+                        <ComboboxEmpty>No priorities found</ComboboxEmpty>
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-border/50" />
+
+            {/* Group 2: Sprint, Estimate, Due Date */}
+            <div className="space-y-3.5">
+              <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
+                Planning
+              </h3>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                {/* Sprint (Scrum Only) */}
+                {projectTemplate === "scrum" && (
+                  <>
+                    <span className="text-muted-foreground font-medium">Sprint</span>
+                    <div>
+                      <Combobox
+                        value={task.sprintId ? { value: task.sprintId, label: projectSprints.find((s: LooseRecord) => s.id === task.sprintId)?.name || "" } : null}
+                        onValueChange={(val: any) => handleFieldChange("sprintId", val?.value || null)}
+                        inputValue={sprintInputValue}
+                        onInputValueChange={setSprintInputValue}
+                      >
+                        <ComboboxInput
+                          className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                          placeholder="Select sprint..."
+                        />
+                        <ComboboxContent>
+                          <ComboboxList>
+                            <ComboboxItem value={{ value: "", label: "Backlog" }}>
+                              Backlog
+                            </ComboboxItem>
+                            {projectSprints.map((sp: LooseRecord) => (
+                              <ComboboxItem key={sp.id} value={{ value: sp.id, label: `${sp.name} (${sp.status})` }}>
+                                {sp.name} ({sp.status})
+                              </ComboboxItem>
+                            ))}
+                            <ComboboxEmpty>No sprints found</ComboboxEmpty>
+                          </ComboboxList>
+                        </ComboboxContent>
+                      </Combobox>
+                    </div>
+                  </>
+                )}
+
+                {/* Estimate */}
+                {projectTemplate !== "simple" && (
+                  <>
+                    <span className="text-muted-foreground font-medium">Estimate</span>
+                    <div>
+                      <Input
+                        type="number"
+                        value={task.estimate ?? ""}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "estimate",
+                            e.target.value ? parseFloat(e.target.value) : null
+                          )
+                        }
+                        className="h-8 w-full border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs text-foreground px-2 rounded-md transition-colors focus:outline-none"
+                        placeholder="Estimate value..."
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Due Date */}
+                <span className="text-muted-foreground font-medium">Due Date</span>
+                <div>
+                  <Popover>
+                    <PopoverTrigger
+                      render={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            "h-8 w-full justify-start border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs font-normal text-foreground px-2 rounded-md transition-colors",
+                            !task.dueDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                          {task.dueDate ? (
+                            format(new Date(task.dueDate), "MMM d, yyyy")
+                          ) : (
+                            <span>No due date</span>
+                          )}
+                        </Button>
+                      }
+                    />
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={task.dueDate ? new Date(task.dueDate) : undefined}
+                        onSelect={(date) =>
+                          handleFieldChange(
+                            "dueDate",
+                            date ? date.toISOString() : null
+                          )
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-border/50" />
+
+            {/* Group 3: Epic, Milestone, Labels */}
+            <div className="space-y-3.5">
+              <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
+                Context
+              </h3>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                {/* Epic */}
+                <span className="text-muted-foreground font-medium">Epic</span>
+                <div>
+                  <Combobox
+                    value={task.epicId ? { value: task.epicId, label: projectEpics.find((e: LooseRecord) => e.id === task.epicId)?.title || "" } : { value: "", label: "No Epic" }}
+                    onValueChange={(val: any) => handleFieldChange("epicId", val?.value || null)}
+                    inputValue={epicInputValue}
+                    onInputValueChange={setEpicInputValue}
+                  >
+                    <ComboboxInput
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      placeholder="Select epic..."
+                    />
+                    <ComboboxContent>
+                      <ComboboxList>
+                        <ComboboxItem value={{ value: "", label: "No Epic" }}>No Epic</ComboboxItem>
+                        {projectEpics.map((ep: LooseRecord) => (
+                          <ComboboxItem key={ep.id} value={{ value: ep.id, label: ep.title }}>
+                            {ep.title}
+                          </ComboboxItem>
+                        ))}
+                        <ComboboxEmpty>No epics found</ComboboxEmpty>
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
+
+                {/* Milestone */}
+                <span className="text-muted-foreground font-medium">Milestone</span>
+                <div>
+                  <Combobox
+                    value={task.milestoneId ? { value: task.milestoneId, label: projectMilestones.find((m: LooseRecord) => m.id === task.milestoneId)?.title || "" } : { value: "", label: "No Milestone" }}
+                    onValueChange={(val: any) => handleFieldChange("milestoneId", val?.value || null)}
+                    inputValue={milestoneInputValue}
+                    onInputValueChange={setMilestoneInputValue}
+                  >
+                    <ComboboxInput
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      placeholder="Select milestone..."
+                    />
+                    <ComboboxContent>
+                      <ComboboxList>
+                        <ComboboxItem value={{ value: "", label: "No Milestone" }}>No Milestone</ComboboxItem>
+                        {projectMilestones.map((ms: LooseRecord) => (
+                          <ComboboxItem key={ms.id} value={{ value: ms.id, label: ms.title }}>
+                            {ms.title}
+                          </ComboboxItem>
+                        ))}
+                        <ComboboxEmpty>No milestones found</ComboboxEmpty>
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
+
+                {/* Labels */}
+                <span className="text-muted-foreground font-medium">Labels</span>
+                <div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {projectLabels.filter((lbl: LooseRecord) => (task.labels || []).some((tl: LooseRecord) => tl.labelId === lbl.id)).map((lbl: LooseRecord) => (
+                      <button
+                        key={lbl.id}
+                        type="button"
+                        onClick={() => {
+                          const nextIds = (task.labels || [])
+                            .map((tl: LooseRecord) => tl.labelId)
+                            .filter((id: string) => id !== lbl.id)
+                          handleFieldChange("labelIds", nextIds)
+                        }}
+                        className="group relative flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold border border-transparent text-white transition-all hover:opacity-90"
+                        style={{ backgroundColor: lbl.color || '#3b82f6' }}
+                        title="Click to remove"
+                      >
+                        <span>{lbl.name}</span>
+                        <span className="text-[9px] opacity-60 group-hover:opacity-100 transition-opacity">×</span>
+                      </button>
+                    ))}
+                    
+                    <Popover>
+                      <PopoverTrigger
+                        render={
+                          <button
+                            type="button"
+                            className="flex items-center gap-1 rounded border border-dashed border-border bg-transparent px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                          >
+                            <Plus size={11} /> Add Label
+                          </button>
+                        }
+                      />
+                      <PopoverContent className="w-48 p-1.5" align="start">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1 border-b border-border/50 mb-1">
+                          Toggle Labels
+                        </div>
+                        <div className="max-h-48 overflow-y-auto space-y-0.5">
+                          {projectLabels.map((lbl: LooseRecord) => {
+                            const isSelected = (task.labels || []).some(
+                              (tl: LooseRecord) => tl.labelId === lbl.id
+                            )
+                            return (
+                              <button
+                                key={lbl.id}
+                                type="button"
+                                onClick={() => {
+                                  const currentIds = (task.labels || []).map((tl: LooseRecord) => tl.labelId)
+                                  const nextIds = isSelected
+                                    ? currentIds.filter((id: string) => id !== lbl.id)
+                                    : [...currentIds, lbl.id]
+                                  handleFieldChange("labelIds", nextIds)
+                                }}
+                                className="flex w-full items-center justify-between rounded px-2 py-1 text-left text-xs transition-all hover:bg-muted"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: lbl.color }} />
+                                  <span className="font-medium text-foreground">{lbl.name}</span>
+                                </div>
+                                {isSelected && <span className="text-primary text-xs">✓</span>}
+                              </button>
+                            )
+                          })}
+                          {projectLabels.length === 0 && (
+                            <div className="px-2 py-1.5 text-xs text-muted-foreground italic">
+                              No labels found.
+                            </div>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Custom Fields Editor */}
             {customFieldDefinitions && customFieldDefinitions.length > 0 && (
-              <div className="space-y-4 border-t border-border pt-4">
-                <span className="block text-[10px] font-bold text-primary uppercase">
-                  Custom Properties
-                </span>
-                {customFieldDefinitions.map((fieldDef: LooseRecord) => {
-                  const fieldValue = task.customFields?.[fieldDef.id] ?? ""
-                  return (
-                    <div key={fieldDef.id} className="space-y-1.5">
-                      <span className="block text-[10px] font-semibold text-muted-foreground">
-                        {fieldDef.name}
-                      </span>
-                      {fieldDef.type === "checkbox" ? (
-                        <div className="mt-1 flex items-center gap-2">
-                          <Checkbox
-                            checked={!!fieldValue}
-                            onCheckedChange={(checked) =>
-                              handleCustomFieldChange(fieldDef.id, !!checked)
-                            }
-                            className="border-border"
-                          />
-                          <span className="text-xs text-muted-foreground">
-                            Yes / Active
+              <>
+                <div className="border-t border-border/50" />
+                <div className="space-y-3.5">
+                  <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
+                    Custom Fields
+                  </h3>
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                    {customFieldDefinitions.map((fieldDef: LooseRecord) => {
+                      const fieldValue = task.customFields?.[fieldDef.id] ?? ""
+                      return (
+                        <React.Fragment key={fieldDef.id}>
+                          <span className="text-muted-foreground font-medium truncate" title={fieldDef.name}>
+                            {fieldDef.name}
                           </span>
-                        </div>
-                      ) : fieldDef.type === "select" ? (
-                        <Combobox
-                          value={fieldValue ? { value: fieldValue, label: fieldValue } : null}
-                          onValueChange={(val: any) =>
-                            handleCustomFieldChange(fieldDef.id, val?.value || "")
-                          }
-                        >
-                          <ComboboxInput
-                            className="flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground"
-                            placeholder="Choose option..."
-                          />
-                          <ComboboxContent>
-                            <ComboboxList>
-                              {fieldDef.options?.map((opt: string) => (
-                                <ComboboxItem key={opt} value={{ value: opt, label: opt }}>
-                                  {opt}
-                                </ComboboxItem>
-                              ))}
-                              <ComboboxEmpty>No options found</ComboboxEmpty>
-                            </ComboboxList>
-                          </ComboboxContent>
-                        </Combobox>
-                      ) : (
-                        <Input
-                          type={
-                            fieldDef.type === "number"
-                              ? "number"
-                              : fieldDef.type === "date"
-                                ? "date"
-                                : "text"
-                          }
-                          value={
-                            fieldDef.type === "date" && fieldValue
-                              ? format(new Date(fieldValue), "yyyy-MM-dd")
-                              : fieldValue
-                          }
-                          onChange={(e) =>
-                            handleCustomFieldChange(
-                              fieldDef.id,
-                              fieldDef.type === "number"
-                                ? parseFloat(e.target.value) || 0
-                                : fieldDef.type === "date"
-                                  ? e.target.value
-                                    ? new Date(e.target.value).toISOString()
-                                    : ""
-                                  : e.target.value
-                            )
-                          }
-                          className="h-9 border-border bg-background text-xs text-foreground focus:outline-none"
-                        />
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+                          <div>
+                            {fieldDef.type === "checkbox" ? (
+                              <div className="flex items-center gap-2 pl-2">
+                                <Checkbox
+                                  checked={!!fieldValue}
+                                  onCheckedChange={(checked) =>
+                                    handleCustomFieldChange(fieldDef.id, !!checked)
+                                  }
+                                  className="border-border"
+                                />
+                                <span className="text-xs text-muted-foreground">
+                                  Yes
+                                </span>
+                              </div>
+                            ) : fieldDef.type === "select" ? (
+                              <Combobox
+                                value={fieldValue ? { value: fieldValue, label: fieldValue } : null}
+                                onValueChange={(val: any) =>
+                                  handleCustomFieldChange(fieldDef.id, val?.value || "")
+                                }
+                              >
+                                <ComboboxInput
+                                  className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                                  placeholder="Choose option..."
+                                />
+                                <ComboboxContent>
+                                  <ComboboxList>
+                                    {fieldDef.options?.map((opt: string) => (
+                                      <ComboboxItem key={opt} value={{ value: opt, label: opt }}>
+                                        {opt}
+                                      </ComboboxItem>
+                                    ))}
+                                    <ComboboxEmpty>No options found</ComboboxEmpty>
+                                  </ComboboxList>
+                                </ComboboxContent>
+                              </Combobox>
+                            ) : (
+                              <Input
+                                type={
+                                  fieldDef.type === "number"
+                                    ? "number"
+                                    : fieldDef.type === "date"
+                                      ? "date"
+                                      : "text"
+                                }
+                                value={
+                                  fieldDef.type === "date" && fieldValue
+                                    ? format(new Date(fieldValue), "yyyy-MM-dd")
+                                    : fieldValue
+                                }
+                                onChange={(e) =>
+                                  handleCustomFieldChange(
+                                    fieldDef.id,
+                                    fieldDef.type === "number"
+                                      ? parseFloat(e.target.value) || 0
+                                      : fieldDef.type === "date"
+                                        ? e.target.value
+                                          ? new Date(e.target.value).toISOString()
+                                          : ""
+                                        : e.target.value
+                                  )
+                                }
+                                className="h-8 w-full border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs text-foreground px-2 rounded-md transition-colors focus:outline-none"
+                              />
+                            )}
+                          </div>
+                        </React.Fragment>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -1064,7 +1254,7 @@ const CommentNode = ({
     <div className="relative space-y-3">
       {/* Comment Card */}
       <div
-        className="group relative flex gap-3"
+        className="group relative flex gap-3 py-2"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -1097,14 +1287,14 @@ const CommentNode = ({
           </div>
         )}
 
-        <Avatar className="mt-1 h-8 w-8 flex-shrink-0 border border-border">
+        <Avatar className="mt-0.5 h-8 w-8 flex-shrink-0 border border-border">
           <AvatarImage src={comment.user?.image || ""} />
           <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
             {comment.user?.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 rounded-xl border border-border/40 bg-muted/40 p-3.5">
-          <div className="mb-1 flex items-center justify-between">
+        <div className="flex-1 min-w-0">
+          <div className="mb-1 flex items-baseline justify-between">
             <span className="text-xs font-bold text-foreground">
               {comment.user?.name}
               {comment.isEdited && (
@@ -1156,18 +1346,18 @@ const CommentNode = ({
           ) : (
             <>
               <div
-                className="ProseMirror mb-2 max-w-full overflow-hidden text-xs text-foreground"
+                className="ProseMirror mb-1.5 max-w-full overflow-hidden text-xs text-foreground leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: comment.content }}
               />
               {/* Actions bar inside comment card */}
-              <div className="mt-1 flex items-center gap-3 border-t border-border/40 pt-1.5">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setReplyingToCommentId(comment.id)
                     setReplyContent("")
                   }}
-                  className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase transition-colors hover:text-primary"
+                  className="text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors"
                 >
                   Reply
                 </button>
@@ -1179,14 +1369,14 @@ const CommentNode = ({
                         setEditingCommentId(comment.id)
                         setEditingContent(comment.content)
                       }}
-                      className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase transition-colors hover:text-primary"
+                      className="text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors"
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteCommentMutation.mutate(comment.id)}
-                      className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase transition-colors hover:text-destructive"
+                      className="text-[10px] font-semibold text-muted-foreground hover:text-destructive transition-colors"
                     >
                       Delete
                     </button>

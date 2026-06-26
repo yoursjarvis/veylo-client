@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { format, isPast, isToday } from "date-fns";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/reui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import {
@@ -87,13 +87,49 @@ export function TaskList({
   const getPriorityBadge = (prio: string) => {
     switch (prio) {
       case "urgent":
-        return <Badge className="bg-destructive/10 border border-destructive/20 text-destructive text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Urgent</Badge>;
+        return (
+          <Badge
+            variant="destructive"
+            size="xs"
+            radius="full"
+            className="uppercase font-bold text-[10px] px-2 py-0.5 leading-none"
+          >
+            Urgent
+          </Badge>
+        );
       case "high":
-        return <Badge className="bg-warning/10 border border-warning/20 text-warning text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">High</Badge>;
+        return (
+          <Badge
+            variant="warning-light"
+            size="xs"
+            radius="full"
+            className="uppercase font-bold text-[10px] px-2 py-0.5 leading-none border border-warning/20"
+          >
+            High
+          </Badge>
+        );
       case "medium":
-        return <Badge className="bg-info/10 border border-info/20 text-info text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Medium</Badge>;
+        return (
+          <Badge
+            variant="info-light"
+            size="xs"
+            radius="full"
+            className="uppercase font-bold text-[10px] px-2 py-0.5 leading-none border border-info/20"
+          >
+            Medium
+          </Badge>
+        );
       default:
-        return <Badge className="bg-muted border border-border text-muted-foreground text-[10px] uppercase font-bold py-0.5 px-2 rounded-full">Low</Badge>;
+        return (
+          <Badge
+            variant="invert-light"
+            size="xs"
+            radius="full"
+            className="uppercase font-bold text-[10px] px-2 py-0.5 leading-none border border-border text-muted-foreground"
+          >
+            Low
+          </Badge>
+        );
     }
   };
 

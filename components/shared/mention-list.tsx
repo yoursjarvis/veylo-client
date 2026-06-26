@@ -10,12 +10,13 @@ interface MentionItem {
     id: string;
     name?: string;
     image?: string;
+    email?: string;
   };
 }
 
 interface MentionListProps {
   items: MentionItem[];
-  command: (item: { id: string; label?: string }) => void;
+  command: (item: { id: string; label?: string; avatar?: string; email?: string }) => void;
 }
 
 export const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) => {
@@ -24,7 +25,12 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>((props, 
   const selectItem = (index: number) => {
     const item = props.items[index];
     if (item) {
-      props.command({ id: item.user.id, label: item.user.name });
+      props.command({
+        id: item.user.id,
+        label: item.user.name,
+        avatar: item.user.image || undefined,
+        email: item.user.email || undefined,
+      });
     }
   };
 
