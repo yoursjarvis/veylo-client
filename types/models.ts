@@ -134,7 +134,7 @@ export interface Task {
   comments?: Comment[];
   activityLogs?: TaskActivity[];
   labels?: TaskLabel[];
-  attachments?: any[];
+  attachments?: Media[];
 }
 
 export interface TaskStatus {
@@ -345,6 +345,8 @@ export interface Media {
   orderColumn?: number | null;
   createdAt: string;
   updatedAt: string;
+  url: string;
+  originalUrl: string;
 }
 
 export interface TwoFactor {

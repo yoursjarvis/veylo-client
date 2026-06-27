@@ -1,0 +1,28 @@
+
+> next-client@0.0.1 typecheck
+> tsc --noEmit
+
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(93,46): error TS2305: Module '"@/types/models"' has no exported member 'Subtask'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(480,47): error TS2304: Cannot find name 'Task'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(820,21): error TS2322: Type '{ value: any; label: any; } | null' is not assignable to type 'string | null | undefined'.
+  Type '{ value: any; label: any; }' is not assignable to type 'string'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(832,58): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(862,21): error TS2322: Type '{ value: any; label: string; } | null' is not assignable to type 'string | null | undefined'.
+  Type '{ value: any; label: string; }' is not assignable to type 'string'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(875,60): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(932,21): error TS2322: Type '{ value: any; label: string; } | null' is not assignable to type 'string | null | undefined'.
+  Type '{ value: any; label: string; }' is not assignable to type 'string'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(946,54): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(980,21): error TS2322: Type '{ value: any; label: any; } | null' is not assignable to type 'string | null | undefined'.
+  Type '{ value: any; label: any; }' is not assignable to type 'string'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(991,58): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(1040,25): error TS2322: Type '{ value: any; label: any; } | null' is not assignable to type 'string | null | undefined'.
+  Type '{ value: any; label: any; }' is not assignable to type 'string'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(1052,62): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(1165,21): error TS2322: Type '{ value: any; label: any; }' is not assignable to type 'string'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(1177,56): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(1210,21): error TS2322: Type '{ value: any; label: any; }' is not assignable to type 'string'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(1222,61): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(1388,33): error TS2322: Type '{ value: any; label: any; } | null' is not assignable to type 'string | null | undefined'.
+  Type '{ value: any; label: any; }' is not assignable to type 'string'.
+app/(authenticated)/[workspaceSlug]/tasks/[taskId]/page.tsx(1396,42): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?

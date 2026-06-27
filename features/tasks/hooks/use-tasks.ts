@@ -95,6 +95,22 @@ export function useUploadTaskAttachment(taskId: string) {
   });
 }
 
+export function useDeleteTaskAttachment(taskId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (attachmentId: string) => {
+      await axiosInstance.delete(`/tasks/${taskId}/attachments/${attachmentId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Attachment deleted");
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Failed to delete attachment");
+    },
+  });
+}
+
 // --- SPRINTS ---
 export function useProjectSprints(projectId: string) {
   return useQuery({
