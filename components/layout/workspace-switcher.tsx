@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import {
   DropdownMenu,
@@ -62,7 +62,7 @@ export function WorkspaceSwitcher() {
     if (icon.startsWith("http") || icon.startsWith("/")) {
       const imageUrl = getThumbUrl(icon) || icon
       return (
-        <img
+        <Image
           src={imageUrl}
           onError={(e) => {
             if (imageUrl !== icon && icon) {
@@ -70,6 +70,9 @@ export function WorkspaceSwitcher() {
             }
           }}
           alt="Workspace Icon"
+          width={32}
+          height={32}
+          unoptimized
           className="h-full w-full rounded-[inherit] object-cover"
         />
       )

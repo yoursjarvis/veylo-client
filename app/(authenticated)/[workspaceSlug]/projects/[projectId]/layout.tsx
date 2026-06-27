@@ -1,7 +1,7 @@
 "use client"
 import { Project, ProjectMember, TaskStatus, Sprint, Epic, Milestone, Label, CustomFieldDefinition, ProjectTemplate } from "@/types/models";
 
-
+import Image from "next/image"
 import React, { createContext, useContext, useState, useEffect } from "react"
 import {
   useParams,
@@ -331,8 +331,7 @@ export default function ProjectLayout({
         : getThumbUrl(icon) || icon
       return (
         <div className={`${baseClasses} ${sizeClass} relative overflow-hidden`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={imageUrl}
             onError={(e) => {
               if (imageUrl !== icon && icon) {
@@ -340,7 +339,9 @@ export default function ProjectLayout({
               }
             }}
             alt="Project Icon"
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
+            unoptimized
           />
         </div>
       )

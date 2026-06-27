@@ -1,8 +1,11 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tooltip } from "@/components/ui/tooltip-card"
 import { axiosInstance } from "@/lib/axios"
+import { useTheme } from "next-themes"
+import EmojiPicker, { Theme } from "emoji-picker-react"
 import { Editor, mergeAttributes, Range } from "@tiptap/core"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
 import Image from "@tiptap/extension-image"
@@ -36,9 +39,10 @@ import {
   ListOrdered,
   Quote,
   Strikethrough,
+  SmilePlus,
 } from "lucide-react"
 import React, { useEffect, useRef } from "react"
-/* eslint-disable @next/next/no-img-element */
+import NextImage from "next/image"
 import { toast } from "sonner"
 import tippy, { Instance as TippyInstance } from "tippy.js"
 import { MentionList, MentionListRef } from "./mention-list"
@@ -227,13 +231,14 @@ function SafeAvatar({
         className="relative flex shrink-0 overflow-hidden rounded-full border border-border"
         style={{ width: `${size}px`, height: `${size}px` }}
       >
-        <img
+        <NextImage
           src={src}
           alt={name}
           width={size}
           height={size}
           onError={() => setHasError(true)}
           className="aspect-square object-cover"
+          unoptimized
           style={{
             width: "100%",
             height: "100%",
@@ -419,6 +424,15 @@ export function RichTextEditor({
   minHeight = "120px",
   onSubmit,
 }: RichTextEditorProps) {
+  const { resolvedTheme, theme } = useTheme()
+  const isDarkMode = resolvedTheme === "dark" || theme === "dark"
+  const [showEmojiPicker, setShowEmojiPicker] = React.useState(false)
+
+  const onEmojiClick = (emojiObject: { emoji: string }) => {
+    editor?.chain().focus().insertContent(emojiObject.emoji).run()
+    setShowEmojiPicker(false)
+  }
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const lastEmittedValueRef = useRef(value)
 
@@ -1019,6 +1033,24 @@ export function RichTextEditor({
           >
             <ImageIcon className="h-4 w-4" />
           </Button>
+          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+            <PopoverTrigger
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              title="Insert Emoji"
+            >
+              <SmilePlus className="h-4 w-4" />
+            </PopoverTrigger>
+            <PopoverContent
+              side="top"
+              align="start"
+              className="w-auto border-none bg-transparent p-0 shadow-none"
+            >
+              <EmojiPicker
+                onEmojiClick={onEmojiClick}
+                theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
+              />
+            </PopoverContent>
+          </Popover>
           <input
             type="file"
             ref={fileInputRef}

@@ -1,7 +1,7 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/immutability, react-hooks/refs */
 
+import Image from "next/image";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import {
@@ -1122,8 +1122,7 @@ function FileUploadItemPreview(props: FileUploadItemPreviewProps) {
         }
 
         return (
-          // biome-ignore lint/performance/noImgElement: dynamic file URLs from user uploads don't work well with Next.js Image optimization
-          <img src={url} alt={file.name} className="size-full object-cover" />
+          <Image src={url} alt={file.name} width={40} height={40} unoptimized className="size-full object-cover" />
         );
       }
 

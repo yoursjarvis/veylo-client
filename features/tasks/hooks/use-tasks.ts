@@ -74,6 +74,27 @@ export function useDeleteTask(projectId: string) {
   });
 }
 
+export function useUploadTaskAttachment(taskId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await axiosInstance.post(`/tasks/${taskId}/attachments`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Attachment uploaded successfully");
+    },
+    onError: () => {
+      toast.error("Failed to upload attachment");
+    },
+  });
+}
+
 // --- SPRINTS ---
 export function useProjectSprints(projectId: string) {
   return useQuery({
@@ -174,15 +195,17 @@ export function useDeleteStatus(projectId: string) {
 }
 
 // --- SUBTASKS ---
-export function useCreateSubtask(taskId: string) {
+export function useCreateSubtask(projectId: string, taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
-      const response = await axiosInstance.post(`/tasks/${taskId}/subtasks`, data);
+      const payload = { ...data, parentTaskId: taskId };
+      const response = await axiosInstance.post(`/projects/${projectId}/tasks`, payload);
       return response.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Subtask added");
     },
   });
 }
@@ -191,7 +214,7 @@ export function useUpdateSubtask(taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
-      const response = await axiosInstance.patch(`/subtasks/${id}`, data);
+      const response = await axiosInstance.patch(`/tasks/${id}`, data);
       return response.data.data;
     },
     onSuccess: () => {
@@ -204,10 +227,11 @@ export function useDeleteSubtask(taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (subtaskId: string) => {
-      await axiosInstance.delete(`/subtasks/${subtaskId}`);
+      await axiosInstance.delete(`/tasks/${subtaskId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Subtask deleted");
     },
   });
 }

@@ -119,6 +119,7 @@ export interface Task {
   dueDate?: string | null;
   creatorId: string;
   assigneeId?: string | null;
+  parentTaskId?: string | null;
   customFields?: Record<string, unknown> | null;
   deletedAt?: string | null;
   createdAt: string;
@@ -129,10 +130,11 @@ export interface Task {
   epic?: Epic;
   milestone?: Milestone;
   sprint?: Sprint;
-  subtasks?: Subtask[];
+  subtasks?: Task[];
   comments?: Comment[];
   activityLogs?: TaskActivity[];
   labels?: TaskLabel[];
+  attachments?: any[];
 }
 
 export interface TaskStatus {
@@ -158,16 +160,7 @@ export interface Sprint {
   createdAt: string;
 }
 
-export interface Subtask {
-  id: string;
-  taskId: string;
-  organizationId: string;
-  title: string;
-  isCompleted: boolean;
-  assigneeId?: string | null;
-  createdAt: string;
-  assignee?: User;
-}
+
 
 export interface CustomFieldDefinition {
   id: string;

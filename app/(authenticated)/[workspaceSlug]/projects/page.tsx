@@ -1,6 +1,6 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
@@ -195,7 +195,7 @@ export default function ProjectsPage() {
       const imageUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon;
       return (
         <div className={`${baseClasses} ${sizeClass} overflow-hidden bg-background relative`}>
-          <img
+          <Image
             src={imageUrl}
             onError={(e) => {
               if (imageUrl !== icon && icon) {
@@ -203,7 +203,9 @@ export default function ProjectsPage() {
               }
             }}
             alt="Project Icon"
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
+            unoptimized
           />
         </div>
       );
