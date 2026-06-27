@@ -57,6 +57,7 @@ export function TaskDetailsAttachments({
             <AttachmentItem
               key={attachment.id}
               attachment={attachment}
+              allAttachments={attachments}
               onDelete={onDelete}
               canDelete={canDelete(attachment.id)}
             />
