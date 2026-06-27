@@ -62,12 +62,14 @@ export function TaskDetailsDrawer({
 
   const isCompleted = task?.statusId === completedStatus?.id
 
+  const { setLocalTitle, setLocalDesc } = manager.state;
+
   useEffect(() => {
     if (task) {
-      manager.state.setLocalTitle(task.title || "")
-      manager.state.setLocalDesc(task.description || "")
+      setLocalTitle(task.title || "")
+      setLocalDesc(task.description || "")
     }
-  }, [task, manager.state])
+  }, [task?.id, task?.title, task?.description, setLocalTitle, setLocalDesc])
 
   const handleToggleCompletion = () => {
     if (!completedStatus) return

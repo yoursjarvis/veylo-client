@@ -435,6 +435,7 @@ export function RichTextEditor({
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const lastEmittedValueRef = useRef(value)
+  const lastValuePropRef = useRef(value)
 
   const editorId = React.useId()
   editorMembersMap.set(editorId, projectMembers || [])
@@ -450,6 +451,7 @@ export function RichTextEditor({
   useEffect(() => {
     if (htmlContent === null) return
     const timeout = setTimeout(() => {
+      lastEmittedValueRef.current = htmlContent
       onChange(htmlContent)
     }, 150)
     return () => clearTimeout(timeout)
@@ -748,13 +750,14 @@ export function RichTextEditor({
     content: value,
     onUpdate: ({ editor: ed }) => {
       const html = ed.getHTML()
-      lastEmittedValueRef.current = html
       setHtmlContent(html)
     },
     onBlur: () => {
       setHtmlContent(null)
       if (editor) {
-        onChange(editor.getHTML())
+        const html = editor.getHTML()
+        lastEmittedValueRef.current = html
+        onChange(html)
       }
       onBlur?.()
     },
@@ -853,6 +856,9 @@ export function RichTextEditor({
   // Sync content from outside (e.g. when comments clear or description changes externally)
   useEffect(() => {
     if (!editor) return
+
+    if (value === lastValuePropRef.current) return
+    lastValuePropRef.current = value
 
     if (value === lastEmittedValueRef.current) return
 
