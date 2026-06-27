@@ -22,9 +22,7 @@ import { cn } from "@/lib/utils"
 
 interface TaskDetailsHeaderProps {
   task: Task
-  completedStatus?: { id: string }
   isCompleted: boolean
-  onFieldChange: (field: string, value: unknown) => void
   onTitleChange: (value: string) => void
   onTitleBlur: () => void
   workspaceSlug: string
@@ -34,9 +32,7 @@ interface TaskDetailsHeaderProps {
 
 export function TaskDetailsHeader({
   task,
-  completedStatus,
   isCompleted,
-  onFieldChange,
   onTitleChange,
   onTitleBlur,
   workspaceSlug,

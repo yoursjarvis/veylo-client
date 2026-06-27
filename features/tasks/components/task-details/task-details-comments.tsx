@@ -13,10 +13,14 @@ import { cn } from "@/lib/utils"
 import EmojiPicker, { Theme } from "emoji-picker-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTheme } from "next-themes"
+import { useReactionUsers } from "../../hooks/use-tasks"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Card } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 
 interface TaskDetailsCommentsProps {
   comments: Comment[]
-  currentUser: any
+  currentUser: { user?: User | null } | null | undefined
   projectMembers: ProjectMember[]
   newComment: string
   setNewComment: (val: string) => void
@@ -45,16 +49,16 @@ const ReactionChip = ({
   count,
   hasReacted,
   onToggle,
-  togglePending,
 }: {
   commentId: string
   emoji: string
   count: number
   hasReacted: boolean
   onToggle: (emoji: string) => void
-  togglePending?: boolean
 }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const { data: users, isLoading, isFetching, isError } = useReactionUsers(commentId, emoji, isOpen)
+
   return (
     <TooltipProvider delay={300}>
       <Tooltip open={isOpen} onOpenChange={setIsOpen}>
@@ -73,16 +77,48 @@ const ReactionChip = ({
         <TooltipContent
           side="top"
           align="center"
-          className="w-auto min-w-[150px] border bg-popover p-2 text-popover-foreground shadow-md"
+          className="p-0 border-none shadow-none bg-transparent"
         >
-          <div className="text-xs font-semibold text-muted-foreground border-b border-border/50 pb-1 mb-2">
-            Reacted with {emoji}
-          </div>
-          <div className="flex max-h-[200px] flex-col gap-2 overflow-y-auto pr-2">
-            <div className="text-[10px] text-muted-foreground italic">
-              User list loading...
+          <Card className="w-auto min-w-[200px] border-border bg-popover shadow-md">
+            <div className="space-y-3 p-3">
+              <p className="text-sm text-muted-foreground">
+                Reacted with {emoji}
+              </p>
+
+              <Separator />
+
+              <div className="space-y-2">
+                {isLoading || isFetching ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  ))
+                ) : isError ? (
+                  <div className="text-sm text-destructive italic">
+                    Failed to load users
+                  </div>
+                ) : users && users.length > 0 ? (
+                  users.map((user: User) => (
+                    <div key={user.id} className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8 border border-border">
+                        <AvatarImage src={user.image || ""} />
+                        <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
+                          {user.name?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium">{user.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-muted-foreground italic">
+                    No users found
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </Card>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -107,7 +143,7 @@ const CommentNode = ({
   toggleReactionMutation,
 }: {
   comment: Comment
-  currentUser: any
+  currentUser: { user?: User | null } | null | undefined
   projectMembers: ProjectMember[]
   replyingToCommentId: string | null
   setReplyingToCommentId: (id: string | null) => void
@@ -301,10 +337,6 @@ const CommentNode = ({
                       count={reactions.length}
                       hasReacted={hasReacted}
                       onToggle={handleToggleReaction}
-                      togglePending={
-                        toggleReactionMutation.isPending &&
-                        toggleReactionMutation.variables?.emoji === emoji
-                      }
                     />
                   )
                 }

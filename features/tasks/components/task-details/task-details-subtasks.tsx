@@ -25,7 +25,7 @@ interface TaskDetailsSubtasksProps {
   completedStatus?: TaskStatus
   projectStatuses: TaskStatus[]
   projectMembers: ProjectMember[]
-  onUpdateSubtask: (id: string, data: any) => void
+  onUpdateSubtask: (id: string, data: Partial<Task>) => void
   onDeleteSubtask: (id: string) => void
   onNavigateToSubtask: (id: string) => void
   onAddSubtask: (title: string) => void

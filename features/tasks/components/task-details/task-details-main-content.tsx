@@ -6,14 +6,15 @@ import { TaskDetailsSubtasks } from "./task-details-subtasks"
 import { TaskDetailsAttachments } from "./task-details-attachments"
 import { TaskDetailsComments } from "./task-details-comments"
 import { TaskDetailsActivity } from "./task-details-activity"
-import { Task } from "@/types/models"
+import { Task, ProjectMember, TaskStatus, User, TaskActivity } from "@/types/models"
+import { UseMutationResult } from "@tanstack/react-query"
 
 interface TaskDetailsMainContentProps {
   task: Task
-  projectMembers: any[]
-  completedStatus: any
-  projectStatuses: any[]
-  onUpdateSubtask: (id: string, data: any) => void
+  projectMembers: ProjectMember[]
+  completedStatus: TaskStatus | undefined
+  projectStatuses: TaskStatus[]
+  onUpdateSubtask: (id: string, data: Partial<Task>) => void
   onDeleteSubtask: (id: string) => void
   onNavigateToSubtask: (id: string) => void
   onAddSubtask: (title: string) => void
@@ -27,7 +28,7 @@ interface TaskDetailsMainContentProps {
   commentValue: string
   setCommentValue: (val: string) => void
   handleAddComment: (e?: React.FormEvent | React.MouseEvent) => void
-  currentUser: any
+  currentUser: { user?: User | null } | null | undefined
   replyingToCommentId: string | null
   setReplyingToCommentId: (id: string | null) => void
   replyContent: string
@@ -38,8 +39,8 @@ interface TaskDetailsMainContentProps {
   editingContent: string
   setEditingContent: (val: string) => void
   handleUpdateComment: (commentId: string) => void
-  toggleReactionMutation: any
-  deleteCommentMutation: any
+  toggleReactionMutation: UseMutationResult<unknown, Error, { commentId: string; emoji: string }, unknown>
+  deleteCommentMutation: UseMutationResult<unknown, Error, string, unknown>
 }
 
 export function TaskDetailsMainContent({
@@ -126,7 +127,7 @@ export function TaskDetailsMainContent({
 
       <TaskDetailsActivity
         activityLogs={task.activityLogs || []}
-        formatActivityText={(activity: any) => {
+        formatActivityText={(activity: TaskActivity) => {
           // Re-implementing the logic for the shared component or pass it as prop
           const action = activity.action
           const oldValue = activity.oldValue

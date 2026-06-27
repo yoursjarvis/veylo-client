@@ -45,7 +45,7 @@ export function AttachmentItem({
         {isImage ? (
           <div className="relative h-24 w-24 overflow-hidden rounded-sm">
             <Image
-              src={(attachment.generatedConversions as any)?.thumbnail?.url || attachment.url}
+              src={(attachment.generatedConversions as Record<string, { url: string }>)?.thumbnail?.url || attachment.url}
               alt={attachment.name}
               fill
               className="object-cover"

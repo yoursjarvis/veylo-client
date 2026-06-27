@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowLeftIcon, CircleCheckIcon, CopyIcon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"
-import { Task, Project, ProjectMember, TaskStatus } from "@/types/models"
+import { Project, ProjectMember, TaskStatus, User } from "@/types/models"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -64,7 +64,7 @@ export default function TaskDetailPage() {
       manager.state.setLocalTitle(task.title || "")
       manager.state.setLocalDesc(task.description || "")
     }
-  }, [task])
+  }, [task, manager.state])
 
   const handleToggleCompletion = () => {
     if (!completedStatus) return
@@ -78,7 +78,7 @@ export default function TaskDetailPage() {
     }
   }
 
-  const canDeleteAttachment = (attachmentId: string) => {
+  const canDeleteAttachment = () => {
     if (!currentUser?.user || !task) return false
     if (task.creatorId === String(currentUser.user.id)) return true
     const member = projectMembers.find(m => m.user?.id === currentUser.user?.id)
@@ -201,9 +201,7 @@ export default function TaskDetailPage() {
           <div className="min-w-0 flex-1 space-y-8">
             <TaskDetailsHeader
               task={task}
-              completedStatus={completedStatus}
               isCompleted={isCompleted}
-              onFieldChange={manager.handlers.handleFieldChange}
               onTitleChange={manager.state.setLocalTitle}
               onTitleBlur={() => manager.handlers.handleTitleBlur(task.title || "")}
               workspaceSlug={workspaceSlug}
@@ -234,7 +232,7 @@ export default function TaskDetailPage() {
               commentValue={manager.state.newComment}
               setCommentValue={manager.state.setNewComment}
               handleAddComment={manager.handlers.handleAddComment}
-              currentUser={currentUser}
+              currentUser={currentUser as unknown as { user?: User | null }}
               replyingToCommentId={manager.state.replyingToCommentId}
               setReplyingToCommentId={manager.state.setReplyingToCommentId}
               replyContent={manager.state.replyContent}

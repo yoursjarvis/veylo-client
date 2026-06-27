@@ -4,12 +4,13 @@ import React from "react"
 import { RichTextEditor } from "@/components/shared/rich-text-editor"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { File02Icon } from "@hugeicons/core-free-icons"
+import { ProjectMember } from "@/types/models"
 
 interface TaskDetailsDescriptionProps {
   value: string
   onChange: (value: string) => void
   onBlur: () => void
-  projectMembers: any[]
+  projectMembers: ProjectMember[]
 }
 
 export function TaskDetailsDescription({
@@ -30,7 +31,7 @@ export function TaskDetailsDescription({
           value={value}
           onChange={onChange}
           onBlur={onBlur}
-          projectMembers={projectMembers}
+          projectMembers={projectMembers as unknown as Array<{ user: { id: string; name?: string; image?: string | null; email?: string } }>}
           minHeight="150px"
         />
       </div>

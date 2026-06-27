@@ -16,7 +16,7 @@ import { TaskDetailsHeader } from "./task-details/task-details-header"
 import { TaskDetailsMainContent } from "./task-details/task-details-main-content"
 import { TaskDetailsSidebar } from "./task-details/task-details-sidebar"
 import { useTaskDetailsManager } from "../hooks/use-task-details-manager"
-import { ProjectMember, TaskStatus, Sprint, Epic, Milestone, Label } from "@/types/models"
+import { ProjectMember, TaskStatus, Sprint, Epic, Milestone, Label, User } from "@/types/models"
 
 interface TaskDetailsDrawerProps {
   taskId: string | null
@@ -67,7 +67,7 @@ export function TaskDetailsDrawer({
       manager.state.setLocalTitle(task.title || "")
       manager.state.setLocalDesc(task.description || "")
     }
-  }, [task])
+  }, [task, manager.state])
 
   const handleToggleCompletion = () => {
     if (!completedStatus) return
@@ -81,7 +81,7 @@ export function TaskDetailsDrawer({
     }
   }
 
-  const canDeleteAttachment = (attachmentId: string) => {
+  const canDeleteAttachment = () => {
     if (!currentUser?.user || !task) return false
     if (task.creatorId === String(currentUser.user.id)) return true
     const member = projectMembers.find(m => m.user?.id === currentUser.user?.id)
@@ -114,9 +114,7 @@ export function TaskDetailsDrawer({
               <div className="space-y-8">
                 <TaskDetailsHeader
                   task={task!}
-                  completedStatus={completedStatus}
                   isCompleted={isCompleted}
-                  onFieldChange={manager.handlers.handleFieldChange}
                   onTitleChange={manager.state.setLocalTitle}
                   onTitleBlur={() => manager.handlers.handleTitleBlur(task!.title || "")}
                   workspaceSlug={activeWorkspace?.slug || ""}
@@ -146,7 +144,7 @@ export function TaskDetailsDrawer({
                   commentValue={manager.state.newComment}
                   setCommentValue={manager.state.setNewComment}
                   handleAddComment={manager.handlers.handleAddComment}
-                  currentUser={currentUser}
+                  currentUser={currentUser as unknown as { user?: User | null }}
                   replyingToCommentId={manager.state.replyingToCommentId}
                   setReplyingToCommentId={manager.state.setReplyingToCommentId}
                   replyContent={manager.state.replyContent}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   useCreateComment,
   useCreateSubtask,
@@ -11,7 +11,6 @@ import {
   useToggleCommentReaction,
   useDeleteTaskAttachment
 } from "../hooks/use-tasks"
-import { toast } from "sonner"
 
 interface UseTaskDetailsManagerProps {
   taskId: string
@@ -43,7 +42,7 @@ export function useTaskDetailsManager({ taskId, projectId }: UseTaskDetailsManag
     updateTaskMutation.mutate({ [field]: value })
   }
 
-  const handleCustomFieldChange = (fieldKey: string, value: unknown, currentCustomFields: Record<string, any> = {}) => {
+  const handleCustomFieldChange = (fieldKey: string, value: unknown, currentCustomFields: Record<string, unknown> = {}) => {
     const updated = { ...currentCustomFields, [fieldKey]: value }
     handleFieldChange("customFields", updated)
   }
