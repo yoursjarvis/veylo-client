@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import React from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -28,6 +28,7 @@ import {
   UserMinus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import type { Notification as NotificationType } from "@/types/models";
 
 export function NotificationCenter() {
   const router = useRouter();
@@ -38,10 +39,10 @@ export function NotificationCenter() {
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllNotificationsRead();
 
-  const unreadNotifications = notifications.filter((n: LooseRecord) => !n.isRead);
+  const unreadNotifications = notifications.filter((n: NotificationType) => !n.isRead);
   const unreadCount = unreadNotifications.length;
 
-  const handleNotificationClick = (n: LooseRecord) => {
+  const handleNotificationClick = (n: NotificationType) => {
     // Mark as read
     if (!n.isRead) {
       markReadMutation.mutate(n.id);
@@ -128,7 +129,7 @@ export function NotificationCenter() {
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {notifications.map((n: LooseRecord) => (
+              {notifications.map((n: NotificationType) => (
                 <button
                   key={n.id}
                   onClick={() => handleNotificationClick(n)}
@@ -137,9 +138,9 @@ export function NotificationCenter() {
                   }`}
                 >
                   <Avatar className="h-8 w-8 border border-border flex-shrink-0">
-                    <AvatarImage src={n.sender?.image || ""} />
+                    <AvatarImage src={(n as NotificationType & { sender?: { image?: string | null; name?: string | null } }).sender?.image || ""} />
                     <AvatarFallback className="bg-muted text-[10px] font-semibold text-foreground">
-                      {n.sender?.name?.charAt(0).toUpperCase() || "?"}
+                      {(n as NotificationType & { sender?: { image?: string | null; name?: string | null } }).sender?.name?.charAt(0).toUpperCase() || "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 space-y-0.5">

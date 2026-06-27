@@ -22,7 +22,7 @@ export default function ReportsPage() {
     <TaskReports
       tasks={tasks || []}
       sprints={sprints || []}
-      projectMembers={selectedProject?.members || []}
+      projectMembers={(selectedProject?.members || []).filter(m => m.user) as (import("@/types/models").ProjectMember & { user: { id: string; name: string } })[]}
       projectTemplate={selectedProject?.template || "simple"}
     />
   );

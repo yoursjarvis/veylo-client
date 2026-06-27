@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { axiosInstance } from "@/lib/axios"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { axiosInstance } from "@/lib/axios"
 import { Camera01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 interface AvatarUploadProps {
@@ -12,7 +12,10 @@ interface AvatarUploadProps {
   onUploadSuccess?: (url: string) => void
 }
 
-export function AvatarUpload({ initialUrl, onUploadSuccess }: AvatarUploadProps) {
+export function AvatarUpload({
+  initialUrl,
+  onUploadSuccess,
+}: AvatarUploadProps) {
   const [url, setUrl] = useState<string | null>(initialUrl || null)
   const [loading, setLoading] = useState(false)
 
@@ -53,12 +56,15 @@ export function AvatarUpload({ initialUrl, onUploadSuccess }: AvatarUploadProps)
         <Avatar className="h-24 w-24 border-2 border-border">
           <AvatarImage src={url || undefined} />
           <AvatarFallback>
-            <HugeiconsIcon icon={Camera01Icon} className="h-8 w-8 text-muted-foreground" />
+            <HugeiconsIcon
+              icon={Camera01Icon}
+              className="h-8 w-8 text-muted-foreground"
+            />
           </AvatarFallback>
         </Avatar>
         <label
           htmlFor="avatar-upload"
-          className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+          className="absolute right-0 bottom-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
         >
           <HugeiconsIcon icon={Camera01Icon} className="h-4 w-4" />
           <input

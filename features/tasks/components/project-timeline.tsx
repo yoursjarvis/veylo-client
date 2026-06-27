@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
+import { TaskDependency } from "@/types/models";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +49,7 @@ type TimelineTask = {
   status: { name: string; category: string };
   createdAt: string;
   dueDate?: string;
-  blockedByDependencies?: LooseAny[];
+  blockedByDependencies?: TaskDependency[];
   assignee?: { name?: string; image?: string };
   deletedAt?: string;
 };

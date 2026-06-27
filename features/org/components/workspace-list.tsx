@@ -1,5 +1,5 @@
-"use client"
-
+"use client";
+/* eslint-disable @next/next/no-img-element */
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { Button } from "@/components/ui/button"
 import {

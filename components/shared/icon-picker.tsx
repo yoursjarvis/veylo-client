@@ -1,11 +1,6 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import NextImage from "next/image"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Image01Icon, SmileIcon, Briefcase02Icon, Camera01Icon } from "@hugeicons/core-free-icons"
 import {
   Dialog,
   DialogContent,
@@ -14,9 +9,38 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Briefcase02Icon,
+  Camera01Icon,
+  Image01Icon,
+  SmileIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import NextImage from "next/image"
+import { useState } from "react"
 import Cropper from "react-easy-crop"
 
-const COMMON_EMOJIS = ["🚀", "💡", "💼", "🎨", "📈", "🔥", "🌍", "💻", "📚", "✨", "🎯", "⚡", "🧩", "🛠️"]
+const COMMON_EMOJIS = [
+  "🚀",
+  "💡",
+  "💼",
+  "🎨",
+  "📈",
+  "🔥",
+  "🌍",
+  "💻",
+  "📚",
+  "✨",
+  "🎯",
+  "⚡",
+  "🧩",
+  "🛠️",
+]
 
 const getCroppedImg = async (
   imageSrc: string,
@@ -68,7 +92,12 @@ interface IconPickerProps {
   children?: React.ReactNode
 }
 
-export function IconPicker({ value, onChange, disabled, children }: IconPickerProps) {
+export function IconPicker({
+  value,
+  onChange,
+  disabled,
+  children,
+}: IconPickerProps) {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState<"emoji" | "image">("emoji")
 
@@ -77,7 +106,12 @@ export function IconPicker({ value, onChange, disabled, children }: IconPickerPr
   const [originalFile, setOriginalFile] = useState<File | null>(null)
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
+    x: number
+    y: number
+    width: number
+    height: number
+  } | null>(null)
   const [isCropping, setIsCropping] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,9 +153,27 @@ export function IconPicker({ value, onChange, disabled, children }: IconPickerPr
   }
 
   const renderCurrentIcon = () => {
-    if (!value) return <HugeiconsIcon icon={Briefcase02Icon} className="h-6 w-6 text-muted-foreground" />
-    if (value.startsWith("http") || value.startsWith("/") || value.startsWith("blob:")) {
-      return <NextImage src={value} alt="Icon" width={48} height={48} className="h-full w-full rounded-md object-cover" />
+    if (!value)
+      return (
+        <HugeiconsIcon
+          icon={Briefcase02Icon}
+          className="h-6 w-6 text-muted-foreground"
+        />
+      )
+    if (
+      value.startsWith("http") ||
+      value.startsWith("/") ||
+      value.startsWith("blob:")
+    ) {
+      return (
+        <NextImage
+          src={value}
+          alt="Icon"
+          width={48}
+          height={48}
+          className="h-full w-full rounded-md object-cover"
+        />
+      )
     }
     return <span className="text-xl leading-none">{value}</span>
   }
@@ -132,7 +184,7 @@ export function IconPicker({ value, onChange, disabled, children }: IconPickerPr
         <PopoverTrigger
           render={
             children ? (
-              children as React.ReactElement
+              (children as React.ReactElement)
             ) : (
               <button
                 type="button"
@@ -145,7 +197,7 @@ export function IconPicker({ value, onChange, disabled, children }: IconPickerPr
           }
         />
         <PopoverContent className="w-64 p-2" align="start">
-          <div className="flex gap-1 border-b pb-2 mb-2">
+          <div className="mb-2 flex gap-1 border-b pb-2">
             <Button
               type="button"
               variant={tab === "emoji" ? "secondary" : "ghost"}
@@ -178,7 +230,7 @@ export function IconPicker({ value, onChange, disabled, children }: IconPickerPr
                     onChange(emoji)
                     setOpen(false)
                   }}
-                  className="flex h-8 items-center justify-center rounded-md hover:bg-accent text-lg"
+                  className="flex h-8 items-center justify-center rounded-md text-lg hover:bg-accent"
                 >
                   {emoji}
                 </button>
@@ -189,8 +241,13 @@ export function IconPicker({ value, onChange, disabled, children }: IconPickerPr
           {tab === "image" && (
             <div className="flex flex-col items-center justify-center gap-2 py-4">
               <label className="flex cursor-pointer flex-col items-center gap-2 rounded-md border-2 border-dashed border-border px-4 py-6 hover:bg-muted/50">
-                <HugeiconsIcon icon={Camera01Icon} className="h-6 w-6 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Upload image</span>
+                <HugeiconsIcon
+                  icon={Camera01Icon}
+                  className="h-6 w-6 text-muted-foreground"
+                />
+                <span className="text-xs text-muted-foreground">
+                  Upload image
+                </span>
                 <input
                   type="file"
                   className="hidden"
@@ -204,16 +261,22 @@ export function IconPicker({ value, onChange, disabled, children }: IconPickerPr
       </Popover>
 
       {/* Cropper Dialog */}
-      <Dialog open={!!srcImage} onOpenChange={(isOpen) => { if (!isOpen) handleCancelCrop() }}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog
+        open={!!srcImage}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) handleCancelCrop()
+        }}
+      >
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>Crop Workspace Icon</DialogTitle>
             <DialogDescription>
-              Drag to position and use the slider to zoom. Only square aspect ratio is allowed.
+              Drag to position and use the slider to zoom. Only square aspect
+              ratio is allowed.
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="relative h-[300px] w-full rounded-md overflow-hidden bg-muted border mt-4">
+
+          <div className="relative mt-4 h-75 w-full overflow-hidden rounded-md border bg-muted">
             {srcImage && (
               <Cropper
                 image={srcImage}
@@ -239,20 +302,16 @@ export function IconPicker({ value, onChange, disabled, children }: IconPickerPr
               step={0.05}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full h-1 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+              className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
             />
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancelCrop}
-            >
+            <Button type="button" variant="outline" onClick={handleCancelCrop}>
               Cancel
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={handleCropConfirm}
               disabled={isCropping}
             >

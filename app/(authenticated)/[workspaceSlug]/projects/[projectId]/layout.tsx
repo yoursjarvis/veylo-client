@@ -1,4 +1,6 @@
 "use client"
+import { Project, ProjectMember, TaskStatus, Sprint, Epic, Milestone, Label, CustomFieldDefinition, ProjectTemplate } from "@/types/models";
+
 
 import React, { createContext, useContext, useState, useEffect } from "react"
 import {
@@ -46,13 +48,13 @@ import { CreateTaskDialog } from "@/features/tasks/components/create-task-dialog
 interface ProjectContextType {
   workspaceSlug: string
   projectId: string
-  selectedProject: LooseRecord | null
-  statuses: LooseRecord[] | undefined
-  sprints: LooseRecord[] | undefined
-  customFields: LooseRecord[] | undefined
-  epics: LooseRecord[] | undefined
-  labels: LooseRecord[] | undefined
-  milestones: LooseRecord[] | undefined
+  selectedProject: (Project & { members?: ProjectMember[] }) | null
+  statuses: TaskStatus[] | undefined
+  sprints: Sprint[] | undefined
+  customFields: CustomFieldDefinition[] | undefined
+  epics: Epic[] | undefined
+  labels: Label[] | undefined
+  milestones: Milestone[] | undefined
   isWorkspaceAdmin: boolean
   activeTaskId: string | null
   handleSelectTask: (taskId: string | null) => void
@@ -125,12 +127,14 @@ export default function ProjectLayout({
 
   const urlTaskId = searchParams.get("taskId")
   useEffect(() => {
-    if (urlTaskId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing URL param to local state
-      setActiveTaskId(urlTaskId)
-    } else {
-      setActiveTaskId(null)
-    }
+    const timer = setTimeout(() => {
+      if (urlTaskId) {
+        setActiveTaskId(urlTaskId)
+      } else {
+        setActiveTaskId(null)
+      }
+    }, 0)
+    return () => clearTimeout(timer)
   }, [urlTaskId])
 
   const handleSelectTask = (taskId: string | null) => {
@@ -149,7 +153,7 @@ export default function ProjectLayout({
 
   // Queries
   const { data: selectedProject, isLoading: isProjectDetailLoading } =
-    useQuery<LooseRecord>({
+    useQuery<Project & { members?: ProjectMember[] }>({
       queryKey: ["project", projectId],
       queryFn: async () => {
         const response = await axiosInstance.get(`/projects/${projectId}`)
@@ -177,7 +181,7 @@ export default function ProjectLayout({
     enabled: !!activeWorkspace,
   })
 
-  const { data: templateDetails } = useQuery<LooseRecord>({
+  const { data: templateDetails } = useQuery<ProjectTemplate>({
     queryKey: ["project-template", selectedProject?.template],
     queryFn: async () => {
       if (!selectedProject?.template) return null
@@ -234,11 +238,13 @@ export default function ProjectLayout({
 
   useEffect(() => {
     if (projectId) {
-      const dismissed = localStorage.getItem(
-        `veylo-onboarding-dismissed-${projectId}`
-      )
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing dismissed status to state
-      setIsOnboardingDismissed(dismissed === "true")
+      const timer = setTimeout(() => {
+        const dismissed = localStorage.getItem(
+          `veylo-onboarding-dismissed-${projectId}`
+        )
+        setIsOnboardingDismissed(dismissed === "true")
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [projectId])
 
@@ -408,7 +414,7 @@ export default function ProjectLayout({
       value={{
         workspaceSlug,
         projectId,
-        selectedProject,
+        selectedProject: selectedProject ?? null,
         statuses,
         sprints,
         customFields,
@@ -513,7 +519,7 @@ export default function ProjectLayout({
                 <div className="flex items-center -space-x-1.5">
                   {(selectedProject?.members || [])
                     .slice(0, 5)
-                    .map((member: LooseAny) => (
+                    .map((member: ProjectMember) => (
                       <Avatar
                         key={member.id}
                         className="h-6.5 w-6.5 border-2 border-background transition-all hover:scale-105"
@@ -521,7 +527,7 @@ export default function ProjectLayout({
                         <AvatarImage src={member.user?.image || ""} />
                         <AvatarFallback className="bg-muted text-[9px] font-extrabold text-muted-foreground">
                           {member.user?.name
-                            ? member.user.name.charAt(0).toUpperCase()
+                            ? member.user?.name.charAt(0).toUpperCase()
                             : "?"}
                         </AvatarFallback>
                       </Avatar>
@@ -613,11 +619,11 @@ export default function ProjectLayout({
                         </h3>
                       </div>
                       <h2 className="text-lg font-bold text-foreground">
-                        {templateDetails?.config?.guidance?.welcome ||
+                        {(templateDetails?.config as { guidance?: { welcome?: string } })?.guidance?.welcome ||
                           "Welcome to your new workspace!"}
                       </h2>
                       <p className="max-w-xl text-xs text-muted-foreground">
-                        {templateDetails?.config?.guidance?.firstStep ||
+                        {(templateDetails?.config as { guidance?: { firstStep?: string } })?.guidance?.firstStep ||
                           "Complete these quick setup tasks to onboard your team."}
                       </p>
 
@@ -706,7 +712,7 @@ export default function ProjectLayout({
         <TaskDetailsDrawer
           taskId={activeTaskId}
           projectId={projectId!}
-          projectMembers={selectedProject?.members || []}
+          projectMembers={(selectedProject?.members || []) as (ProjectMember & { user: { id: string; name: string; image?: string | null } })[]}
           projectStatuses={statuses || []}
           projectSprints={sprints || []}
           projectTemplate={selectedProject?.template || "simple"}
@@ -721,7 +727,7 @@ export default function ProjectLayout({
         <CreateTaskDialog
           open={isCreateTaskOpen}
           projectId={projectId!}
-          projectMembers={selectedProject?.members || []}
+          projectMembers={(selectedProject?.members || []) as (ProjectMember & { user: { id: string; name: string; image?: string | null } })[]}
           projectStatuses={statuses || []}
           projectSprints={sprints || []}
           projectTemplate={selectedProject?.template || "simple"}

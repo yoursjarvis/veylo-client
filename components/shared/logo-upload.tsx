@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { axiosInstance } from "@/lib/axios"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { axiosInstance } from "@/lib/axios"
+import { Building03Icon, Camera01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Camera01Icon, Building03Icon } from "@hugeicons/core-free-icons"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 interface LogoUploadProps {
@@ -50,15 +50,21 @@ export function LogoUpload({ initialUrl, onUploadSuccess }: LogoUploadProps) {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative">
-        <Avatar className="h-24 w-24 border-2 border-border rounded-lg">
-          <AvatarImage src={url || undefined} className="rounded-lg object-contain" />
+        <Avatar className="h-24 w-24 rounded-lg border-2 border-border">
+          <AvatarImage
+            src={url || undefined}
+            className="rounded-lg object-contain"
+          />
           <AvatarFallback className="rounded-lg">
-            <HugeiconsIcon icon={Building03Icon} className="h-8 w-8 text-muted-foreground" />
+            <HugeiconsIcon
+              icon={Building03Icon}
+              className="h-8 w-8 text-muted-foreground"
+            />
           </AvatarFallback>
         </Avatar>
         <label
           htmlFor="logo-upload"
-          className="absolute bottom-[-8px] right-[-8px] flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+          className="absolute -right-2 -bottom-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
         >
           <HugeiconsIcon icon={Camera01Icon} className="h-4 w-4" />
           <input

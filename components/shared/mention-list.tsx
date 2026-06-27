@@ -1,103 +1,114 @@
-import React, { forwardRef, useImperativeHandle, useState, useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 
 export interface MentionListRef {
-  onKeyDown: (props: { event: KeyboardEvent }) => boolean;
+  onKeyDown: (props: { event: KeyboardEvent }) => boolean
 }
 
 interface MentionItem {
   user: {
-    id: string;
-    name?: string;
-    image?: string;
-    email?: string;
-  };
+    id: string
+    name?: string
+    image?: string
+    email?: string
+  }
 }
 
 interface MentionListProps {
-  items: MentionItem[];
-  command: (item: { id: string; label?: string; avatar?: string; email?: string }) => void;
+  items: MentionItem[]
+  command: (item: {
+    id: string
+    label?: string
+    avatar?: string
+    email?: string
+  }) => void
 }
 
-export const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+export const MentionList = forwardRef<MentionListRef, MentionListProps>(
+  (props, ref) => {
+    const [selectedIndex, setSelectedIndex] = useState(0)
 
-  const selectItem = (index: number) => {
-    const item = props.items[index];
-    if (item) {
-      props.command({
-        id: item.user.id,
-        label: item.user.name,
-        avatar: item.user.image || undefined,
-        email: item.user.email || undefined,
-      });
+    const selectItem = (index: number) => {
+      const item = props.items[index]
+      if (item) {
+        props.command({
+          id: item.user.id,
+          label: item.user.name,
+          avatar: item.user.image || undefined,
+          email: item.user.email || undefined,
+        })
+      }
     }
-  };
 
-  const upHandler = () => {
-    setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
-  };
+    const upHandler = () => {
+      setSelectedIndex(
+        (selectedIndex + props.items.length - 1) % props.items.length
+      )
+    }
 
-  const downHandler = () => {
-    setSelectedIndex((selectedIndex + 1) % props.items.length);
-  };
+    const downHandler = () => {
+      setSelectedIndex((selectedIndex + 1) % props.items.length)
+    }
 
-  const enterHandler = () => {
-    selectItem(selectedIndex);
-  };
+    const enterHandler = () => {
+      selectItem(selectedIndex)
+    }
 
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [props.items]);
+    useEffect(() => {
+      setSelectedIndex(0)
+    }, [props.items])
 
-  useImperativeHandle(ref, () => ({
-    onKeyDown: ({ event }) => {
-      if (event.key === "ArrowUp") {
-        upHandler();
-        return true;
-      }
-      if (event.key === "ArrowDown") {
-        downHandler();
-        return true;
-      }
-      if (event.key === "Enter") {
-        enterHandler();
-        return true;
-      }
-      return false;
-    },
-  }));
+    useImperativeHandle(ref, () => ({
+      onKeyDown: ({ event }) => {
+        if (event.key === "ArrowUp") {
+          upHandler()
+          return true
+        }
+        if (event.key === "ArrowDown") {
+          downHandler()
+          return true
+        }
+        if (event.key === "Enter") {
+          enterHandler()
+          return true
+        }
+        return false
+      },
+    }))
 
-  if (props.items.length === 0) {
+    if (props.items.length === 0) {
+      return (
+        <div className="rounded-md border border-border bg-popover p-2 text-xs text-popover-foreground shadow-md">
+          No members found
+        </div>
+      )
+    }
+
     return (
-      <div className="bg-popover text-popover-foreground border border-border shadow-md rounded-md p-2 text-xs">
-        No members found
+      <div className="z-50 flex max-h-62.5 min-w-50 flex-col gap-0.5 overflow-hidden overflow-y-auto rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg">
+        {props.items.map((item, index) => (
+          <button
+            key={item.user.id}
+            type="button"
+            onClick={() => selectItem(index)}
+            className={`flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-accent hover:text-accent-foreground ${
+              index === selectedIndex
+                ? "bg-accent font-semibold text-accent-foreground"
+                : ""
+            }`}
+          >
+            <Avatar className="h-5 w-5 shrink-0 border border-border">
+              <AvatarImage src={item.user.image || ""} />
+              <AvatarFallback className="bg-muted text-[10px] text-foreground">
+                {item.user.name?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate">{item.user.name}</span>
+          </button>
+        ))}
       </div>
-    );
+    )
   }
+)
 
-  return (
-    <div className="bg-popover text-popover-foreground border border-border shadow-lg rounded-md overflow-hidden max-h-[250px] overflow-y-auto p-1 min-w-[200px] flex flex-col gap-0.5 z-50">
-      {props.items.map((item, index) => (
-        <button
-          key={item.user.id}
-          type="button"
-          onClick={() => selectItem(index)}
-          className={`flex items-center gap-2 px-2.5 py-1.5 text-xs text-left w-full rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
-            index === selectedIndex ? "bg-accent text-accent-foreground font-semibold" : ""
-          }`}
-        >
-          <Avatar className="h-5 w-5 border border-border flex-shrink-0">
-            <AvatarImage src={item.user.image || ""} />
-            <AvatarFallback className="bg-muted text-foreground text-[10px]">
-              {item.user.name?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="truncate">{item.user.name}</span>
-        </button>
-      ))}
-    </div>
-  );
-});
-
-MentionList.displayName = "MentionList";
+MentionList.displayName = "MentionList"

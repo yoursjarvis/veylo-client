@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { Epic, Task, TaskStatus } from "@/types/models";
 
 import React, { useState, useEffect } from "react";
 import { useProject } from "../layout";
@@ -60,12 +61,12 @@ export default function EpicsPage() {
 
   // Dialog State
   const [isOpen, setIsOpen] = useState(false);
-  const [editingEpic, setEditingEpic] = useState<LooseRecord | null>(null);
+  const [editingEpic, setEditingEpic] = useState<Epic | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const form = useForm({
     defaultValues: {
-      title: editingEpic?.name || editingEpic?.title || "",
+      title: editingEpic?.title || "",
       description: editingEpic?.description || "",
       color: editingEpic?.color || "#6366f1",
       startDate: editingEpic?.startDate ? new Date(editingEpic.startDate) : null as Date | null,
@@ -130,7 +131,7 @@ export default function EpicsPage() {
     setIsOpen(true);
   };
 
-  const handleOpenEdit = (epic: LooseRecord) => {
+  const handleOpenEdit = (epic: Epic) => {
     setEditingEpic(epic);
     setValidationErrors({});
     setIsOpen(true);
@@ -181,12 +182,12 @@ export default function EpicsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {epics.map((epic: LooseRecord) => {
+          {epics.map((epic: Epic) => {
             // Find tasks linked to this epic
-            const epicTasks = tasks?.filter((t: LooseRecord) => t.epicId === epic.id || t.epic?.id === epic.id) || [];
+            const epicTasks = tasks?.filter((t: Task) => t.epicId === epic.id || t.epic?.id === epic.id) || [];
             const totalTasksCount = epicTasks.length;
-            const doneTasksCount = epicTasks.filter((t: LooseRecord) => {
-              const status = statuses?.find((s: LooseRecord) => s.id === t.statusId);
+            const doneTasksCount = epicTasks.filter((t: Task) => {
+              const status = statuses?.find((s: TaskStatus) => s.id === t.statusId);
               return (
                 status?.category === "done" ||
                 status?.name?.toLowerCase() === "done" ||
@@ -211,7 +212,7 @@ export default function EpicsPage() {
                           style={{ backgroundColor: epicColor }}
                         />
                         <CardTitle className="text-sm font-bold  group-hover:text-primary transition-colors">
-                          {epic.name || epic.title}
+                          {epic.title}
                         </CardTitle>
                       </div>
                       <p className="text-[10px]">
@@ -232,7 +233,7 @@ export default function EpicsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-rose-500 hover:text-rose-400 hover:bg-rose-500/10"
-                        onClick={() => handleDelete(epic.id, epic.name || epic.title)}
+                        onClick={() => handleDelete(epic.id, epic.title)}
                       >
                         <Trash className="h-3.5 w-3.5" />
                       </Button>

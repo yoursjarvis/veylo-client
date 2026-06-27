@@ -1,4 +1,6 @@
 "use client"
+import { Label } from "@/types/models";
+
 
 import React, { useState } from "react"
 import { useProject } from "../../layout"
@@ -130,7 +132,7 @@ export default function LabelsSettingsPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {labels.map((lbl: LooseRecord) => (
+                  {labels.map((lbl: Label) => (
                     <div
                       key={lbl.id}
                       className="flex items-center justify-between rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/10"

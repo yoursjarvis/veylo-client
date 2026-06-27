@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -26,7 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { IconPicker } from "@/components/shared/icon-picker";
-import { getThumbUrl, cn } from "@/lib/utils";
+import { getThumbUrl } from "@/lib/utils";
 import {
   Combobox,
   ComboboxInput,

@@ -35,9 +35,9 @@ export default function BacklogPage() {
     <TaskBacklog
       projectId={projectId}
       tasks={tasks || []}
-      sprints={sprints || []}
+      sprints={(sprints || []).map(s => ({ id: s.id, name: s.name, status: s.status, goal: s.goal || undefined, startDate: s.startDate || undefined, endDate: s.endDate || undefined }))}
       statuses={statuses || []}
-      projectMembers={selectedProject?.members || []}
+      projectMembers={(selectedProject?.members || []).map(m => ({ id: m.id, projectId: m.projectId, userId: m.userId, role: m.role, user: { id: m.user?.id || "", name: m.user?.name || "", email: m.user?.email || "", image: m.user?.image || null } }))}
       onSelectTask={handleSelectTask}
     />
   );

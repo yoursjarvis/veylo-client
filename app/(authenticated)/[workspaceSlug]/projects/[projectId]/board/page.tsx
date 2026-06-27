@@ -1,5 +1,6 @@
 "use client"
 
+
 import React, { useState } from "react"
 import { useProject } from "../layout"
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
@@ -127,9 +128,9 @@ export default function BoardPage() {
         projectId={projectId}
         tasks={tasks || []}
         statuses={statuses || []}
-        sprints={sprints || []}
+        sprints={(sprints || []).map(s => ({ id: s.id, name: s.name, status: s.status, goal: s.goal || undefined, startDate: s.startDate || undefined, endDate: s.endDate || undefined }))}
         projectTemplate={selectedProject?.template || "simple"}
-        projectMembers={selectedProject?.members || []}
+        projectMembers={(selectedProject?.members || []).map(m => ({ id: m.id, projectId: m.projectId, userId: m.userId, role: m.role, user: { id: m.user?.id || "", name: m.user?.name || "", email: m.user?.email || "", image: m.user?.image || null } }))}
         onSelectTask={handleSelectTask}
       />
     </div>

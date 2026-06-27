@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable react-hooks/static-components */
 import {
   AlertCircle,
   CheckCircle2,

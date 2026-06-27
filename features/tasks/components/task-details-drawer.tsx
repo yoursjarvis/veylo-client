@@ -1,6 +1,7 @@
-"use client"
+import { CustomFieldDefinition, User, CommentReaction } from "@/types/models";
 
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
+import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -61,7 +62,22 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useCurrentUser } from "@/features/auth/hooks/use-auth"
+import {
+  Task,
+  Project,
+  ProjectMember,
+  TaskStatus,
+  Sprint,
+  Epic,
+  Milestone,
+  Label,
+  TaskLabel,
+  Subtask,
+  Comment,
+  TaskActivity,
+  TaskDependency,
+} from "@/types/models"
+
 import { cn } from "@/lib/utils"
 import EmojiPicker, { Theme } from "emoji-picker-react"
 import {
@@ -80,19 +96,18 @@ import {
   Trash,
 } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 interface TaskDetailsDrawerProps {
   taskId: string | null
   projectId: string
-  projectMembers: LooseRecord[]
-  projectStatuses: LooseRecord[]
-  projectSprints: LooseRecord[]
+  projectMembers: ProjectMember[]
+  projectStatuses: TaskStatus[]
+  projectSprints: Sprint[]
   projectTemplate: string
-  projectEpics?: LooseRecord[]
-  projectMilestones?: LooseRecord[]
-  projectLabels?: LooseRecord[]
+  projectEpics?: Epic[]
+  projectMilestones?: Milestone[]
+  projectLabels?: Label[]
   onClose: () => void
 }
 
@@ -131,7 +146,6 @@ export function TaskDetailsDrawer({
 
   const { activeWorkspace } = useWorkspaceContext()
   const workspaceId = activeWorkspace?.id
-  const router = useRouter()
   const { data: currentUser } = useCurrentUser()
 
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(
@@ -156,26 +170,29 @@ export function TaskDetailsDrawer({
   const [depTaskInputValue, setDepTaskInputValue] = useState("")
 
   useEffect(() => {
-    if (task?.assigneeId) {
-      const member = projectMembers.find((m) => m.user.id === task.assigneeId)
-      if (member) {
-        setAssigneeInputValue(member.user.name)
+    const timer = setTimeout(() => {
+      if (task?.assigneeId) {
+        const member = projectMembers.find((m) => m.user?.id === task.assigneeId)
+        if (member) {
+          setAssigneeInputValue(member.user?.name || "")
+        } else {
+          setAssigneeInputValue("")
+        }
       } else {
         setAssigneeInputValue("")
       }
-    } else {
-      setAssigneeInputValue("")
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [task?.assigneeId, projectMembers])
 
   const filteredMembers = projectMembers.filter((m) => {
     const selectedMember = projectMembers.find(
-      (pm) => pm.user.id === task?.assigneeId
+      (pm) => pm.user?.id === task?.assigneeId
     )
-    if (selectedMember && selectedMember.user.name === assigneeInputValue) {
+    if (selectedMember && selectedMember.user?.name === assigneeInputValue) {
       return true
     }
-    return m.user.name?.toLowerCase().includes(assigneeInputValue.toLowerCase())
+    return m.user?.name?.toLowerCase().includes(assigneeInputValue.toLowerCase())
   })
 
   const showUnassigned =
@@ -183,9 +200,9 @@ export function TaskDetailsDrawer({
     "unassigned".includes(assigneeInputValue.toLowerCase()) ||
     (() => {
       const selectedMember = projectMembers.find(
-        (pm) => pm.user.id === task?.assigneeId
+        (pm) => pm.user?.id === task?.assigneeId
       )
-      return selectedMember && selectedMember.user.name === assigneeInputValue
+      return selectedMember && selectedMember.user?.name === assigneeInputValue
     })()
 
   const {
@@ -228,12 +245,12 @@ export function TaskDetailsDrawer({
 
   // Filter tasks: exclude current task and already linked tasks
   const linkedTaskIds = new Set([
-    ...(dependencies.blockedBy || []).map((d: LooseRecord) => d.task.id),
-    ...(dependencies.blocking || []).map((d: LooseRecord) => d.task.id),
-    taskId,
+    ...(dependencies.blockedBy || []).map((d: TaskDependency) => d.blockingTask?.id || ""),
+    ...(dependencies.blocking || []).map((d: TaskDependency) => d.blockedTask?.id || ""),
+    taskId || "",
   ])
   const availableTasks = projectTasks.filter(
-    (t: LooseRecord) => !linkedTaskIds.has(t.id) && !t.deletedAt
+    (t: Task) => !linkedTaskIds.has(t.id) && !t.deletedAt
   )
 
   const handleLinkDependency = (e: React.FormEvent) => {
@@ -259,19 +276,21 @@ export function TaskDetailsDrawer({
 
   useEffect(() => {
     if (task) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- required to sync local state
-      setLocalTitle(task.title || "")
-      setLocalDesc(task.description || "")
+      const timer = setTimeout(() => {
+        setLocalTitle(task.title || "")
+        setLocalDesc(task.description || "")
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [task])
 
   if (!taskId) return null
 
-  const handleFieldChange = (field: string, value: LooseAny) => {
+  const handleFieldChange = (field: string, value: unknown) => {
     updateTaskMutation.mutate({ [field]: value })
   }
 
-  const handleCustomFieldChange = (fieldKey: string, value: LooseAny) => {
+  const handleCustomFieldChange = (fieldKey: string, value: unknown) => {
     const existingCustomFields = task?.customFields || {}
     const updated = { ...existingCustomFields, [fieldKey]: value }
     handleFieldChange("customFields", updated)
@@ -333,10 +352,10 @@ export function TaskDetailsDrawer({
   }
 
   const selectedMember = projectMembers.find(
-    (m) => m.user.id === task?.assigneeId
+    (m) => m.user?.id === task?.assigneeId
   )
   const comboboxValue = selectedMember
-    ? { value: selectedMember.user.id, label: selectedMember.user.name }
+    ? { value: selectedMember.user?.id || "", label: selectedMember.user?.name || "" }
     : { value: "unassigned", label: "Unassigned" }
 
   return (
@@ -374,7 +393,7 @@ export function TaskDetailsDrawer({
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger
-                  nativeButton={false}
+
                   render={(props) => (
                     <Button
                       {...props}
@@ -453,7 +472,7 @@ export function TaskDetailsDrawer({
                       value={localDesc}
                       onChange={setLocalDesc}
                       onBlur={handleDescBlur}
-                      projectMembers={projectMembers}
+                      projectMembers={projectMembers.filter((m) => m.user) as (ProjectMember & { user: User })[]}
                       minHeight="150px"
                     />
                   </div>
@@ -469,7 +488,7 @@ export function TaskDetailsDrawer({
                     Subtask Checklist
                   </label>
                   <div className="space-y-1 pl-0.5">
-                    {task?.subtasks?.map((subtask: LooseRecord) => (
+                    {task?.subtasks?.map((subtask: Subtask) => (
                       <div
                         key={subtask.id}
                         className="group flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/30"
@@ -566,7 +585,7 @@ export function TaskDetailsDrawer({
                                   }
                                 : null
                             }
-                            onValueChange={(val: any) =>
+                            onValueChange={(val: { value: string; label: string } | null) =>
                               setDepDirection(
                                 val?.value as "blocks" | "blocked_by"
                               )
@@ -610,7 +629,7 @@ export function TaskDetailsDrawer({
                                     value: targetProjectId,
                                     label:
                                       projects.find(
-                                        (p: LooseRecord) =>
+                                        (p: Project) =>
                                           p.id === targetProjectId
                                       )?.title +
                                         (targetProjectId === projectId
@@ -619,7 +638,7 @@ export function TaskDetailsDrawer({
                                   }
                                 : null
                             }
-                            onValueChange={(val: any) => {
+                            onValueChange={(val: { value: string; label: string } | null) => {
                               setTargetProjectId(val?.value || projectId)
                               setTargetTaskId("")
                             }}
@@ -632,7 +651,7 @@ export function TaskDetailsDrawer({
                             />
                             <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                               <ComboboxList className="max-h-56 overflow-y-auto">
-                                {projects.map((p: LooseRecord) => (
+                                {projects.map((p: Project) => (
                                   <ComboboxItem
                                     key={p.id}
                                     value={{
@@ -666,12 +685,12 @@ export function TaskDetailsDrawer({
                                   value: targetTaskId,
                                   label:
                                     availableTasks.find(
-                                      (t: LooseRecord) => t.id === targetTaskId
+                                      (t: Task) => t.id === targetTaskId
                                     )?.title || "",
                                 }
                               : null
                           }
-                          onValueChange={(val: any) =>
+                          onValueChange={(val: { value: string; label: string } | null) =>
                             setTargetTaskId(val?.value || "")
                           }
                           inputValue={depTaskInputValue}
@@ -683,7 +702,7 @@ export function TaskDetailsDrawer({
                           />
                           <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                             <ComboboxList className="max-h-56 overflow-y-auto">
-                              {availableTasks.map((t: LooseRecord) => (
+                              {availableTasks.map((t: Task) => (
                                 <ComboboxItem
                                   key={t.id}
                                   value={{
@@ -729,9 +748,9 @@ export function TaskDetailsDrawer({
                   {/* Dependencies List */}
                   <div className="space-y-2">
                     {/* Blocked By */}
-                    {dependencies.blockedBy?.map((d: LooseRecord) => (
+                    {dependencies.blockedBy?.map((d: TaskDependency) => (
                       <div
-                        key={d.dependencyId}
+                        key={d.id}
                         className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/20 p-2.5 text-xs"
                       >
                         <div className="flex min-w-0 items-center gap-2">
@@ -740,10 +759,10 @@ export function TaskDetailsDrawer({
                           </span>
                           <div className="min-w-0">
                             <span className="block truncate font-semibold text-foreground">
-                              {d.task.title}
+                              {d.blockingTask?.title || d.blockedTask?.title}
                             </span>
                             <span className="text-[10px] text-muted-foreground">
-                              {d.task.project.title} • {d.task.status?.name}
+                              {d.blockingTask?.status?.name || d.blockedTask?.status?.name}
                             </span>
                           </div>
                         </div>
@@ -753,7 +772,7 @@ export function TaskDetailsDrawer({
                           size="icon"
                           className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-destructive"
                           onClick={() =>
-                            deleteDepMutation.mutate(d.dependencyId)
+                            deleteDepMutation.mutate(d.id)
                           }
                         >
                           <Trash size={12} />
@@ -762,9 +781,9 @@ export function TaskDetailsDrawer({
                     ))}
 
                     {/* Blocking */}
-                    {dependencies.blocking?.map((d: LooseRecord) => (
+                    {dependencies.blocking?.map((d: TaskDependency) => (
                       <div
-                        key={d.dependencyId}
+                        key={d.id}
                         className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/20 p-2.5 text-xs"
                       >
                         <div className="flex min-w-0 items-center gap-2">
@@ -773,10 +792,10 @@ export function TaskDetailsDrawer({
                           </span>
                           <div className="min-w-0">
                             <span className="block truncate font-semibold text-foreground">
-                              {d.task.title}
+                              {d.blockingTask?.title || d.blockedTask?.title}
                             </span>
                             <span className="text-[10px] text-muted-foreground">
-                              {d.task.project.title} • {d.task.status?.name}
+                              {d.blockingTask?.status?.name || d.blockedTask?.status?.name}
                             </span>
                           </div>
                         </div>
@@ -786,7 +805,7 @@ export function TaskDetailsDrawer({
                           size="icon"
                           className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-destructive"
                           onClick={() =>
-                            deleteDepMutation.mutate(d.dependencyId)
+                            deleteDepMutation.mutate(d.id)
                           }
                         >
                           <Trash size={12} />
@@ -818,7 +837,7 @@ export function TaskDetailsDrawer({
                       placeholder="Write a comment... (Supports rich text, @mentions, /commands, paste images)"
                       value={newComment}
                       onChange={setNewComment}
-                      projectMembers={projectMembers}
+                      projectMembers={projectMembers.filter((m) => m.user) as (ProjectMember & { user: User })[]}
                       minHeight="80px"
                       onSubmit={handleAddComment}
                     />
@@ -835,12 +854,12 @@ export function TaskDetailsDrawer({
                   </div>
                   <div className="space-y-4">
                     {buildCommentThreads(task?.comments || []).map(
-                      (comment: LooseRecord) => (
+                      (comment: Comment) => (
                         <CommentNode
                           key={comment.id}
                           comment={comment}
                           currentUser={currentUser}
-                          projectMembers={projectMembers}
+                          projectMembers={projectMembers.filter((m) => m.user) as (ProjectMember & { user: User })[]}
                           replyingToCommentId={replyingToCommentId}
                           setReplyingToCommentId={setReplyingToCommentId}
                           replyContent={replyContent}
@@ -866,7 +885,7 @@ export function TaskDetailsDrawer({
                     Activity Feed
                   </label>
                   <div className="space-y-3 pl-1">
-                    {task?.activityLogs?.map((activity: LooseRecord) => (
+                    {task?.activityLogs?.map((activity: TaskActivity) => (
                       <div
                         key={activity.id}
                         className="flex items-start gap-2 text-xs text-muted-foreground"
@@ -877,7 +896,7 @@ export function TaskDetailsDrawer({
                         />
                         <div>
                           <span className="font-semibold text-foreground">
-                            {activity.user.name}{" "}
+                            {activity.user?.name}{" "}
                           </span>
                           <span>{formatActivityText(activity)}</span>
                           <span className="mt-0.5 block text-[10px] text-muted-foreground/80">
@@ -914,12 +933,12 @@ export function TaskDetailsDrawer({
                               value: task.statusId,
                               label:
                                 projectStatuses.find(
-                                  (s: LooseRecord) => s.id === task.statusId
+                                  (s: TaskStatus) => s.id === task.statusId
                                 )?.name || "",
                             }
                           : null
                       }
-                      onValueChange={(val: any) =>
+                      onValueChange={(val: { value: string; label: string } | null) =>
                         handleFieldChange("statusId", val?.value)
                       }
                       inputValue={statusInputValue}
@@ -931,7 +950,7 @@ export function TaskDetailsDrawer({
                       />
                       <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
-                          {projectStatuses.map((st: LooseRecord) => (
+                          {projectStatuses.map((st: TaskStatus) => (
                             <ComboboxItem
                               key={st.id}
                               value={{ value: st.id, label: st.name }}
@@ -952,7 +971,7 @@ export function TaskDetailsDrawer({
                   <div>
                     <Combobox
                       value={comboboxValue}
-                      onValueChange={(val: any) =>
+                      onValueChange={(val: { value: string; label: string } | null) =>
                         handleFieldChange(
                           "assigneeId",
                           val?.value === "unassigned"
@@ -962,7 +981,7 @@ export function TaskDetailsDrawer({
                       }
                       inputValue={assigneeInputValue}
                       onInputValueChange={setAssigneeInputValue}
-                      isItemEqualToValue={(a: any, b: any) =>
+                      isItemEqualToValue={(a: { value: string; label: string }, b: { value: string; label: string }) =>
                         a?.value === b?.value
                       }
                     >
@@ -974,13 +993,13 @@ export function TaskDetailsDrawer({
                           {task?.assigneeId ? (
                             (() => {
                               const member = projectMembers.find(
-                                (m) => m.user.id === task.assigneeId
+                                (m) => m.user?.id === task.assigneeId
                               )
                               return member ? (
                                 <Avatar className="ml-1 h-5 w-5">
-                                  <AvatarImage src={member.user.image || ""} />
+                                  <AvatarImage src={member.user?.image || ""} />
                                   <AvatarFallback className="text-[9px]">
-                                    {member.user.name?.charAt(0).toUpperCase()}
+                                    {member.user?.name?.charAt(0).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
                               ) : (
@@ -1019,19 +1038,19 @@ export function TaskDetailsDrawer({
                               </span>
                             </ComboboxItem>
                           )}
-                          {filteredMembers.map((m: LooseRecord) => (
+                          {filteredMembers.map((m: ProjectMember) => (
                             <ComboboxItem
-                              key={m.user.id}
-                              value={{ value: m.user.id, label: m.user.name }}
+                              key={m.user?.id}
+                              value={{ value: m.user?.id, label: m.user?.name }}
                             >
                               <span className="flex items-center gap-2">
                                 <Avatar className="h-5 w-5">
-                                  <AvatarImage src={m.user.image || ""} />
+                                  <AvatarImage src={m.user?.image || ""} />
                                   <AvatarFallback className="text-[9px]">
-                                    {m.user.name?.charAt(0).toUpperCase()}
+                                    {m.user?.name?.charAt(0).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
-                                <span>{m.user.name}</span>
+                                <span>{m.user?.name}</span>
                               </span>
                             </ComboboxItem>
                           ))}
@@ -1062,7 +1081,7 @@ export function TaskDetailsDrawer({
                             }
                           : null
                       }
-                      onValueChange={(val: any) =>
+                      onValueChange={(val: { value: string; label: string } | null) =>
                         handleFieldChange("type", val?.value)
                       }
                       inputValue={typeInputValue}
@@ -1111,7 +1130,7 @@ export function TaskDetailsDrawer({
                             }
                           : null
                       }
-                      onValueChange={(val: any) =>
+                      onValueChange={(val: { value: string; label: string } | null) =>
                         handleFieldChange("priority", val?.value)
                       }
                       inputValue={priorityInputValue}
@@ -1171,12 +1190,12 @@ export function TaskDetailsDrawer({
                                   value: task.sprintId,
                                   label:
                                     projectSprints.find(
-                                      (s: LooseRecord) => s.id === task.sprintId
+                                      (s: Sprint) => s.id === task.sprintId
                                     )?.name || "",
                                 }
                               : { value: "", label: "Backlog" }
                           }
-                          onValueChange={(val: any) =>
+                          onValueChange={(val: { value: string; label: string } | null) =>
                             handleFieldChange("sprintId", val?.value || null)
                           }
                           inputValue={sprintInputValue}
@@ -1193,7 +1212,7 @@ export function TaskDetailsDrawer({
                               >
                                 Backlog
                               </ComboboxItem>
-                              {projectSprints.map((sp: LooseRecord) => (
+                              {projectSprints.map((sp: Sprint) => (
                                 <ComboboxItem
                                   key={sp.id}
                                   value={{
@@ -1299,12 +1318,12 @@ export function TaskDetailsDrawer({
                               value: task.epicId,
                               label:
                                 projectEpics.find(
-                                  (e: LooseRecord) => e.id === task.epicId
+                                  (e: Epic) => e.id === task.epicId
                                 )?.title || "",
                             }
                           : { value: "", label: "No Epic" }
                       }
-                      onValueChange={(val: any) =>
+                      onValueChange={(val: { value: string; label: string } | null) =>
                         handleFieldChange("epicId", val?.value || null)
                       }
                       inputValue={epicInputValue}
@@ -1319,7 +1338,7 @@ export function TaskDetailsDrawer({
                           <ComboboxItem value={{ value: "", label: "No Epic" }}>
                             No Epic
                           </ComboboxItem>
-                          {projectEpics.map((ep: LooseRecord) => (
+                          {projectEpics.map((ep: Epic) => (
                             <ComboboxItem
                               key={ep.id}
                               value={{ value: ep.id, label: ep.title }}
@@ -1345,12 +1364,12 @@ export function TaskDetailsDrawer({
                               value: task.milestoneId,
                               label:
                                 projectMilestones.find(
-                                  (m: LooseRecord) => m.id === task.milestoneId
+                                  (m: Milestone) => m.id === task.milestoneId
                                 )?.title || "",
                             }
                           : { value: "", label: "No Milestone" }
                       }
-                      onValueChange={(val: any) =>
+                      onValueChange={(val: { value: string; label: string } | null) =>
                         handleFieldChange("milestoneId", val?.value || null)
                       }
                       inputValue={milestoneInputValue}
@@ -1367,7 +1386,7 @@ export function TaskDetailsDrawer({
                           >
                             No Milestone
                           </ComboboxItem>
-                          {projectMilestones.map((ms: LooseRecord) => (
+                          {projectMilestones.map((ms: Milestone) => (
                             <ComboboxItem
                               key={ms.id}
                               value={{ value: ms.id, label: ms.title }}
@@ -1390,16 +1409,16 @@ export function TaskDetailsDrawer({
                       {projectLabels
                         .filter((lbl) =>
                           (task?.labels || []).some(
-                            (tl: LooseRecord) => tl.labelId === lbl.id
+                            (tl: TaskLabel) => tl.labelId === lbl.id
                           )
                         )
-                        .map((lbl: LooseRecord) => (
+                        .map((lbl: Label) => (
                           <button
                             key={lbl.id}
                             type="button"
                             onClick={() => {
                               const currentIds = (task?.labels || []).map(
-                                (tl: LooseRecord) => tl.labelId
+                                (tl: TaskLabel) => tl.labelId
                               )
                               const nextIds = currentIds.filter(
                                 (id: string) => id !== lbl.id
@@ -1433,9 +1452,9 @@ export function TaskDetailsDrawer({
                             Toggle Labels
                           </div>
                           <div className="max-h-48 space-y-0.5 overflow-y-auto">
-                            {projectLabels.map((lbl: LooseRecord) => {
+                            {projectLabels.map((lbl: Label) => {
                               const isSelected = (task?.labels || []).some(
-                                (tl: LooseRecord) => tl.labelId === lbl.id
+                                (tl: TaskLabel) => tl.labelId === lbl.id
                               )
                               return (
                                 <button
@@ -1443,7 +1462,7 @@ export function TaskDetailsDrawer({
                                   type="button"
                                   onClick={() => {
                                     const currentIds = (task?.labels || []).map(
-                                      (tl: LooseRecord) => tl.labelId
+                                      (tl: TaskLabel) => tl.labelId
                                     )
                                     const nextIds = isSelected
                                       ? currentIds.filter(
@@ -1493,7 +1512,7 @@ export function TaskDetailsDrawer({
                       Custom Fields
                     </h3>
                     <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
-                      {customFieldDefinitions.map((fieldDef: LooseRecord) => {
+                      {customFieldDefinitions.map((fieldDef: CustomFieldDefinition) => {
                         const fieldValue =
                           task?.customFields?.[fieldDef.id] ?? ""
                         return (
@@ -1528,7 +1547,7 @@ export function TaskDetailsDrawer({
                                       ? { value: fieldValue, label: fieldValue }
                                       : null
                                   }
-                                  onValueChange={(val: any) =>
+                                  onValueChange={(val: { value: string; label: string } | null) =>
                                     handleCustomFieldChange(
                                       fieldDef.id,
                                       val?.value || ""
@@ -1550,7 +1569,7 @@ export function TaskDetailsDrawer({
                                   />
                                   <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                                     <ComboboxList className="max-h-56 overflow-y-auto">
-                                      {fieldDef.options?.map((opt: string) => (
+                                      {(fieldDef.options as unknown as string[])?.map((opt: string) => (
                                         <ComboboxItem
                                           key={opt}
                                           value={{ value: opt, label: opt }}
@@ -1614,7 +1633,7 @@ export function TaskDetailsDrawer({
   )
 }
 
-export const formatActivityText = (activity: LooseRecord) => {
+export const formatActivityText = (activity: TaskActivity) => {
   const action = activity.action
   const oldValue = activity.oldValue
   const newValue = activity.newValue
@@ -1664,7 +1683,14 @@ const ReactionChip = ({
   hasReacted,
   onToggle,
   togglePending,
-}: LooseRecord) => {
+}: {
+  commentId: string;
+  emoji: string;
+  count: number;
+  hasReacted: boolean;
+  onToggle: (emoji: string) => void;
+  togglePending?: boolean;
+}) => {
   const [isOpen, setIsOpen] = useState(false)
   const { data: users, isLoading } = useReactionUsers(commentId, emoji, isOpen)
 
@@ -1702,7 +1728,7 @@ const ReactionChip = ({
                 Reacted with {emoji}
               </div>
               <div className="flex max-h-[200px] flex-col gap-2 overflow-y-auto pr-2">
-                {users?.map((u: LooseRecord) => (
+                {users?.map((u: User) => (
                   <div key={u.id} className="flex items-center gap-2">
                     <Avatar className="h-5 w-5 border border-border">
                       <AvatarImage src={u.image || ""} />
@@ -1739,9 +1765,9 @@ const CommentNode = ({
   deleteCommentMutation,
   toggleReactionMutation,
 }: {
-  comment: LooseRecord
-  currentUser: LooseRecord
-  projectMembers: LooseRecord[]
+  comment: Comment
+  currentUser: ReturnType<typeof useCurrentUser>["data"]
+  projectMembers: ProjectMember[]
   replyingToCommentId: string | null
   setReplyingToCommentId: (id: string | null) => void
   replyContent: string
@@ -1752,8 +1778,12 @@ const CommentNode = ({
   editingContent: string
   setEditingContent: (content: string) => void
   handleUpdateComment: (commentId: string) => void
-  deleteCommentMutation: LooseAny
-  toggleReactionMutation: LooseAny
+  deleteCommentMutation: { mutate: (id: string) => void }
+  toggleReactionMutation: { 
+    mutate: (args: { commentId: string; emoji: string }) => void;
+    isPending: boolean;
+    variables?: { emoji: string } | null;
+  }
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
@@ -1763,7 +1793,7 @@ const CommentNode = ({
 
   // Group reactions by emoji
   const reactionGroups = (comment.reactions || []).reduce(
-    (acc: LooseRecord, reaction: LooseRecord) => {
+    (acc: Record<string, CommentReaction[]>, reaction: CommentReaction) => {
       if (!acc[reaction.emoji]) {
         acc[reaction.emoji] = []
       }
@@ -1844,7 +1874,7 @@ const CommentNode = ({
                 placeholder="Edit comment..."
                 value={editingContent}
                 onChange={setEditingContent}
-                projectMembers={projectMembers}
+                projectMembers={projectMembers.filter((m) => m.user) as (ProjectMember & { user: User })[]}
                 minHeight="80px"
                 onSubmit={() => handleUpdateComment(comment.id)}
               />
@@ -1889,7 +1919,7 @@ const CommentNode = ({
                 >
                   Reply
                 </button>
-                {comment.user?.id === currentUser?.user?.id && (
+                {comment.userId === currentUser?.user?.id && (
                   <>
                     <button
                       type="button"
@@ -1917,10 +1947,10 @@ const CommentNode = ({
           {/* Reactions Display */}
           {Object.keys(reactionGroups).length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {(Object.entries(reactionGroups) as LooseAny).map(
-                ([emoji, reactions]: [string, LooseRecord[]]) => {
+              {Object.entries(reactionGroups).map(
+                ([emoji, reactions]: [string, CommentReaction[]]) => {
                   const hasReacted = reactions.some(
-                    (r: LooseRecord) => r.userId === currentUser?.user?.id
+                    (r: CommentReaction) => r.userId === currentUser?.user?.id
                   )
                   return (
                     <ReactionChip
@@ -1965,7 +1995,7 @@ const CommentNode = ({
             placeholder={`Reply to ${comment.user?.name}...`}
             value={replyContent}
             onChange={setReplyContent}
-            projectMembers={projectMembers}
+            projectMembers={projectMembers.filter((m) => m.user) as (ProjectMember & { user: User })[]}
             minHeight="60px"
             onSubmit={() => handleAddReply(comment.id)}
           />
@@ -2013,14 +2043,14 @@ const CommentNode = ({
       {/* Nested Replies - Recursive Rendering */}
       {!isCollapsed && comment.replies && comment.replies.length > 0 && (
         <div className="relative mt-2 ml-6 space-y-4 before:absolute before:top-0 before:bottom-[28px] before:left-0 before:w-[2px] before:bg-border/40">
-          {comment.replies.map((reply: LooseRecord) => (
+          {comment.replies.map((reply: Comment) => (
             <div key={reply.id} className="relative pl-6">
               {/* Elbow connector */}
               <div className="absolute top-0 left-0 h-[16px] w-[16px] rounded-bl-md border-b-[2px] border-l-[2px] border-border/40" />
               <CommentNode
                 comment={reply}
                 currentUser={currentUser}
-                projectMembers={projectMembers}
+                projectMembers={projectMembers.filter((m) => m.user) as (ProjectMember & { user: User })[]}
                 replyingToCommentId={replyingToCommentId}
                 setReplyingToCommentId={setReplyingToCommentId}
                 replyContent={replyContent}
@@ -2042,10 +2072,10 @@ const CommentNode = ({
   )
 }
 
-export const buildCommentThreads = (comments: LooseRecord[]) => {
+export const buildCommentThreads = (comments: Comment[]) => {
   if (!comments) return []
   const commentMap = new Map()
-  const roots: LooseRecord[] = []
+  const roots: Comment[] = []
 
   comments.forEach((c) => {
     commentMap.set(c.id, { ...c, replies: [] })
@@ -2064,8 +2094,8 @@ export const buildCommentThreads = (comments: LooseRecord[]) => {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   )
   roots.forEach((root) => {
-    root.replies.sort(
-      (a: LooseRecord, b: LooseRecord) =>
+    root.replies?.sort(
+      (a: Comment, b: Comment) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     )
   })

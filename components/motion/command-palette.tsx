@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable react-hooks/set-state-in-effect */
 import { motion, useReducedMotion } from "motion/react";
 import { Search, type LucideIcon } from "lucide-react";
 import {

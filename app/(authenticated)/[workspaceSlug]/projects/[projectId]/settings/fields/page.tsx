@@ -126,7 +126,7 @@ export default function CustomFieldsSettingsPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {customFields.map((field: LooseRecord) => (
+                  {customFields.map((field: { id: string, name: string, type: string, options?: string[] }) => (
                     <div
                       key={field.id}
                       className="flex items-center justify-between rounded-xl border border-border p-3 bg-muted/20"

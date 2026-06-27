@@ -87,14 +87,15 @@ function ComboboxSelect({
   const [inputValue, setInputValue] = useState("")
   const [open, setOpen] = useState(false)
 
-  // Sync input value with the selected option label
   useEffect(() => {
-    const selectedOption = options.find((opt) => opt.value === value)
-    if (selectedOption) {
-      setInputValue(selectedOption.label)
-    } else {
-      setInputValue("")
-    }
+    queueMicrotask(() => {
+      const selectedOption = options.find((opt) => opt.value === value)
+      if (selectedOption) {
+        setInputValue(selectedOption.label)
+      } else {
+        setInputValue("")
+      }
+    })
   }, [value, options])
 
   const filteredOptions = options.filter((opt) => {
@@ -114,7 +115,7 @@ function ComboboxSelect({
   return (
     <Combobox
       value={comboboxValue}
-      onValueChange={(val: any) => {
+      onValueChange={(val: { value?: string } | null) => {
         onValueChange(val?.value || null)
       }}
       inputValue={inputValue}
@@ -135,7 +136,7 @@ function ComboboxSelect({
           }
         }
       }}
-      isItemEqualToValue={(a: any, b: any) => a?.value === b?.value}
+      isItemEqualToValue={(a: { value?: string } | null, b: { value?: string } | null) => a?.value === b?.value}
     >
       <div className="relative w-full">
         <ComboboxInput
@@ -210,7 +211,8 @@ export function CreateTaskDialog({
   const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [estimate, setEstimate] = useState<number | null>(null)
   const [dueDate, setDueDate] = useState("")
-  const [customFields, setCustomFields] = useState<LooseRecord>({})
+  type CustomFieldValue = string | number | boolean
+  const [customFields, setCustomFields] = useState<Record<string, CustomFieldValue>>({})
   const [isInitializing, setIsInitializing] = useState(false)
 
   // Auto-initialize statuses if none exist
@@ -222,7 +224,7 @@ export function CreateTaskDialog({
       projectStatuses.length === 0 &&
       !isInitializing
     ) {
-      setIsInitializing(true)
+      queueMicrotask(() => setIsInitializing(true))
       const defaults = [
         { name: "To Do", category: "todo", order: 0 },
         { name: "In Progress", category: "in_progress", order: 1 },
@@ -242,33 +244,34 @@ export function CreateTaskDialog({
     }
   }, [projectStatuses, open, projectId, isInitializing, queryClient])
 
-  // Reset form status when opened/statuses are available
   useEffect(() => {
     if (projectStatuses && projectStatuses.length > 0) {
-      setStatusId(projectStatuses[0].id)
+      queueMicrotask(() => setStatusId(projectStatuses[0].id))
     }
   }, [projectStatuses, open])
 
   // Reset all other fields on close/open
   useEffect(() => {
     if (open) {
-      setTitle("")
-      setDescription("")
-      setType("task")
-      setPriority("medium")
-      setSprintId(null)
-      setEpicId(null)
-      setMilestoneId(null)
-      setSelectedLabels([])
-      setAssigneeId(null)
-      setEstimate(null)
-      setDueDate("")
-      setCustomFields({})
+      queueMicrotask(() => {
+        setTitle("")
+        setDescription("")
+        setType("task")
+        setPriority("medium")
+        setSprintId(null)
+        setEpicId(null)
+        setMilestoneId(null)
+        setSelectedLabels([])
+        setAssigneeId(null)
+        setEstimate(null)
+        setDueDate("")
+        setCustomFields({})
+      })
     }
   }, [open])
 
-  const handleCustomFieldChange = (fieldId: string, value: LooseAny) => {
-    setCustomFields((prev: LooseRecord) => ({ ...prev, [fieldId]: value }))
+  const handleCustomFieldChange = (fieldId: string, value: CustomFieldValue) => {
+    setCustomFields((prev) => ({ ...prev, [fieldId]: value }))
   }
 
   const handleLabelToggle = (labelId: string) => {
@@ -346,13 +349,13 @@ export function CreateTaskDialog({
         ),
       },
       ...projectMembers.map((m) => ({
-        value: m.user.id,
-        label: m.user.name,
+        value: m.user?.id,
+        label: m.user?.name,
         icon: (
           <Avatar className="h-5 w-5">
-            <AvatarImage src={m.user.image || ""} />
+            <AvatarImage src={m.user?.image || ""} />
             <AvatarFallback className="text-[9px]">
-              {m.user.name.charAt(0).toUpperCase()}
+              {m.user?.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         ),
@@ -777,7 +780,7 @@ export function CreateTaskDialog({
                                 </div>
                               ) : fieldDef.type === "select" ? (
                                 <ComboboxSelect
-                                  value={fieldValue || "none"}
+                                  value={(typeof fieldValue === "string" && fieldValue) ? fieldValue : "none"}
                                   onValueChange={(val) =>
                                     handleCustomFieldChange(
                                       fieldDef.id,
@@ -805,7 +808,7 @@ export function CreateTaskDialog({
                                         ? "date"
                                         : "text"
                                   }
-                                  value={fieldValue}
+                                  value={typeof fieldValue === "boolean" ? String(fieldValue) : fieldValue}
                                   onChange={(e) =>
                                     handleCustomFieldChange(
                                       fieldDef.id,

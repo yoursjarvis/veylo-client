@@ -32,7 +32,7 @@ export default function ProjectOverviewPage() {
 
         {/* Project Roles & Members */}
         <ProjectTeam
-          members={selectedProject.members || []}
+          members={(selectedProject.members || []).map(m => ({ ...m, user: { id: m.user?.id || "", name: m.user?.name || "", email: m.user?.email || "", image: m.user?.image || null } }))}
           workspaceSlug={workspaceSlug || ""}
           projectId={projectId}
         />
@@ -51,7 +51,7 @@ export default function ProjectOverviewPage() {
 
         {/* Member Join Feed / Timeline */}
         <ProjectHistory
-          members={selectedProject.members || []}
+          members={(selectedProject.members || []).filter(m => m.user) as (import("@/types/models").ProjectMember & { user: { id: string; name: string; email: string; image: string | null } })[]}
           projectCreatedAt={selectedProject.createdAt}
         />
       </div>

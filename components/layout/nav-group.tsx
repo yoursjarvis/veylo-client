@@ -1,4 +1,4 @@
-import type { SidebarNavGroup } from "@/components/layout/app-shared"
+import type { SidebarNavGroup, SidebarNavItem } from "@/components/layout/app-shared"
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,8 +20,8 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 
-function NavGroupItem({ item, pathname }: { item: LooseRecord; pathname: string }) {
-  const isActive = item.path === pathname || (item.subItems as LooseRecord[])?.some((sub: LooseRecord) => sub.path === pathname)
+function NavGroupItem({ item, pathname }: { item: SidebarNavItem; pathname: string }) {
+  const isActive = item.path === pathname || item.subItems?.some((sub: SidebarNavItem) => sub.path === pathname)
   const [isOpen, setIsOpen] = useState(isActive)
 
   useEffect(() => {
@@ -52,7 +52,7 @@ function NavGroupItem({ item, pathname }: { item: LooseRecord; pathname: string 
           </CollapsibleTrigger>
           <CollapsibleContent>
             <SidebarMenuSub>
-              {(item.subItems as LooseRecord[])?.map((subItem: LooseRecord) => {
+              {item.subItems?.map((subItem: SidebarNavItem) => {
                 const isSubActive = subItem.path === pathname
 
                 return (

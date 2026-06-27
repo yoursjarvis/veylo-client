@@ -1,4 +1,5 @@
 "use client"
+import { ProjectMember } from "@/types/models";
 
 import React, { useState, useEffect } from "react"
 import { useProject } from "../../layout"
@@ -38,18 +39,7 @@ interface WorkspaceMember {
   }
 }
 
-interface ProjectMember {
-  id: string
-  projectId: string
-  userId: string
-  role: string
-  user: {
-    id: string
-    name: string
-    email: string
-    image: string | null
-  }
-}
+
 
 export default function ProjectMembersPage() {
   const { projectId, selectedProject, isWorkspaceAdmin } = useProject()
@@ -63,7 +53,7 @@ export default function ProjectMembersPage() {
   useEffect(() => {
     if (selectedProject?.members) {
       const memberIds =
-        selectedProject.members.map((m: LooseRecord) => m.userId) || []
+        selectedProject.members.map((m: ProjectMember) => m.userId) || []
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing project members to state
       setSelectedMembers(memberIds)
     }
@@ -163,15 +153,15 @@ export default function ProjectMembersPage() {
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8 border border-border">
-                        <AvatarImage src={member.user.image || ""} />
+                        <AvatarImage src={member.user?.image || ""} />
                         <AvatarFallback className="text-xs uppercase bg-muted text-muted-foreground">
-                          {member.user.name.slice(0, 2)}
+                          {member.user?.name?.slice(0, 2) || "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold text-foreground">{member.user.name}</p>
+                        <p className="font-semibold text-foreground">{member.user?.name}</p>
                         <p className="mt-0.5 text-[10px] text-muted-foreground">
-                          {member.user.email}
+                          {member.user?.email}
                         </p>
                       </div>
                     </div>
@@ -187,7 +177,7 @@ export default function ProjectMembersPage() {
                         onClick={() => {
                           if (
                             confirm(
-                              `Remove ${member.user.name} from this project?`
+                              `Remove ${member.user?.name} from this project?`
                             )
                           ) {
                             removeMemberMutation.mutate(member.userId)

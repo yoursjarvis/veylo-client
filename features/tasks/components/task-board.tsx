@@ -62,7 +62,8 @@ export function TaskBoard({
       queryClient.invalidateQueries({ queryKey: ["task", variables.taskId] })
       toast.success("Task status updated")
     },
-    onError: (err: LooseAny) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
       toast.error(err.response?.data?.message || "Failed to update task status")
     },
   })

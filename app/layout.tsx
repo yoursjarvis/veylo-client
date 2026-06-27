@@ -1,5 +1,5 @@
 // import { Geist, Geist_Mono, Inter } from "next/font/google"
-import { Inter, JetBrains_Mono, Merriweather } from "next/font/google"
+import { Inter, JetBrains_Mono } from "next/font/google"
 
 import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -25,10 +25,7 @@ const fontSans = Inter({
   variable: "--font-sans",
 })
 
-const fontSerif = Merriweather({
-  subsets: ["latin"],
-  variable: "--font-serif",
-})
+
 
 const fontMono = JetBrains_Mono({
   subsets: ["latin"],

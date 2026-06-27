@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,11 +34,12 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { Session } from "@/types/models";
 
 export function SecurityTab() {
   const queryClient = useQueryClient();
   const { data: auth } = useCurrentUser();
-  const [sessions, setSessions] = useState<LooseAny[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [showTwoFactorDialog, setShowTwoFactorDialog] = useState(false);
   const [twoFactorStep, setTwoFactorStep] = useState<"password" | "otp" | "qr" | "verify" | "disable">("password");
@@ -96,7 +97,12 @@ export function SecurityTab() {
     setLoadingSessions(true);
     try {
       const { data } = await authClient.listSessions();
-      if (data) setSessions(data);
+      if (data) setSessions(data.map(d => ({ 
+        ...d, 
+        createdAt: d.createdAt.toISOString(), 
+        updatedAt: d.updatedAt.toISOString(), 
+        expiresAt: d.expiresAt.toISOString() 
+      } as Session)));
     } catch {
       toast.error("Failed to load sessions");
     } finally {
@@ -119,8 +125,9 @@ export function SecurityTab() {
   }, [resendTimer]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Fetching initial data
-    fetchSessions();
+    queueMicrotask(() => {
+      fetchSessions();
+    });
   }, [fetchSessions]);
 
   useEffect(() => {
@@ -135,8 +142,9 @@ export function SecurityTab() {
 
   useEffect(() => {
     if (showTwoFactorDialog && twoFactorStep === "otp") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Auto-send OTP when step is reached
-      handleSendOtp();
+      queueMicrotask(() => {
+        handleSendOtp();
+      });
     }
   }, [showTwoFactorDialog, twoFactorStep, handleSendOtp]);
 
@@ -289,9 +297,9 @@ export function SecurityTab() {
   if (auth?.session && !displayedSessions.some((s) => s.id === auth.session?.id)) {
     const ua = auth.session.userAgent || (typeof window !== "undefined" ? window.navigator.userAgent : "");
     
-    let os = (auth.session as LooseAny).os || "";
-    let browser = (auth.session as LooseAny).browser || "";
-    let deviceName = (auth.session as LooseAny).deviceName || "";
+    let os = (auth.session as Session).os || "";
+    let browser = (auth.session as Session).browser || "";
+    let deviceName = (auth.session as Session).deviceName || "";
     
     if (!os || !browser || !deviceName) {
       const uaLower = ua.toLowerCase();
@@ -325,14 +333,15 @@ export function SecurityTab() {
     displayedSessions.push({
       id: auth.session.id,
       token: auth.session.token || "",
-      userId: auth.session.userId,
+      userId: String(auth.session.userId),
       ipAddress: auth.session.ipAddress || "127.0.0.1",
       userAgent: ua,
       deviceName,
       browser,
       os,
-      createdAt: (auth.session as LooseAny).createdAt || new Date().toISOString(),
-      updatedAt: (auth.session as LooseAny).updatedAt || new Date().toISOString(),
+      createdAt: (auth.session as Session).createdAt || new Date().toISOString(),
+      updatedAt: (auth.session as Session).updatedAt || new Date().toISOString(),
+      expiresAt: (auth.session as Session).expiresAt || new Date().toISOString(),
     });
   }
 
