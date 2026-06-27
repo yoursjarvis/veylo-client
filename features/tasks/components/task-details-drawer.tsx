@@ -1,89 +1,87 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { format } from "date-fns"
-import {
-  useTaskDetails,
-  useUpdateTask,
-  useCreateSubtask,
-  useUpdateSubtask,
-  useDeleteSubtask,
-  useCreateComment,
-  useDeleteComment,
-  useUpdateComment,
-  useToggleCommentReaction,
-  useProjectCustomFields,
-  useTaskDependencies,
-  useCreateTaskDependency,
-  useDeleteTaskDependency,
-  useReactionUsers,
-} from "../hooks/use-tasks"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip"
-import { useQuery } from "@tanstack/react-query"
-import { axiosInstance } from "@/lib/axios"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { axiosInstance } from "@/lib/axios"
+import { useQuery } from "@tanstack/react-query"
+import { format } from "date-fns"
+import React, { useEffect, useState } from "react"
+import {
+  useCreateComment,
+  useCreateSubtask,
+  useCreateTaskDependency,
+  useDeleteComment,
+  useDeleteSubtask,
+  useDeleteTaskDependency,
+  useProjectCustomFields,
+  useReactionUsers,
+  useTaskDependencies,
+  useTaskDetails,
+  useToggleCommentReaction,
+  useUpdateComment,
+  useUpdateSubtask,
+  useUpdateTask,
+} from "../hooks/use-tasks"
 
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { RichTextEditor } from "@/components/shared/rich-text-editor"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Combobox,
-  ComboboxInput,
   ComboboxContent,
-  ComboboxList,
-  ComboboxItem,
   ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
 } from "@/components/ui/combobox"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { InputGroupAddon } from "@/components/ui/input-group"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { useCurrentUser } from "@/features/auth/hooks/use-auth"
+import { cn } from "@/lib/utils"
+import EmojiPicker, { Theme } from "emoji-picker-react"
 import {
-  Trash,
-  Plus,
-  Clock,
-  FileText,
   Activity,
-  MessageSquare,
-  CheckCircle2,
-  Calendar as CalendarIcon,
   AlertTriangle,
+  Calendar as CalendarIcon,
+  CheckCircle2,
+  Clock,
   Copy,
   ExternalLink,
-  SmilePlus,
+  FileText,
+  MessageSquare,
   MoreHorizontal,
+  Plus,
+  SmilePlus,
+  Trash,
 } from "lucide-react"
-import EmojiPicker, { Theme } from "emoji-picker-react"
 import { useTheme } from "next-themes"
-import { cn } from "@/lib/utils"
-import { RichTextEditor } from "@/components/shared/rich-text-editor"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import { toast } from "sonner"
-import { useCurrentUser } from "@/features/auth/hooks/use-auth"
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu"
 
 interface TaskDetailsDrawerProps {
   taskId: string | null
@@ -343,7 +341,7 @@ export function TaskDetailsDrawer({
 
   return (
     <Sheet open={!!taskId} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="flex h-full w-full flex-col border-l border-border bg-card p-0 text-foreground data-[side=right]:sm:max-w-[85vw] data-[side=right]:md:max-w-[75vw] data-[side=right]:lg:max-w-[65vw] data-[side=right]:xl:max-w-[55vw]">
+      <SheetContent className="flex h-full w-full flex-col border-l border-border bg-card p-0 text-foreground data-[side=right]:sm:max-w-[90vw] data-[side=right]:md:max-w-[80vw] data-[side=right]:lg:max-w-[70vw] data-[side=right]:xl:max-w-[60vw]">
         <SheetHeader className="flex flex-row items-center justify-between border-b border-border px-6 py-4">
           <div>
             <SheetTitle className="text-sm font-semibold text-muted-foreground">
@@ -897,7 +895,7 @@ export function TaskDetailsDrawer({
             </ScrollArea>
 
             {/* Right Side Settings Panel */}
-            <div className="h-full w-[280px] flex-shrink-0 space-y-6 overflow-y-auto bg-background p-5">
+            <div className="h-full w-[350px] flex-shrink-0 space-y-6 overflow-y-auto bg-background p-5">
               {/* Group 1: Status, Assignee, Type, Priority */}
               <div className="space-y-3.5">
                 <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
@@ -928,10 +926,10 @@ export function TaskDetailsDrawer({
                       onInputValueChange={setStatusInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
+                        className="flex h-8 w-full items-center border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select status..."
                       />
-                      <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                      <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
                           {projectStatuses.map((st: LooseRecord) => (
                             <ComboboxItem
@@ -969,7 +967,7 @@ export function TaskDetailsDrawer({
                       }
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
+                        className="flex h-8 w-full items-center border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Search assignee..."
                       >
                         <InputGroupAddon align="inline-start">
@@ -1002,7 +1000,7 @@ export function TaskDetailsDrawer({
                           )}
                         </InputGroupAddon>
                       </ComboboxInput>
-                      <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                      <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
                           {showUnassigned && (
                             <ComboboxItem
@@ -1071,10 +1069,10 @@ export function TaskDetailsDrawer({
                       onInputValueChange={setTypeInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
+                        className="flex h-8 w-full items-center border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select type..."
                       />
-                      <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                      <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
                           <ComboboxItem
                             value={{ value: "task", label: "Task" }}
@@ -1120,10 +1118,10 @@ export function TaskDetailsDrawer({
                       onInputValueChange={setPriorityInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
+                        className="flex h-8 w-full items-center border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select priority..."
                       />
-                      <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                      <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
                           <ComboboxItem value={{ value: "low", label: "Low" }}>
                             Low
@@ -1185,10 +1183,10 @@ export function TaskDetailsDrawer({
                           onInputValueChange={setSprintInputValue}
                         >
                           <ComboboxInput
-                            className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
+                            className="flex h-8 w-full items-center border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                             placeholder="Select sprint..."
                           />
-                          <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                          <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                             <ComboboxList className="max-h-56 overflow-y-auto">
                               <ComboboxItem
                                 value={{ value: "", label: "Backlog" }}
@@ -1230,7 +1228,7 @@ export function TaskDetailsDrawer({
                               e.target.value ? parseFloat(e.target.value) : null
                             )
                           }
-                          className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
+                          className="h-8 w-full border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
                           placeholder="Estimate value..."
                         />
                       </div>
@@ -1249,7 +1247,7 @@ export function TaskDetailsDrawer({
                             type="button"
                             variant="outline"
                             className={cn(
-                              "h-8 w-full justify-start rounded-md border-transparent bg-transparent px-2 text-xs font-normal text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background",
+                              "h-8 w-full justify-start border-transparent bg-transparent px-2 text-xs font-normal text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background",
                               !task?.dueDate && "text-muted-foreground"
                             )}
                           >
@@ -1313,10 +1311,10 @@ export function TaskDetailsDrawer({
                       onInputValueChange={setEpicInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
+                        className="flex h-8 w-full items-center border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select epic..."
                       />
-                      <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                      <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
                           <ComboboxItem value={{ value: "", label: "No Epic" }}>
                             No Epic
@@ -1424,7 +1422,7 @@ export function TaskDetailsDrawer({
                           render={
                             <button
                               type="button"
-                              className="flex items-center gap-1 rounded border border-dashed border-border bg-transparent px-2 py-0.5 text-[11px] text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+                              className="flex items-center gap-1 border border-dashed border-border bg-transparent px-2 py-0.5 text-[11px] text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                             >
                               <Plus size={11} /> Add Label
                             </button>
@@ -1547,10 +1545,10 @@ export function TaskDetailsDrawer({
                                   }
                                 >
                                   <ComboboxInput
-                                    className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
+                                    className="flex h-8 w-full items-center border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                                     placeholder="Choose option..."
                                   />
-                                  <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
+                                  <ComboboxContent className="w-full border border-border bg-card shadow-lg">
                                     <ComboboxList className="max-h-56 overflow-y-auto">
                                       {fieldDef.options?.map((opt: string) => (
                                         <ComboboxItem
