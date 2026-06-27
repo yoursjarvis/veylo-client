@@ -150,7 +150,9 @@ export function TaskDetailsDrawer({
   const [priorityInputValue, setPriorityInputValue] = useState("")
   const [epicInputValue, setEpicInputValue] = useState("")
   const [milestoneInputValue, setMilestoneInputValue] = useState("")
-  const [customFieldInputValues, setCustomFieldInputValues] = useState<Record<string, string>>({})
+  const [customFieldInputValues, setCustomFieldInputValues] = useState<
+    Record<string, string>
+  >({})
   const [depDirectionInputValue, setDepDirectionInputValue] = useState("")
   const [depProjectInputValue, setDepProjectInputValue] = useState("")
   const [depTaskInputValue, setDepTaskInputValue] = useState("")
@@ -351,7 +353,7 @@ export function TaskDetailsDrawer({
           {task && (
             <div className="flex items-center gap-2 pr-6">
               <Button
-                variant={isCompleted ? "secondary" : "default"}
+                variant={isCompleted ? "secondary" : "outline"}
                 size="sm"
                 className="flex h-8 items-center gap-1.5 text-xs font-medium"
                 onClick={() => {
@@ -368,9 +370,7 @@ export function TaskDetailsDrawer({
               >
                 <CheckCircle2
                   size={13}
-                  className={
-                    isCompleted ? "fill-success/10 text-success" : ""
-                  }
+                  className={isCompleted ? "fill-success/10 text-success" : ""}
                 />
                 {isCompleted ? "Completed" : "Mark Complete"}
               </Button>
@@ -402,7 +402,10 @@ export function TaskDetailsDrawer({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
-                      window.open(`/${activeWorkspace?.slug}/tasks/${task.id}`, "_blank")
+                      window.open(
+                        `/${activeWorkspace?.slug}/tasks/${task.id}`,
+                        "_blank"
+                      )
                     }}
                     className="text-xs"
                   >
@@ -430,18 +433,21 @@ export function TaskDetailsDrawer({
                     value={localTitle}
                     onChange={(e) => setLocalTitle(e.target.value)}
                     onBlur={handleTitleBlur}
-                    className="h-auto w-full border-transparent bg-transparent px-1.5 py-1 text-2xl font-bold tracking-tight text-foreground hover:bg-muted/20 focus:bg-background focus:border-border/40 focus:ring-0 focus:outline-none transition-all rounded-lg"
+                    className="h-auto w-full rounded-lg border-transparent bg-transparent px-1.5 py-1 text-2xl font-bold tracking-tight text-foreground transition-all hover:bg-muted/20 focus:border-border/40 focus:bg-background focus:ring-0 focus:outline-none"
                   />
                   <div className="flex items-center gap-2 px-1.5 text-xs text-muted-foreground">
                     <span>Task ID:</span>
-                    <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-[10px] text-foreground font-semibold">{task?.id}</span>
+                    <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold text-foreground">
+                      {task?.id}
+                    </span>
                   </div>
                 </div>
 
                 {/* Description */}
                 <div className="space-y-3">
                   <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                    <FileText size={14} className="text-muted-foreground/70" /> Description
+                    <FileText size={14} className="text-muted-foreground/70" />{" "}
+                    Description
                   </label>
                   <div className="px-0.5">
                     <RichTextEditor
@@ -456,15 +462,19 @@ export function TaskDetailsDrawer({
                 </div>
 
                 {/* Checklist / Subtasks */}
-                <div className="border-t border-border/60 pt-6 space-y-4">
+                <div className="space-y-4 border-t border-border/60 pt-6">
                   <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                    <CheckCircle2 size={14} className="text-muted-foreground/70" /> Subtask Checklist
+                    <CheckCircle2
+                      size={14}
+                      className="text-muted-foreground/70"
+                    />{" "}
+                    Subtask Checklist
                   </label>
                   <div className="space-y-1 pl-0.5">
                     {task?.subtasks?.map((subtask: LooseRecord) => (
                       <div
                         key={subtask.id}
-                        className="group flex items-center justify-between gap-3 rounded-lg py-1.5 px-2 hover:bg-muted/30 transition-colors"
+                        className="group flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/30"
                       >
                         <div className="flex items-center gap-2.5">
                           <Checkbox
@@ -478,7 +488,7 @@ export function TaskDetailsDrawer({
                             className="border-border data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                           />
                           <span
-                            className={`text-sm ${subtask.isCompleted ? "text-muted-foreground line-through font-normal" : "text-foreground font-medium"}`}
+                            className={`text-sm ${subtask.isCompleted ? "font-normal text-muted-foreground line-through" : "font-medium text-foreground"}`}
                           >
                             {subtask.title}
                           </span>
@@ -499,16 +509,21 @@ export function TaskDetailsDrawer({
                       placeholder="Add a subtask..."
                       value={newSubtaskTitle}
                       onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                      className="h-8 flex-1 border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="h-8 flex-1 border border-border bg-background text-xs text-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
                     />
-                    <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs px-3">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      variant="secondary"
+                      className="h-8 px-3 text-xs"
+                    >
                       <Plus size={14} className="mr-1" /> Add
                     </Button>
                   </form>
                 </div>
 
                 {/* Task Dependencies Section */}
-                <div className="border-t border-border/60 pt-6 space-y-4">
+                <div className="space-y-4 border-t border-border/60 pt-6">
                   <div className="flex items-center justify-between">
                     <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
                       <AlertTriangle size={14} className="text-warning/80" />{" "}
@@ -542,8 +557,22 @@ export function TaskDetailsDrawer({
                             Relationship
                           </label>
                           <Combobox
-                            value={depDirection ? { value: depDirection, label: depDirection === "blocked_by" ? "is blocked by" : "blocks" } : null}
-                            onValueChange={(val: any) => setDepDirection(val?.value as "blocks" | "blocked_by")}
+                            value={
+                              depDirection
+                                ? {
+                                    value: depDirection,
+                                    label:
+                                      depDirection === "blocked_by"
+                                        ? "is blocked by"
+                                        : "blocks",
+                                  }
+                                : null
+                            }
+                            onValueChange={(val: any) =>
+                              setDepDirection(
+                                val?.value as "blocks" | "blocked_by"
+                              )
+                            }
                             inputValue={depDirectionInputValue}
                             onInputValueChange={setDepDirectionInputValue}
                           >
@@ -553,8 +582,19 @@ export function TaskDetailsDrawer({
                             />
                             <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                               <ComboboxList className="max-h-56 overflow-y-auto">
-                                <ComboboxItem value={{ value: "blocked_by", label: "is blocked by" }}>is blocked by</ComboboxItem>
-                                <ComboboxItem value={{ value: "blocks", label: "blocks" }}>blocks</ComboboxItem>
+                                <ComboboxItem
+                                  value={{
+                                    value: "blocked_by",
+                                    label: "is blocked by",
+                                  }}
+                                >
+                                  is blocked by
+                                </ComboboxItem>
+                                <ComboboxItem
+                                  value={{ value: "blocks", label: "blocks" }}
+                                >
+                                  blocks
+                                </ComboboxItem>
                                 <ComboboxEmpty>No options found</ComboboxEmpty>
                               </ComboboxList>
                             </ComboboxContent>
@@ -566,7 +606,21 @@ export function TaskDetailsDrawer({
                             Project
                           </label>
                           <Combobox
-                            value={targetProjectId ? { value: targetProjectId, label: projects.find((p: LooseRecord) => p.id === targetProjectId)?.title + (targetProjectId === projectId ? " (Current)" : "") || "" } : null}
+                            value={
+                              targetProjectId
+                                ? {
+                                    value: targetProjectId,
+                                    label:
+                                      projects.find(
+                                        (p: LooseRecord) =>
+                                          p.id === targetProjectId
+                                      )?.title +
+                                        (targetProjectId === projectId
+                                          ? " (Current)"
+                                          : "") || "",
+                                  }
+                                : null
+                            }
                             onValueChange={(val: any) => {
                               setTargetProjectId(val?.value || projectId)
                               setTargetTaskId("")
@@ -581,8 +635,19 @@ export function TaskDetailsDrawer({
                             <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                               <ComboboxList className="max-h-56 overflow-y-auto">
                                 {projects.map((p: LooseRecord) => (
-                                  <ComboboxItem key={p.id} value={{ value: p.id, label: p.title + (p.id === projectId ? " (Current)" : "") }}>
-                                    {p.title} {p.id === projectId ? "(Current)" : ""}
+                                  <ComboboxItem
+                                    key={p.id}
+                                    value={{
+                                      value: p.id,
+                                      label:
+                                        p.title +
+                                        (p.id === projectId
+                                          ? " (Current)"
+                                          : ""),
+                                    }}
+                                  >
+                                    {p.title}{" "}
+                                    {p.id === projectId ? "(Current)" : ""}
                                   </ComboboxItem>
                                 ))}
                                 <ComboboxEmpty>No projects found</ComboboxEmpty>
@@ -597,8 +662,20 @@ export function TaskDetailsDrawer({
                           Target Task
                         </label>
                         <Combobox
-                          value={targetTaskId ? { value: targetTaskId, label: availableTasks.find((t: LooseRecord) => t.id === targetTaskId)?.title || "" } : null}
-                          onValueChange={(val: any) => setTargetTaskId(val?.value || "")}
+                          value={
+                            targetTaskId
+                              ? {
+                                  value: targetTaskId,
+                                  label:
+                                    availableTasks.find(
+                                      (t: LooseRecord) => t.id === targetTaskId
+                                    )?.title || "",
+                                }
+                              : null
+                          }
+                          onValueChange={(val: any) =>
+                            setTargetTaskId(val?.value || "")
+                          }
                           inputValue={depTaskInputValue}
                           onInputValueChange={setDepTaskInputValue}
                         >
@@ -609,7 +686,13 @@ export function TaskDetailsDrawer({
                           <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                             <ComboboxList className="max-h-56 overflow-y-auto">
                               {availableTasks.map((t: LooseRecord) => (
-                                <ComboboxItem key={t.id} value={{ value: t.id, label: `${t.title} (${t.priority})` }}>
+                                <ComboboxItem
+                                  key={t.id}
+                                  value={{
+                                    value: t.id,
+                                    label: `${t.title} (${t.priority})`,
+                                  }}
+                                >
                                   {t.title} ({t.priority})
                                 </ComboboxItem>
                               ))}
@@ -687,7 +770,7 @@ export function TaskDetailsDrawer({
                         className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/20 p-2.5 text-xs"
                       >
                         <div className="flex min-w-0 items-center gap-2">
-                          <span className="flex-shrink-0 rounded bg-info/10 px-1.5 py-0.5 text-[9px] font-bold text-info uppercase">
+                          <span className="bg-info/10 text-info flex-shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase">
                             Blocks
                           </span>
                           <div className="min-w-0">
@@ -716,7 +799,7 @@ export function TaskDetailsDrawer({
                     {!isDepsLoading &&
                       dependencies.blockedBy?.length === 0 &&
                       dependencies.blocking?.length === 0 && (
-                        <p className="text-xs text-muted-foreground italic pl-1">
+                        <p className="pl-1 text-xs text-muted-foreground italic">
                           No linked issues.
                         </p>
                       )}
@@ -724,9 +807,13 @@ export function TaskDetailsDrawer({
                 </div>
 
                 {/* Comments Section */}
-                <div className="border-t border-border/60 pt-6 space-y-6">
+                <div className="space-y-6 border-t border-border/60 pt-6">
                   <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                    <MessageSquare size={14} className="text-muted-foreground/70" /> Discussion / Comments
+                    <MessageSquare
+                      size={14}
+                      className="text-muted-foreground/70"
+                    />{" "}
+                    Discussion / Comments
                   </label>
                   <div className="flex flex-col gap-2">
                     <RichTextEditor
@@ -742,7 +829,7 @@ export function TaskDetailsDrawer({
                         type="button"
                         onClick={() => handleAddComment()}
                         size="sm"
-                        className="text-xs px-3"
+                        className="px-3 text-xs"
                       >
                         Post Comment
                       </Button>
@@ -775,9 +862,10 @@ export function TaskDetailsDrawer({
                 </div>
 
                 {/* Activity Feed */}
-                <div className="border-t border-border/60 pt-6 space-y-4">
+                <div className="space-y-4 border-t border-border/60 pt-6">
                   <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                    <Activity size={14} className="text-muted-foreground/70" /> Activity Feed
+                    <Activity size={14} className="text-muted-foreground/70" />{" "}
+                    Activity Feed
                   </label>
                   <div className="space-y-3 pl-1">
                     {task?.activityLogs?.map((activity: LooseRecord) => (
@@ -809,30 +897,47 @@ export function TaskDetailsDrawer({
             </ScrollArea>
 
             {/* Right Side Settings Panel */}
-            <div className="h-full w-[280px] space-y-6 overflow-y-auto bg-background p-5 flex-shrink-0">
+            <div className="h-full w-[280px] flex-shrink-0 space-y-6 overflow-y-auto bg-background p-5">
               {/* Group 1: Status, Assignee, Type, Priority */}
               <div className="space-y-3.5">
                 <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                   Properties
                 </h3>
-                <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
                   {/* Status */}
-                  <span className="text-muted-foreground font-medium">Status</span>
+                  <span className="font-medium text-muted-foreground">
+                    Status
+                  </span>
                   <div>
                     <Combobox
-                      value={task?.statusId ? { value: task.statusId, label: projectStatuses.find((s: LooseRecord) => s.id === task.statusId)?.name || "" } : null}
-                      onValueChange={(val: any) => handleFieldChange("statusId", val?.value)}
+                      value={
+                        task?.statusId
+                          ? {
+                              value: task.statusId,
+                              label:
+                                projectStatuses.find(
+                                  (s: LooseRecord) => s.id === task.statusId
+                                )?.name || "",
+                            }
+                          : null
+                      }
+                      onValueChange={(val: any) =>
+                        handleFieldChange("statusId", val?.value)
+                      }
                       inputValue={statusInputValue}
                       onInputValueChange={setStatusInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select status..."
                       />
                       <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
                           {projectStatuses.map((st: LooseRecord) => (
-                            <ComboboxItem key={st.id} value={{ value: st.id, label: st.name }}>
+                            <ComboboxItem
+                              key={st.id}
+                              value={{ value: st.id, label: st.name }}
+                            >
                               {st.name}
                             </ComboboxItem>
                           ))}
@@ -843,22 +948,28 @@ export function TaskDetailsDrawer({
                   </div>
 
                   {/* Assignee */}
-                  <span className="text-muted-foreground font-medium">Assignee</span>
+                  <span className="font-medium text-muted-foreground">
+                    Assignee
+                  </span>
                   <div>
                     <Combobox
                       value={comboboxValue}
                       onValueChange={(val: any) =>
                         handleFieldChange(
                           "assigneeId",
-                          val?.value === "unassigned" ? null : val?.value || null
+                          val?.value === "unassigned"
+                            ? null
+                            : val?.value || null
                         )
                       }
                       inputValue={assigneeInputValue}
                       onInputValueChange={setAssigneeInputValue}
-                      isItemEqualToValue={(a: any, b: any) => a?.value === b?.value}
+                      isItemEqualToValue={(a: any, b: any) =>
+                        a?.value === b?.value
+                      }
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Search assignee..."
                       >
                         <InputGroupAddon align="inline-start">
@@ -895,7 +1006,10 @@ export function TaskDetailsDrawer({
                         <ComboboxList className="max-h-56 overflow-y-auto">
                           {showUnassigned && (
                             <ComboboxItem
-                              value={{ value: "unassigned", label: "Unassigned" }}
+                              value={{
+                                value: "unassigned",
+                                label: "Unassigned",
+                              }}
                             >
                               <span className="flex items-center gap-2">
                                 <Avatar className="h-5 w-5">
@@ -932,23 +1046,51 @@ export function TaskDetailsDrawer({
                   </div>
 
                   {/* Type */}
-                  <span className="text-muted-foreground font-medium">Type</span>
+                  <span className="font-medium text-muted-foreground">
+                    Type
+                  </span>
                   <div>
                     <Combobox
-                      value={task?.type ? { value: task.type, label: task.type === "bug" ? "Bug (Defect)" : task.type === "feature" ? "Feature" : "Task" } : null}
-                      onValueChange={(val: any) => handleFieldChange("type", val?.value)}
+                      value={
+                        task?.type
+                          ? {
+                              value: task.type,
+                              label:
+                                task.type === "bug"
+                                  ? "Bug (Defect)"
+                                  : task.type === "feature"
+                                    ? "Feature"
+                                    : "Task",
+                            }
+                          : null
+                      }
+                      onValueChange={(val: any) =>
+                        handleFieldChange("type", val?.value)
+                      }
                       inputValue={typeInputValue}
                       onInputValueChange={setTypeInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select type..."
                       />
                       <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
-                          <ComboboxItem value={{ value: "task", label: "Task" }}>Task</ComboboxItem>
-                          <ComboboxItem value={{ value: "bug", label: "Bug (Defect)" }}>Bug (Defect)</ComboboxItem>
-                          <ComboboxItem value={{ value: "feature", label: "Feature" }}>Feature</ComboboxItem>
+                          <ComboboxItem
+                            value={{ value: "task", label: "Task" }}
+                          >
+                            Task
+                          </ComboboxItem>
+                          <ComboboxItem
+                            value={{ value: "bug", label: "Bug (Defect)" }}
+                          >
+                            Bug (Defect)
+                          </ComboboxItem>
+                          <ComboboxItem
+                            value={{ value: "feature", label: "Feature" }}
+                          >
+                            Feature
+                          </ComboboxItem>
                           <ComboboxEmpty>No types found</ComboboxEmpty>
                         </ComboboxList>
                       </ComboboxContent>
@@ -956,24 +1098,51 @@ export function TaskDetailsDrawer({
                   </div>
 
                   {/* Priority */}
-                  <span className="text-muted-foreground font-medium">Priority</span>
+                  <span className="font-medium text-muted-foreground">
+                    Priority
+                  </span>
                   <div>
                     <Combobox
-                      value={task?.priority ? { value: task.priority, label: task.priority.charAt(0).toUpperCase() + task.priority.slice(1) } : null}
-                      onValueChange={(val: any) => handleFieldChange("priority", val?.value)}
+                      value={
+                        task?.priority
+                          ? {
+                              value: task.priority,
+                              label:
+                                task.priority.charAt(0).toUpperCase() +
+                                task.priority.slice(1),
+                            }
+                          : null
+                      }
+                      onValueChange={(val: any) =>
+                        handleFieldChange("priority", val?.value)
+                      }
                       inputValue={priorityInputValue}
                       onInputValueChange={setPriorityInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select priority..."
                       />
                       <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
-                          <ComboboxItem value={{ value: "low", label: "Low" }}>Low</ComboboxItem>
-                          <ComboboxItem value={{ value: "medium", label: "Medium" }}>Medium</ComboboxItem>
-                          <ComboboxItem value={{ value: "high", label: "High" }}>High</ComboboxItem>
-                          <ComboboxItem value={{ value: "urgent", label: "Urgent" }}>Urgent</ComboboxItem>
+                          <ComboboxItem value={{ value: "low", label: "Low" }}>
+                            Low
+                          </ComboboxItem>
+                          <ComboboxItem
+                            value={{ value: "medium", label: "Medium" }}
+                          >
+                            Medium
+                          </ComboboxItem>
+                          <ComboboxItem
+                            value={{ value: "high", label: "High" }}
+                          >
+                            High
+                          </ComboboxItem>
+                          <ComboboxItem
+                            value={{ value: "urgent", label: "Urgent" }}
+                          >
+                            Urgent
+                          </ComboboxItem>
                           <ComboboxEmpty>No priorities found</ComboboxEmpty>
                         </ComboboxList>
                       </ComboboxContent>
@@ -989,27 +1158,51 @@ export function TaskDetailsDrawer({
                 <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                   Planning
                 </h3>
-                <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
                   {/* Sprint (Scrum Only) */}
                   {projectTemplate === "scrum" && (
                     <>
-                      <span className="text-muted-foreground font-medium">Sprint</span>
+                      <span className="font-medium text-muted-foreground">
+                        Sprint
+                      </span>
                       <div>
                         <Combobox
-                          value={task?.sprintId ? { value: task.sprintId, label: projectSprints.find((s: LooseRecord) => s.id === task.sprintId)?.name || "" } : { value: "", label: "Backlog" }}
-                          onValueChange={(val: any) => handleFieldChange("sprintId", val?.value || null)}
+                          value={
+                            task?.sprintId
+                              ? {
+                                  value: task.sprintId,
+                                  label:
+                                    projectSprints.find(
+                                      (s: LooseRecord) => s.id === task.sprintId
+                                    )?.name || "",
+                                }
+                              : { value: "", label: "Backlog" }
+                          }
+                          onValueChange={(val: any) =>
+                            handleFieldChange("sprintId", val?.value || null)
+                          }
                           inputValue={sprintInputValue}
                           onInputValueChange={setSprintInputValue}
                         >
                           <ComboboxInput
-                            className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                            className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                             placeholder="Select sprint..."
                           />
                           <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                             <ComboboxList className="max-h-56 overflow-y-auto">
-                              <ComboboxItem value={{ value: "", label: "Backlog" }}>Backlog</ComboboxItem>
+                              <ComboboxItem
+                                value={{ value: "", label: "Backlog" }}
+                              >
+                                Backlog
+                              </ComboboxItem>
                               {projectSprints.map((sp: LooseRecord) => (
-                                <ComboboxItem key={sp.id} value={{ value: sp.id, label: `${sp.name} (${sp.status})` }}>
+                                <ComboboxItem
+                                  key={sp.id}
+                                  value={{
+                                    value: sp.id,
+                                    label: `${sp.name} (${sp.status})`,
+                                  }}
+                                >
                                   {sp.name} ({sp.status})
                                 </ComboboxItem>
                               ))}
@@ -1024,7 +1217,9 @@ export function TaskDetailsDrawer({
                   {/* Estimate */}
                   {projectTemplate !== "simple" && (
                     <>
-                      <span className="text-muted-foreground font-medium">Estimate</span>
+                      <span className="font-medium text-muted-foreground">
+                        Estimate
+                      </span>
                       <div>
                         <Input
                           type="number"
@@ -1035,7 +1230,7 @@ export function TaskDetailsDrawer({
                               e.target.value ? parseFloat(e.target.value) : null
                             )
                           }
-                          className="h-8 w-full border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs text-foreground px-2 rounded-md transition-colors focus:outline-none"
+                          className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
                           placeholder="Estimate value..."
                         />
                       </div>
@@ -1043,7 +1238,9 @@ export function TaskDetailsDrawer({
                   )}
 
                   {/* Due Date */}
-                  <span className="text-muted-foreground font-medium">Due Date</span>
+                  <span className="font-medium text-muted-foreground">
+                    Due Date
+                  </span>
                   <div>
                     <Popover>
                       <PopoverTrigger
@@ -1052,7 +1249,7 @@ export function TaskDetailsDrawer({
                             type="button"
                             variant="outline"
                             className={cn(
-                              "h-8 w-full justify-start border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs font-normal text-foreground px-2 rounded-md transition-colors",
+                              "h-8 w-full justify-start rounded-md border-transparent bg-transparent px-2 text-xs font-normal text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background",
                               !task?.dueDate && "text-muted-foreground"
                             )}
                           >
@@ -1091,25 +1288,44 @@ export function TaskDetailsDrawer({
                 <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                   Context
                 </h3>
-                <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
                   {/* Epic */}
-                  <span className="text-muted-foreground font-medium">Epic</span>
+                  <span className="font-medium text-muted-foreground">
+                    Epic
+                  </span>
                   <div>
                     <Combobox
-                      value={task?.epicId ? { value: task.epicId, label: projectEpics.find((e: LooseRecord) => e.id === task.epicId)?.title || "" } : { value: "", label: "No Epic" }}
-                      onValueChange={(val: any) => handleFieldChange("epicId", val?.value || null)}
+                      value={
+                        task?.epicId
+                          ? {
+                              value: task.epicId,
+                              label:
+                                projectEpics.find(
+                                  (e: LooseRecord) => e.id === task.epicId
+                                )?.title || "",
+                            }
+                          : { value: "", label: "No Epic" }
+                      }
+                      onValueChange={(val: any) =>
+                        handleFieldChange("epicId", val?.value || null)
+                      }
                       inputValue={epicInputValue}
                       onInputValueChange={setEpicInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select epic..."
                       />
                       <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
-                          <ComboboxItem value={{ value: "", label: "No Epic" }}>No Epic</ComboboxItem>
+                          <ComboboxItem value={{ value: "", label: "No Epic" }}>
+                            No Epic
+                          </ComboboxItem>
                           {projectEpics.map((ep: LooseRecord) => (
-                            <ComboboxItem key={ep.id} value={{ value: ep.id, label: ep.title }}>
+                            <ComboboxItem
+                              key={ep.id}
+                              value={{ value: ep.id, label: ep.title }}
+                            >
                               {ep.title}
                             </ComboboxItem>
                           ))}
@@ -1120,23 +1336,44 @@ export function TaskDetailsDrawer({
                   </div>
 
                   {/* Milestone */}
-                  <span className="text-muted-foreground font-medium">Milestone</span>
+                  <span className="font-medium text-muted-foreground">
+                    Milestone
+                  </span>
                   <div>
                     <Combobox
-                      value={task?.milestoneId ? { value: task.milestoneId, label: projectMilestones.find((m: LooseRecord) => m.id === task.milestoneId)?.title || "" } : { value: "", label: "No Milestone" }}
-                      onValueChange={(val: any) => handleFieldChange("milestoneId", val?.value || null)}
+                      value={
+                        task?.milestoneId
+                          ? {
+                              value: task.milestoneId,
+                              label:
+                                projectMilestones.find(
+                                  (m: LooseRecord) => m.id === task.milestoneId
+                                )?.title || "",
+                            }
+                          : { value: "", label: "No Milestone" }
+                      }
+                      onValueChange={(val: any) =>
+                        handleFieldChange("milestoneId", val?.value || null)
+                      }
                       inputValue={milestoneInputValue}
                       onInputValueChange={setMilestoneInputValue}
                     >
                       <ComboboxInput
-                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                        className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                         placeholder="Select milestone..."
                       />
                       <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                         <ComboboxList className="max-h-56 overflow-y-auto">
-                          <ComboboxItem value={{ value: "", label: "No Milestone" }}>No Milestone</ComboboxItem>
+                          <ComboboxItem
+                            value={{ value: "", label: "No Milestone" }}
+                          >
+                            No Milestone
+                          </ComboboxItem>
                           {projectMilestones.map((ms: LooseRecord) => (
-                            <ComboboxItem key={ms.id} value={{ value: ms.id, label: ms.title }}>
+                            <ComboboxItem
+                              key={ms.id}
+                              value={{ value: ms.id, label: ms.title }}
+                            >
                               {ms.title}
                             </ComboboxItem>
                           ))}
@@ -1147,45 +1384,57 @@ export function TaskDetailsDrawer({
                   </div>
 
                   {/* Labels */}
-                  <span className="text-muted-foreground font-medium">Labels</span>
+                  <span className="font-medium text-muted-foreground">
+                    Labels
+                  </span>
                   <div>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      {projectLabels.filter((lbl) => (task?.labels || []).some((tl: LooseRecord) => tl.labelId === lbl.id)).map((lbl: LooseRecord) => (
-                        <button
-                          key={lbl.id}
-                          type="button"
-                          onClick={() => {
-                            const currentIds = (task?.labels || []).map(
-                              (tl: LooseRecord) => tl.labelId
-                            )
-                            const nextIds = currentIds.filter((id: string) => id !== lbl.id)
-                            handleFieldChange("labelIds", nextIds)
-                          }}
-                          className="group relative flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold border border-transparent text-white transition-all hover:opacity-90"
-                          style={{ backgroundColor: lbl.color || '#3b82f6' }}
-                          title="Click to remove"
-                        >
-                          <span>{lbl.name}</span>
-                          <span className="text-[9px] opacity-60 group-hover:opacity-100 transition-opacity">×</span>
-                        </button>
-                      ))}
-                      
+                      {projectLabels
+                        .filter((lbl) =>
+                          (task?.labels || []).some(
+                            (tl: LooseRecord) => tl.labelId === lbl.id
+                          )
+                        )
+                        .map((lbl: LooseRecord) => (
+                          <button
+                            key={lbl.id}
+                            type="button"
+                            onClick={() => {
+                              const currentIds = (task?.labels || []).map(
+                                (tl: LooseRecord) => tl.labelId
+                              )
+                              const nextIds = currentIds.filter(
+                                (id: string) => id !== lbl.id
+                              )
+                              handleFieldChange("labelIds", nextIds)
+                            }}
+                            className="group relative flex items-center gap-1 rounded border border-transparent px-2 py-0.5 text-[11px] font-semibold text-white transition-all hover:opacity-90"
+                            style={{ backgroundColor: lbl.color || "#3b82f6" }}
+                            title="Click to remove"
+                          >
+                            <span>{lbl.name}</span>
+                            <span className="text-[9px] opacity-60 transition-opacity group-hover:opacity-100">
+                              ×
+                            </span>
+                          </button>
+                        ))}
+
                       <Popover>
                         <PopoverTrigger
                           render={
                             <button
                               type="button"
-                              className="flex items-center gap-1 rounded border border-dashed border-border bg-transparent px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                              className="flex items-center gap-1 rounded border border-dashed border-border bg-transparent px-2 py-0.5 text-[11px] text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                             >
                               <Plus size={11} /> Add Label
                             </button>
                           }
                         />
                         <PopoverContent className="w-48 p-1.5" align="start">
-                          <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1 border-b border-border/50 mb-1">
+                          <div className="mb-1 border-b border-border/50 px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase">
                             Toggle Labels
                           </div>
-                          <div className="max-h-48 overflow-y-auto space-y-0.5">
+                          <div className="max-h-48 space-y-0.5 overflow-y-auto">
                             {projectLabels.map((lbl: LooseRecord) => {
                               const isSelected = (task?.labels || []).some(
                                 (tl: LooseRecord) => tl.labelId === lbl.id
@@ -1195,19 +1444,32 @@ export function TaskDetailsDrawer({
                                   key={lbl.id}
                                   type="button"
                                   onClick={() => {
-                                    const currentIds = (task?.labels || []).map((tl: LooseRecord) => tl.labelId)
+                                    const currentIds = (task?.labels || []).map(
+                                      (tl: LooseRecord) => tl.labelId
+                                    )
                                     const nextIds = isSelected
-                                      ? currentIds.filter((id: string) => id !== lbl.id)
+                                      ? currentIds.filter(
+                                          (id: string) => id !== lbl.id
+                                        )
                                       : [...currentIds, lbl.id]
                                     handleFieldChange("labelIds", nextIds)
                                   }}
                                   className="flex w-full items-center justify-between rounded px-2 py-1 text-left text-xs transition-all hover:bg-muted"
                                 >
                                   <div className="flex items-center gap-2">
-                                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: lbl.color }} />
-                                    <span className="font-medium text-foreground">{lbl.name}</span>
+                                    <span
+                                      className="h-2 w-2 rounded-full"
+                                      style={{ backgroundColor: lbl.color }}
+                                    />
+                                    <span className="font-medium text-foreground">
+                                      {lbl.name}
+                                    </span>
                                   </div>
-                                  {isSelected && <span className="text-primary text-xs">✓</span>}
+                                  {isSelected && (
+                                    <span className="text-xs text-primary">
+                                      ✓
+                                    </span>
+                                  )}
                                 </button>
                               )
                             })}
@@ -1232,12 +1494,16 @@ export function TaskDetailsDrawer({
                     <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                       Custom Fields
                     </h3>
-                    <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
                       {customFieldDefinitions.map((fieldDef: LooseRecord) => {
-                        const fieldValue = task?.customFields?.[fieldDef.id] ?? ""
+                        const fieldValue =
+                          task?.customFields?.[fieldDef.id] ?? ""
                         return (
                           <React.Fragment key={fieldDef.id}>
-                            <span className="text-muted-foreground font-medium truncate" title={fieldDef.name}>
+                            <span
+                              className="truncate font-medium text-muted-foreground"
+                              title={fieldDef.name}
+                            >
                               {fieldDef.name}
                             </span>
                             <div>
@@ -1246,7 +1512,10 @@ export function TaskDetailsDrawer({
                                   <Checkbox
                                     checked={!!fieldValue}
                                     onCheckedChange={(checked) =>
-                                      handleCustomFieldChange(fieldDef.id, !!checked)
+                                      handleCustomFieldChange(
+                                        fieldDef.id,
+                                        !!checked
+                                      )
                                     }
                                     className="border-border"
                                   />
@@ -1256,23 +1525,44 @@ export function TaskDetailsDrawer({
                                 </div>
                               ) : fieldDef.type === "select" ? (
                                 <Combobox
-                                  value={fieldValue ? { value: fieldValue, label: fieldValue } : null}
-                                  onValueChange={(val: any) => handleCustomFieldChange(fieldDef.id, val?.value || "")}
-                                  inputValue={customFieldInputValues[fieldDef.id] || ""}
-                                  onInputValueChange={(v: string) => setCustomFieldInputValues(prev => ({ ...prev, [fieldDef.id]: v }))}
+                                  value={
+                                    fieldValue
+                                      ? { value: fieldValue, label: fieldValue }
+                                      : null
+                                  }
+                                  onValueChange={(val: any) =>
+                                    handleCustomFieldChange(
+                                      fieldDef.id,
+                                      val?.value || ""
+                                    )
+                                  }
+                                  inputValue={
+                                    customFieldInputValues[fieldDef.id] || ""
+                                  }
+                                  onInputValueChange={(v: string) =>
+                                    setCustomFieldInputValues((prev) => ({
+                                      ...prev,
+                                      [fieldDef.id]: v,
+                                    }))
+                                  }
                                 >
                                   <ComboboxInput
-                                    className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                                    className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                                     placeholder="Choose option..."
                                   />
                                   <ComboboxContent className="w-full rounded-lg border border-border bg-card shadow-lg">
                                     <ComboboxList className="max-h-56 overflow-y-auto">
                                       {fieldDef.options?.map((opt: string) => (
-                                        <ComboboxItem key={opt} value={{ value: opt, label: opt }}>
+                                        <ComboboxItem
+                                          key={opt}
+                                          value={{ value: opt, label: opt }}
+                                        >
                                           {opt}
                                         </ComboboxItem>
                                       ))}
-                                      <ComboboxEmpty>No options found</ComboboxEmpty>
+                                      <ComboboxEmpty>
+                                        No options found
+                                      </ComboboxEmpty>
                                     </ComboboxList>
                                   </ComboboxContent>
                                 </Combobox>
@@ -1287,7 +1577,10 @@ export function TaskDetailsDrawer({
                                   }
                                   value={
                                     fieldDef.type === "date" && fieldValue
-                                      ? format(new Date(fieldValue), "yyyy-MM-dd")
+                                      ? format(
+                                          new Date(fieldValue),
+                                          "yyyy-MM-dd"
+                                        )
                                       : fieldValue
                                   }
                                   onChange={(e) =>
@@ -1297,12 +1590,14 @@ export function TaskDetailsDrawer({
                                         ? parseFloat(e.target.value) || 0
                                         : fieldDef.type === "date"
                                           ? e.target.value
-                                            ? new Date(e.target.value).toISOString()
+                                            ? new Date(
+                                                e.target.value
+                                              ).toISOString()
                                             : ""
                                           : e.target.value
                                     )
                                   }
-                                  className="h-8 w-full border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs text-foreground px-2 rounded-md transition-colors focus:outline-none"
+                                  className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
                                 />
                               )}
                             </div>
@@ -1528,7 +1823,7 @@ const CommentNode = ({
             {comment.user?.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-baseline justify-between">
             <span className="text-xs font-bold text-foreground">
               {comment.user?.name}
@@ -1581,7 +1876,7 @@ const CommentNode = ({
           ) : (
             <>
               <div
-                className="ProseMirror mb-1.5 max-w-full overflow-hidden text-xs text-foreground leading-relaxed"
+                className="ProseMirror mb-1.5 max-w-full overflow-hidden text-xs leading-relaxed text-foreground"
                 dangerouslySetInnerHTML={{ __html: comment.content }}
               />
               {/* Actions bar inside comment card */}
@@ -1592,7 +1887,7 @@ const CommentNode = ({
                     setReplyingToCommentId(comment.id)
                     setReplyContent("")
                   }}
-                  className="text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors"
+                  className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-primary"
                 >
                   Reply
                 </button>
@@ -1604,14 +1899,14 @@ const CommentNode = ({
                         setEditingCommentId(comment.id)
                         setEditingContent(comment.content)
                       }}
-                      className="text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors"
+                      className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-primary"
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteCommentMutation.mutate(comment.id)}
-                      className="text-[10px] font-semibold text-muted-foreground hover:text-destructive transition-colors"
+                      className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
                     >
                       Delete
                     </button>

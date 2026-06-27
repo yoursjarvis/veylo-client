@@ -48,8 +48,12 @@ interface TaskItem {
   statusId?: string;
   priority: string;
   type: string;
-  assignee?: { id?: string; name?: string };
+  status: { name: string };
+  assignee?: { id?: string; image?: string; name?: string };
   assigneeId?: string;
+  dueDate?: string;
+  estimate?: string | number;
+  labels?: { labelId: string }[];
   [key: string]: unknown;
 }
 

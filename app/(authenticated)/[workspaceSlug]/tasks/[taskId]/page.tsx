@@ -199,7 +199,9 @@ export default function TaskDetailPage() {
 
   useEffect(() => {
     if (task?.assigneeId) {
-      const member = projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)
+      const member = projectMembers.find(
+        (m: LooseRecord) => m.user.id === task.assigneeId
+      )
       if (member) setAssigneeInputValue(member.user.name)
       else setAssigneeInputValue("")
     } else {
@@ -208,14 +210,22 @@ export default function TaskDetailPage() {
   }, [task?.assigneeId, projectMembers])
 
   const filteredMembers = projectMembers.filter((m: LooseRecord) => {
-    const selectedMember = projectMembers.find((pm: LooseRecord) => pm.user.id === task?.assigneeId)
-    if (selectedMember && selectedMember.user.name === assigneeInputValue) return true
+    const selectedMember = projectMembers.find(
+      (pm: LooseRecord) => pm.user.id === task?.assigneeId
+    )
+    if (selectedMember && selectedMember.user.name === assigneeInputValue)
+      return true
     return m.user.name?.toLowerCase().includes(assigneeInputValue.toLowerCase())
   })
-  const showUnassigned = !assigneeInputValue || "unassigned".includes(assigneeInputValue.toLowerCase()) || (() => {
-    const selectedMember = projectMembers.find((pm: LooseRecord) => pm.user.id === task?.assigneeId)
-    return selectedMember && selectedMember.user.name === assigneeInputValue
-  })()
+  const showUnassigned =
+    !assigneeInputValue ||
+    "unassigned".includes(assigneeInputValue.toLowerCase()) ||
+    (() => {
+      const selectedMember = projectMembers.find(
+        (pm: LooseRecord) => pm.user.id === task?.assigneeId
+      )
+      return selectedMember && selectedMember.user.name === assigneeInputValue
+    })()
 
   const handleFieldChange = (field: string, value: LooseRecord) => {
     updateTaskMutation.mutate({ [field]: value })
@@ -335,7 +345,7 @@ export default function TaskDetailPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant={isCompleted ? "secondary" : "default"}
+              variant={isCompleted ? "secondary" : "outline"}
               size="sm"
               className="flex h-8 items-center gap-1.5 text-xs font-medium"
               onClick={() => {
@@ -352,9 +362,7 @@ export default function TaskDetailPage() {
             >
               <CheckCircle2
                 size={13}
-                className={
-                  isCompleted ? "fill-success/10 text-success" : ""
-                }
+                className={isCompleted ? "fill-success/10 text-success" : ""}
               />
               {isCompleted ? "Completed" : "Mark Complete"}
             </Button>
@@ -379,7 +387,9 @@ export default function TaskDetailPage() {
                   Copy Link
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => router.push(`/${workspaceSlug}/projects/${projectId}`)}
+                  onClick={() =>
+                    router.push(`/${workspaceSlug}/projects/${projectId}`)
+                  }
                   className="text-xs"
                 >
                   <ArrowLeft className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
@@ -395,25 +405,28 @@ export default function TaskDetailPage() {
       <div className="mx-auto max-w-7xl px-6 py-8 md:px-8">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
           {/* Left Columns (Main content) */}
-          <div className="flex-1 min-w-0 space-y-8">
+          <div className="min-w-0 flex-1 space-y-8">
             {/* Title & Task ID */}
             <div className="space-y-1.5 px-0.5">
               <Input
                 value={localTitle}
                 onChange={(e) => setLocalTitle(e.target.value)}
                 onBlur={handleTitleBlur}
-                className="h-auto w-full border-transparent bg-transparent px-1.5 py-1 text-3xl font-bold tracking-tight text-foreground hover:bg-muted/20 focus:bg-background focus:border-border/40 focus:ring-0 focus:outline-none transition-all rounded-lg"
+                className="h-auto w-full rounded-lg border-transparent bg-transparent px-1.5 py-1 text-3xl font-bold tracking-tight text-foreground transition-all hover:bg-muted/20 focus:border-border/40 focus:bg-background focus:ring-0 focus:outline-none"
               />
               <div className="flex items-center gap-2 px-1.5 text-xs text-muted-foreground">
                 <span>Task ID:</span>
-                <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-[10px] text-foreground font-semibold">{task.id}</span>
+                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold text-foreground">
+                  {task.id}
+                </span>
               </div>
             </div>
 
             {/* Description */}
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                <FileText size={14} className="text-muted-foreground/70" /> Description
+                <FileText size={14} className="text-muted-foreground/70" />{" "}
+                Description
               </label>
               <div className="px-0.5">
                 <RichTextEditor
@@ -428,15 +441,16 @@ export default function TaskDetailPage() {
             </div>
 
             {/* Subtasks checklist */}
-            <div className="border-t border-border/60 pt-6 space-y-4">
+            <div className="space-y-4 border-t border-border/60 pt-6">
               <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                <CheckCircle2 size={14} className="text-muted-foreground/70" /> Subtask Checklist
+                <CheckCircle2 size={14} className="text-muted-foreground/70" />{" "}
+                Subtask Checklist
               </h3>
               <div className="space-y-1 pl-0.5">
                 {task.subtasks?.map((subtask: LooseRecord) => (
                   <div
                     key={subtask.id}
-                    className="group flex items-center justify-between gap-3 rounded-lg py-1.5 px-2 hover:bg-muted/30 transition-colors"
+                    className="group flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/30"
                   >
                     <div className="flex items-center gap-2.5">
                       <Checkbox
@@ -450,7 +464,7 @@ export default function TaskDetailPage() {
                         className="border-border data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                       />
                       <span
-                        className={`text-sm ${subtask.isCompleted ? "text-muted-foreground line-through font-normal" : "text-foreground font-medium"}`}
+                        className={`text-sm ${subtask.isCompleted ? "font-normal text-muted-foreground line-through" : "font-medium text-foreground"}`}
                       >
                         {subtask.title}
                       </span>
@@ -503,14 +517,14 @@ export default function TaskDetailPage() {
                               }))
                             }}
                             placeholder="Add a subtask..."
-                            className="h-8 flex-1 border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                            className="h-8 flex-1 border border-border bg-background text-xs text-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
                             aria-invalid={hasError}
                           />
                           <Button
                             type="submit"
                             size="sm"
                             variant="secondary"
-                            className="h-8 shrink-0 text-xs px-3"
+                            className="h-8 shrink-0 px-3 text-xs"
                           >
                             <Plus size={14} className="mr-1" /> Add
                           </Button>
@@ -528,9 +542,10 @@ export default function TaskDetailPage() {
             </div>
 
             {/* Comments & Discussion */}
-            <div className="border-t border-border/60 pt-6 space-y-6">
+            <div className="space-y-6 border-t border-border/60 pt-6">
               <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                <MessageSquare size={14} className="text-muted-foreground/70" /> Discussion / Comments
+                <MessageSquare size={14} className="text-muted-foreground/70" />{" "}
+                Discussion / Comments
               </h3>
 
               <div className="flex flex-col gap-2">
@@ -547,7 +562,7 @@ export default function TaskDetailPage() {
                     type="button"
                     onClick={() => handleAddComment()}
                     size="sm"
-                    className="text-xs px-3"
+                    className="px-3 text-xs"
                   >
                     Post Comment
                   </Button>
@@ -581,9 +596,10 @@ export default function TaskDetailPage() {
             </div>
 
             {/* Activity Feed */}
-            <div className="border-t border-border/60 pt-6 space-y-4">
+            <div className="space-y-4 border-t border-border/60 pt-6">
               <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                <Activity size={14} className="text-muted-foreground/70" /> Activity Feed
+                <Activity size={14} className="text-muted-foreground/70" />{" "}
+                Activity Feed
               </h3>
               <div className="space-y-3 pl-1">
                 {task.activityLogs?.map((activity: LooseRecord) => (
@@ -620,24 +636,41 @@ export default function TaskDetailPage() {
               <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                 Properties
               </h3>
-              <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
                 {/* Status */}
-                <span className="text-muted-foreground font-medium">Status</span>
+                <span className="font-medium text-muted-foreground">
+                  Status
+                </span>
                 <div>
                   <Combobox
-                    value={task.statusId ? { value: task.statusId, label: projectStatuses.find((s: LooseRecord) => s.id === task.statusId)?.name || "" } : null}
-                    onValueChange={(val: any) => handleFieldChange("statusId", val?.value)}
+                    value={
+                      task.statusId
+                        ? {
+                            value: task.statusId,
+                            label:
+                              projectStatuses.find(
+                                (s: LooseRecord) => s.id === task.statusId
+                              )?.name || "",
+                          }
+                        : null
+                    }
+                    onValueChange={(val: any) =>
+                      handleFieldChange("statusId", val?.value)
+                    }
                     inputValue={statusInputValue}
                     onInputValueChange={setStatusInputValue}
                   >
                     <ComboboxInput
-                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                       placeholder="Select status..."
                     />
                     <ComboboxContent>
                       <ComboboxList>
                         {projectStatuses.map((st: LooseRecord) => (
-                          <ComboboxItem key={st.id} value={{ value: st.id, label: st.name }}>
+                          <ComboboxItem
+                            key={st.id}
+                            value={{ value: st.id, label: st.name }}
+                          >
                             {st.name}
                           </ComboboxItem>
                         ))}
@@ -648,41 +681,64 @@ export default function TaskDetailPage() {
                 </div>
 
                 {/* Assignee */}
-                <span className="text-muted-foreground font-medium">Assignee</span>
+                <span className="font-medium text-muted-foreground">
+                  Assignee
+                </span>
                 <div>
                   <Combobox
-                    value={task.assigneeId ? { value: task.assigneeId, label: projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)?.user?.name || "" } : null}
-                    onValueChange={(val: any) => handleFieldChange("assigneeId", val?.value || null)}
+                    value={
+                      task.assigneeId
+                        ? {
+                            value: task.assigneeId,
+                            label:
+                              projectMembers.find(
+                                (m: LooseRecord) =>
+                                  m.user.id === task.assigneeId
+                              )?.user?.name || "",
+                          }
+                        : null
+                    }
+                    onValueChange={(val: any) =>
+                      handleFieldChange("assigneeId", val?.value || null)
+                    }
                     inputValue={assigneeInputValue}
                     onInputValueChange={setAssigneeInputValue}
                   >
                     <ComboboxInput
-                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                       placeholder="Select assignee..."
                     >
-                      {task.assigneeId && (() => {
-                        const member = projectMembers.find((m: LooseRecord) => m.user.id === task.assigneeId)
-                        return member ? (
-                          <InputGroupAddon align="inline-start">
-                            <Avatar className="h-5 w-5 border border-border">
-                              <AvatarImage src={member.user.image || ""} />
-                              <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
-                                {member.user.name?.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                          </InputGroupAddon>
-                        ) : null
-                      })()}
+                      {task.assigneeId &&
+                        (() => {
+                          const member = projectMembers.find(
+                            (m: LooseRecord) => m.user.id === task.assigneeId
+                          )
+                          return member ? (
+                            <InputGroupAddon align="inline-start">
+                              <Avatar className="h-5 w-5 border border-border">
+                                <AvatarImage src={member.user.image || ""} />
+                                <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
+                                  {member.user.name?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                            </InputGroupAddon>
+                          ) : null
+                        })()}
                     </ComboboxInput>
                     <ComboboxContent>
                       <ComboboxList>
                         {showUnassigned && (
-                          <ComboboxItem value={{ value: "", label: "Unassigned" }}>
+                          <ComboboxItem
+                            value={{ value: "", label: "Unassigned" }}
+                          >
                             Unassigned
                           </ComboboxItem>
                         )}
                         {filteredMembers.map((m: LooseRecord) => (
-                          <ComboboxItem key={m.user.id} value={{ value: m.user.id, label: m.user.name }}>
+                          <ComboboxItem
+                            key={m.user.id}
+                            value={{ value: m.user.id, label: m.user.name }}
+                          >
                             <Avatar className="h-5 w-5 border border-border">
                               <AvatarImage src={m.user.image || ""} />
                               <AvatarFallback className="bg-muted text-[9px] text-muted-foreground">
@@ -699,23 +755,47 @@ export default function TaskDetailPage() {
                 </div>
 
                 {/* Type */}
-                <span className="text-muted-foreground font-medium">Type</span>
+                <span className="font-medium text-muted-foreground">Type</span>
                 <div>
                   <Combobox
-                    value={task.type ? { value: task.type, label: task.type === "bug" ? "Bug (Defect)" : task.type === "feature" ? "Feature" : "Task" } : null}
-                    onValueChange={(val: any) => handleFieldChange("type", val?.value)}
+                    value={
+                      task.type
+                        ? {
+                            value: task.type,
+                            label:
+                              task.type === "bug"
+                                ? "Bug (Defect)"
+                                : task.type === "feature"
+                                  ? "Feature"
+                                  : "Task",
+                          }
+                        : null
+                    }
+                    onValueChange={(val: any) =>
+                      handleFieldChange("type", val?.value)
+                    }
                     inputValue={typeInputValue}
                     onInputValueChange={setTypeInputValue}
                   >
                     <ComboboxInput
-                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                       placeholder="Select type..."
                     />
                     <ComboboxContent>
                       <ComboboxList>
-                        <ComboboxItem value={{ value: "task", label: "Task" }}>Task</ComboboxItem>
-                        <ComboboxItem value={{ value: "bug", label: "Bug (Defect)" }}>Bug (Defect)</ComboboxItem>
-                        <ComboboxItem value={{ value: "feature", label: "Feature" }}>Feature</ComboboxItem>
+                        <ComboboxItem value={{ value: "task", label: "Task" }}>
+                          Task
+                        </ComboboxItem>
+                        <ComboboxItem
+                          value={{ value: "bug", label: "Bug (Defect)" }}
+                        >
+                          Bug (Defect)
+                        </ComboboxItem>
+                        <ComboboxItem
+                          value={{ value: "feature", label: "Feature" }}
+                        >
+                          Feature
+                        </ComboboxItem>
                         <ComboboxEmpty>No types found</ComboboxEmpty>
                       </ComboboxList>
                     </ComboboxContent>
@@ -723,24 +803,49 @@ export default function TaskDetailPage() {
                 </div>
 
                 {/* Priority */}
-                <span className="text-muted-foreground font-medium">Priority</span>
+                <span className="font-medium text-muted-foreground">
+                  Priority
+                </span>
                 <div>
                   <Combobox
-                    value={task.priority ? { value: task.priority, label: task.priority.charAt(0).toUpperCase() + task.priority.slice(1) } : null}
-                    onValueChange={(val: any) => handleFieldChange("priority", val?.value)}
+                    value={
+                      task.priority
+                        ? {
+                            value: task.priority,
+                            label:
+                              task.priority.charAt(0).toUpperCase() +
+                              task.priority.slice(1),
+                          }
+                        : null
+                    }
+                    onValueChange={(val: any) =>
+                      handleFieldChange("priority", val?.value)
+                    }
                     inputValue={priorityInputValue}
                     onInputValueChange={setPriorityInputValue}
                   >
                     <ComboboxInput
-                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                       placeholder="Select priority..."
                     />
                     <ComboboxContent>
                       <ComboboxList>
-                        <ComboboxItem value={{ value: "low", label: "Low" }}>Low</ComboboxItem>
-                        <ComboboxItem value={{ value: "medium", label: "Medium" }}>Medium</ComboboxItem>
-                        <ComboboxItem value={{ value: "high", label: "High" }}>High</ComboboxItem>
-                        <ComboboxItem value={{ value: "urgent", label: "Urgent" }}>Urgent</ComboboxItem>
+                        <ComboboxItem value={{ value: "low", label: "Low" }}>
+                          Low
+                        </ComboboxItem>
+                        <ComboboxItem
+                          value={{ value: "medium", label: "Medium" }}
+                        >
+                          Medium
+                        </ComboboxItem>
+                        <ComboboxItem value={{ value: "high", label: "High" }}>
+                          High
+                        </ComboboxItem>
+                        <ComboboxItem
+                          value={{ value: "urgent", label: "Urgent" }}
+                        >
+                          Urgent
+                        </ComboboxItem>
                         <ComboboxEmpty>No priorities found</ComboboxEmpty>
                       </ComboboxList>
                     </ComboboxContent>
@@ -756,29 +861,51 @@ export default function TaskDetailPage() {
               <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                 Planning
               </h3>
-              <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
                 {/* Sprint (Scrum Only) */}
                 {projectTemplate === "scrum" && (
                   <>
-                    <span className="text-muted-foreground font-medium">Sprint</span>
+                    <span className="font-medium text-muted-foreground">
+                      Sprint
+                    </span>
                     <div>
                       <Combobox
-                        value={task.sprintId ? { value: task.sprintId, label: projectSprints.find((s: LooseRecord) => s.id === task.sprintId)?.name || "" } : null}
-                        onValueChange={(val: any) => handleFieldChange("sprintId", val?.value || null)}
+                        value={
+                          task.sprintId
+                            ? {
+                                value: task.sprintId,
+                                label:
+                                  projectSprints.find(
+                                    (s: LooseRecord) => s.id === task.sprintId
+                                  )?.name || "",
+                              }
+                            : null
+                        }
+                        onValueChange={(val: any) =>
+                          handleFieldChange("sprintId", val?.value || null)
+                        }
                         inputValue={sprintInputValue}
                         onInputValueChange={setSprintInputValue}
                       >
                         <ComboboxInput
-                          className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                          className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                           placeholder="Select sprint..."
                         />
                         <ComboboxContent>
                           <ComboboxList>
-                            <ComboboxItem value={{ value: "", label: "Backlog" }}>
+                            <ComboboxItem
+                              value={{ value: "", label: "Backlog" }}
+                            >
                               Backlog
                             </ComboboxItem>
                             {projectSprints.map((sp: LooseRecord) => (
-                              <ComboboxItem key={sp.id} value={{ value: sp.id, label: `${sp.name} (${sp.status})` }}>
+                              <ComboboxItem
+                                key={sp.id}
+                                value={{
+                                  value: sp.id,
+                                  label: `${sp.name} (${sp.status})`,
+                                }}
+                              >
                                 {sp.name} ({sp.status})
                               </ComboboxItem>
                             ))}
@@ -793,7 +920,9 @@ export default function TaskDetailPage() {
                 {/* Estimate */}
                 {projectTemplate !== "simple" && (
                   <>
-                    <span className="text-muted-foreground font-medium">Estimate</span>
+                    <span className="font-medium text-muted-foreground">
+                      Estimate
+                    </span>
                     <div>
                       <Input
                         type="number"
@@ -804,7 +933,7 @@ export default function TaskDetailPage() {
                             e.target.value ? parseFloat(e.target.value) : null
                           )
                         }
-                        className="h-8 w-full border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs text-foreground px-2 rounded-md transition-colors focus:outline-none"
+                        className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
                         placeholder="Estimate value..."
                       />
                     </div>
@@ -812,7 +941,9 @@ export default function TaskDetailPage() {
                 )}
 
                 {/* Due Date */}
-                <span className="text-muted-foreground font-medium">Due Date</span>
+                <span className="font-medium text-muted-foreground">
+                  Due Date
+                </span>
                 <div>
                   <Popover>
                     <PopoverTrigger
@@ -821,7 +952,7 @@ export default function TaskDetailPage() {
                           type="button"
                           variant="outline"
                           className={cn(
-                            "h-8 w-full justify-start border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs font-normal text-foreground px-2 rounded-md transition-colors",
+                            "h-8 w-full justify-start rounded-md border-transparent bg-transparent px-2 text-xs font-normal text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background",
                             !task.dueDate && "text-muted-foreground"
                           )}
                         >
@@ -837,7 +968,9 @@ export default function TaskDetailPage() {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={task.dueDate ? new Date(task.dueDate) : undefined}
+                        selected={
+                          task.dueDate ? new Date(task.dueDate) : undefined
+                        }
                         onSelect={(date) =>
                           handleFieldChange(
                             "dueDate",
@@ -858,25 +991,42 @@ export default function TaskDetailPage() {
               <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                 Context
               </h3>
-              <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
                 {/* Epic */}
-                <span className="text-muted-foreground font-medium">Epic</span>
+                <span className="font-medium text-muted-foreground">Epic</span>
                 <div>
                   <Combobox
-                    value={task.epicId ? { value: task.epicId, label: projectEpics.find((e: LooseRecord) => e.id === task.epicId)?.title || "" } : { value: "", label: "No Epic" }}
-                    onValueChange={(val: any) => handleFieldChange("epicId", val?.value || null)}
+                    value={
+                      task.epicId
+                        ? {
+                            value: task.epicId,
+                            label:
+                              projectEpics.find(
+                                (e: LooseRecord) => e.id === task.epicId
+                              )?.title || "",
+                          }
+                        : { value: "", label: "No Epic" }
+                    }
+                    onValueChange={(val: any) =>
+                      handleFieldChange("epicId", val?.value || null)
+                    }
                     inputValue={epicInputValue}
                     onInputValueChange={setEpicInputValue}
                   >
                     <ComboboxInput
-                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                       placeholder="Select epic..."
                     />
                     <ComboboxContent>
                       <ComboboxList>
-                        <ComboboxItem value={{ value: "", label: "No Epic" }}>No Epic</ComboboxItem>
+                        <ComboboxItem value={{ value: "", label: "No Epic" }}>
+                          No Epic
+                        </ComboboxItem>
                         {projectEpics.map((ep: LooseRecord) => (
-                          <ComboboxItem key={ep.id} value={{ value: ep.id, label: ep.title }}>
+                          <ComboboxItem
+                            key={ep.id}
+                            value={{ value: ep.id, label: ep.title }}
+                          >
                             {ep.title}
                           </ComboboxItem>
                         ))}
@@ -887,23 +1037,44 @@ export default function TaskDetailPage() {
                 </div>
 
                 {/* Milestone */}
-                <span className="text-muted-foreground font-medium">Milestone</span>
+                <span className="font-medium text-muted-foreground">
+                  Milestone
+                </span>
                 <div>
                   <Combobox
-                    value={task.milestoneId ? { value: task.milestoneId, label: projectMilestones.find((m: LooseRecord) => m.id === task.milestoneId)?.title || "" } : { value: "", label: "No Milestone" }}
-                    onValueChange={(val: any) => handleFieldChange("milestoneId", val?.value || null)}
+                    value={
+                      task.milestoneId
+                        ? {
+                            value: task.milestoneId,
+                            label:
+                              projectMilestones.find(
+                                (m: LooseRecord) => m.id === task.milestoneId
+                              )?.title || "",
+                          }
+                        : { value: "", label: "No Milestone" }
+                    }
+                    onValueChange={(val: any) =>
+                      handleFieldChange("milestoneId", val?.value || null)
+                    }
                     inputValue={milestoneInputValue}
                     onInputValueChange={setMilestoneInputValue}
                   >
                     <ComboboxInput
-                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                      className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                       placeholder="Select milestone..."
                     />
                     <ComboboxContent>
                       <ComboboxList>
-                        <ComboboxItem value={{ value: "", label: "No Milestone" }}>No Milestone</ComboboxItem>
+                        <ComboboxItem
+                          value={{ value: "", label: "No Milestone" }}
+                        >
+                          No Milestone
+                        </ComboboxItem>
                         {projectMilestones.map((ms: LooseRecord) => (
-                          <ComboboxItem key={ms.id} value={{ value: ms.id, label: ms.title }}>
+                          <ComboboxItem
+                            key={ms.id}
+                            value={{ value: ms.id, label: ms.title }}
+                          >
                             {ms.title}
                           </ComboboxItem>
                         ))}
@@ -914,44 +1085,54 @@ export default function TaskDetailPage() {
                 </div>
 
                 {/* Labels */}
-                <span className="text-muted-foreground font-medium">Labels</span>
+                <span className="font-medium text-muted-foreground">
+                  Labels
+                </span>
                 <div>
                   <div className="flex flex-wrap items-center gap-1.5">
-                    {projectLabels.filter((lbl: LooseRecord) => (task.labels || []).some((tl: LooseRecord) => tl.labelId === lbl.id)).map((lbl: LooseRecord) => (
-                      <button
-                        key={lbl.id}
-                        type="button"
-                        onClick={() => {
-                          const nextIds = (task.labels || [])
-                            .map((tl: LooseRecord) => tl.labelId)
-                            .filter((id: string) => id !== lbl.id)
-                          handleFieldChange("labelIds", nextIds)
-                        }}
-                        className="group relative flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold border border-transparent text-white transition-all hover:opacity-90"
-                        style={{ backgroundColor: lbl.color || '#3b82f6' }}
-                        title="Click to remove"
-                      >
-                        <span>{lbl.name}</span>
-                        <span className="text-[9px] opacity-60 group-hover:opacity-100 transition-opacity">×</span>
-                      </button>
-                    ))}
-                    
+                    {projectLabels
+                      .filter((lbl: LooseRecord) =>
+                        (task.labels || []).some(
+                          (tl: LooseRecord) => tl.labelId === lbl.id
+                        )
+                      )
+                      .map((lbl: LooseRecord) => (
+                        <button
+                          key={lbl.id}
+                          type="button"
+                          onClick={() => {
+                            const nextIds = (task.labels || [])
+                              .map((tl: LooseRecord) => tl.labelId)
+                              .filter((id: string) => id !== lbl.id)
+                            handleFieldChange("labelIds", nextIds)
+                          }}
+                          className="group relative flex items-center gap-1 rounded border border-transparent px-2 py-0.5 text-[11px] font-semibold text-white transition-all hover:opacity-90"
+                          style={{ backgroundColor: lbl.color || "#3b82f6" }}
+                          title="Click to remove"
+                        >
+                          <span>{lbl.name}</span>
+                          <span className="text-[9px] opacity-60 transition-opacity group-hover:opacity-100">
+                            ×
+                          </span>
+                        </button>
+                      ))}
+
                     <Popover>
                       <PopoverTrigger
                         render={
                           <button
                             type="button"
-                            className="flex items-center gap-1 rounded border border-dashed border-border bg-transparent px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                            className="flex items-center gap-1 rounded border border-dashed border-border bg-transparent px-2 py-0.5 text-[11px] text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                           >
                             <Plus size={11} /> Add Label
                           </button>
                         }
                       />
                       <PopoverContent className="w-48 p-1.5" align="start">
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1 border-b border-border/50 mb-1">
+                        <div className="mb-1 border-b border-border/50 px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase">
                           Toggle Labels
                         </div>
-                        <div className="max-h-48 overflow-y-auto space-y-0.5">
+                        <div className="max-h-48 space-y-0.5 overflow-y-auto">
                           {projectLabels.map((lbl: LooseRecord) => {
                             const isSelected = (task.labels || []).some(
                               (tl: LooseRecord) => tl.labelId === lbl.id
@@ -961,19 +1142,32 @@ export default function TaskDetailPage() {
                                 key={lbl.id}
                                 type="button"
                                 onClick={() => {
-                                  const currentIds = (task.labels || []).map((tl: LooseRecord) => tl.labelId)
+                                  const currentIds = (task.labels || []).map(
+                                    (tl: LooseRecord) => tl.labelId
+                                  )
                                   const nextIds = isSelected
-                                    ? currentIds.filter((id: string) => id !== lbl.id)
+                                    ? currentIds.filter(
+                                        (id: string) => id !== lbl.id
+                                      )
                                     : [...currentIds, lbl.id]
                                   handleFieldChange("labelIds", nextIds)
                                 }}
                                 className="flex w-full items-center justify-between rounded px-2 py-1 text-left text-xs transition-all hover:bg-muted"
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: lbl.color }} />
-                                  <span className="font-medium text-foreground">{lbl.name}</span>
+                                  <span
+                                    className="h-2 w-2 rounded-full"
+                                    style={{ backgroundColor: lbl.color }}
+                                  />
+                                  <span className="font-medium text-foreground">
+                                    {lbl.name}
+                                  </span>
                                 </div>
-                                {isSelected && <span className="text-primary text-xs">✓</span>}
+                                {isSelected && (
+                                  <span className="text-xs text-primary">
+                                    ✓
+                                  </span>
+                                )}
                               </button>
                             )
                           })}
@@ -998,12 +1192,15 @@ export default function TaskDetailPage() {
                   <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                     Custom Fields
                   </h3>
-                  <div className="grid grid-cols-[100px_1fr] items-center gap-y-3 gap-x-2 text-xs">
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-x-2 gap-y-3 text-xs">
                     {customFieldDefinitions.map((fieldDef: LooseRecord) => {
                       const fieldValue = task.customFields?.[fieldDef.id] ?? ""
                       return (
                         <React.Fragment key={fieldDef.id}>
-                          <span className="text-muted-foreground font-medium truncate" title={fieldDef.name}>
+                          <span
+                            className="truncate font-medium text-muted-foreground"
+                            title={fieldDef.name}
+                          >
                             {fieldDef.name}
                           </span>
                           <div>
@@ -1012,7 +1209,10 @@ export default function TaskDetailPage() {
                                 <Checkbox
                                   checked={!!fieldValue}
                                   onCheckedChange={(checked) =>
-                                    handleCustomFieldChange(fieldDef.id, !!checked)
+                                    handleCustomFieldChange(
+                                      fieldDef.id,
+                                      !!checked
+                                    )
                                   }
                                   className="border-border"
                                 />
@@ -1022,23 +1222,35 @@ export default function TaskDetailPage() {
                               </div>
                             ) : fieldDef.type === "select" ? (
                               <Combobox
-                                value={fieldValue ? { value: fieldValue, label: fieldValue } : null}
+                                value={
+                                  fieldValue
+                                    ? { value: fieldValue, label: fieldValue }
+                                    : null
+                                }
                                 onValueChange={(val: any) =>
-                                  handleCustomFieldChange(fieldDef.id, val?.value || "")
+                                  handleCustomFieldChange(
+                                    fieldDef.id,
+                                    val?.value || ""
+                                  )
                                 }
                               >
                                 <ComboboxInput
-                                  className="flex h-8 w-full items-center rounded border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus-within:border-border/80 focus-within:bg-background text-xs text-foreground px-2 transition-colors focus:outline-none"
+                                  className="flex h-8 w-full items-center rounded border-transparent bg-transparent px-2 text-xs text-foreground transition-colors focus-within:border-border/80 focus-within:bg-background hover:border-border/50 hover:bg-muted/40 focus:outline-none"
                                   placeholder="Choose option..."
                                 />
                                 <ComboboxContent>
                                   <ComboboxList>
                                     {fieldDef.options?.map((opt: string) => (
-                                      <ComboboxItem key={opt} value={{ value: opt, label: opt }}>
+                                      <ComboboxItem
+                                        key={opt}
+                                        value={{ value: opt, label: opt }}
+                                      >
                                         {opt}
                                       </ComboboxItem>
                                     ))}
-                                    <ComboboxEmpty>No options found</ComboboxEmpty>
+                                    <ComboboxEmpty>
+                                      No options found
+                                    </ComboboxEmpty>
                                   </ComboboxList>
                                 </ComboboxContent>
                               </Combobox>
@@ -1063,12 +1275,14 @@ export default function TaskDetailPage() {
                                       ? parseFloat(e.target.value) || 0
                                       : fieldDef.type === "date"
                                         ? e.target.value
-                                          ? new Date(e.target.value).toISOString()
+                                          ? new Date(
+                                              e.target.value
+                                            ).toISOString()
                                           : ""
                                         : e.target.value
                                   )
                                 }
-                                className="h-8 w-full border-transparent bg-transparent hover:bg-muted/40 hover:border-border/50 focus:border-border/80 focus:bg-background text-xs text-foreground px-2 rounded-md transition-colors focus:outline-none"
+                                className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
                               />
                             )}
                           </div>
@@ -1293,7 +1507,7 @@ const CommentNode = ({
             {comment.user?.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-baseline justify-between">
             <span className="text-xs font-bold text-foreground">
               {comment.user?.name}
@@ -1346,7 +1560,7 @@ const CommentNode = ({
           ) : (
             <>
               <div
-                className="ProseMirror mb-1.5 max-w-full overflow-hidden text-xs text-foreground leading-relaxed"
+                className="ProseMirror mb-1.5 max-w-full overflow-hidden text-xs leading-relaxed text-foreground"
                 dangerouslySetInnerHTML={{ __html: comment.content }}
               />
               {/* Actions bar inside comment card */}
@@ -1357,7 +1571,7 @@ const CommentNode = ({
                     setReplyingToCommentId(comment.id)
                     setReplyContent("")
                   }}
-                  className="text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors"
+                  className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-primary"
                 >
                   Reply
                 </button>
@@ -1369,14 +1583,14 @@ const CommentNode = ({
                         setEditingCommentId(comment.id)
                         setEditingContent(comment.content)
                       }}
-                      className="text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors"
+                      className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-primary"
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteCommentMutation.mutate(comment.id)}
-                      className="text-[10px] font-semibold text-muted-foreground hover:text-destructive transition-colors"
+                      className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
                     >
                       Delete
                     </button>

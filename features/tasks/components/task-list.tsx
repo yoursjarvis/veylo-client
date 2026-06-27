@@ -58,7 +58,7 @@ export function TaskRow({
             variant="destructive-light"
             size="sm"
             radius="default"
-            className="px-2 py-0.5 text-[10px] font-medium tracking-normal border-none"
+            className="px-2.5 py-0.5 text-xs font-medium tracking-normal border-none"
           >
             Urgent
           </Badge>
@@ -69,7 +69,7 @@ export function TaskRow({
             variant="rose-light"
             size="sm"
             radius="default"
-            className="px-2 py-0.5 text-[10px] font-medium tracking-normal border-none"
+            className="px-2.5 py-0.5 text-xs font-medium tracking-normal border-none"
           >
             High
           </Badge>
@@ -80,7 +80,7 @@ export function TaskRow({
             variant="info-light"
             size="sm"
             radius="default"
-            className="px-2 py-0.5 text-[10px] font-medium tracking-normal border-none"
+            className="px-2.5 py-0.5 text-xs font-medium tracking-normal border-none"
           >
             Medium
           </Badge>
@@ -91,7 +91,7 @@ export function TaskRow({
             variant="invert-light"
             size="sm"
             radius="default"
-            className="px-2 py-0.5 text-[10px] font-medium tracking-normal border-none text-muted-foreground/70"
+            className="px-2.5 py-0.5 text-xs font-medium tracking-normal border-none text-muted-foreground/75"
           >
             Low
           </Badge>
@@ -107,7 +107,7 @@ export function TaskRow({
             variant="destructive-light"
             size="sm"
             radius="default"
-            className="gap-1 px-2 py-0.5 text-[10px] font-medium border-none"
+            className="gap-1 px-2.5 py-0.5 text-xs font-medium border-none"
           >
             <Bug size={11} className="text-destructive shrink-0" />
             <span>Bug</span>
@@ -119,7 +119,7 @@ export function TaskRow({
             variant="info-light"
             size="sm"
             radius="default"
-            className="gap-1 px-2 py-0.5 text-[10px] font-medium border-none"
+            className="gap-1 px-2.5 py-0.5 text-xs font-medium border-none"
           >
             <Sparkles size={11} className="text-info shrink-0" />
             <span>Feature</span>
@@ -131,7 +131,7 @@ export function TaskRow({
             variant="invert-light"
             size="sm"
             radius="default"
-            className="gap-1 px-2 py-0.5 text-[10px] font-medium border-none text-muted-foreground/75"
+            className="gap-1 px-2.5 py-0.5 text-xs font-medium border-none text-muted-foreground/80"
           >
             <ChevronRight size={11} className="shrink-0 text-muted-foreground/50" />
             <span>Task</span>
@@ -147,7 +147,7 @@ export function TaskRow({
     return (
       <div
         className={cn(
-          "flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-medium transition-colors h-4.5",
+          "flex items-center gap-1 px-2 py-0.5 rounded-sm text-xs font-medium transition-colors h-5",
           past
             ? "bg-destructive/10 text-destructive dark:bg-destructive/20"
             : "bg-muted text-muted-foreground"
@@ -211,7 +211,7 @@ export function TaskRow({
         <div className="flex flex-col min-w-0 flex-1 gap-1">
           <span
             className={cn(
-              "text-sm font-semibold tracking-tight text-foreground truncate",
+              "text-base font-semibold tracking-tight text-foreground truncate",
               isDone ? "line-through text-muted-foreground/60 font-normal" : ""
             )}
           >
@@ -220,7 +220,7 @@ export function TaskRow({
 
           {/* Description Preview */}
           {plainDescription && (
-            <p className="text-xs text-muted-foreground/80 line-clamp-1 max-w-[650px] font-normal leading-relaxed">
+            <p className="text-sm text-muted-foreground/80 line-clamp-1 max-w-[650px] font-normal leading-relaxed">
               {plainDescription}
             </p>
           )}
@@ -231,7 +231,7 @@ export function TaskRow({
               {taskLabels.map((lbl) => (
                 <span
                   key={lbl.id}
-                  className="inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-semibold tracking-wide transition-all"
+                  className="inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold tracking-wide transition-all"
                   style={{
                     backgroundColor: lbl.color ? `${lbl.color}12` : "rgba(59, 130, 246, 0.08)",
                     color: lbl.color || "#3b82f6",
@@ -251,7 +251,7 @@ export function TaskRow({
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {/* Estimate */}
           {projectTemplate !== "simple" && task.estimate !== undefined && task.estimate !== null && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-sm border border-border/40 bg-muted/20 text-[10px] text-muted-foreground font-mono h-4.5">
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-sm border border-border/40 bg-muted/20 text-xs text-muted-foreground font-mono h-5">
               <Clock size={11} className="shrink-0" />
               <span>{task.estimate}h</span>
             </div>
@@ -267,9 +267,9 @@ export function TaskRow({
           {getPriorityBadge(task.priority)}
 
           {/* Assignee Avatar */}
-          <Avatar className="h-5 w-5 border border-border shadow-xs shrink-0 transition-transform duration-100 hover:scale-110">
+          <Avatar className="h-5.5 w-5.5 border border-border shadow-xs shrink-0 transition-transform duration-100 hover:scale-110">
             <AvatarImage src={task.assignee?.image || ""} />
-            <AvatarFallback className="bg-muted text-muted-foreground text-[8px] font-bold">
+            <AvatarFallback className="bg-muted text-muted-foreground text-[9px] font-bold">
               {task.assignee?.name ? task.assignee.name.charAt(0).toUpperCase() : "?"}
             </AvatarFallback>
           </Avatar>
@@ -320,10 +320,10 @@ export function StatusSection({
               <ChevronDown size={14} className="transition-transform duration-150" />
             )}
           </div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 group-hover:text-foreground transition-colors duration-150">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60 group-hover:text-foreground transition-colors duration-150">
             {status.name}
           </h3>
-          <span className="text-[10px] bg-muted/60 text-muted-foreground font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center ml-1">
+          <span className="text-xs bg-muted/60 text-muted-foreground font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center ml-1">
             {tasks.length}
           </span>
         </div>
@@ -341,7 +341,7 @@ export function StatusSection({
           >
             {tasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 px-4 text-center border border-dashed border-border/30 rounded-xl bg-muted/5 my-1.5">
-                <p className="text-xs font-medium text-muted-foreground/70">
+                <p className="text-sm font-medium text-muted-foreground/70">
                   No tasks in this section
                 </p>
               </div>

@@ -62,6 +62,19 @@
   --shadow-2xl: 0px 4px 15px 0px hsl(0 0% 0% / 0.38);
   --tracking-normal: -0.01em;
   --spacing: 0.25rem;
+  --text-xs: 0.875rem;
+  --text-sm: 1rem;
+  --text-base: 1.125rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.625rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.375rem;
+  --text-5xl: 3.125rem;
+  --text-6xl: 3.875rem;
+  --text-7xl: 4.625rem;
+  --text-8xl: 6.125rem;
+  --text-9xl: 8.125rem;
 }
 
 .dark {
@@ -100,7 +113,7 @@
   --font-sans: "Inter", sans-serif;
   --font-serif: "Merriweather", serif;
   --font-mono: "JetBrains Mono", monospace;
-  --radius: 1.4rem;
+  --radius: 0.75rem;
   --shadow-x: 0px;
   --shadow-y: 10px;
   --shadow-blur: 25px;
@@ -120,6 +133,7 @@
   --shadow-xl:
     0px 10px 25px 0px hsl(0 0% 0% / 0.15), 0px 8px 10px -1px hsl(0 0% 0% / 0.15);
   --shadow-2xl: 0px 10px 25px 0px hsl(0 0% 0% / 0.38);
+  --font-size-base: 16px;
 }
 
 @theme inline {
@@ -180,6 +194,20 @@
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+  --text-3xl: var(--text-3xl);
+  --text-4xl: var(--text-4xl);
+  --text-5xl: var(--text-5xl);
+  --text-6xl: var(--text-6xl);
+  --text-7xl: var(--text-7xl);
+  --text-8xl: var(--text-8xl);
+  --text-9xl: var(--text-9xl);
 }
 
 @layer base {
@@ -188,6 +216,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-size: var(--font-size-base);
     letter-spacing: var(--tracking-normal);
   }
   button:not(:disabled),

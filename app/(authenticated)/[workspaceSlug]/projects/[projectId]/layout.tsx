@@ -433,15 +433,15 @@ export default function ProjectLayout({
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href={`/${workspaceSlug}/projects`}
-                  className="group flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
+                  className="group flex h-7.5 w-7.5 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
                   aria-label="Back to projects"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
                 </Link>
 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>Projects</span>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -460,26 +460,26 @@ export default function ProjectLayout({
                         <div className="cursor-pointer transition-opacity hover:opacity-85">
                           {renderProjectIcon(
                             selectedProject?.icon,
-                            "h-7 w-7 rounded-md",
-                            "text-sm"
+                            "h-8 w-8 rounded-md",
+                            "text-base"
                           )}
                         </div>
                       </IconPicker>
                     ) : (
                       renderProjectIcon(
                         selectedProject?.icon,
-                        "h-7 w-7 rounded-md",
-                        "text-sm"
+                        "h-8 w-8 rounded-md",
+                        "text-base"
                       )
                     )}
                   </div>
 
-                  <h1 className="text-base font-semibold tracking-tight text-foreground">
+                  <h1 className="text-lg font-semibold tracking-tight text-foreground">
                     {selectedProject?.title}
                   </h1>
 
                   {selectedProject?.template === "scrum" && (
-                    <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium tracking-wide text-muted-foreground">
+                    <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-muted-foreground">
                       Scrum
                     </span>
                   )}
@@ -493,10 +493,10 @@ export default function ProjectLayout({
                           ? "warning"
                           : "destructive"
                     }
-                    className="rounded-full border border-border/20 bg-muted/40 px-2 py-0.5 text-[9px] font-medium text-foreground/90 shadow-xs"
+                    className="rounded-full border border-border/20 bg-muted/40 px-2.5 py-0.5 text-xs font-medium text-foreground/90 shadow-xs"
                   >
                     <StatusIndicator />
-                    <StatusLabel className="py-0.5 uppercase font-bold text-[8px] tracking-wide">
+                    <StatusLabel className="py-0.5 uppercase font-bold text-[9px] tracking-wide">
                       {projectStatus === "on_track"
                         ? "On Track"
                         : projectStatus === "at_risk"
@@ -516,10 +516,10 @@ export default function ProjectLayout({
                     .map((member: LooseAny) => (
                       <Avatar
                         key={member.id}
-                        className="h-6 w-6 border-2 border-background transition-all hover:scale-105"
+                        className="h-6.5 w-6.5 border-2 border-background transition-all hover:scale-105"
                       >
                         <AvatarImage src={member.user?.image || ""} />
-                        <AvatarFallback className="bg-muted text-[8px] font-extrabold text-muted-foreground">
+                        <AvatarFallback className="bg-muted text-[9px] font-extrabold text-muted-foreground">
                           {member.user?.name
                             ? member.user.name.charAt(0).toUpperCase()
                             : "?"}
@@ -527,7 +527,7 @@ export default function ProjectLayout({
                       </Avatar>
                     ))}
                   {(selectedProject?.members || []).length > 5 && (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-[8px] font-extrabold text-muted-foreground">
+                    <div className="flex h-6.5 w-6.5 items-center justify-center rounded-full border-2 border-background bg-muted text-[9px] font-extrabold text-muted-foreground">
                       +{(selectedProject?.members || []).length - 5}
                     </div>
                   )}
@@ -537,7 +537,7 @@ export default function ProjectLayout({
                   onClick={() => setIsCreateTaskOpen(true)}
                   variant="default"
                   size="sm"
-                  className="h-8 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/95 shadow-xs"
+                  className="h-8.5 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/95 shadow-xs"
                 >
                   <Plus size={14} className="h-3.5 w-3.5" />
                   <span>New Task</span>
@@ -553,7 +553,7 @@ export default function ProjectLayout({
                   return (
                     <Link key={link.path} href={link.path}>
                       <span
-                        className={`flex cursor-pointer items-center gap-1 border-b-2 pt-2 pb-2.5 text-xs font-medium transition-all duration-150 ${
+                        className={`flex cursor-pointer items-center gap-1 border-b-2 pt-2.5 pb-3 text-sm font-medium transition-all duration-150 ${
                           isActive
                             ? "border-primary font-semibold text-primary"
                             : "border-transparent text-muted-foreground hover:border-border/60 hover:text-foreground"
