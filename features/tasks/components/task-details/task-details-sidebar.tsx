@@ -296,12 +296,16 @@ export function TaskDetailsSidebar({
                         .filter((id: string) => id !== lbl.id)
                       onFieldChange("labelIds", nextIds)
                     }}
-                    className="group relative flex items-center gap-1 rounded border border-transparent px-2 py-0.5 text-[11px] font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: lbl.color || "#3b82f6" }}
+                    className="group relative flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all hover:opacity-85 focus-visible:ring-2 focus-visible:ring-primary/20"
+                    style={{
+                      backgroundColor: lbl.color ? `${lbl.color}20` : "rgba(59, 130, 246, 0.12)",
+                      borderColor: lbl.color ? `${lbl.color}40` : "rgba(59, 130, 246, 0.25)",
+                      color: lbl.color || "#3b82f6",
+                    }}
                     title="Click to remove"
                   >
                     <span>{lbl.name}</span>
-                    <span className="text-[9px] opacity-60 transition-opacity group-hover:opacity-100">
+                    <span className="text-xs font-semibold opacity-75 transition-opacity group-hover:opacity-100">
                       ×
                     </span>
                   </button>

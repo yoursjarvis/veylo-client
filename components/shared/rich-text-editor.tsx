@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Tooltip } from "@/components/ui/tooltip-card"
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { axiosInstance } from "@/lib/axios"
 import { useTheme } from "next-themes"
 import EmojiPicker, { Theme } from "emoji-picker-react"
@@ -268,20 +268,34 @@ function SafeAvatar({
 }
 
 function MentionNodeView({ node }: NodeViewProps) {
-  const { label, avatar, email } = node.attrs
+  const { id, label, avatar, email } = node.attrs
+
+  let userAvatar = avatar
+  let userEmail = email
+
+  if ((!userEmail || !userAvatar) && id) {
+    for (const members of editorMembersMap.values()) {
+      const found = members.find((m) => m.user?.id === id)
+      if (found?.user) {
+        if (!userEmail && found.user.email) userEmail = found.user.email
+        if (!userAvatar && found.user.image) userAvatar = found.user.image
+      }
+      if (userEmail && userAvatar) break
+    }
+  }
 
   const displayName = label || "Unknown User"
 
   const tooltipContent = (
     <div className="flex items-start gap-3 text-left">
-      <SafeAvatar src={avatar} name={displayName} size={40} />
+      <SafeAvatar src={userAvatar} name={displayName} size={40} />
       <div className="min-w-0 flex-1">
         <div className="mb-1 truncate text-sm leading-none font-semibold text-foreground">
           {displayName}
         </div>
-        {email && (
+        {userEmail && (
           <div className="truncate text-xs font-normal text-muted-foreground">
-            {email}
+            {userEmail}
           </div>
         )}
       </div>
@@ -294,12 +308,17 @@ function MentionNodeView({ node }: NodeViewProps) {
       className="inline-block select-all"
       style={{ verticalAlign: "middle" }}
     >
-      <Tooltip content={tooltipContent} containerClassName="align-middle">
-        <span className="inline-flex max-w-37.5 cursor-pointer items-center gap-1 rounded border border-border bg-accent py-0.5 pr-1.5 pl-1 align-middle text-[11px] font-semibold text-accent-foreground select-none">
-          <SafeAvatar src={avatar} name={displayName} size={14} />
-          <span className="max-w-27.5 truncate">{displayName}</span>
-        </span>
-      </Tooltip>
+      <HoverCard>
+        <HoverCardTrigger className="align-middle outline-none flex">
+          <span className="inline-flex max-w-37.5 cursor-pointer items-center gap-1 rounded border border-border bg-accent py-0.5 pr-1.5 pl-1 align-middle text-[11px] font-semibold text-accent-foreground select-none">
+            <SafeAvatar src={userAvatar} name={displayName} size={14} />
+            <span className="max-w-27.5 truncate">{displayName}</span>
+          </span>
+        </HoverCardTrigger>
+        <HoverCardContent side="top" className="w-auto p-3">
+          {tooltipContent}
+        </HoverCardContent>
+      </HoverCard>
     </NodeViewWrapper>
   )
 }
@@ -1080,4 +1099,79 @@ export function RichTextEditor({
       </div>
     </div>
   )
+}
+
+export function RichTextRenderer({
+  content,
+  projectMembers = [],
+}: {
+  content: string
+  projectMembers?: {
+    user: { id: string; name?: string; image?: string | null; email?: string }
+  }[]
+}) {
+  const editorId = React.useId()
+
+  React.useEffect(() => {
+    editorMembersMap.set(editorId, projectMembers)
+    return () => {
+      editorMembersMap.delete(editorId)
+    }
+  }, [editorId, projectMembers])
+
+  const editor = useEditor({
+    editable: false,
+    content,
+    extensions: [
+      StarterKit.configure({
+        codeBlock: false,
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
+      CodeBlockLowlight.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(CodeBlockComponent)
+        },
+      }).configure({ lowlight }),
+      Link.configure({
+        openOnClick: true,
+        HTMLAttributes: {
+          class: "text-blue-500 underline cursor-pointer",
+        },
+      }),
+      Image.configure({
+        HTMLAttributes: {
+          class: "max-w-full rounded-md border border-border my-2",
+        },
+      }),
+      CustomMention.configure({
+        HTMLAttributes: {
+          class: "mention",
+        },
+      }),
+    ],
+    editorProps: {
+      attributes: {
+        class: "max-w-full overflow-hidden text-xs leading-relaxed text-foreground outline-none",
+      },
+    },
+  })
+
+  useEffect(() => {
+    if (editor && editor.getHTML() !== content) {
+      editor.commands.setContent(content)
+    }
+  }, [content, editor])
+
+  if (!editor) {
+    return (
+      <div
+        className="ProseMirror mb-1.5 max-w-full overflow-hidden text-xs leading-relaxed text-foreground"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    )
+  }
+
+  return <EditorContent editor={editor} className="mb-1.5" />
 }

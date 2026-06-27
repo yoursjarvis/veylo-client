@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { RichTextEditor } from "@/components/shared/rich-text-editor"
+import { RichTextEditor, RichTextRenderer } from "@/components/shared/rich-text-editor"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { SmilePlusIcon, Message01Icon } from "@hugeicons/core-free-icons"
 import { Comment, CommentReaction, User, ProjectMember } from "@/types/models"
@@ -282,9 +282,13 @@ const CommentNode = ({
             </div>
           ) : (
             <>
-              <div
-                className="ProseMirror mb-1.5 max-w-full overflow-hidden text-xs leading-relaxed text-foreground"
-                dangerouslySetInnerHTML={{ __html: comment.content }}
+              <RichTextRenderer 
+                content={comment.content} 
+                projectMembers={
+                  projectMembers.filter((m) => m.user) as (ProjectMember & {
+                    user: User
+                  })[]
+                }
               />
               <div className="flex items-center gap-3">
                 <button
