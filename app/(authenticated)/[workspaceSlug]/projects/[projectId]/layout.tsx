@@ -429,9 +429,9 @@ export default function ProjectLayout({
         setIsCreateTaskOpen,
       }}
     >
-      <div className="flex min-h-[calc(100vh-4rem)] w-full flex-col bg-background text-foreground">
+      <div className="flex min-h-[calc(100vh-4rem)] w-full flex-col min-w-0 bg-background text-foreground overflow-x-hidden">
         {/* Main Content Area */}
-        <div className="ml-2 flex min-h-screen flex-1 flex-col overflow-x-hidden">
+        <div className="ml-2 flex min-h-screen flex-1 min-w-0 flex-col overflow-x-hidden">
           {/* Header */}
           <header className="flex shrink-0 flex-col gap-4 border-b border-border bg-card/85 px-8 pt-5 pb-0 backdrop-blur-md">
             {/* Top Row: Back Navigation, Breadcrumb, Project Title, Status & Actions */}
@@ -603,8 +603,8 @@ export default function ProjectLayout({
           )}
 
           {/* Children View Content */}
-          <main className="flex-1 overflow-y-auto bg-background p-8">
-            <div className="mx-auto space-y-6">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 bg-background p-8">
+            <div className="mx-auto space-y-6 min-w-0 w-full max-w-full">
               {showOnboarding && (
                 <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xs backdrop-blur-md transition-all duration-300">
                   {/* Background glowing gradient using theme colors */}

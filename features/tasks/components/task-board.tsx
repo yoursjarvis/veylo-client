@@ -6,6 +6,8 @@ import {
   useCreateTask,
   useUpdateTask,
   useUpdateTaskOrder,
+  useCreateStatus,
+  useUpdateStatus,
 } from "../hooks/use-tasks"
 
 import { Badge } from "@/components/reui/badge"
@@ -601,6 +603,32 @@ function BoardColumn({
     data: { type: "Column", status },
   })
 
+  const [isEditingStatus, setIsEditingStatus] = useState(false)
+  const [editedStatusName, setEditedStatusName] = useState(status.name)
+  const updateStatusMutation = useUpdateStatus(projectId)
+
+  useEffect(() => {
+    setEditedStatusName(status.name)
+  }, [status.name])
+
+  const handleStatusSave = () => {
+    if (editedStatusName.trim() !== status.name && editedStatusName.trim() !== "") {
+      updateStatusMutation.mutate({ id: status.id, data: { name: editedStatusName.trim() } })
+    } else {
+      setEditedStatusName(status.name)
+    }
+    setIsEditingStatus(false)
+  }
+
+  const handleStatusKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleStatusSave()
+    } else if (e.key === "Escape") {
+      setEditedStatusName(status.name)
+      setIsEditingStatus(false)
+    }
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -611,9 +639,23 @@ function BoardColumn({
     >
       <div className="mt-1 mb-3.5 flex items-center justify-between px-1.5">
         <div className="flex items-center gap-2.5">
-          <span className="text-[13px] font-semibold tracking-tight text-foreground">
-            {status.name}
-          </span>
+          {isEditingStatus ? (
+            <input
+              autoFocus
+              value={editedStatusName}
+              onChange={(e) => setEditedStatusName(e.target.value)}
+              onBlur={handleStatusSave}
+              onKeyDown={handleStatusKeyDown}
+              className="w-full border-none bg-transparent p-0 text-[13px] font-semibold tracking-tight text-foreground focus:ring-0 focus:outline-none"
+            />
+          ) : (
+            <span
+              onClick={() => setIsEditingStatus(true)}
+              className="cursor-text text-[13px] font-semibold tracking-tight text-foreground/90 hover:text-primary transition-colors"
+            >
+              {status.name}
+            </span>
+          )}
           <Badge className="bg-muted px-1.5 py-0 text-[10px] font-semibold text-muted-foreground hover:bg-muted">
             {tasks.length}
           </Badge>
@@ -701,9 +743,20 @@ export function TaskBoard({
 
   const createTaskMutation = useCreateTask(projectId)
   const updateTaskOrderMutation = useUpdateTaskOrder(projectId)
+  const createStatusMutation = useCreateStatus(projectId)
 
   const [quickAddStatusId, setQuickAddStatusId] = useState<string | null>(null)
   const [quickAddTitle, setQuickAddTitle] = useState("")
+  const [isAddingStatus, setIsAddingStatus] = useState(false)
+  const [newStatusName, setNewStatusName] = useState("")
+
+  const handleCreateStatus = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newStatusName.trim()) return
+    createStatusMutation.mutate({ name: newStatusName.trim(), category: "todo", order: statuses.length })
+    setNewStatusName("")
+    setIsAddingStatus(false)
+  }
 
   const filteredTasks = useMemo(() => {
     return boardTasks.filter((t) => {
@@ -849,7 +902,7 @@ export function TaskBoard({
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
     >
-      <div className="flex min-h-0 flex-1 gap-5 overflow-x-auto px-1 py-2 pb-6">
+      <div className="flex min-h-0 min-w-0 flex-1 w-full max-w-full gap-5 overflow-x-auto px-1 py-2 pb-6">
         {statuses.map((status) => {
           const columnTasks = filteredTasks.filter(
             (t) => t.statusId === status.id
@@ -876,6 +929,43 @@ export function TaskBoard({
             </SortableContext>
           )
         })}
+        <div className="flex h-12 w-75 shrink-0 flex-col justify-start">
+          {isAddingStatus ? (
+            <form
+              onSubmit={handleCreateStatus}
+              className="flex items-center gap-1.5 rounded-[12px] border border-border/80 bg-card p-2 shadow-sm"
+            >
+              <Input
+                autoFocus
+                placeholder="Column name"
+                value={newStatusName}
+                onChange={(e) => setNewStatusName(e.target.value)}
+                className="h-8 border-none bg-transparent px-2 py-1 text-[13px] shadow-none focus-visible:ring-0"
+              />
+              <Button type="submit" size="sm" className="h-7 px-3 text-[11px]">
+                Add
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAddingStatus(false)}
+                className="h-7 px-2 text-[11px]"
+              >
+                Cancel
+              </Button>
+            </form>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => setIsAddingStatus(true)}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border-dashed border-border/60 bg-secondary/10 text-muted-foreground hover:bg-secondary/30 hover:text-foreground transition-colors"
+            >
+              <Plus size={16} />
+              <span className="text-[13px] font-medium">Add Column</span>
+            </Button>
+          )}
+        </div>
       </div>
       <DragOverlay dropAnimation={dropAnimation}>
         {activeTask ? (

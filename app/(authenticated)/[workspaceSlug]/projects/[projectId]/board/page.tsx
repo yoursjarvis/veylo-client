@@ -101,7 +101,7 @@ export default function BoardPage() {
   )
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-full w-full max-w-full flex-col min-h-0 gap-4 min-w-0 overflow-hidden">
       {/* Filter bar - only visible when filters are active */}
       <div className="flex flex-wrap items-center gap-2">
         <Filters

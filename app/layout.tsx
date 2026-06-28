@@ -48,7 +48,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontSans.variable, fontMono.variable)}
     >
-      <body className="antialiased">
+      <body className="antialiased overflow-x-hidden">
         <ThemeProvider>
           <ThemeToggle />
           <QueryProvider>
