@@ -6,6 +6,7 @@ import {
   HelpCircleIcon,
   Key01Icon,
   Plug01Icon,
+  Shield01Icon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -57,6 +58,11 @@ export const navGroups: SidebarNavGroup[] = [
         title: "Workspaces",
         path: "/workspaces",
         icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} />,
+      },
+      {
+        title: "Roles & Permissions",
+        path: "/roles",
+        icon: <HugeiconsIcon icon={Shield01Icon} strokeWidth={2} />,
       },
       {
         title: "Integrations",

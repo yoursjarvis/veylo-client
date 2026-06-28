@@ -61,6 +61,8 @@ import {
 import { BulkInviteModal } from "./bulk-invite-modal"
 import { InviteMemberModal } from "./invite-member-modal"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RoleAssignmentModal } from "@/features/rbac/components/role-assignment-modal"
+import { authClient } from "@/lib/auth-client"
 
 type Member = {
   id: string
@@ -82,6 +84,19 @@ export function MembersTable() {
   const [status, setStatus] = useQueryState("status", { defaultValue: "" })
   const [isBulkInviteOpen, setIsBulkInviteOpen] = useState(false)
   const [isInviteOpen, setIsInviteOpen] = useState(false)
+  
+  // State for Role Assignment Modal
+  const [assignmentModal, setAssignmentModal] = useState<{ 
+    isOpen: boolean; 
+    userId: string; 
+    userName: string 
+  }>({ 
+    isOpen: false, 
+    userId: "", 
+    userName: "" 
+  });
+
+  const { data: activeOrganization } = authClient.useActiveOrganization();
 
   const {
     data,
@@ -131,32 +146,48 @@ export function MembersTable() {
           const currentRole = info.getValue()
           const member = info.row.original
           return (
-            <Select
-              value={currentRole}
-              onValueChange={async (newRole) => {
-                if (!newRole || newRole === currentRole) return
-                try {
-                  await updateRoleMutation.mutateAsync({ memberId: member.id, role: newRole })
-                  toast.success("Role updated successfully")
-                  refetch()
-                } catch (error) {
-                  const responseError = error as { message?: string };
-                  toast.error(responseError.message || "Failed to update role")
-                }
-              }}
-              disabled={updateRoleMutation.isPending}
-            >
-              <SelectTrigger className="h-7 w-[140px] text-xs bg-secondary border-none hover:bg-secondary/80 focus:ring-0 capitalize">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLES.map((r) => (
-                  <SelectItem key={r.value} value={r.value} className="text-xs">
-                    {r.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Select
+                value={currentRole}
+                onValueChange={async (newRole) => {
+                  if (!newRole || newRole === currentRole) return
+                  try {
+                    await updateRoleMutation.mutateAsync({ memberId: member.id, role: newRole })
+                    toast.success("Role updated successfully")
+                    refetch()
+                  } catch (error) {
+                    const responseError = error as { message?: string };
+                    toast.error(responseError.message || "Failed to update role")
+                  }
+                }}
+                disabled={updateRoleMutation.isPending}
+              >
+                <SelectTrigger className="h-7 w-[140px] text-xs bg-secondary border-none hover:bg-secondary/80 focus:ring-0 capitalize">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((r) => (
+                    <SelectItem key={r.value} value={r.value} className="text-xs">
+                      {r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                onClick={() => {
+                  setAssignmentModal({ 
+                    isOpen: true, 
+                    userId: member.user.id, 
+                    userName: member.user.name || "User" 
+                  });
+                }}
+              >
+                <HugeiconsIcon icon={Shield01Icon} className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           )
         },
       }),
@@ -215,7 +246,6 @@ export function MembersTable() {
                           {
                             onSuccess: () => {
                               toast.success("User banned")
-                              refetch()
                             },
                           }
                         )
@@ -249,10 +279,10 @@ export function MembersTable() {
                         },
                       })
                     }}
-                  >
-                    <HugeiconsIcon icon={Key01Icon} className="mr-2 h-4 w-4" />{" "}
-                    Impersonate
-                  </DropdownMenuItem>
+                    >
+                      <HugeiconsIcon icon={Key01Icon} className="mr-2 h-4 w-4" />{" "}
+                      Impersonate
+                    </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -263,14 +293,6 @@ export function MembersTable() {
     [banMutation, unbanMutation, revokeMutation, impersonateMutation, updateRoleMutation, refetch]
   )
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
-    data: flatData,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
-
-  // Infinite scrolling observer
   const observerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -418,11 +440,11 @@ export function MembersTable() {
                   </tr>
                 ))}
               </thead>
-              <tbody>
+              <tbody className="divide-y">
                 {table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="p-4 align-middle">
@@ -437,7 +459,6 @@ export function MembersTable() {
               </tbody>
             </table>
 
-            {/* Infinite Scroll trigger */}
             <div
               ref={observerRef}
               className="py-4 text-center text-sm text-muted-foreground"
@@ -466,6 +487,14 @@ export function MembersTable() {
         open={isInviteOpen}
         onOpenChange={setIsInviteOpen}
         onSuccess={() => refetch()}
+      />
+
+      <RoleAssignmentModal 
+        userId={assignmentModal.userId}
+        userName={assignmentModal.userName}
+        organizationId={activeOrganization?.id || ""}
+        open={assignmentModal.isOpen}
+        onOpenChange={(open) => setAssignmentModal(prev => ({ ...prev, isOpen: open }))}
       />
     </Tabs>
   )
@@ -500,7 +529,7 @@ function PendingInvitationsList() {
       <Empty className="my-8">
         <EmptyTitle>No pending invitations</EmptyTitle>
         <EmptyDescription>
-          There are no pending invitations for this organization.
+          There are no members matching your current filters.
         </EmptyDescription>
       </Empty>
     )
@@ -528,11 +557,11 @@ function PendingInvitationsList() {
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y">
           {invitations.map((invite: { id: string; email: string; role?: string; status: string; createdAt: string }) => (
             <tr
               key={invite.id}
-              className="border-b transition-colors hover:bg-muted/50"
+              className="transition-colors hover:bg-muted/50"
             >
               <td className="p-4 align-middle font-medium">{invite.email}</td>
               <td className="p-4 align-middle">
