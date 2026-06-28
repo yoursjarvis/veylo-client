@@ -65,20 +65,22 @@ export function ComboboxSelect({
     ? { value: selectedOption.value, label: selectedOption.label }
     : null
 
+  const ComboboxComponent = Combobox as any
+
   return (
-    <Combobox
+    <ComboboxComponent
       value={comboboxValue}
       onValueChange={(val: { value?: string } | null) => {
         onValueChange(val?.value || null)
       }}
       inputValue={inputValue}
-      onInputValueChange={(newVal) => {
+      onInputValueChange={(newVal: string) => {
         if (isSearchable) {
           setInputValue(newVal)
         }
       }}
       open={open}
-      onOpenChange={(isOpen) => {
+      onOpenChange={(isOpen: boolean) => {
         setOpen(isOpen)
         if (!isOpen) {
           const selectedOption = options.find((opt) => opt.value === value)
@@ -90,6 +92,7 @@ export function ComboboxSelect({
         }
       }}
       isItemEqualToValue={(a: { value?: string } | null, b: { value?: string } | null) => a?.value === b?.value}
+      getValueText={(val: { label?: string } | null) => val?.label || ""}
     >
       <div className="relative w-full">
         <ComboboxInput
@@ -127,6 +130,6 @@ export function ComboboxSelect({
           )}
         </ComboboxList>
       </ComboboxContent>
-    </Combobox>
+    </ComboboxComponent>
   )
 }

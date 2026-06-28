@@ -398,6 +398,7 @@ export default function ProjectLayout({
     { name: "Fields", path: `${basePath}/settings/fields` },
     { name: "Labels", path: `${basePath}/settings/labels` },
     { name: "Webhooks", path: `${basePath}/settings/webhooks` },
+    { name: "Automation", path: `${basePath}/settings/automation` },
   ]
 
   const isLinkActive = (linkPath: string) => {
