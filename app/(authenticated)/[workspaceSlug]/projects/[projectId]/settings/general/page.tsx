@@ -139,6 +139,16 @@ export default function GeneralSettingsPage() {
             </div>
 
             <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Project Key (Read-only)</label>
+              <Input 
+                value={selectedProject?.projectKey || ""} 
+                readOnly 
+                disabled 
+                className="bg-muted cursor-not-allowed font-mono uppercase" 
+              />
+            </div>
+
+            <div className="space-y-1.5">
               <label className="text-xs font-medium">Description</label>
               <Textarea
                 value={description}

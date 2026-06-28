@@ -82,6 +82,7 @@ export interface WorkspaceMember {
 export interface Project {
   id: string;
   title: string;
+  projectKey: string;
   description?: string | null;
   icon?: string | null;
   template: string;
@@ -104,6 +105,7 @@ export interface ProjectMember {
 
 export interface Task {
   id: string;
+  taskKey: string;
   title: string;
   description?: string | null;
   projectId: string;
@@ -119,6 +121,7 @@ export interface Task {
   dueDate?: string | null;
   creatorId: string;
   assigneeId?: string | null;
+  reporterId?: string | null;
   parentTaskId?: string | null;
   customFields?: Record<string, unknown> | null;
   deletedAt?: string | null;
@@ -127,6 +130,7 @@ export interface Task {
   status?: TaskStatus;
   creator?: User;
   assignee?: User;
+  reporter?: User;
   epic?: Epic;
   milestone?: Milestone;
   sprint?: Sprint;

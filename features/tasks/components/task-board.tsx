@@ -16,6 +16,7 @@ interface TaskBoardProps {
   projectId: string
   tasks: {
     id: string
+    taskKey?: string
     sprintId: string | null
     statusId: string
     type: string
@@ -218,6 +219,7 @@ export function TaskBoard({
                 columnTasks.map(
                   (task: {
                     id: string
+                    taskKey?: string
                     sprintId: string | null
                     statusId: string
                     type: string
@@ -237,9 +239,14 @@ export function TaskBoard({
                     >
                       {/* Header */}
                       <div className="flex items-start justify-between gap-2">
-                        <span className="line-clamp-2 text-xs leading-snug font-semibold text-foreground transition-colors group-hover:text-primary">
-                          {task.title}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                            {task.taskKey || task.id.substring(0, 8)}
+                          </span>
+                          <span className="line-clamp-2 text-xs leading-snug font-semibold text-foreground transition-colors group-hover:text-primary">
+                            {task.title}
+                          </span>
+                        </div>
                         <div className="mt-0.5 flex-shrink-0">
                           {getTypeIcon(task.type)}
                         </div>

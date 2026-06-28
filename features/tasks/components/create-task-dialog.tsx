@@ -83,6 +83,7 @@ export function CreateTaskDialog({
   const [milestoneId, setMilestoneId] = useState<string | null>(null)
   const [selectedLabels, setSelectedLabels] = useState<string[]>([])
   const [assigneeId, setAssigneeId] = useState<string | null>(null)
+  const [reporterId, setReporterId] = useState<string | null>(null)
   const [estimate, setEstimate] = useState<number | null>(null)
   const [dueDate, setDueDate] = useState("")
   type CustomFieldValue = string | number | boolean
@@ -137,6 +138,7 @@ export function CreateTaskDialog({
         setMilestoneId(null)
         setSelectedLabels([])
         setAssigneeId(null)
+      setReporterId(null)
         setEstimate(null)
         setDueDate("")
         setCustomFields({})
@@ -172,6 +174,7 @@ export function CreateTaskDialog({
         milestoneId: milestoneId || null,
         labelIds: selectedLabels,
         assigneeId: assigneeId || null,
+        reporterId: reporterId || null,
         estimate: estimate,
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         customFields,
@@ -402,6 +405,21 @@ export function CreateTaskDialog({
                       }
                       options={assigneeOptions}
                       placeholder="Select assignee..."
+                      emptyText="No members found"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-foreground">
+                      Reporter
+                    </Label>
+                    <ComboboxSelect
+                      value={reporterId || "unassigned"}
+                      onValueChange={(val) =>
+                        setReporterId(val === "unassigned" ? null : val)
+                      }
+                      options={assigneeOptions}
+                      placeholder="Select reporter..."
                       emptyText="No members found"
                     />
                   </div>

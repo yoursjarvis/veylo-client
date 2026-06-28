@@ -196,7 +196,7 @@ export default function ProjectLayout({
   const { data: projectTasks } = useProjectTasks(projectId || "")
 
   const hasTasks = (projectTasks || []).length > 0
-  const hasMembers = (selectedProject?.members || []).length > 1
+  const hasMembers = (selectedProject?.members || []).length > 0
   const isScrum =
     selectedProject?.template === "scrum" ||
     selectedProject?.template === "software-scrum"
@@ -379,7 +379,7 @@ export default function ProjectLayout({
     { name: "Overview", path: basePath },
     { name: "List", path: `${basePath}/list` },
     { name: "Board", path: `${basePath}/board` },
-    ...(selectedProject?.template === "scrum"
+    ...(isScrum
       ? [{ name: "Backlog", path: `${basePath}/backlog` }]
       : []),
     { name: "Timeline", path: `${basePath}/timeline` },
@@ -485,7 +485,7 @@ export default function ProjectLayout({
                     {selectedProject?.title}
                   </h1>
 
-                  {selectedProject?.template === "scrum" && (
+                  {isScrum && (
                     <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-muted-foreground">
                       Scrum
                     </span>

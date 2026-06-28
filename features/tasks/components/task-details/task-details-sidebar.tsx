@@ -23,6 +23,7 @@ import {
 } from "@/types/models"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 
 interface TaskDetailsSidebarProps {
   task: Task
@@ -51,6 +52,9 @@ export function TaskDetailsSidebar({
   onFieldChange,
   onCustomFieldChange,
 }: TaskDetailsSidebarProps) {
+  const { data: user } = useCurrentUser()
+  const currentUser = user?.user
+
   const statusOptions = projectStatuses.map((st) => ({
     value: st.id,
     label: st.name,
@@ -134,11 +138,45 @@ export function TaskDetailsSidebar({
 
           <span className="font-medium text-muted-foreground">Assignee</span>
           <div>
+            {!task.assigneeId ? (
+              <span
+                role="button"
+                tabIndex={0}
+                className="text-primary hover:underline cursor-pointer text-xs transition-colors inline-block py-1.5"
+                onClick={() => {
+                  if (currentUser) {
+                    onFieldChange("assigneeId", currentUser.id)
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    if (currentUser) {
+                      onFieldChange("assigneeId", currentUser.id)
+                    }
+                  }
+                }}
+              >
+                Assign to me
+              </span>
+            ) : (
+              <ComboboxSelect
+                value={task.assigneeId}
+                onValueChange={(val) => onFieldChange("assigneeId", val || null)}
+                options={assigneeOptions}
+                placeholder="Select assignee..."
+                className="h-8"
+              />
+            )}
+          </div>
+
+          <span className="font-medium text-muted-foreground">Reporter</span>
+          <div>
             <ComboboxSelect
-              value={task.assigneeId || ""}
-              onValueChange={(val) => onFieldChange("assigneeId", val || null)}
+              value={task.reporterId || ""}
+              onValueChange={(val) => onFieldChange("reporterId", val || null)}
               options={assigneeOptions}
-              placeholder="Select assignee..."
+              placeholder="Select reporter..."
               className="h-8"
             />
           </div>

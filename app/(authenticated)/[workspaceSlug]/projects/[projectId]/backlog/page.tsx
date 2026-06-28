@@ -19,7 +19,7 @@ export default function BacklogPage() {
     );
   }
 
-  if (selectedProject?.template !== "scrum") {
+  if (selectedProject?.template !== "software-scrum" && selectedProject?.template !== "scrum") {
     return (
       <div className="flex flex-col items-center justify-center p-8 border border-slate-800 rounded-xl mt-10">
         <AlertCircle className="h-10 w-10 text-amber-500 mb-3" />

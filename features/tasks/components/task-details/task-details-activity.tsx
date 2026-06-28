@@ -16,11 +16,7 @@ export function TaskDetailsActivity({
   formatActivityText,
 }: TaskDetailsActivityProps) {
   return (
-    <div className="space-y-4 border-t border-border/60 pt-6">
-      <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-        <HugeiconsIcon icon={ClockIcon} size={14} className="text-muted-foreground/70" />{" "}
-        Activity Feed
-      </label>
+    <div className="space-y-4">
       <div className="space-y-3 pl-1">
         {activityLogs.map((activity) => (
           <div

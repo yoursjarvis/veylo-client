@@ -110,6 +110,10 @@ export function TaskDetailsDrawer({
           <div className="flex flex-1 items-center justify-center">
             <span className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></span>
           </div>
+        ) : !task ? (
+          <div className="flex flex-1 items-center justify-center">
+            <span className="text-muted-foreground">Task not found.</span>
+          </div>
         ) : (
           <div className="flex flex-1 flex-row overflow-hidden">
             <ScrollArea className="h-full flex-1 border-r border-border p-6">

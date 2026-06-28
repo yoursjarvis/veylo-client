@@ -502,11 +502,7 @@ export function TaskDetailsComments({
   toggleReactionMutation,
 }: TaskDetailsCommentsProps) {
   return (
-    <div className="space-y-6 border-t border-border/60 pt-6">
-      <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-        <HugeiconsIcon icon={Message01Icon} size={14} className="text-muted-foreground/70" />{" "}
-        Discussion / Comments
-      </label>
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <RichTextEditor
           placeholder="Write a comment... (Supports rich text, @mentions, /commands, paste images)"

@@ -181,7 +181,8 @@ export default function ListPage() {
         const matchesTitle = task.title?.toLowerCase().includes(query);
         const matchesDesc = task.description?.toLowerCase().includes(query);
         const matchesAssignee = task.assignee?.name?.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesDesc && !matchesAssignee) {
+        const matchesKey = task.taskKey ? (task.taskKey as string).toLowerCase().includes(query) : false;
+        if (!matchesTitle && !matchesDesc && !matchesAssignee && !matchesKey) {
           return false;
         }
       }

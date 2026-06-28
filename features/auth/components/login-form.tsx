@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect, useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import {
   InputGroup,
@@ -26,12 +28,19 @@ import { toFieldErrors, useAuthForm } from "./auth-form-utils"
 
 type LoginFormProps = {
   callbackUrl?: string
+  error?: string
 }
 
-export function LoginForm({ callbackUrl }: LoginFormProps) {
+export function LoginForm({ callbackUrl, error }: LoginFormProps) {
   const login = useLogin()
   const router = useRouter()
   const nextUrl = callbackUrl || "/dashboard"
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+    }
+  }, [error])
 
   const form = useAuthForm({
     defaultValues: {
@@ -59,14 +68,22 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
     try {
       await authClient.signIn.social({
         provider,
-        callbackURL: `${window.location.origin}/org-setup`,
+        callbackURL: callbackUrl || `${window.location.origin}/org-setup`,
+      }, {
+        onError: (ctx) => {
+          toast.error(ctx.error.message || "Social login failed")
+        }
       })
-    } catch {
-      toast.error("Social login failed")
+    } catch (error: any) {
+      toast.error(error?.message || "Social login failed")
     }
   }
 
-  const lastMethod = authClient.getLastUsedLoginMethod()
+  const [lastMethod, setLastMethod] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLastMethod(authClient.getLastUsedLoginMethod())
+  }, [])
 
   return (
     <div className="w-full max-w-sm animate-in space-y-8">
@@ -79,32 +96,40 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       <div className="space-y-4">
         <div className="flex flex-col gap-2">
           <Button
-            className="relative w-full"
+            className="flex w-full items-center justify-between px-4"
             type="button"
             variant="outline"
             onClick={() => handleSocialLogin("google")}
           >
-            <HugeiconsIcon icon={GoogleIcon} />
-            Continue with Google
-            {lastMethod === "google" && (
-              <span className="absolute right-3 text-xs text-muted-foreground">
-                Last used
-              </span>
-            )}
+            <div className="flex flex-1 items-center justify-start">
+              <HugeiconsIcon icon={GoogleIcon} />
+            </div>
+            <span className="whitespace-nowrap font-medium">Continue with Google</span>
+            <div className="flex flex-1 items-center justify-end overflow-hidden pl-2">
+              {lastMethod === "google" && (
+                <span className="hidden whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground sm:inline-block">
+                  Last used
+                </span>
+              )}
+            </div>
           </Button>
           <Button
-            className="relative w-full"
+            className="flex w-full items-center justify-between px-4"
             type="button"
             variant="outline"
             onClick={() => handleSocialLogin("github")}
           >
-            <HugeiconsIcon icon={Github} />
-            Continue with GitHub
-            {lastMethod === "github" && (
-              <span className="absolute right-3 text-xs text-muted-foreground">
-                Last used
-              </span>
-            )}
+            <div className="flex flex-1 items-center justify-start">
+              <HugeiconsIcon icon={Github} />
+            </div>
+            <span className="whitespace-nowrap font-medium">Continue with GitHub</span>
+            <div className="flex flex-1 items-center justify-end overflow-hidden pl-2">
+              {lastMethod === "github" && (
+                <span className="hidden whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground sm:inline-block">
+                  Last used
+                </span>
+              )}
+            </div>
           </Button>
         </div>
         <AuthDivider>OR</AuthDivider>

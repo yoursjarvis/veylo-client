@@ -3,33 +3,37 @@
 import React, { useState } from "react";
 import { format, isPast, isToday } from "date-fns";
 import { motion, AnimatePresence } from "motion/react";
-import { Badge } from "@/components/reui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Bug,
   Sparkles,
   ChevronRight,
   ChevronDown,
-  Calendar,
-  AlertCircle,
-  CheckCircle2,
-  Circle,
-  Clock
+  MessageSquare,
+  CheckSquare,
+  ArrowUp,
+  ArrowDown,
+  ChevronsUp,
+  ChevronsDown,
+  Equal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Task {
   id: string;
+  taskKey?: string;
   title: string;
   description?: string;
   statusId?: string;
   priority: string;
   type: string;
   status: { name: string };
-  assignee?: { image?: string; name?: string };
+  assignee?: { image?: string; name?: string; id?: string };
   dueDate?: string;
   estimate?: string | number;
   labels?: { labelId: string }[];
+  comments?: { id: string }[];
 }
 
 interface TaskRowProps {
@@ -37,249 +41,154 @@ interface TaskRowProps {
   projectTemplate: string;
   onSelectTask: (taskId: string) => void;
   projectLabels: { id: string; name: string; color?: string }[];
+  isSelected: boolean;
+  onToggleSelect: (taskId: string, selected: boolean) => void;
 }
+
+const gridCols = "grid-cols-[40px_40px_90px_minmax(250px,1fr)_130px_60px_150px_110px_50px]";
+
+const getTypeIcon = (type: string) => {
+  switch (type.toLowerCase()) {
+    case "bug":
+      return <Bug className="h-4 w-4 text-red-500" />;
+    case "feature":
+    case "story":
+      return <Sparkles className="h-4 w-4 text-purple-500" />;
+    default:
+      return <CheckSquare className="h-4 w-4 text-blue-500" />;
+  }
+};
+
+const getPriorityIcon = (prio: string) => {
+  switch (prio.toLowerCase()) {
+    case "urgent":
+    case "highest":
+      return <ChevronsUp className="h-4 w-4 text-red-600" />;
+    case "high":
+      return <ArrowUp className="h-4 w-4 text-red-500" />;
+    case "medium":
+      return <Equal className="h-4 w-4 text-orange-500" />;
+    case "low":
+      return <ArrowDown className="h-4 w-4 text-blue-500" />;
+    case "lowest":
+      return <ChevronsDown className="h-4 w-4 text-blue-500" />;
+    default:
+      return <Equal className="h-4 w-4 text-muted-foreground" />;
+  }
+};
+
+const getStatusBadge = (name: string) => {
+  const n = name.toLowerCase();
+  let bg = "bg-slate-100 text-slate-700 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300";
+  if (n === "done" || n === "completed" || n === "closed") {
+    bg = "bg-emerald-100 text-emerald-800 border border-emerald-200 dark:border-emerald-800/50 dark:bg-emerald-900/30 dark:text-emerald-400";
+  } else if (n === "in progress" || n === "review") {
+    bg = "bg-blue-100 text-blue-800 border border-blue-200 dark:border-blue-800/50 dark:bg-blue-900/30 dark:text-blue-400";
+  } else if (n === "blocked") {
+    bg = "bg-red-100 text-red-800 border border-red-200 dark:border-red-800/50 dark:bg-red-900/30 dark:text-red-400";
+  }
+  
+  return (
+    <span className={cn("inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider truncate max-w-full", bg)}>
+      {name}
+    </span>
+  );
+};
 
 export function TaskRow({
   task,
-  projectTemplate,
   onSelectTask,
-  projectLabels,
+  isSelected,
+  onToggleSelect,
 }: TaskRowProps) {
-  const isDone =
-    task.status?.name?.toLowerCase() === "done" ||
-    task.status?.name?.toLowerCase() === "completed" ||
-    task.status?.name?.toLowerCase() === "closed";
-
-  const getPriorityBadge = (prio: string) => {
-    switch (prio) {
-      case "urgent":
-        return (
-          <Badge
-            variant="destructive-light"
-            size="sm"
-            radius="default"
-            className="px-2.5 py-0.5 text-xs font-medium tracking-normal border-none"
-          >
-            Urgent
-          </Badge>
-        );
-      case "high":
-        return (
-          <Badge
-            variant="rose-light"
-            size="sm"
-            radius="default"
-            className="px-2.5 py-0.5 text-xs font-medium tracking-normal border-none"
-          >
-            High
-          </Badge>
-        );
-      case "medium":
-        return (
-          <Badge
-            variant="info-light"
-            size="sm"
-            radius="default"
-            className="px-2.5 py-0.5 text-xs font-medium tracking-normal border-none"
-          >
-            Medium
-          </Badge>
-        );
-      default:
-        return (
-          <Badge
-            variant="invert-light"
-            size="sm"
-            radius="default"
-            className="px-2.5 py-0.5 text-xs font-medium tracking-normal border-none text-muted-foreground/75"
-          >
-            Low
-          </Badge>
-        );
-    }
+  const taskKey = task.taskKey || task.id.substring(0, 8).toUpperCase();
+  
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
-  const getTypeBadge = (type: string) => {
-    switch (type) {
-      case "bug":
-        return (
-          <Badge
-            variant="destructive-light"
-            size="sm"
-            radius="default"
-            className="gap-1 px-2.5 py-0.5 text-xs font-medium border-none"
-          >
-            <Bug size={11} className="text-destructive shrink-0" />
-            <span>Bug</span>
-          </Badge>
-        );
-      case "feature":
-        return (
-          <Badge
-            variant="info-light"
-            size="sm"
-            radius="default"
-            className="gap-1 px-2.5 py-0.5 text-xs font-medium border-none"
-          >
-            <Sparkles size={11} className="text-info shrink-0" />
-            <span>Feature</span>
-          </Badge>
-        );
-      default:
-        return (
-          <Badge
-            variant="invert-light"
-            size="sm"
-            radius="default"
-            className="gap-1 px-2.5 py-0.5 text-xs font-medium border-none text-muted-foreground/80"
-          >
-            <ChevronRight size={11} className="shrink-0 text-muted-foreground/50" />
-            <span>Task</span>
-          </Badge>
-        );
-    }
+  const handleCheckboxChange = (checked: boolean) => {
+    onToggleSelect(task.id, checked);
   };
-
-  const getDueDateDisplay = (dueDateStr?: string) => {
-    if (!dueDateStr) return null;
-    const date = new Date(dueDateStr);
-    const past = isPast(date) && !isToday(date);
-    return (
-      <div
-        className={cn(
-          "flex items-center gap-1 px-2 py-0.5 rounded-sm text-xs font-medium transition-colors h-5",
-          past
-            ? "bg-destructive/10 text-destructive dark:bg-destructive/20"
-            : "bg-muted text-muted-foreground"
-        )}
-      >
-        <Calendar
-          size={11}
-          className={cn("shrink-0", past ? "text-destructive" : "text-muted-foreground/60")}
-        />
-        <span>{format(date, "MMM d")}</span>
-      </div>
-    );
-  };
-
-  const taskLabels = (task.labels || [])
-    .map((tl) => projectLabels.find((pl) => pl.id === tl.labelId))
-    .filter(Boolean) as { id: string; name: string; color?: string }[];
-
-  const plainDescription = task.description
-    ? task.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
-    : "";
 
   return (
-    <div
+    <div 
       onClick={() => onSelectTask(task.id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelectTask(task.id);
-        }
-      }}
-      tabIndex={0}
       className={cn(
-        "group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-border/40 bg-card hover:bg-muted/30 hover:border-border/80 shadow-xs hover:shadow-sm cursor-pointer transition-all duration-200 select-none mb-2.5 outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-muted/50"
+        "group grid cursor-pointer border-b border-border/60 transition-colors hover:bg-muted/50 items-center",
+        gridCols,
+        isSelected ? "bg-primary/5" : "bg-card"
       )}
     >
-      {/* Left Column: Status check and Task Title, Description preview & Labels */}
-      <div className="flex items-start gap-3 min-w-0 flex-1">
-        {/* Status checkbox */}
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectTask(task.id);
-          }}
-          className="shrink-0 cursor-pointer mt-0.5 p-0.5 rounded-full hover:bg-muted/85 transition-colors"
-        >
-          {isDone ? (
-            <CheckCircle2
-              size={18}
-              className="text-success hover:scale-105 transition-transform duration-100"
-            />
-          ) : (
-            <Circle
-              size={18}
-              className="text-muted-foreground hover:text-primary hover:scale-105 transition-all duration-100"
-            />
-          )}
-        </div>
-
-        {/* Title, Description and Labels column */}
-        <div className="flex flex-col min-w-0 flex-1 gap-1">
-          <span
-            className={cn(
-              "text-base font-semibold tracking-tight text-foreground truncate",
-              isDone ? "line-through text-muted-foreground/60 font-normal" : ""
-            )}
-          >
-            {task.title}
-          </span>
-
-          {/* Description Preview */}
-          {plainDescription && (
-            <p className="text-sm text-muted-foreground/80 line-clamp-1 max-w-[650px] font-normal leading-relaxed">
-              {plainDescription}
-            </p>
-          )}
-
-          {/* Labels stack */}
-          {taskLabels.length > 0 && (
-            <div className="flex items-center gap-1.5 shrink-0 flex-wrap pt-1">
-              {taskLabels.map((lbl) => (
-                <span
-                  key={lbl.id}
-                  className="inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold tracking-wide transition-all"
-                  style={{
-                    backgroundColor: lbl.color ? `${lbl.color}12` : "rgba(59, 130, 246, 0.08)",
-                    color: lbl.color || "#3b82f6",
-                    borderColor: lbl.color ? `${lbl.color}25` : "rgba(59, 130, 246, 0.2)",
-                  }}
-                >
-                  {lbl.name}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="px-3 py-2 flex items-center justify-center" onClick={handleCheckboxClick}>
+        <Checkbox 
+          checked={isSelected}
+          onCheckedChange={(c) => handleCheckboxChange(c as boolean)}
+        />
       </div>
-
-      {/* Right Column: Metadata stack */}
-      <div className="flex items-center gap-4 shrink-0 justify-between sm:justify-end self-stretch sm:self-auto pt-2 sm:pt-0 border-t border-border/20 sm:border-0">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {/* Estimate */}
-          {projectTemplate !== "simple" && task.estimate !== undefined && task.estimate !== null && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-sm border border-border/40 bg-muted/20 text-xs text-muted-foreground font-mono h-5">
-              <Clock size={11} className="shrink-0" />
-              <span>{task.estimate}h</span>
-            </div>
-          )}
-
-          {/* Category (Type) Badge */}
-          {getTypeBadge(task.type)}
-
-          {/* Due Date */}
-          {getDueDateDisplay(task.dueDate)}
-
-          {/* Priority Badge */}
-          {getPriorityBadge(task.priority)}
-
-          {/* Assignee Avatar */}
-          <Avatar className="h-5.5 w-5.5 border border-border shadow-xs shrink-0 transition-transform duration-100 hover:scale-110">
-            <AvatarImage src={task.assignee?.image || ""} />
-            <AvatarFallback className="bg-muted text-muted-foreground text-[9px] font-bold">
-              {task.assignee?.name ? task.assignee.name.charAt(0).toUpperCase() : "?"}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-
-        {/* Hover Action Indicator */}
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pl-2 shrink-0 hidden sm:block">
-          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 hover:bg-primary/20">
-            Open
+      <div className="px-3 py-2 flex items-center justify-center" title={task.type}>
+        {getTypeIcon(task.type)}
+      </div>
+      <div className="px-3 py-2 text-xs font-medium text-muted-foreground truncate" title={taskKey}>
+        {taskKey}
+      </div>
+      <div className="px-3 py-2 overflow-hidden flex items-center">
+        <span className="text-sm font-medium text-foreground hover:underline decoration-primary underline-offset-2 truncate block">
+          {task.title}
+        </span>
+      </div>
+      <div className="px-3 py-2 truncate flex items-center">
+        {getStatusBadge(task.status?.name || "To Do")}
+      </div>
+      <div className="px-3 py-2 flex items-center justify-center">
+        {task.comments && task.comments.length > 0 ? (
+          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground" title={`${task.comments.length} comments`}>
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span className="font-medium">{task.comments.length}</span>
+          </div>
+        ) : null}
+      </div>
+      <div className="px-3 py-2 truncate">
+        {task.assignee ? (
+          <div className="flex items-center gap-2" title={task.assignee.name}>
+            <Avatar className="h-6 w-6 border border-border">
+              <AvatarImage src={task.assignee.image || ""} />
+              <AvatarFallback className="text-[10px] bg-muted font-semibold">
+                {task.assignee.name?.charAt(0).toUpperCase() || "?"}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs text-foreground truncate max-w-[90px]">
+              {task.assignee.name}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2" title="Unassigned">
+            <Avatar className="h-6 w-6 border border-dashed border-muted-foreground/30">
+              <AvatarFallback className="bg-transparent text-muted-foreground/50">
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs text-muted-foreground italic">Unassigned</span>
+          </div>
+        )}
+      </div>
+      <div className="px-3 py-2 truncate flex items-center">
+        {task.dueDate ? (
+          <span className={cn(
+            "text-xs font-medium",
+            isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate))
+              ? "text-red-600 dark:text-red-400"
+              : "text-muted-foreground"
+          )}>
+            {format(new Date(task.dueDate), "MMM d, yyyy")}
           </span>
+        ) : (
+          <span className="text-xs text-muted-foreground/50">-</span>
+        )}
+      </div>
+      <div className="px-3 py-2 flex items-center justify-center">
+        <div className="flex justify-center" title={task.priority}>
+          {getPriorityIcon(task.priority)}
         </div>
       </div>
     </div>
@@ -294,6 +203,8 @@ interface StatusSectionProps {
   projectLabels: { id: string; name: string; color?: string }[];
   isCollapsed: boolean;
   onToggle: () => void;
+  selectedTasks: Set<string>;
+  onToggleSelect: (taskId: string, selected: boolean) => void;
 }
 
 export function StatusSection({
@@ -304,60 +215,65 @@ export function StatusSection({
   projectLabels,
   isCollapsed,
   onToggle,
+  selectedTasks,
+  onToggleSelect,
 }: StatusSectionProps) {
-  return (
-    <div className="flex flex-col gap-2 mb-6">
-      {/* Section Header */}
-      <div
-        onClick={onToggle}
-        className="flex items-center justify-between py-2 px-1 hover:bg-muted/10 rounded-lg select-none cursor-pointer group transition-colors duration-150"
-      >
-        <div className="flex items-center gap-2">
-          <div className="p-0.5 rounded-md hover:bg-muted/30 text-muted-foreground group-hover:text-foreground transition-all duration-150">
-            {isCollapsed ? (
-              <ChevronRight size={14} className="transition-transform duration-150" />
-            ) : (
-              <ChevronDown size={14} className="transition-transform duration-150" />
-            )}
+  if (tasks.length === 0) {
+    return (
+      <div className="flex flex-col">
+        <div 
+          className="group cursor-pointer bg-muted/20 border-b border-border/60 hover:bg-muted/40 transition-colors"
+          onClick={onToggle}
+        >
+          <div className="px-3 py-1.5 flex items-center gap-2">
+            <div className="p-0.5 text-muted-foreground group-hover:text-foreground transition-colors">
+              {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+            </div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+              {status.name} <span className="font-medium text-muted-foreground/60 ml-1">({tasks.length})</span>
+            </h3>
           </div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60 group-hover:text-foreground transition-colors duration-150">
-            {status.name}
-          </h3>
-          <span className="text-xs bg-muted/60 text-muted-foreground font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center ml-1">
-            {tasks.length}
-          </span>
         </div>
       </div>
+    );
+  }
 
-      {/* Rows Container with Collapsible Motion */}
+  return (
+    <div className="flex flex-col">
+      <div 
+        className="group sticky top-9 z-10 cursor-pointer bg-muted/30 border-b border-border/60 hover:bg-muted/50 transition-colors backdrop-blur-md shadow-[0_1px_0_0_hsl(var(--border))]"
+        onClick={onToggle}
+      >
+        <div className="px-3 py-1.5 flex items-center gap-2">
+          <div className="p-0.5 text-muted-foreground group-hover:text-foreground transition-colors">
+            {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+          </div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+            {status.name} <span className="font-medium text-muted-foreground/60 ml-1">({tasks.length})</span>
+          </h3>
+        </div>
+      </div>
+      
       <AnimatePresence initial={false}>
         {!isCollapsed && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18, ease: "easeInOut" }}
-            className="overflow-hidden pl-1 pr-1"
+            transition={{ duration: 0.15, ease: "easeInOut" }}
+            className="overflow-hidden flex flex-col"
           >
-            {tasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 px-4 text-center border border-dashed border-border/30 rounded-xl bg-muted/5 my-1.5">
-                <p className="text-sm font-medium text-muted-foreground/70">
-                  No tasks in this section
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col">
-                {tasks.map((task) => (
-                  <TaskRow
-                    key={task.id}
-                    task={task}
-                    projectTemplate={projectTemplate}
-                    onSelectTask={onSelectTask}
-                    projectLabels={projectLabels}
-                  />
-                ))}
-              </div>
-            )}
+            {tasks.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                projectTemplate={projectTemplate}
+                onSelectTask={onSelectTask}
+                projectLabels={projectLabels}
+                isSelected={selectedTasks.has(task.id)}
+                onToggleSelect={onToggleSelect}
+              />
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
@@ -382,6 +298,7 @@ export function TaskList({
   projectLabels = [],
 }: TaskListProps) {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
 
   const toggleSection = (statusId: string) => {
     setCollapsedSections((prev) => ({
@@ -392,14 +309,35 @@ export function TaskList({
 
   const activeStatuses = statuses.length > 0 ? statuses : [{ id: "unknown", name: "Backlog" }];
 
+  const handleToggleSelect = (taskId: string, selected: boolean) => {
+    setSelectedTasks(prev => {
+      const next = new Set(prev);
+      if (selected) next.add(taskId);
+      else next.delete(taskId);
+      return next;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedTasks(new Set(tasks.map(t => t.id)));
+    } else {
+      setSelectedTasks(new Set());
+    }
+  };
+
+  const allSelected = tasks.length > 0 && selectedTasks.size === tasks.length;
+
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-16 px-4 border border-dashed border-border/60 rounded-2xl bg-muted/5 flex flex-col items-center justify-center">
-        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center mb-3">
-          <AlertCircle className="h-5 w-5 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-border/60 rounded-xl bg-card m-4">
+        <div className="mb-4 rounded-full bg-muted/50 p-4">
+          <svg className="h-10 w-10 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
         </div>
-        <p className="text-sm font-semibold text-foreground">No tasks found</p>
-        <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+        <h3 className="text-base font-semibold text-foreground">No tasks found</h3>
+        <p className="mt-1 text-sm text-muted-foreground max-w-sm">
           No tasks match your search query or filters in this view. Try adjusting your filters above or create a new task to get started.
         </p>
       </div>
@@ -407,25 +345,57 @@ export function TaskList({
   }
 
   return (
-    <div className="flex flex-col gap-6 flex-1 min-h-0 overflow-y-auto pr-1">
-      {activeStatuses.map((status) => {
-        const statusTasks = tasks.filter(
-          (t) => t.statusId === status.id || (!t.statusId && status.id === activeStatuses[0].id)
-        );
+    <div className="flex flex-col min-h-0 h-full w-full bg-background rounded-md border border-border shadow-sm overflow-hidden">
+      <div className="w-full h-full overflow-auto">
+        <div className="min-w-[900px] flex flex-col">
+          {/* Header */}
+          <div className={cn(
+            "sticky top-0 z-20 h-9 grid border-b border-border bg-background/95 backdrop-blur-sm text-xs font-semibold text-muted-foreground shadow-[0_1px_0_0_hsl(var(--border))]",
+            gridCols
+          )}>
+            <div className="px-3 flex items-center justify-center">
+              <Checkbox 
+                checked={allSelected} 
+                onCheckedChange={(c) => handleSelectAll(c as boolean)}
+              />
+            </div>
+            <div className="px-3 flex items-center justify-center">Type</div>
+            <div className="px-3 flex items-center">Key</div>
+            <div className="px-3 flex items-center">Summary</div>
+            <div className="px-3 flex items-center">Status</div>
+            <div className="px-3 flex items-center justify-center" title="Comments">
+              <MessageSquare className="h-3.5 w-3.5" />
+            </div>
+            <div className="px-3 flex items-center">Assignee</div>
+            <div className="px-3 flex items-center">Due Date</div>
+            <div className="px-3 flex items-center justify-center" title="Priority">P</div>
+          </div>
+          
+          {/* Body */}
+          <div className="flex flex-col pb-6">
+            {activeStatuses.map((status) => {
+              const statusTasks = tasks.filter(
+                (t) => t.statusId === status.id || (!t.statusId && status.id === activeStatuses[0].id)
+              );
 
-        return (
-          <StatusSection
-            key={status.id}
-            status={status}
-            tasks={statusTasks}
-            projectTemplate={projectTemplate}
-            onSelectTask={onSelectTask}
-            projectLabels={projectLabels}
-            isCollapsed={!!collapsedSections[status.id]}
-            onToggle={() => toggleSection(status.id)}
-          />
-        );
-      })}
+              return (
+                <StatusSection
+                  key={status.id}
+                  status={status}
+                  tasks={statusTasks}
+                  projectTemplate={projectTemplate}
+                  onSelectTask={onSelectTask}
+                  projectLabels={projectLabels}
+                  isCollapsed={!!collapsedSections[status.id]}
+                  onToggle={() => toggleSection(status.id)}
+                  selectedTasks={selectedTasks}
+                  onToggleSelect={handleToggleSelect}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

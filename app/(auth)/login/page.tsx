@@ -5,12 +5,16 @@ import { LoginForm } from "@/features/auth/components/login-form"
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string | string[] }>
+  searchParams: Promise<{ callbackUrl?: string | string[], error?: string | string[] }>
 }) {
   const params = await searchParams
   const callbackUrl =
     typeof params.callbackUrl === "string"
       ? params.callbackUrl
+      : undefined
+  const error =
+    typeof params.error === "string"
+      ? params.error
       : undefined
 
 
@@ -36,7 +40,7 @@ export default async function LoginPage({
         <DecorIcon position="top-left" />
         <DecorIcon position="bottom-right" />
 
-        <LoginForm callbackUrl={callbackUrl} />
+        <LoginForm callbackUrl={callbackUrl} error={error} />
       </div>
     </div>
   )

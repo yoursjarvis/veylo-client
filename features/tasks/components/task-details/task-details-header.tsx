@@ -113,9 +113,9 @@ export function TaskDetailsHeader({
           className="h-auto w-full rounded-lg border-transparent bg-transparent px-1.5 py-1 text-2xl font-bold tracking-tight text-foreground transition-all hover:bg-muted/20 focus:border-border/40 focus:bg-background focus:ring-0 focus:outline-none"
         />
         <div className="flex items-center gap-2 px-1.5 text-xs text-muted-foreground">
-          <span>Task ID:</span>
-          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold text-foreground">
-            {task.id}
+          <span>Task Key:</span>
+          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold text-foreground uppercase tracking-wider">
+            {task.taskKey || task.id.substring(0, 8)}
           </span>
         </div>
       </div>

@@ -38,6 +38,7 @@ import {
 interface Project {
   id: string;
   title: string;
+  projectKey: string;
   description: string | null;
   icon: string | null;
   workspaceId: string;
@@ -102,9 +103,17 @@ export default function ProjectsPage() {
   // Create Project state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newProjectTitle, setNewProjectTitle] = useState("");
+  const [newProjectKey, setNewProjectKey] = useState("");
   const [newProjectDesc, setNewProjectDesc] = useState("");
   const [newProjectIcon, setNewProjectIcon] = useState<string | File | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState("general-project");
+  
+  const handleProjectKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase();
+    if (val.length <= 10) {
+      setNewProjectKey(val);
+    }
+  };
 
   // Queries
   const { data: projects, isLoading: isProjectsLoading } = useQuery<Project[]>({
@@ -153,10 +162,11 @@ export default function ProjectsPage() {
 
   // Mutations
   const createProjectMutation = useMutation({
-    mutationFn: async (data: { title: string; description?: string; icon?: string | File | null; template: string }) => {
+    mutationFn: async (data: { title: string; projectKey: string; description?: string; icon?: string | File | null; template: string }) => {
       const isFile = data.icon instanceof File;
       const res = await axiosInstance.post(`/workspaces/${activeWorkspace?.id}/projects`, {
         title: data.title,
+        projectKey: data.projectKey,
         description: data.description,
         icon: !isFile ? (data.icon as string | null) : undefined,
         template: data.template,
@@ -173,6 +183,7 @@ export default function ProjectsPage() {
       toast.success("Project created successfully");
       setIsCreateOpen(false);
       setNewProjectTitle("");
+      setNewProjectKey("");
       setNewProjectDesc("");
       setNewProjectIcon(null);
       setSelectedTemplate("general-project");
@@ -278,6 +289,32 @@ export default function ProjectsPage() {
                     />
                   </div>
 
+                  {/* Project Key Field */}
+                  <div className="grid gap-1.5">
+                    <label htmlFor="projectKey" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Project Key <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="projectKey"
+                      placeholder="Example: DEV"
+                      value={newProjectKey}
+                      onChange={handleProjectKeyChange}
+                      className="bg-background border border-border text-xs h-9 rounded-lg uppercase"
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      This key will be used to generate task IDs such as DEV-1, DEV-2, and DEV-3.
+                    </p>
+                    <div className="mt-1 flex items-start gap-2 rounded-md bg-amber-500/10 p-2.5 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold">Project Key cannot be changed</p>
+                        <p className="text-[10px] leading-relaxed opacity-90">
+                          Once the project is created, its key becomes permanent and cannot be edited later. Choose a short, meaningful key carefully.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Description Field */}
                   <div className="grid gap-1.5">
                     <label htmlFor="desc" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -361,10 +398,11 @@ export default function ProjectsPage() {
                     Cancel
                   </Button>
                   <Button
-                    disabled={!newProjectTitle.trim() || createProjectMutation.isPending}
+                    disabled={!newProjectTitle.trim() || newProjectKey.trim().length < 2 || createProjectMutation.isPending}
                     onClick={() =>
                       createProjectMutation.mutate({
                         title: newProjectTitle,
+                        projectKey: newProjectKey,
                         description: newProjectDesc,
                         icon: newProjectIcon || "📁",
                         template: selectedTemplate,
