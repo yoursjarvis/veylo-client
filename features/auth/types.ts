@@ -45,6 +45,7 @@ export interface User {
   updatedAt: string
   twoFactorEnabled?: boolean
   hasPassword?: boolean
+  notificationPreferences?: string
 }
 
 export interface Session {

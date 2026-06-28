@@ -7,6 +7,7 @@ import {
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
 } from "@/features/tasks/hooks/use-tasks";
+import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import {
   Popover,
   PopoverContent,
@@ -36,8 +37,58 @@ export function NotificationCenter() {
   const workspaceSlug = params.workspaceSlug as string;
 
   const { data: notifications = [] } = useNotifications();
+  const { data: auth } = useCurrentUser();
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllNotificationsRead();
+
+  const shownNotificationIds = React.useRef<Set<Set<string>>>(new Set());
+  const shownIds = React.useRef<Set<string>>(new Set());
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!notifications || notifications.length === 0) return;
+
+    // Check if push notifications are enabled by preference
+    let pushEnabled = true;
+    if (auth?.user?.notificationPreferences) {
+      try {
+        const parsed = JSON.parse(auth.user.notificationPreferences);
+        if (parsed && typeof parsed === "object" && parsed.channels) {
+          pushEnabled = parsed.channels.push !== false;
+        }
+      } catch (e) {
+        console.error("Error parsing notification channel preferences:", e);
+      }
+    }
+
+    if (!pushEnabled) return;
+
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      const newUnread = notifications.filter(
+        (n: NotificationType) => !n.isRead && !shownIds.current.has(n.id)
+      );
+
+      newUnread.forEach((n: NotificationType) => {
+        shownIds.current.add(n.id);
+        try {
+          const notification = new Notification(n.title, {
+            body: n.message,
+          });
+          notification.onclick = () => {
+            window.focus();
+            handleNotificationClick(n);
+          };
+        } catch (err) {
+          console.error("Error triggering browser notification:", err);
+        }
+      });
+    }
+  }, [notifications, auth]);
 
   const unreadNotifications = notifications.filter((n: NotificationType) => !n.isRead);
   const unreadCount = unreadNotifications.length;

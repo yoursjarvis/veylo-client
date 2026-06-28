@@ -26,23 +26,27 @@ import {
 import { useLogout } from "@/features/auth/hooks/use-auth"
 import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
+import { AppearanceTab } from "./settings/appearance-tab"
+import { OrganizationTab } from "./settings/organization-tab"
+import { ProfileTab } from "./settings/profile-tab"
+import { SecurityTab } from "./settings/security-tab"
+import { NotificationsTab } from "./settings/notifications-tab"
+
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
+
 import {
   Building03Icon,
   Logout01Icon,
   PaintBoardIcon,
   Shield01Icon,
   UserIcon,
+  Notification01Icon,
 } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { toast } from "sonner"
-import { AppearanceTab } from "./settings/appearance-tab"
-import { OrganizationTab } from "./settings/organization-tab"
-import { ProfileTab } from "./settings/profile-tab"
-import { SecurityTab } from "./settings/security-tab"
 
-type Tab = "profile" | "security" | "appearance" | "organization"
+type Tab = "profile" | "security" | "appearance" | "organization" | "notifications"
 
 interface SettingsModalProps {
   open: boolean
@@ -71,6 +75,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const menuItems = [
     { id: "profile", label: "Profile", icon: UserIcon },
     { id: "security", label: "Sessions & Security", icon: Shield01Icon },
+    { id: "notifications", label: "Notifications", icon: Notification01Icon },
     { id: "appearance", label: "Appearance", icon: PaintBoardIcon },
   ]
 
@@ -161,6 +166,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 {activeTab === "organization" && <OrganizationTab />}
                 {activeTab === "security" && <SecurityTab />}
                 {activeTab === "appearance" && <AppearanceTab />}
+                {activeTab === "notifications" && <NotificationsTab />}
               </div>
             </div>
           </SidebarProvider>
