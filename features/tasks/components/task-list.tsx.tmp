@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { format, isPast, isToday } from "date-fns";
 import { motion, AnimatePresence } from "motion/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,10 +33,8 @@ import {
   DragStartEvent,
   DragOverEvent,
   DragEndEvent,
-  useDroppable,
-  DraggableAttributes,
+  useDroppable
 } from '@dnd-kit/core';
-import { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 import {
   SortableContext,
   arrayMove,
@@ -61,7 +59,7 @@ interface Task {
   estimate?: string | number;
   labels?: { labelId: string }[];
   comments?: { id: string }[];
-  position?: number;
+  sortOrder?: number;
 }
 
 interface TaskRowProps {
@@ -72,8 +70,8 @@ interface TaskRowProps {
   isSelected: boolean;
   onToggleSelect: (taskId: string, selected: boolean) => void;
   isDragging?: boolean;
-  dragHandleProps?: DraggableAttributes;
-  dragHandleListeners?: SyntheticListenerMap;
+  dragHandleProps?: Record<string, any>;
+  dragHandleListeners?: Record<string, any>;
 }
 
 const gridCols = "grid-cols-[32px_40px_40px_90px_minmax(250px,1fr)_130px_60px_150px_110px_50px]";
@@ -151,13 +149,14 @@ export function TaskRow({
       className={cn(
         "group grid cursor-pointer border-b border-border/60 transition-colors hover:bg-muted/50 items-center",
         gridCols,
-        isSelected ? "bg-primary/5" : "bg-card"
+        isSelected ? "bg-primary/5" : "bg-card",
+        isDragging && "opacity-0"
       )}
     >
       <div className="px-1 py-2 flex items-center justify-center">
         <div
-          {...(dragHandleProps || {})}
-          {...(dragHandleListeners || {})}
+          {...dragHandleProps}
+          {...dragHandleListeners}
           className="opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing hover:bg-muted rounded p-0.5 transition-opacity text-muted-foreground"
           onClick={(e) => e.stopPropagation()}
         >
@@ -266,19 +265,14 @@ function SortableTaskRow(props: TaskRowProps) {
       exit={{ opacity: 0, y: -5 }}
       ref={setNodeRef}
       style={style}
-      className={cn(
-        "relative outline-none",
-        isDragging && "z-50 bg-muted/40 border-y border-dashed border-primary/40 shadow-inner"
-      )}
+      className={isDragging ? 'relative z-50' : ''}
     >
-      <div className={cn(isDragging ? "invisible" : "")}>
-        <TaskRow 
-          {...props}
-          isDragging={isDragging}
-          dragHandleProps={attributes as DraggableAttributes}
-          dragHandleListeners={listeners as SyntheticListenerMap}
-        />
-      </div>
+      <TaskRow 
+        {...props}
+        isDragging={isDragging}
+        dragHandleProps={attributes}
+        dragHandleListeners={listeners}
+      />
     </motion.div>
   );
 }
@@ -306,14 +300,14 @@ export function StatusSection({
   selectedTasks,
   onToggleSelect,
 }: StatusSectionProps) {
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef } = useDroppable({
     id: status.id,
     data: { type: "StatusSection", status }
   });
 
   if (tasks.length === 0) {
     return (
-      <div className={cn("flex flex-col mb-4", isOver && "bg-primary/5 rounded-md outline outline-1 outline-primary/30")} ref={setNodeRef}>
+      <div className="flex flex-col" ref={setNodeRef}>
         <div 
           className="group cursor-pointer bg-muted/20 border-b border-border/60 hover:bg-muted/40 transition-colors"
           onClick={onToggle}
@@ -327,20 +321,12 @@ export function StatusSection({
             </h3>
           </div>
         </div>
-        {!isCollapsed && (
-          <div className={cn(
-            "h-12 border-2 border-dashed border-border/40 mx-2 my-2 rounded-md flex items-center justify-center text-[11px] font-medium text-muted-foreground/50 transition-colors",
-            isOver && "border-primary/40 text-primary/70 bg-primary/5"
-          )}>
-            Drop tasks here
-          </div>
-        )}
       </div>
     );
   }
 
   return (
-    <div className={cn("flex flex-col pb-4", isOver && "bg-primary/5 outline outline-1 outline-primary/20")} ref={setNodeRef}>
+    <div className="flex flex-col" ref={setNodeRef}>
       <div 
         className="group sticky top-9 z-10 cursor-pointer bg-muted/30 border-b border-border/60 hover:bg-muted/50 transition-colors backdrop-blur-md shadow-[0_1px_0_0_hsl(var(--border))]"
         onClick={onToggle}
@@ -405,15 +391,13 @@ export function TaskList({
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
   
-  const [prevTasks, setPrevTasks] = useState<Task[]>(initialTasks);
-  const [listTasks, setListTasks] = useState<Task[]>(() => [...initialTasks].sort((a,b) => (a.position||0) - (b.position||0)));
+  const [listTasks, setListTasks] = useState<Task[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const updateTaskOrderMutation = useUpdateTaskOrder(projectId);
 
-  if (initialTasks !== prevTasks) {
-    setPrevTasks(initialTasks);
-    setListTasks([...initialTasks].sort((a,b) => (a.position||0) - (b.position||0)));
-  }
+  useEffect(() => {
+    setListTasks(initialTasks);
+  }, [initialTasks]);
 
   const toggleSection = (statusId: string) => {
     setCollapsedSections((prev) => ({
@@ -507,28 +491,15 @@ export function TaskList({
 
     const statusTasks = listTasks.filter(t => t.statusId === activeTask.statusId);
     const activeIndexInStatus = statusTasks.findIndex(t => t.id === activeId);
-    
-    const prev = statusTasks[activeIndexInStatus - 1];
-    const next = statusTasks[activeIndexInStatus + 1];
-    
-    let newPosition = 0;
-    if (prev && next) {
-      newPosition = ((prev.position || 0) + (next.position || 0)) / 2;
-    } else if (prev) {
-      newPosition = (prev.position || 0) + 1024;
-    } else if (next) {
-      newPosition = (next.position || 0) - 1024;
-    } else {
-      newPosition = 1024;
-    }
+    const newSortOrder = activeIndexInStatus * 1024;
 
-    setListTasks(prevTasks => prevTasks.map(t => t.id === activeId ? { ...t, position: newPosition } : t));
+    setListTasks(prev => prev.map(t => t.id === activeId ? { ...t, sortOrder: newSortOrder } : t));
     
     updateTaskOrderMutation.mutate({
       taskId: activeId as string,
       data: {
         statusId: activeTask.statusId,
-        position: newPosition,
+        sortOrder: newSortOrder,
       }
     });
   };
@@ -536,6 +507,10 @@ export function TaskList({
   const dropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.4' } } }),
   };
+
+  const sortedListTasks = useMemo(() => {
+    return [...listTasks].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  }, [listTasks]);
 
   if (listTasks.length === 0) {
     return (
@@ -593,7 +568,7 @@ export function TaskList({
             {/* Body */}
             <div className="flex flex-col pb-6">
               {activeStatuses.map((status) => {
-                const statusTasks = listTasks.filter(
+                const statusTasks = sortedListTasks.filter(
                   (t) => t.statusId === status.id || (!t.statusId && status.id === activeStatuses[0].id)
                 );
 
@@ -618,7 +593,7 @@ export function TaskList({
       </div>
       <DragOverlay dropAnimation={dropAnimation}>
         {activeTask ? (
-          <div className="shadow-2xl bg-background border border-border cursor-grabbing scale-[1.01] rounded-md overflow-hidden">
+          <div className="shadow-2xl opacity-90 scale-[1.01] bg-background">
             <TaskRow
               task={activeTask}
               projectTemplate={projectTemplate}
@@ -626,7 +601,7 @@ export function TaskList({
               projectLabels={projectLabels}
               isSelected={selectedTasks.has(activeTask.id)}
               onToggleSelect={handleToggleSelect}
-              isDragging={false}
+              isDragging={false} // render fully opaque in overlay
             />
           </div>
         ) : null}

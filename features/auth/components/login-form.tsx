@@ -74,16 +74,13 @@ export function LoginForm({ callbackUrl, error }: LoginFormProps) {
           toast.error(ctx.error.message || "Social login failed")
         }
       })
-    } catch (error: any) {
-      toast.error(error?.message || "Social login failed")
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      toast.error(err?.message || "Social login failed")
     }
   }
 
-  const [lastMethod, setLastMethod] = useState<string | null>(null)
-
-  useEffect(() => {
-    setLastMethod(authClient.getLastUsedLoginMethod())
-  }, [])
+  const [lastMethod] = useState<string | null>(() => authClient.getLastUsedLoginMethod())
 
   return (
     <div className="w-full max-w-sm animate-in space-y-8">

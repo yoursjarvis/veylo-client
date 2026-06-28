@@ -306,8 +306,9 @@ export default function ListPage() {
         </div>
       ) : (
         <TaskList
-          tasks={filteredTasks}
-          statuses={statuses || []}
+          projectId={projectId as string}
+          tasks={filteredTasks as unknown as Parameters<typeof TaskList>[0]["tasks"]}
+          statuses={(statuses || []) as unknown as Parameters<typeof TaskList>[0]["statuses"]}
           projectMembers={selectedProject?.members || []}
           projectTemplate={selectedProject?.template || "simple"}
           onSelectTask={handleSelectTask}

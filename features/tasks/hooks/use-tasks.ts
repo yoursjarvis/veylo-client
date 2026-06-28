@@ -61,6 +61,23 @@ export function useUpdateTask(projectId: string, taskId: string) {
   });
 }
 
+export function useUpdateTaskOrder(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ taskId, data }: { taskId: string; data: { statusId?: string; position?: number } }) => {
+      const response = await axiosInstance.patch(`/tasks/${taskId}`, data);
+      return response.data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["task", variables.taskId] });
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Failed to update task position");
+    },
+  });
+}
+
 export function useDeleteTask(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({

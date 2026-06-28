@@ -70,7 +70,7 @@ export function AttachmentItem({
         urlObj.pathname = [...pathParts, 'conversions', `thumb-${filename}`].join('/')
         return urlObj.toString()
       }
-    } catch (e) {
+    } catch {
       const parts = url.split('/')
       const filename = parts.pop()
       if (filename) {
@@ -230,7 +230,7 @@ export function AttachmentItem({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the attachment "{attachment.name}".
+              This will permanently delete the attachment &quot;{attachment.name}&quot;.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

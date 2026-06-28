@@ -69,7 +69,7 @@ export function TaskDetailsDrawer({
       setLocalTitle(task.title || "")
       setLocalDesc(task.description || "")
     }
-  }, [task?.id, task?.title, task?.description, setLocalTitle, setLocalDesc])
+  }, [task, setLocalTitle, setLocalDesc])
 
   const handleToggleCompletion = () => {
     if (!completedStatus) return
