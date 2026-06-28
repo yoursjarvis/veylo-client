@@ -9,7 +9,9 @@ import {
   useUpdateTask,
   useUploadTaskAttachment,
   useToggleCommentReaction,
-  useDeleteTaskAttachment
+  useDeleteTaskAttachment,
+  useCreateTaskDependency,
+  useDeleteTaskDependency,
 } from "../hooks/use-tasks"
 
 interface UseTaskDetailsManagerProps {
@@ -35,7 +37,9 @@ export function useTaskDetailsManager({ taskId, projectId }: UseTaskDetailsManag
   const updateCommentMutation = useUpdateComment(taskId)
   const toggleReactionMutation = useToggleCommentReaction(taskId)
   const uploadAttachmentMutation = useUploadTaskAttachment(taskId)
-  const deleteAttachmentMutation = useDeleteTaskAttachment(taskId) // Added this
+  const deleteAttachmentMutation = useDeleteTaskAttachment(taskId)
+  const createDependencyMutation = useCreateTaskDependency(taskId)
+  const deleteDependencyMutation = useDeleteTaskDependency(taskId)
 
 
   const handleFieldChange = (field: string, value: unknown) => {
@@ -130,6 +134,8 @@ export function useTaskDetailsManager({ taskId, projectId }: UseTaskDetailsManag
       toggleReactionMutation,
       uploadAttachmentMutation,
       deleteAttachmentMutation,
+      createDependencyMutation,
+      deleteDependencyMutation,
     },
   }
 }

@@ -32,6 +32,11 @@ export default function BoardPage() {
   const fields = React.useMemo<FilterFieldConfig[]>(() => {
     return [
       {
+        key: "search",
+        label: "Search",
+        type: "text",
+      },
+      {
         key: "epicId",
         label: "Epic",
         type: "select",
@@ -64,23 +69,54 @@ export default function BoardPage() {
           label: lbl.name,
         })),
       },
+      {
+        key: "assignee",
+        label: "Assignee",
+        type: "select",
+        options: [
+          { value: "null", label: "Unassigned" },
+          ...(selectedProject?.members || []).map((m: any) => ({
+            value: m.userId,
+            label: m.user?.name || m.user?.email || "Unknown User",
+          })),
+        ],
+      },
+      {
+        key: "statusId",
+        label: "Status",
+        type: "select",
+        options: (statuses || []).map((s: any) => ({
+          value: s.id,
+          label: s.name,
+        })),
+      },
+      {
+        key: "priority",
+        label: "Priority",
+        type: "select",
+        options: [
+          { value: "urgent", label: "Urgent" },
+          { value: "high", label: "High" },
+          { value: "medium", label: "Medium" },
+          { value: "low", label: "Low" },
+        ],
+      },
+      {
+        key: "type",
+        label: "Type",
+        type: "select",
+        options: [
+          { value: "task", label: "Task" },
+          { value: "bug", label: "Bug" },
+          { value: "feature", label: "Feature" },
+        ],
+      },
     ]
-  }, [epics, milestones, labels])
+  }, [epics, milestones, labels, selectedProject, statuses])
 
   const queryFilters = React.useMemo(() => {
-    const params: Record<string, string> = {}
-    activeFilters.forEach((f) => {
-      if (f.operator === "empty") {
-        params[f.field] = "null"
-      } else if (f.values && f.values.length > 0) {
-        if (f.field === "labelId") {
-          params.labelId = (f.values as string[]).join(",")
-        } else {
-          params[f.field] = f.values[0] as string
-        }
-      }
-    })
-    return params
+    if (activeFilters.length === 0) return {};
+    return { filters: JSON.stringify(activeFilters) };
   }, [activeFilters])
 
   const { data: tasks, isLoading } = useProjectTasks(projectId, queryFilters)

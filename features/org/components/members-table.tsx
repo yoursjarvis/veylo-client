@@ -293,6 +293,12 @@ export function MembersTable() {
     [banMutation, unbanMutation, revokeMutation, impersonateMutation, updateRoleMutation, refetch]
   )
 
+  const table = useReactTable({
+    data: flatData,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
   const observerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

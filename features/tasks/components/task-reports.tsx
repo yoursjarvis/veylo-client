@@ -46,6 +46,7 @@ interface TaskReportsProps {
     status?: { category: string; name: string } | null
     estimate?: number
     createdAt?: string
+    updatedAt?: string
     dueDate?: string
     assignee?: { id: string; name: string } | null
   }[]
@@ -53,6 +54,8 @@ interface TaskReportsProps {
     id: string
     status: string
     name: string
+    startDate?: string | null
+    endDate?: string | null
   }[]
   projectMembers: {
     user: { id: string; name: string }
@@ -259,6 +262,58 @@ export function TaskReports({
     completed: {
       label: "Completed Points",
       color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig
+
+  // 8. Calculate Active Sprint Burndown Data
+  const activeSprint = sprints.find((s) => s.status === "active")
+  let burndownData: { date: string; remaining: number; ideal: number }[] = []
+  if (activeSprint && activeSprint.startDate && activeSprint.endDate) {
+    const sprintTasks = activeTasks.filter((t) => t.sprintId === activeSprint.id)
+    const totalSprintPoints = sprintTasks.reduce((acc, t) => acc + (t.estimate || 1), 0)
+
+    const start = new Date(activeSprint.startDate)
+    const end = new Date(activeSprint.endDate)
+    const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+    
+    let currentRemaining = totalSprintPoints
+    for (let i = 0; i <= duration; i++) {
+      const d = new Date(start)
+      d.setDate(d.getDate() + i)
+      
+      const completedOnDay = sprintTasks
+        .filter((t) => t.status?.category === "done" && t.updatedAt)
+        .filter((t) => {
+          const ud = new Date(t.updatedAt!)
+          return ud.getFullYear() === d.getFullYear() && ud.getMonth() === d.getMonth() && ud.getDate() === d.getDate()
+        })
+        .reduce((acc, t) => acc + (t.estimate || 1), 0)
+
+      if (d <= new Date()) {
+        currentRemaining -= completedOnDay
+        burndownData.push({
+          date: format(d, "MMM d"),
+          remaining: Math.max(0, currentRemaining),
+          ideal: Math.max(0, totalSprintPoints - (totalSprintPoints / duration) * i),
+        })
+      } else {
+        burndownData.push({
+          date: format(d, "MMM d"),
+          remaining: 0,
+          ideal: Math.max(0, totalSprintPoints - (totalSprintPoints / duration) * i),
+        })
+      }
+    }
+  }
+
+  const burndownConfig = {
+    remaining: {
+      label: "Actual Remaining",
+      color: "var(--chart-1)",
+    },
+    ideal: {
+      label: "Ideal Remaining",
+      color: "var(--chart-2)",
     },
   } satisfies ChartConfig
 
@@ -625,6 +680,7 @@ export function TaskReports({
 
           {/* Sprint Velocity Chart (Scrum only) OR Stage Breakdown (Non-scrum) */}
           {projectTemplate === "scrum" ? (
+            <>
             <Card>
               <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
                 <BarChart3 className="h-4.5 w-4.5 text-muted-foreground" />
@@ -685,6 +741,79 @@ export function TaskReports({
                 )}
               </CardContent>
             </Card>
+            
+            {/* Sprint Burndown Chart (Scrum only) */}
+            <Card>
+              <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
+                <TrendingUp className="h-4.5 w-4.5 text-muted-foreground" />
+                <CardTitle className="text-xs font-bold tracking-wider uppercase">
+                  Active Sprint Burndown
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex min-h-[300px] flex-col justify-center p-6">
+                {!activeSprint ? (
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyTitle>No active sprint</EmptyTitle>
+                      <EmptyDescription>
+                        Start a sprint to track burndown progress.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                ) : burndownData.length === 0 ? (
+                   <div className="flex items-center justify-center h-full text-muted-foreground text-xs italic">
+                     Insufficient data for burndown.
+                   </div>
+                ) : (
+                  <ChartContainer
+                    config={burndownConfig}
+                    className="h-[250px] w-full"
+                  >
+                    <AreaChart
+                      data={burndownData}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    >
+                      <XAxis
+                        dataKey="date"
+                        stroke="var(--muted-foreground)"
+                        fontSize={10}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        stroke="var(--muted-foreground)"
+                        fontSize={10}
+                        tickLine={false}
+                      />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <ChartLegend
+                        wrapperStyle={{
+                          fontSize: "11px",
+                          color: "var(--muted-foreground)",
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="ideal"
+                        stroke="var(--color-ideal)"
+                        strokeDasharray="5 5"
+                        fill="transparent"
+                        strokeWidth={2}
+                      />
+                      <Area
+                        type="stepAfter"
+                        dataKey="remaining"
+                        stroke="var(--color-remaining)"
+                        fillOpacity={0.2}
+                        fill="var(--color-remaining)"
+                        strokeWidth={3}
+                      />
+                    </AreaChart>
+                  </ChartContainer>
+                )}
+              </CardContent>
+            </Card>
+          </>
           ) : (
             <Card className="flex min-h-[300px] flex-col justify-center p-6">
               <h4 className="mb-4 text-xs font-semibold tracking-wider text-muted-foreground uppercase">

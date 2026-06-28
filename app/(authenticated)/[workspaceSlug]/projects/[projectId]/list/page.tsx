@@ -154,76 +154,18 @@ export default function ListPage() {
 
   const serverFilters = useMemo(() => {
     const params: Record<string, string> = {};
-    activeFilters.forEach((f) => {
-      if (f.field === "epicId" || f.field === "milestoneId" || f.field === "labelId") {
-        if (f.operator === "empty") {
-          params[f.field] = "null";
-        } else if (f.values && f.values.length > 0) {
-          if (f.field === "labelId") {
-            params.labelId = (f.values as string[]).join(",");
-          } else {
-            params[f.field] = f.values[0] as string;
-          }
-        }
-      }
-    });
+    if (activeFilters.length > 0) {
+      params.filters = JSON.stringify(activeFilters);
+    }
+    if (searchQuery.trim()) {
+      params.search = searchQuery.trim();
+    }
     return params;
-  }, [activeFilters]);
+  }, [activeFilters, searchQuery]);
 
   const { data: tasks, isLoading } = useProjectTasks(projectId, serverFilters);
 
-  const filteredTasks = useMemo(() => {
-    if (!tasks) return [];
-    return (tasks as TaskItem[]).filter((task) => {
-      // 1. Search filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchesTitle = task.title?.toLowerCase().includes(query);
-        const matchesDesc = task.description?.toLowerCase().includes(query);
-        const matchesAssignee = task.assignee?.name?.toLowerCase().includes(query);
-        const matchesKey = task.taskKey ? (task.taskKey as string).toLowerCase().includes(query) : false;
-        if (!matchesTitle && !matchesDesc && !matchesAssignee && !matchesKey) {
-          return false;
-        }
-      }
-
-      // 2. Client-side active filters filter
-      for (const filter of activeFilters) {
-        if (filter.field === "epicId" || filter.field === "milestoneId" || filter.field === "labelId") {
-          // Already filtered server-side
-          continue;
-        }
-
-        const fieldValue = task[filter.field];
-
-        if (filter.operator === "empty") {
-          if (fieldValue !== null && fieldValue !== undefined && fieldValue !== "") {
-            return false;
-          }
-        } else if (filter.operator === "not_empty") {
-          if (fieldValue === null || fieldValue === undefined || fieldValue === "") {
-            return false;
-          }
-        } else if (filter.values && filter.values.length > 0) {
-          const filterValues = filter.values as string[];
-          if (filter.field === "assigneeId") {
-            const taskAssigneeId = task.assigneeId || task.assignee?.id;
-            const targetVal = taskAssigneeId || "null";
-            if (!filterValues.includes(targetVal)) {
-              return false;
-            }
-          } else {
-            const targetVal = String(fieldValue || "");
-            if (!filterValues.includes(targetVal)) {
-              return false;
-            }
-          }
-        }
-      }
-
-      return true;
-    });
-  }, [tasks, activeFilters, searchQuery]);
+  const filteredTasks = tasks || [];
 
   return (
     <div className="flex flex-col gap-6 h-full bg-background text-foreground">

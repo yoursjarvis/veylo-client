@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "frappe-gantt";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -108,32 +109,30 @@
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.2434 0.0577 285.6789);
   --sidebar-accent-foreground: oklch(0.8684 0.0704 292.0563);
-  --sidebar-border: oklch(0.2739 0.0055 286.0326);
   --sidebar-ring: oklch(0.6449 0.2024 288.1131);
-  --font-sans: "Inter", sans-serif;
-  --font-serif: "Merriweather", serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --radius: 0.75rem;
-  --shadow-x: 0px;
-  --shadow-y: 10px;
-  --shadow-blur: 25px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0.15;
-  --shadow-color: #000000;
-  --shadow-2xs: 0px 10px 25px 0px hsl(0 0% 0% / 0.07);
-  --shadow-xs: 0px 10px 25px 0px hsl(0 0% 0% / 0.07);
-  --shadow-sm:
-    0px 10px 25px 0px hsl(0 0% 0% / 0.15), 0px 1px 2px -1px hsl(0 0% 0% / 0.15);
-  --shadow:
-    0px 10px 25px 0px hsl(0 0% 0% / 0.15), 0px 1px 2px -1px hsl(0 0% 0% / 0.15);
-  --shadow-md:
-    0px 10px 25px 0px hsl(0 0% 0% / 0.15), 0px 2px 4px -1px hsl(0 0% 0% / 0.15);
-  --shadow-lg:
-    0px 10px 25px 0px hsl(0 0% 0% / 0.15), 0px 4px 6px -1px hsl(0 0% 0% / 0.15);
-  --shadow-xl:
-    0px 10px 25px 0px hsl(0 0% 0% / 0.15), 0px 8px 10px -1px hsl(0 0% 0% / 0.15);
-  --shadow-2xl: 0px 10px 25px 0px hsl(0 0% 0% / 0.38);
   --font-size-base: 16px;
+
+  /* Frappe Gantt Dark Mode overrides */
+  --g-arrow-color: #e5e5e5;
+  --g-bar-color: #2a2a2a;
+  --g-bar-border: #3a3a3a;
+  --g-tick-color-thick: #1a1a1a;
+  --g-tick-color: #0a0a0a;
+  --g-actions-background: #1a1a1a;
+  --g-border-color: #2a2a2a;
+  --g-text-muted: #999999;
+  --g-text-light: #ffffff;
+  --g-text-dark: #f5f5f5;
+  --g-progress-color: #4a4a4a;
+  --g-handle-color: #d0d0d0;
+  --g-weekend-label-color: #3a3a3a;
+  --g-expected-progress: #5a5a5a;
+  --g-header-background: #0a0a0a;
+  --g-row-color: #141414;
+  --g-row-border-color: #2a2a2a;
+  --g-today-highlight: #999999;
+  --g-popup-actions: #1a1a1a;
+  --g-weekend-highlight-color: #0f0f0f;
 }
 
 @theme inline {

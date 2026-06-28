@@ -72,8 +72,6 @@ export function PermissionMatrix({ permissions, selectedPermissionIds, onChange,
   return (
     <div className="space-y-4">
       <Accordion 
-        type="multiple" 
-        defaultValue={modules} 
         className="w-full space-y-4"
       >
         {Object.entries(groupedPermissions).map(([moduleName, resources]) => (

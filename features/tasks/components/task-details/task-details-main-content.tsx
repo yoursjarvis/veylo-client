@@ -4,6 +4,7 @@ import React from "react"
 import { TaskDetailsDescription } from "./task-details-description"
 import { TaskDetailsSubtasks } from "./task-details-subtasks"
 import { TaskDetailsAttachments } from "./task-details-attachments"
+import { TaskDetailsDependencies } from "./task-details-dependencies"
 import { TaskDetailsComments } from "./task-details-comments"
 import { TaskDetailsActivity } from "./task-details-activity"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -42,6 +43,8 @@ interface TaskDetailsMainContentProps {
   handleUpdateComment: (commentId: string) => void
   toggleReactionMutation: UseMutationResult<unknown, Error, { commentId: string; emoji: string }, unknown>
   deleteCommentMutation: UseMutationResult<unknown, Error, string, unknown>
+  onCreateDependency: (data: { dependencyTaskId: string; direction: "blocks" | "blocked_by" }) => void
+  onDeleteDependency: (id: string) => void
 }
 
 export function TaskDetailsMainContent({
@@ -76,6 +79,8 @@ export function TaskDetailsMainContent({
   handleUpdateComment,
   toggleReactionMutation,
   deleteCommentMutation,
+  onCreateDependency,
+  onDeleteDependency,
 }: TaskDetailsMainContentProps) {
   return (
     <div className="space-y-8">
@@ -103,6 +108,14 @@ export function TaskDetailsMainContent({
         onDelete={onDeleteAttachment}
         canDelete={canDeleteAttachment}
         isUploading={isUploadingAttachment}
+      />
+
+      <TaskDetailsDependencies
+        task={task}
+        projectStatuses={projectStatuses}
+        onNavigateToTask={onNavigateToSubtask}
+        onAddDependency={() => {}}
+        onRemoveDependency={() => {}}
       />
 
       <Tabs defaultValue="comments" className="w-full">

@@ -247,6 +247,8 @@ export default function TaskDetailPage() {
               handleUpdateComment={manager.handlers.handleUpdateComment}
               toggleReactionMutation={manager.mutations.toggleReactionMutation}
               deleteCommentMutation={manager.mutations.deleteCommentMutation}
+              onCreateDependency={manager.mutations.createDependencyMutation.mutate}
+              onDeleteDependency={manager.mutations.deleteDependencyMutation.mutate}
             />
           </div>
 

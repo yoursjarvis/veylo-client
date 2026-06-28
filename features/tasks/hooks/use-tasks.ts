@@ -57,6 +57,7 @@ export function useUpdateTask(projectId: string, taskId: string) {
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update task");
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
     },
   });
 }
@@ -74,6 +75,7 @@ export function useUpdateTaskOrder(projectId: string) {
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update task position");
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
     },
   });
 }

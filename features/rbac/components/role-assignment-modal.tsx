@@ -70,7 +70,7 @@ export function RoleAssignmentModal({ userId, userName, organizationId, open, on
         <div className="grid gap-6 py-4">
           <div className="space-y-2">
             <Label>Role</Label>
-            <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+            <Select value={selectedRoleId} onValueChange={(val) => setSelectedRoleId(val || "")}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
@@ -101,7 +101,7 @@ export function RoleAssignmentModal({ userId, userName, organizationId, open, on
           {scopeType === "PROJECT" && (
             <div className="space-y-2">
               <Label>Select Project</Label>
-              <Select value={scopeId} onValueChange={setScopeId}>
+              <Select value={scopeId} onValueChange={(val) => setScopeId(val || "")}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select project" />
                 </SelectTrigger>

@@ -139,6 +139,8 @@ export interface Task {
   activityLogs?: TaskActivity[];
   labels?: TaskLabel[];
   attachments?: Media[];
+  blockingDependencies?: TaskDependency[];
+  blockedByDependencies?: TaskDependency[];
 }
 
 export interface TaskStatus {

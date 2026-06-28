@@ -21,8 +21,8 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 
 function NavGroupItem({ item, pathname }: { item: SidebarNavItem; pathname: string }) {
-  const isActive = item.path === pathname || item.subItems?.some((sub: SidebarNavItem) => sub.path === pathname)
-  const [isOpen, setIsOpen] = useState(isActive)
+  const isActive = !!(item.path === pathname || item.subItems?.some((sub: SidebarNavItem) => sub.path === pathname))
+  const [isOpen, setIsOpen] = useState<boolean>(isActive)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing collapse state with active route
@@ -43,7 +43,7 @@ function NavGroupItem({ item, pathname }: { item: SidebarNavItem; pathname: stri
             render={<SidebarMenuButton isActive={isActive} />}
           >
             {item.icon}
-            <span>{item.title}</span>
+            <span className="flex-1">{item.title}</span>
             <HugeiconsIcon
               icon={ArrowRight01Icon}
               strokeWidth={2}
@@ -62,7 +62,7 @@ function NavGroupItem({ item, pathname }: { item: SidebarNavItem; pathname: stri
                       render={<Link href={subItem.path || "#"} />}
                     >
                       {subItem.icon}
-                      <span>{subItem.title}</span>
+                      <span className="flex-1">{subItem.title}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 )
@@ -76,7 +76,7 @@ function NavGroupItem({ item, pathname }: { item: SidebarNavItem; pathname: stri
           render={<Link href={item.path || "#"} />}
         >
           {item.icon}
-          <span>{item.title}</span>
+          <span className="flex-1">{item.title}</span>
         </SidebarMenuButton>
       )}
     </Collapsible>

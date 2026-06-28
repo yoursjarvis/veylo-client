@@ -40,7 +40,7 @@ export function PermissionCategory({ name, description, permissions, selectedPer
         <div className="flex items-center space-x-3">
           <Checkbox 
             id={`cat-${name}`}
-            checked={allSelected ? true : someSelected ? "indeterminate" : false}
+            checked={allSelected}
             onCheckedChange={(checked) => toggleAll(!!checked)}
             disabled={disabled}
             onClick={(e) => e.stopPropagation()} // Prevent expansion when clicking checkbox

@@ -497,21 +497,23 @@ export function TaskBacklog({
                     Start Date
                   </Label>
                   <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start border-border bg-background text-left text-xs font-normal",
-                          !newSprintStart && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newSprintStart ? (
-                          format(newSprintStart, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                      </Button>
+                    <PopoverTrigger 
+                      render={
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full justify-start border-border bg-background text-left text-xs font-normal",
+                            !newSprintStart && "text-muted-foreground"
+                          )}
+                        />
+                      }
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {newSprintStart ? (
+                        format(newSprintStart, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
@@ -528,21 +530,23 @@ export function TaskBacklog({
                     End Date
                   </Label>
                   <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start border-border bg-background text-left text-xs font-normal",
-                          !newSprintEnd && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newSprintEnd ? (
-                          format(newSprintEnd, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                      </Button>
+                    <PopoverTrigger 
+                      render={
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full justify-start border-border bg-background text-left text-xs font-normal",
+                            !newSprintEnd && "text-muted-foreground"
+                          )}
+                        />
+                      }
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {newSprintEnd ? (
+                        format(newSprintEnd, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
