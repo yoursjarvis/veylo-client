@@ -397,7 +397,7 @@ export function TaskDetailsSidebar({
                         </div>
                         {log.description && <div className="text-muted-foreground">{log.description}</div>}
                         <div className="text-[9px] text-muted-foreground/60">
-                          {format(new Date(log.createdAt), "MMM d, yyyy h:mm a")}
+                          {log.loggedAt ? format(new Date(log.loggedAt), "MMM d, yyyy h:mm a") : ""}
                         </div>
                       </div>
                       <Button
