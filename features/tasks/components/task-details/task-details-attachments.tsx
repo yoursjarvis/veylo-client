@@ -9,6 +9,7 @@ import { AttachmentItem } from "../attachments"
 import { Media } from "@/types/models"
 
 interface TaskDetailsAttachmentsProps {
+  taskId: string
   attachments: Media[]
   onUpload: (file: File) => void
   onDelete: (id: string) => void
@@ -17,6 +18,7 @@ interface TaskDetailsAttachmentsProps {
 }
 
 export function TaskDetailsAttachments({
+  taskId,
   attachments = [],
   onUpload,
   onDelete,
@@ -51,11 +53,12 @@ export function TaskDetailsAttachments({
           </Button>
         </div>
       </div>
-      {attachments.length > 0 ? (
+      {attachments.filter(a => !a.parentMediaId).length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {attachments.map((attachment) => (
+          {attachments.filter(a => !a.parentMediaId).map((attachment) => (
             <AttachmentItem
               key={attachment.id}
+              taskId={taskId}
               attachment={attachment}
               allAttachments={attachments}
               onDelete={onDelete}

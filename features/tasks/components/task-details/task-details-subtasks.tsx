@@ -18,9 +18,11 @@ import {
 } from "@hugeicons/core-free-icons"
 import { Task, ProjectMember, TaskStatus } from "@/types/models"
 import { format } from "date-fns"
+import { useWorkspaceContext } from "@/components/providers/workspace-provider"
+import { useProjectChecklistTemplates, useApplyChecklistTemplate } from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
-
 interface TaskDetailsSubtasksProps {
+  taskId: string
   subtasks: Task[]
   completedStatus?: TaskStatus
   projectStatuses: TaskStatus[]
@@ -32,6 +34,7 @@ interface TaskDetailsSubtasksProps {
 }
 
 export function TaskDetailsSubtasks({
+  taskId,
   subtasks = [],
   completedStatus,
   projectStatuses,
@@ -41,6 +44,9 @@ export function TaskDetailsSubtasks({
   onNavigateToSubtask,
   onAddSubtask,
 }: TaskDetailsSubtasksProps) {
+  const { activeWorkspace } = useWorkspaceContext()
+  const { data: templates = [] } = useProjectChecklistTemplates(activeWorkspace?.id || null)
+  const applyTemplateMutation = useApplyChecklistTemplate(taskId)
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("")
 
   const handleAddSubtask = (e: React.FormEvent) => {
@@ -52,10 +58,47 @@ export function TaskDetailsSubtasks({
 
   return (
     <div className="space-y-4 border-t border-border/60 pt-6">
-      <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-        <HugeiconsIcon icon={CircleCheckIcon} size={14} className="text-muted-foreground/70" />{" "}
-        Subtask Checklist
-      </label>
+      <div className="flex items-center justify-between">
+        <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+          <HugeiconsIcon icon={CircleCheckIcon} size={14} className="text-muted-foreground/70" />{" "}
+          Subtask Checklist
+        </label>
+        {templates.length > 0 && (
+          <Popover>
+            <PopoverTrigger render={
+              <Button
+                type="button"
+                variant="outline"
+                className="h-7 text-[10px] font-semibold flex items-center gap-1.5"
+              />
+            }>
+              <HugeiconsIcon icon={Add01Icon} size={10} />
+              Load Template
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 p-1.5">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 border-b border-border/40 mb-1">
+                Apply Checklist Template
+              </div>
+              {templates.map((tpl: any) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => {
+                    applyTemplateMutation.mutate(tpl.id)
+                  }}
+                  disabled={applyTemplateMutation.isPending}
+                  className="w-full text-left text-xs font-medium px-2 py-1.5 rounded-md hover:bg-muted/60 disabled:opacity-50 transition-colors flex flex-col gap-0.5"
+                >
+                  <span className="text-foreground">{tpl.name}</span>
+                  {tpl.description && (
+                    <span className="text-[9px] text-muted-foreground line-clamp-1">{tpl.description}</span>
+                  )}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
       <div className="space-y-1 pl-0.5">
         {subtasks.map((subtask) => {
           const isSubtaskCompleted = subtask.statusId === completedStatus?.id

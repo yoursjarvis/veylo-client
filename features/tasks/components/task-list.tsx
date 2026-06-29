@@ -45,7 +45,7 @@ import {
   useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useUpdateTaskOrder } from "../hooks/use-tasks";
+import { useUpdateTaskOrder, useUpdateTask } from "../hooks/use-tasks";
 
 interface Task {
   id: string;
@@ -57,6 +57,7 @@ interface Task {
   type: string;
   status: { name: string };
   assignee?: { image?: string; name?: string; id?: string };
+  assigneeId?: string | null;
   dueDate?: string;
   estimate?: string | number;
   labels?: { labelId: string }[];
@@ -74,6 +75,9 @@ interface TaskRowProps {
   isDragging?: boolean;
   dragHandleProps?: DraggableAttributes;
   dragHandleListeners?: SyntheticListenerMap;
+  projectId: string;
+  statuses: { id: string; name: string }[];
+  projectMembers: any[];
 }
 
 const gridCols = "grid-cols-[32px_40px_40px_90px_minmax(250px,1fr)_130px_60px_150px_110px_50px]";
@@ -134,8 +138,14 @@ export function TaskRow({
   isDragging,
   dragHandleProps,
   dragHandleListeners,
+  projectId,
+  statuses,
+  projectMembers,
 }: TaskRowProps) {
   const taskKey = task.taskKey || task.id.substring(0, 8).toUpperCase();
+  const updateTaskMutation = useUpdateTask(projectId, task.id);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState(task.title);
   
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -177,12 +187,55 @@ export function TaskRow({
         {taskKey}
       </div>
       <div className="px-3 py-2 overflow-hidden flex items-center">
-        <span className="text-sm font-medium text-foreground hover:underline decoration-primary underline-offset-2 truncate block">
-          {task.title}
-        </span>
+        {isEditingTitle ? (
+          <input
+            type="text"
+            value={titleValue}
+            onChange={(e) => setTitleValue(e.target.value)}
+            onBlur={() => {
+              setIsEditingTitle(false);
+              if (titleValue.trim() && titleValue !== task.title) {
+                updateTaskMutation.mutate({ title: titleValue });
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setIsEditingTitle(false);
+                if (titleValue.trim() && titleValue !== task.title) {
+                  updateTaskMutation.mutate({ title: titleValue });
+                }
+              }
+            }}
+            className="w-full bg-background border border-ring rounded px-2 py-0.5 text-sm"
+            autoFocus
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditingTitle(true);
+            }}
+            className="text-sm font-medium text-foreground hover:underline decoration-primary underline-offset-2 truncate block cursor-text"
+          >
+            {task.title}
+          </span>
+        )}
       </div>
-      <div className="px-3 py-2 truncate flex items-center">
-        {getStatusBadge(task.status?.name || "To Do")}
+      <div className="px-3 py-2 truncate flex items-center" onClick={(e) => e.stopPropagation()}>
+        <select
+          value={task.statusId || ""}
+          onChange={(e) => {
+            updateTaskMutation.mutate({ statusId: e.target.value });
+          }}
+          className="text-xs bg-background hover:bg-muted border border-border/80 rounded px-1.5 py-0.5 font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 focus:outline-hidden cursor-pointer"
+        >
+          {statuses.map((st) => (
+            <option key={st.id} value={st.id}>
+              {st.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="px-3 py-2 flex items-center justify-center">
         {task.comments && task.comments.length > 0 ? (
@@ -192,29 +245,22 @@ export function TaskRow({
           </div>
         ) : null}
       </div>
-      <div className="px-3 py-2 truncate">
-        {task.assignee ? (
-          <div className="flex items-center gap-2" title={task.assignee.name}>
-            <Avatar className="h-6 w-6 border border-border">
-              <AvatarImage src={task.assignee.image || ""} />
-              <AvatarFallback className="text-[10px] bg-muted font-semibold">
-                {task.assignee.name?.charAt(0).toUpperCase() || "?"}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-xs text-foreground truncate max-w-[90px]">
-              {task.assignee.name}
-            </span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2" title="Unassigned">
-            <Avatar className="h-6 w-6 border border-dashed border-muted-foreground/30">
-              <AvatarFallback className="bg-transparent text-muted-foreground/50">
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-xs text-muted-foreground italic">Unassigned</span>
-          </div>
-        )}
+      <div className="px-3 py-2 truncate" onClick={(e) => e.stopPropagation()}>
+        <select
+          value={task.assigneeId || "null"}
+          onChange={(e) => {
+            const val = e.target.value === "null" ? null : e.target.value;
+            updateTaskMutation.mutate({ assigneeId: val });
+          }}
+          className="text-xs bg-background hover:bg-muted border border-border/80 rounded px-1.5 py-0.5 text-foreground max-w-[120px] focus:outline-hidden cursor-pointer"
+        >
+          <option value="null">Unassigned</option>
+          {projectMembers.map((m: any) => (
+            <option key={m.user.id} value={m.user.id}>
+              {m.user.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="px-3 py-2 truncate flex items-center">
         {task.dueDate ? (
@@ -230,10 +276,19 @@ export function TaskRow({
           <span className="text-xs text-muted-foreground/50">-</span>
         )}
       </div>
-      <div className="px-3 py-2 flex items-center justify-center">
-        <div className="flex justify-center" title={task.priority}>
-          {getPriorityIcon(task.priority)}
-        </div>
+      <div className="px-3 py-2 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+        <select
+          value={task.priority}
+          onChange={(e) => {
+            updateTaskMutation.mutate({ priority: e.target.value });
+          }}
+          className="text-xs bg-background hover:bg-muted border border-border/80 rounded px-1.5 py-0.5 text-foreground focus:outline-hidden cursor-pointer"
+        >
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="urgent">Urgent</option>
+        </select>
       </div>
     </div>
   );
@@ -293,6 +348,9 @@ interface StatusSectionProps {
   onToggle: () => void;
   selectedTasks: Set<string>;
   onToggleSelect: (taskId: string, selected: boolean) => void;
+  projectId: string;
+  statuses: { id: string; name: string }[];
+  projectMembers: any[];
 }
 
 export function StatusSection({
@@ -305,6 +363,9 @@ export function StatusSection({
   onToggle,
   selectedTasks,
   onToggleSelect,
+  projectId,
+  statuses,
+  projectMembers,
 }: StatusSectionProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: status.id,
@@ -374,6 +435,9 @@ export function StatusSection({
                   projectLabels={projectLabels}
                   isSelected={selectedTasks.has(task.id)}
                   onToggleSelect={onToggleSelect}
+                  projectId={projectId}
+                  statuses={statuses}
+                  projectMembers={projectMembers}
                 />
               ))}
             </SortableContext>
@@ -398,6 +462,7 @@ export function TaskList({
   projectId,
   tasks: initialTasks,
   statuses,
+  projectMembers = [],
   projectTemplate,
   onSelectTask,
   projectLabels = [],
@@ -609,6 +674,9 @@ export function TaskList({
                     onToggle={() => toggleSection(status.id)}
                     selectedTasks={selectedTasks}
                     onToggleSelect={handleToggleSelect}
+                    projectId={projectId}
+                    statuses={statuses}
+                    projectMembers={projectMembers || []}
                   />
                 );
               })}
@@ -627,6 +695,9 @@ export function TaskList({
               isSelected={selectedTasks.has(activeTask.id)}
               onToggleSelect={handleToggleSelect}
               isDragging={false}
+              projectId={projectId}
+              statuses={statuses}
+              projectMembers={projectMembers || []}
             />
           </div>
         ) : null}

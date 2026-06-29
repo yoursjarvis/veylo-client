@@ -1,8 +1,10 @@
 "use client"
 
 import React, { useMemo } from "react"
-import { useQuery, useQueries } from "@tanstack/react-query"
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query"
 import { axiosInstance } from "@/lib/axios"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 import { useWorkspaceContext } from "../providers/workspace-provider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
@@ -92,6 +94,33 @@ export function Dashboard() {
     done: p.done,
     incomplete: p.total - p.done,
   }))
+
+  const queryClient = useQueryClient();
+  const approveMutation = useMutation({
+    mutationFn: async ({ taskId, statusId, customFields }: { taskId: string; statusId?: string; customFields?: any }) => {
+      const payload: any = {};
+      if (statusId) payload.statusId = statusId;
+      if (customFields) payload.customFields = customFields;
+      await axiosInstance.patch(`/tasks/${taskId}`, payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast.success("Task status updated successfully");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to update approval status");
+    }
+  });
+
+  const pendingApprovals = useMemo(() => {
+    return allTasks.filter((t) => {
+      const statusName = t.status?.name.toLowerCase() || "";
+      const customFieldApproval = t.customFields && typeof t.customFields === 'object'
+        ? (t.customFields as any)["Approval Status"] === "Pending"
+        : false;
+      return statusName.includes("approval") || customFieldApproval;
+    });
+  }, [allTasks]);
 
   const colors = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#6366f1", "#ec4899", "#84cc16"]
 
@@ -229,8 +258,89 @@ export function Dashboard() {
                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">No tasks assigned to any team member.</div>
              )}
           </CardContent>
-        </Card>
+         </Card>
       </div>
+
+      {/* Pending Approvals Widget */}
+      <Card className="w-full">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg">Approval Queue</CardTitle>
+            <p className="text-xs text-muted-foreground">Approve or reject tasks requesting stakeholder review.</p>
+          </div>
+          <span className="bg-amber-500/10 text-amber-500 text-xs font-bold px-2 py-0.5 rounded-full">
+            {pendingApprovals.length} pending
+          </span>
+        </CardHeader>
+        <CardContent>
+          {pendingApprovals.length > 0 ? (
+            <div className="divide-y divide-border/40">
+              {pendingApprovals.map((task) => {
+                const invoiceAmount = task.customFields && typeof task.customFields === 'object'
+                  ? (task.customFields as any)["Invoice Amount"]
+                  : null;
+                return (
+                  <div key={task.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-foreground">
+                          {task.title}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold px-1.5 py-0.5 bg-muted rounded">
+                          {task.projectTitle}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Requested by <span className="font-medium text-foreground">{task.creator?.name || "Unknown"}</span>
+                        {invoiceAmount ? ` • Amount: $${invoiceAmount}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive font-semibold"
+                        onClick={() => {
+                          const updatedFields = task.customFields && typeof task.customFields === 'object'
+                            ? { ...(task.customFields as any), "Approval Status": "Rejected" }
+                            : { "Approval Status": "Rejected" };
+                          approveMutation.mutate({
+                            taskId: task.id,
+                            customFields: updatedFields
+                          });
+                        }}
+                        disabled={approveMutation.isPending}
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs font-semibold"
+                        onClick={() => {
+                          const updatedFields = task.customFields && typeof task.customFields === 'object'
+                            ? { ...(task.customFields as any), "Approval Status": "Approved" }
+                            : { "Approval Status": "Approved" };
+                          approveMutation.mutate({
+                            taskId: task.id,
+                            customFields: updatedFields
+                          });
+                        }}
+                        disabled={approveMutation.isPending}
+                      >
+                        Approve
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-muted-foreground italic">
+              All caught up! No pending approvals.
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

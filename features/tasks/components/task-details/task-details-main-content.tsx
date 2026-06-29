@@ -92,6 +92,7 @@ export function TaskDetailsMainContent({
       />
 
       <TaskDetailsSubtasks
+        taskId={task.id}
         subtasks={task.subtasks || []}
         completedStatus={completedStatus}
         projectStatuses={projectStatuses}
@@ -103,6 +104,7 @@ export function TaskDetailsMainContent({
       />
 
       <TaskDetailsAttachments
+        taskId={task.id}
         attachments={task.attachments || []}
         onUpload={onUploadAttachment}
         onDelete={onDeleteAttachment}

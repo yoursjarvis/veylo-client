@@ -24,6 +24,7 @@ import {
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
+import { useTaskWorkLogs, useCreateWorkLog, useDeleteWorkLog } from "@/features/tasks/hooks/use-tasks"
 
 interface TaskDetailsSidebarProps {
   task: Task
@@ -54,7 +55,11 @@ export function TaskDetailsSidebar({
 }: TaskDetailsSidebarProps) {
   const { data: user } = useCurrentUser()
   const currentUser = user?.user
+  const { data: workLogs = [], isLoading: isWorkLogsLoading } = useTaskWorkLogs(task.id)
+  const createWorkLogMutation = useCreateWorkLog(task.id)
+  const deleteWorkLogMutation = useDeleteWorkLog(task.id)
 
+  const totalLoggedHours = workLogs.reduce((acc: number, log: any) => acc + log.hoursLogged, 0)
   const statusOptions = projectStatuses.map((st) => ({
     value: st.id,
     label: st.name,
@@ -202,6 +207,21 @@ export function TaskDetailsSidebar({
               className="h-8"
             />
           </div>
+
+          <span className="font-medium text-muted-foreground">Privacy</span>
+          <div className="flex items-center gap-2 py-1">
+            <Checkbox
+              id="isPrivate"
+              checked={!!task.isPrivate}
+              onCheckedChange={(checked) => onFieldChange("isPrivate", !!checked)}
+            />
+            <label
+              htmlFor="isPrivate"
+              className="text-xs text-muted-foreground cursor-pointer font-medium select-none"
+            >
+              Private Task
+            </label>
+          </div>
         </div>
       </div>
 
@@ -281,6 +301,122 @@ export function TaskDetailsSidebar({
                 />
               </PopoverContent>
             </Popover>
+          </div>
+
+          <span className="font-medium text-muted-foreground">Logged Time</span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold text-foreground">{totalLoggedHours} hrs</span>
+              {task.estimate ? (
+                <span className="text-[10px] text-muted-foreground">
+                  of {task.estimate}h estimate ({Math.min(100, Math.round((totalLoggedHours / task.estimate) * 100))}% logged)
+                </span>
+              ) : null}
+            </div>
+            
+            {task.estimate ? (
+              <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div 
+                  className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(100, (totalLoggedHours / task.estimate) * 100)}%` }}
+                />
+              </div>
+            ) : null}
+
+            <Popover>
+              <PopoverTrigger render={
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="h-7 w-full text-[11px] font-medium flex items-center justify-center gap-1 mt-1"
+                />
+              }>
+                <HugeiconsIcon icon={Add01Icon} size={11} />
+                Log Work
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3 space-y-3" align="start">
+                <h4 className="font-bold text-xs">Log work hours</h4>
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const hours = parseFloat(formData.get("hours") as string);
+                    const desc = formData.get("description") as string;
+                    if (!isNaN(hours) && hours > 0) {
+                      createWorkLogMutation.mutate({ hoursLogged: hours, description: desc || null });
+                      (e.target as HTMLFormElement).reset();
+                    }
+                  }}
+                  className="space-y-2"
+                >
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-muted-foreground font-semibold">Hours spent</label>
+                    <Input 
+                      type="number" 
+                      step="0.1" 
+                      name="hours" 
+                      placeholder="e.g. 1.5" 
+                      required 
+                      className="h-8 text-xs" 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-muted-foreground font-semibold">What did you do?</label>
+                    <Input 
+                      type="text" 
+                      name="description" 
+                      placeholder="e.g. Worked on styling" 
+                      className="h-8 text-xs" 
+                    />
+                  </div>
+                  <Button type="submit" disabled={createWorkLogMutation.isPending} className="h-8 w-full text-xs">
+                    {createWorkLogMutation.isPending ? "Logging..." : "Log Hours"}
+                  </Button>
+                </form>
+              </PopoverContent>
+            </Popover>
+
+            {workLogs.length > 0 && (
+              <Popover>
+                <PopoverTrigger render={
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="h-6 w-full text-[10px] text-muted-foreground hover:text-foreground font-medium flex items-center justify-center"
+                  />
+                }>
+                  Show History ({workLogs.length})
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-3 max-h-60 overflow-y-auto space-y-2" align="start">
+                  <h4 className="font-bold text-xs border-b border-border pb-1">Work Log History</h4>
+                  {workLogs.map((log: any) => (
+                    <div key={log.id} className="text-[11px] flex justify-between gap-2 border-b border-border/30 pb-2 last:border-0 last:pb-0">
+                      <div className="space-y-0.5">
+                        <div className="font-medium text-foreground">
+                          {log.hoursLogged} hrs by <span className="font-semibold">{log.user?.name || "Member"}</span>
+                        </div>
+                        {log.description && <div className="text-muted-foreground">{log.description}</div>}
+                        <div className="text-[9px] text-muted-foreground/60">
+                          {format(new Date(log.createdAt), "MMM d, yyyy h:mm a")}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => {
+                          if (confirm("Delete this log?")) {
+                            deleteWorkLogMutation.mutate(log.id)
+                          }
+                        }}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         </div>
       </div>

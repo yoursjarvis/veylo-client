@@ -375,15 +375,24 @@ export default function ProjectLayout({
 
   // Navigation Setup
   const basePath = `/${workspaceSlug}/projects/${projectId}`
+  const isSoftware = selectedProject?.teamMode === "software"
+  const isGeneral = selectedProject?.teamMode === "general"
+  const isHybrid = selectedProject?.teamMode === "hybrid" || !selectedProject?.teamMode
+
   const navLinks = [
     { name: "Overview", path: basePath },
     { name: "List", path: `${basePath}/list` },
     { name: "Board", path: `${basePath}/board` },
-    ...(isScrum
+    ...((isGeneral || isHybrid)
+      ? [{ name: "Calendar", path: `${basePath}/calendar` }]
+      : []),
+    ...(isScrum && (isSoftware || isHybrid)
       ? [{ name: "Backlog", path: `${basePath}/backlog` }]
       : []),
     { name: "Timeline", path: `${basePath}/timeline` },
-    { name: "Epics", path: `${basePath}/epics` },
+    ...((isSoftware || isHybrid)
+      ? [{ name: "Epics", path: `${basePath}/epics` }]
+      : []),
     { name: "Reports", path: `${basePath}/reports` },
     { name: "Files", path: `${basePath}/files` },
     ...(isWorkspaceAdmin

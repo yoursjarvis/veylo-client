@@ -680,4 +680,146 @@ export function useDeleteMilestone(projectId: string) {
   });
 }
 
+// --- WORK LOGS ---
+export function useTaskWorkLogs(taskId: string | null) {
+  return useQuery({
+    queryKey: ["work-logs", taskId],
+    queryFn: async () => {
+      if (!taskId) return [];
+      const response = await axiosInstance.get(`/tasks/${taskId}/work-logs`);
+      return response.data.data;
+    },
+    enabled: !!taskId,
+  });
+}
+
+export function useCreateWorkLog(taskId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { hoursLogged: number; loggedAt?: string; description?: string | null }) => {
+      const response = await axiosInstance.post(`/tasks/${taskId}/work-logs`, data);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["work-logs", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Work log saved successfully");
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Failed to log work");
+    },
+  });
+}
+
+export function useDeleteWorkLog(taskId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (workLogId: string) => {
+      await axiosInstance.delete(`/work-logs/${workLogId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["work-logs", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Work log entry deleted");
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Failed to delete work log");
+    },
+  });
+}
+
+// --- CHECKLIST TEMPLATES ---
+export function useProjectChecklistTemplates(workspaceId: string | null) {
+  return useQuery({
+    queryKey: ["checklist-templates", workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [];
+      const response = await axiosInstance.get(`/checklist-templates?workspaceId=${workspaceId}`);
+      return response.data.data;
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+export function useApplyChecklistTemplate(taskId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (templateId: string) => {
+      const response = await axiosInstance.post(`/tasks/${taskId}/apply-checklist`, { templateId });
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Checklist template applied successfully");
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Failed to apply checklist template");
+    },
+  });
+}
+
+// --- MEDIA ANNOTATIONS & VERSIONING ---
+export function useMediaAnnotations(mediaId: string | null) {
+  return useQuery({
+    queryKey: ["annotations", mediaId],
+    queryFn: async () => {
+      if (!mediaId) return [];
+      const response = await axiosInstance.get(`/media/${mediaId}/annotations`);
+      return response.data.data;
+    },
+    enabled: !!mediaId,
+  });
+}
+
+export function useCreateAnnotation(mediaId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { x: number; y: number; content: string }) => {
+      const response = await axiosInstance.post(`/media/${mediaId}/annotations`, data);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["annotations", mediaId] });
+      toast.success("Annotation added successfully");
+    },
+  });
+}
+
+export function useDeleteAnnotation(mediaId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await axiosInstance.delete(`/annotations/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["annotations", mediaId] });
+      toast.success("Annotation removed");
+    },
+  });
+}
+
+export function useUploadNewVersion(parentMediaId: string, taskId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await axiosInstance.post(`/media/${parentMediaId}/version`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("New file version uploaded successfully");
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Failed to upload new version");
+    },
+  });
+}
+
+
+
+
 

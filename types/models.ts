@@ -124,6 +124,7 @@ export interface Task {
   reporterId?: string | null;
   parentTaskId?: string | null;
   customFields?: Record<string, unknown> | null;
+  isPrivate?: boolean;
   deletedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -353,6 +354,8 @@ export interface Media {
   updatedAt: string;
   url: string;
   originalUrl: string;
+  version?: number;
+  parentMediaId?: string | null;
 }
 
 export interface TwoFactor {
