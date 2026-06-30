@@ -88,7 +88,7 @@ export function ProjectTimeline({
         ...t,
         projectId,
         projectTitle,
-      })).filter((t: any) => !t.deletedAt) as TimelineTask[];
+      })) as TimelineTask[];
     }
 
     const list: TimelineTask[] = [];
@@ -105,7 +105,7 @@ export function ProjectTimeline({
         });
       }
     });
-    return list.filter((t) => !t.deletedAt);
+    return list;
   }, [projectId, projects, singleProjectTasks, taskResults]);
 
   // Filter tasks by search query
@@ -159,7 +159,8 @@ export function ProjectTimeline({
         progress,
         dependencies: deps,
       };
-    });
+    })
+    .sort((a, b) => a.start.localeCompare(b.start));
   }, [filteredTasks, projects]);
 
   // Diagnostic logs to help identify why the timeline might be empty
@@ -176,7 +177,7 @@ export function ProjectTimeline({
 
   const handleToday = () => {
     const container = ganttContainerRef.current?.querySelector(".gantt-container");
-    const todayLine = ganttContainerRef.current?.querySelector(".gantt .today-highlight");
+    const todayLine = ganttContainerRef.current?.querySelector(".current-highlight");
     if (container) {
       if (todayLine) {
         const containerRect = container.getBoundingClientRect();
@@ -214,7 +215,7 @@ export function ProjectTimeline({
       ganttInstance.current = new Gantt(container, ganttTasks, {
         view_mode: zoom,
         today_button: false,
-        scroll_to: "", // Disable auto-scroll to keep viewport stable
+        scroll_to: "today", // Auto-scroll to today to keep viewport aligned with current tasks
         popup_on: "hover",
         on_click: (task: any) => {
           onSelectTask(task.id);
@@ -226,7 +227,7 @@ export function ProjectTimeline({
 
             const startFormatted = format(new Date(task.start), "MMM dd, yyyy");
             const endFormatted = format(new Date(task.end), "MMM dd, yyyy");
-            
+
             const assigneeName = originalTask.assignee?.name || "Unassigned";
             const priority = originalTask.priority || "Medium";
             const status = originalTask.status?.name || "Unknown";
@@ -238,19 +239,19 @@ export function ProjectTimeline({
                 <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
                   <span class="font-semibold text-foreground/80">Project:</span>
                   <span class="truncate">${originalTask.projectTitle}</span>
-                  
+
                   <span class="font-semibold text-foreground/80">Dates:</span>
                   <span>${startFormatted} - ${endFormatted}</span>
-                  
+
                   <span class="font-semibold text-foreground/80">Status:</span>
                   <span>${status}</span>
-                  
+
                   <span class="font-semibold text-foreground/80">Priority:</span>
                   <span class="capitalize">${priority}</span>
-                  
+
                   <span class="font-semibold text-foreground/80">Assignee:</span>
                   <span>${assigneeName}</span>
-                  
+
                   <span class="font-semibold text-foreground/80">Progress:</span>
                   <span>${progress}%</span>
                 </div>
@@ -262,6 +263,8 @@ export function ProjectTimeline({
           }
         },
       } as any);
+
+      console.log("Gantt initialized. Container HTML length:", container.innerHTML.length);
 
       // Scroll handling
       if (zoomChanged || !hasInitialScrolled.current) {

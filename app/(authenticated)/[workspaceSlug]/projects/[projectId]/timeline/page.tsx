@@ -6,13 +6,12 @@ import { ProjectTimeline } from "@/features/tasks/components/project-timeline";
 import { useWorkspaceContext } from "@/components/providers/workspace-provider";
 
 export default function TimelinePage() {
-  const { handleSelectTask, projectId } = useProject();
-  const { activeWorkspace } = useWorkspaceContext();
+  const { handleSelectTask, projectId, selectedProject } = useProject();
 
   return (
     <ProjectTimeline
       key={projectId}
-      workspaceId={activeWorkspace?.id || ""}
+      workspaceId={selectedProject?.workspaceId || ""}
       projectId={projectId}
       onSelectTask={handleSelectTask}
     />
