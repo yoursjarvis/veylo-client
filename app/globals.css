@@ -432,3 +432,167 @@
 .hljs-strong {
   font-weight: bold;
 }
+
+/* Gantt UI Overrides to match premium reference image (without oklch SVG incompatibility) */
+.gantt {
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif !important;
+}
+
+/* Light Mode Rules */
+.gantt .grid-background {
+  fill: #ffffff !important;
+}
+
+.gantt .grid-row {
+  fill: #ffffff !important;
+  stroke: #e5e7eb !important;
+  stroke-width: 1;
+}
+
+.gantt .grid-header {
+  fill: #ffffff !important;
+  stroke: #e5e7eb !important;
+  stroke-width: 1;
+}
+
+.gantt .holiday-highlight {
+  fill: #f9fafb !important;
+}
+
+.gantt .tick {
+  stroke: #e5e7eb !important;
+  stroke-width: 1;
+}
+
+.gantt .tick.thick {
+  stroke: #d1d5db !important;
+  stroke-width: 1.5;
+}
+
+.gantt .today-highlight {
+  fill: rgba(99, 102, 241, 0.08) !important;
+  stroke: #6366f1 !important;
+  stroke-width: 1.5;
+}
+
+.gantt .bar {
+  fill: #f3f4f6 !important;
+  stroke: #d1d5db !important;
+  stroke-width: 1 !important;
+  rx: 6px !important;
+  ry: 6px !important;
+  transition: filter 0.2s ease, stroke 0.2s ease;
+}
+
+.gantt .bar-wrapper:hover .bar {
+  stroke: #6366f1 !important;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+}
+
+.gantt .bar-progress {
+  fill: #6366f1 !important;
+  rx: 6px !important;
+  ry: 6px !important;
+}
+
+.gantt .bar-label {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  fill: #1f2937 !important;
+  dominant-baseline: central;
+}
+
+.gantt .bar-label.big {
+  fill: #1f2937 !important;
+}
+
+.gantt .arrow {
+  stroke: #9ca3af !important;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  fill: none;
+  opacity: 0.7;
+}
+
+.gantt .arrow-path {
+  fill: none;
+}
+
+.gantt .bar-wrapper:hover ~ .arrow {
+  stroke: #6366f1 !important;
+  opacity: 1;
+}
+
+/* Dark Mode Overrides */
+.dark .gantt .grid-background {
+  fill: #181825 !important;
+}
+
+.dark .gantt .grid-row {
+  fill: #181825 !important;
+  stroke: #313244 !important;
+}
+
+.dark .gantt .grid-header {
+  fill: #11111b !important;
+  stroke: #313244 !important;
+}
+
+.dark .gantt .holiday-highlight {
+  fill: #1e1e2e !important;
+}
+
+.dark .gantt .tick {
+  stroke: #313244 !important;
+}
+
+.dark .gantt .tick.thick {
+  stroke: #45475a !important;
+}
+
+.dark .gantt .today-highlight {
+  fill: rgba(137, 180, 250, 0.08) !important;
+  stroke: #89b4fa !important;
+}
+
+.dark .gantt .bar {
+  fill: #313244 !important;
+  stroke: #45475a !important;
+}
+
+.dark .gantt .bar-wrapper:hover .bar {
+  stroke: #89b4fa !important;
+}
+
+.dark .gantt .bar-progress {
+  fill: #89b4fa !important;
+}
+
+.dark .gantt .bar-label {
+  fill: #cdd6f4 !important;
+}
+
+.dark .gantt .bar-label.big {
+  fill: #cdd6f4 !important;
+}
+
+.dark .gantt .arrow {
+  stroke: #585b70 !important;
+}
+
+.dark .gantt .bar-wrapper:hover ~ .arrow {
+  stroke: #89b4fa !important;
+}
+
+/* Tooltip container styling override */
+.gantt-container .popup-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  color: inherit !important;
+}
+
+.gantt-container .popup-wrapper .pointer {
+  display: none !important;
+}

@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { TaskDependency } from "@/types/models";
+import { useProjectTasks } from "@/features/tasks/hooks/use-tasks";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
@@ -12,6 +13,7 @@ import { addDays, format } from "date-fns";
 import Gantt from "frappe-gantt";
 interface ProjectTimelineProps {
   workspaceId: string;
+  projectId?: string;
   onSelectTask: (taskId: string) => void;
 }
 
@@ -34,6 +36,7 @@ type ZoomLevel = "Day" | "Week" | "Month";
 
 export function ProjectTimeline({
   workspaceId,
+  projectId,
   onSelectTask,
 }: ProjectTimelineProps) {
   const [zoom, setZoom] = useState<ZoomLevel>("Month");
@@ -41,6 +44,7 @@ export function ProjectTimeline({
   const ganttContainerRef = useRef<HTMLDivElement | null>(null);
   const ganttInstance = useRef<Gantt | null>(null);
   const hasInitialScrolled = useRef<boolean>(false);
+  const prevZoomRef = useRef<ZoomLevel>(zoom);
 
   // 1. Fetch all projects in this workspace
   const { data: projects = [], isLoading: isProjectsLoading } = useQuery({
@@ -53,9 +57,11 @@ export function ProjectTimeline({
     enabled: !!workspaceId,
   });
 
-  // 2. Fetch tasks for all projects in parallel
+  // 2. Fetch tasks (either for the selected project, or for all projects in parallel)
+  const { data: singleProjectTasks = [], isLoading: isSingleProjectTasksLoading } = useProjectTasks(projectId || "");
+
   const taskResults = useQueries({
-    queries: projects.map((p: { id: string; title: string }) => ({
+    queries: (!projectId ? projects : []).map((p: { id: string; title: string }) => ({
       queryKey: ["tasks", p.id],
       queryFn: async () => {
         const response = await axiosInstance.get(`/projects/${p.id}/tasks`);
@@ -69,26 +75,38 @@ export function ProjectTimeline({
     })),
   });
 
-  const isTasksLoading = taskResults.some((r) => r.isLoading);
+  const isTasksLoading = projectId
+    ? isSingleProjectTasksLoading
+    : taskResults.some((r) => r.isLoading);
 
   // 3. Combine tasks across all projects
-  const allProjectsTasks = useMemo(() => {
+  const allProjectsTasks = useMemo<TimelineTask[]>(() => {
+    if (projectId) {
+      const project = projects.find((p: any) => p.id == projectId);
+      const projectTitle = project?.title || "";
+      return (singleProjectTasks || []).map((t: any) => ({
+        ...t,
+        projectId,
+        projectTitle,
+      })).filter((t: any) => !t.deletedAt) as TimelineTask[];
+    }
+
     const list: TimelineTask[] = [];
     taskResults.forEach((r) => {
       const data = r.data as { projectId: string; projectTitle: string; tasks: Omit<TimelineTask, "projectTitle" | "projectId">[] } | undefined;
       if (data) {
-        const { projectId, projectTitle, tasks } = data;
+        const { projectId: pid, projectTitle, tasks } = data;
         tasks?.forEach((t: Omit<TimelineTask, "projectTitle" | "projectId">) => {
           list.push({
             ...t,
-            projectId,
+            projectId: pid,
             projectTitle,
           });
         });
       }
     });
     return list.filter((t) => !t.deletedAt);
-  }, [taskResults]);
+  }, [projectId, projects, singleProjectTasks, taskResults]);
 
   // Filter tasks by search query
   const filteredTasks = useMemo(() => {
@@ -104,28 +122,38 @@ export function ProjectTimeline({
   // Map state tasks to Frappe Gantt tasks format
   const ganttTasks = useMemo(() => {
     return filteredTasks.map((t) => {
-      const project = projects.find((p: any) => p.id === t.projectId);
-      let projectStart = project?.createdAt ? new Date(project.createdAt) : new Date();
+      const project = projects.find((p: any) => p.id == t.projectId);
+      
+      let projectStart = new Date();
+      if (project?.createdAt) {
+        const parsed = new Date(project.createdAt);
+        if (!isNaN(parsed.getTime())) {
+          projectStart = parsed;
+        }
+      }
       if (projectStart.getFullYear() < 2026) {
         projectStart.setFullYear(2026);
       }
 
       let start = new Date(t.createdAt);
-      if (isNaN(start.getTime()) || start < projectStart) {
+      if (isNaN(start.getTime()) || start.getTime() < projectStart.getTime()) {
         start = projectStart;
       }
 
       let end = t.dueDate ? new Date(t.dueDate) : addDays(start, 7);
-      if (isNaN(end.getTime()) || end < start) {
-        end = addDays(start, 7);
+      if (isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
+        end = addDays(start, 1); // Ensure at least 1 day duration so the task bar is visible
       }
 
-      const progress = t.status.category === "done" ? 100 : t.status.category === "in_progress" ? 50 : 0;
-      const deps = t.blockedByDependencies?.map((d) => d.blockingTaskId).join(",") || "";
+      const progress = t.status?.category === "done" ? 100 : t.status?.category === "in_progress" ? 50 : 0;
+      const deps = (t.blockedByDependencies || [])
+        .map((d: any) => d.blockingTaskId)
+        .filter((depId: string) => filteredTasks.some((ft) => ft.id === depId))
+        .join(",");
 
       return {
-        id: t.id,
-        name: t.title,
+        id: t.id || "",
+        name: t.title || "Untitled Task",
         start: format(start, "yyyy-MM-dd"),
         end: format(end, "yyyy-MM-dd"),
         progress,
@@ -133,6 +161,18 @@ export function ProjectTimeline({
       };
     });
   }, [filteredTasks, projects]);
+
+  // Diagnostic logs to help identify why the timeline might be empty
+  console.log("TIMELINE DIAGNOSTIC LOGS:", {
+    workspaceId,
+    projectId,
+    projectsLoaded: projects.length,
+    tasksLoaded: singleProjectTasks.length,
+    filteredTasksLoaded: filteredTasks.length,
+    isProjectsLoading,
+    isTasksLoading,
+    ganttTasksSample: JSON.stringify(ganttTasks?.slice(0, 3))
+  });
 
   const handleToday = () => {
     const container = ganttContainerRef.current?.querySelector(".gantt-container");
@@ -160,91 +200,88 @@ export function ProjectTimeline({
     }
 
     try {
-      let firstInit = false;
-      if (ganttInstance.current) {
-        // Update view mode first, then trigger refresh
-        ganttInstance.current.options.view_mode = zoom;
-        ganttInstance.current.refresh(ganttTasks);
-      } else {
-        ganttInstance.current = new Gantt(ganttContainerRef.current, ganttTasks, {
-          view_mode: zoom,
-          today_button: false,
-          scroll_to: "", // Disable auto-scroll to keep viewport stable
-          popup_on: "click",
-          on_click: (task: any) => {
-            onSelectTask(task.id);
-          },
-        });
-        firstInit = true;
-      }
+      const container = ganttContainerRef.current!;
+      
+      // Save scroll position of the previous gantt-container (if it existed)
+      const prevGanttContainer = container.querySelector(".gantt-container");
+      const savedScrollLeft = prevGanttContainer ? prevGanttContainer.scrollLeft : 0;
+      const zoomChanged = prevZoomRef.current !== zoom;
+      prevZoomRef.current = zoom;
 
-      // Override the label position dynamically using the prototype of the created bars
-      const ganttInstanceAny = ganttInstance.current as any;
-      if (ganttInstanceAny && ganttInstanceAny.bars && ganttInstanceAny.bars.length > 0) {
-        const barProto = Object.getPrototypeOf(ganttInstanceAny.bars[0]);
-        if (barProto && !barProto._overridden) {
-          barProto._overridden = true;
-          barProto.update_label_position = function () {
-            const bar = this.$bar;
-            const label = this.group.querySelector(".bar-label");
-            if (!label) return;
+      // Clear previous HTML to prevent duplicates
+      container.innerHTML = "";
 
-            const padding = 10;
-            const barWidth = bar.getWidth();
-            const maxTextWidth = barWidth - padding * 2;
+      ganttInstance.current = new Gantt(container, ganttTasks, {
+        view_mode: zoom,
+        today_button: false,
+        scroll_to: "", // Disable auto-scroll to keep viewport stable
+        popup_on: "hover",
+        on_click: (task: any) => {
+          onSelectTask(task.id);
+        },
+        custom_popup_html: (task: any) => {
+          try {
+            const originalTask = filteredTasks.find((t) => t.id === task.id);
+            if (!originalTask) return "";
 
-            if (this.task._originalName === undefined) {
-              this.task._originalName = this.task.name || "";
-            }
+            const startFormatted = format(new Date(task.start), "MMM dd, yyyy");
+            const endFormatted = format(new Date(task.end), "MMM dd, yyyy");
+            
+            const assigneeName = originalTask.assignee?.name || "Unassigned";
+            const priority = originalTask.priority || "Medium";
+            const status = originalTask.status?.name || "Unknown";
+            const progress = task.progress || 0;
 
-            const text = this.task._originalName;
-            label.textContent = text;
-            let labelWidth = label.getBBox().width;
+            return `
+              <div class="p-3 bg-card border border-border rounded-xl shadow-lg min-w-[200px] text-xs space-y-2 pointer-events-none text-foreground bg-white dark:bg-slate-950 backdrop-blur-md">
+                <div class="font-bold text-sm border-b border-border/50 pb-1.5">${task.name}</div>
+                <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                  <span class="font-semibold text-foreground/80">Project:</span>
+                  <span class="truncate">${originalTask.projectTitle}</span>
+                  
+                  <span class="font-semibold text-foreground/80">Dates:</span>
+                  <span>${startFormatted} - ${endFormatted}</span>
+                  
+                  <span class="font-semibold text-foreground/80">Status:</span>
+                  <span>${status}</span>
+                  
+                  <span class="font-semibold text-foreground/80">Priority:</span>
+                  <span class="capitalize">${priority}</span>
+                  
+                  <span class="font-semibold text-foreground/80">Assignee:</span>
+                  <span>${assigneeName}</span>
+                  
+                  <span class="font-semibold text-foreground/80">Progress:</span>
+                  <span>${progress}%</span>
+                </div>
+              </div>
+            `;
+          } catch (err) {
+            console.error("Error in custom_popup_html:", err);
+            return "";
+          }
+        },
+      } as any);
 
-            if (labelWidth > maxTextWidth) {
-              let low = 0;
-              let high = text.length;
-              let bestFit = "";
-
-              while (low <= high) {
-                const mid = Math.floor((low + high) / 2);
-                const truncated = text.substring(0, mid) + "...";
-                label.textContent = truncated;
-                if (label.getBBox().width <= maxTextWidth) {
-                  bestFit = truncated;
-                  low = mid + 1;
-                } else {
-                  high = mid - 1;
-                }
-              }
-              label.textContent = bestFit || "...";
-            }
-
-            const finalLabelWidth = label.getBBox().width;
-            label.setAttribute("x", bar.getX() + barWidth / 2 - finalLabelWidth / 2);
-            label.setAttribute("y", bar.getY() + this.height / 2);
-            label.style.fill = "#ffffff";
-            label.style.pointerEvents = "none";
-          };
-        }
-        
-        // Force refresh labels to apply our custom centering and truncation
-        if (firstInit) {
-          ganttInstanceAny.bars.forEach((bar: any) => bar.update_label_position());
-        }
-      }
-
-      // Initial scroll to today only once when Gantt is mounted
-      if (!hasInitialScrolled.current) {
+      // Scroll handling
+      if (zoomChanged || !hasInitialScrolled.current) {
         setTimeout(() => {
           handleToday();
           hasInitialScrolled.current = true;
         }, 150);
+      } else if (savedScrollLeft > 0) {
+        // Restore scroll position on data updates
+        const nextGanttContainer = container.querySelector(".gantt-container");
+        if (nextGanttContainer) {
+          requestAnimationFrame(() => {
+            nextGanttContainer.scrollLeft = savedScrollLeft;
+          });
+        }
       }
     } catch (err) {
       console.error("Error updating Frappe Gantt:", err);
     }
-  }, [ganttTasks, zoom, onSelectTask]);
+  }, [ganttTasks, zoom, onSelectTask, filteredTasks]);
 
   // Clean up instance on unmount
   useEffect(() => {
