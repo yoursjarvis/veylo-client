@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "frappe-gantt/dist/frappe-gantt.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -111,28 +110,6 @@
   --sidebar-accent-foreground: oklch(0.8684 0.0704 292.0563);
   --sidebar-ring: oklch(0.6449 0.2024 288.1131);
   --font-size-base: 16px;
-
-  /* Frappe Gantt Dark Mode overrides */
-  --g-arrow-color: #e5e5e5;
-  --g-bar-color: #2a2a2a;
-  --g-bar-border: #3a3a3a;
-  --g-tick-color-thick: #1a1a1a;
-  --g-tick-color: #0a0a0a;
-  --g-actions-background: #1a1a1a;
-  --g-border-color: #2a2a2a;
-  --g-text-muted: #999999;
-  --g-text-light: #ffffff;
-  --g-text-dark: #f5f5f5;
-  --g-progress-color: #4a4a4a;
-  --g-handle-color: #d0d0d0;
-  --g-weekend-label-color: #3a3a3a;
-  --g-expected-progress: #5a5a5a;
-  --g-header-background: #0a0a0a;
-  --g-row-color: #141414;
-  --g-row-border-color: #2a2a2a;
-  --g-today-highlight: #999999;
-  --g-popup-actions: #1a1a1a;
-  --g-weekend-highlight-color: #0f0f0f;
 }
 
 @theme inline {
@@ -433,166 +410,30 @@
   font-weight: bold;
 }
 
-/* Gantt UI Overrides to match premium reference image (without oklch SVG incompatibility) */
-.gantt {
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif !important;
+/* Custom SVAR Gantt styles to match Veylo theme colors */
+.ve-gantt-container .wx-theme,
+.ve-gantt-container .wx-theme > div,
+.ve-gantt-container .wx-gantt,
+.ve-gantt-container .wx-tooltip-area {
+  height: 100% !important;
+  --wx-color-primary: var(--primary) !important;
+  --wx-color-primary-selected: var(--accent) !important;
+  --wx-color-font: var(--foreground) !important;
+  --wx-color-font-alt: var(--muted-foreground) !important;
+  --wx-background: var(--card) !important;
+  --wx-background-alt: var(--muted) !important;
+  --wx-background-hover: var(--accent) !important;
+  --wx-border: 1px solid var(--border) !important;
+  --wx-timescale-border: 1px solid var(--border) !important;
+  --wx-gantt-border: 1px solid var(--border) !important;
+  --wx-gantt-task-color: var(--chart-1) !important;
+  --wx-gantt-task-fill-color: var(--primary) !important;
+  --wx-gantt-task-border-color: var(--chart-1) !important;
+  --wx-gantt-summary-color: var(--chart-2) !important;
+  --wx-gantt-summary-fill-color: var(--primary) !important;
+  --wx-gantt-milestone-color: var(--chart-3) !important;
 }
 
-/* Light Mode Rules */
-.gantt .grid-background {
-  fill: #ffffff !important;
-}
-
-.gantt .grid-row {
-  fill: #ffffff !important;
-  stroke: #e5e7eb !important;
-  stroke-width: 1;
-}
-
-.gantt .grid-header {
-  fill: #ffffff !important;
-  stroke: #e5e7eb !important;
-  stroke-width: 1;
-}
-
-.gantt .holiday-highlight {
-  fill: #f9fafb !important;
-}
-
-.gantt .tick {
-  stroke: #e5e7eb !important;
-  stroke-width: 1;
-}
-
-.gantt .tick.thick {
-  stroke: #d1d5db !important;
-  stroke-width: 1.5;
-}
-
-.gantt .today-highlight {
-  fill: rgba(99, 102, 241, 0.08) !important;
-  stroke: #6366f1 !important;
-  stroke-width: 1.5;
-}
-
-.gantt .bar {
-  fill: #f3f4f6 !important;
-  stroke: #d1d5db !important;
-  stroke-width: 1 !important;
-  rx: 6px !important;
-  ry: 6px !important;
-  transition: filter 0.2s ease, stroke 0.2s ease;
-}
-
-.gantt .bar-wrapper:hover .bar {
-  stroke: #6366f1 !important;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
-}
-
-.gantt .bar-progress {
-  fill: #6366f1 !important;
-  rx: 6px !important;
-  ry: 6px !important;
-}
-
-.gantt .bar-label {
-  font-size: 11px !important;
-  font-weight: 500 !important;
-  fill: #1f2937 !important;
-  dominant-baseline: central;
-}
-
-.gantt .bar-label.big {
-  fill: #1f2937 !important;
-}
-
-.gantt .arrow {
-  stroke: #9ca3af !important;
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-  fill: none;
-  opacity: 0.7;
-}
-
-.gantt .arrow-path {
-  fill: none;
-}
-
-.gantt .bar-wrapper:hover ~ .arrow {
-  stroke: #6366f1 !important;
-  opacity: 1;
-}
-
-/* Dark Mode Overrides */
-.dark .gantt .grid-background {
-  fill: #181825 !important;
-}
-
-.dark .gantt .grid-row {
-  fill: #181825 !important;
-  stroke: #313244 !important;
-}
-
-.dark .gantt .grid-header {
-  fill: #11111b !important;
-  stroke: #313244 !important;
-}
-
-.dark .gantt .holiday-highlight {
-  fill: #1e1e2e !important;
-}
-
-.dark .gantt .tick {
-  stroke: #313244 !important;
-}
-
-.dark .gantt .tick.thick {
-  stroke: #45475a !important;
-}
-
-.dark .gantt .today-highlight {
-  fill: rgba(137, 180, 250, 0.08) !important;
-  stroke: #89b4fa !important;
-}
-
-.dark .gantt .bar {
-  fill: #313244 !important;
-  stroke: #45475a !important;
-}
-
-.dark .gantt .bar-wrapper:hover .bar {
-  stroke: #89b4fa !important;
-}
-
-.dark .gantt .bar-progress {
-  fill: #89b4fa !important;
-}
-
-.dark .gantt .bar-label {
-  fill: #cdd6f4 !important;
-}
-
-.dark .gantt .bar-label.big {
-  fill: #cdd6f4 !important;
-}
-
-.dark .gantt .arrow {
-  stroke: #585b70 !important;
-}
-
-.dark .gantt .bar-wrapper:hover ~ .arrow {
-  stroke: #89b4fa !important;
-}
-
-/* Tooltip container styling override */
-.gantt-container .popup-wrapper {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  color: inherit !important;
-}
-
-.gantt-container .popup-wrapper .pointer {
-  display: none !important;
+.ve-gantt-container .wx-scale {
+  z-index: 20 !important;
 }

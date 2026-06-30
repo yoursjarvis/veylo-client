@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
-import { useQuery, useQueries } from "@tanstack/react-query";
+import React, { useState, useMemo, useEffect } from "react";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { TaskDependency } from "@/types/models";
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks";
@@ -10,7 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Search } from "lucide-react";
 import { addDays, format } from "date-fns";
-import Gantt from "frappe-gantt";
+import { Gantt, Willow, WillowDark } from "@svar-ui/react-gantt";
+import "@svar-ui/react-gantt/all.css";
+import { useTheme } from "@/components/theme-provider";
+import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 interface ProjectTimelineProps {
   workspaceId: string;
   projectId?: string;
@@ -34,6 +39,58 @@ type TimelineTask = {
 
 type ZoomLevel = "Day" | "Week" | "Month";
 
+const globalTasksCache = new Map<string, any>();
+
+function GanttTaskBarWithTooltip({ data }: { data: any }) {
+  const taskId = data.id;
+  const metadata = taskId ? globalTasksCache.get(String(taskId)) : null;
+
+  const text = metadata?.title || data.text || "Untitled Task";
+  const projectTitle = metadata?.projectTitle || "N/A";
+  const statusName = metadata?.statusName || "Unknown";
+  const priority = metadata?.priority || "Medium";
+  const assigneeName = metadata?.assigneeName || "Unassigned";
+  const progress = data.progress !== undefined ? data.progress : 0;
+
+  const startFormatted = data.start ? format(new Date(data.start), "MMM dd, yyyy") : "";
+  const endFormatted = data.end ? format(new Date(data.end), "MMM dd, yyyy") : "";
+
+  const isMilestone = data.type === "milestone";
+
+  return (
+    <Tooltip>
+      <TooltipTrigger className="absolute inset-0 z-1 w-full h-full flex items-center px-2 text-white text-[11px] truncate cursor-pointer font-medium select-none border-none bg-transparent outline-none">
+        {!isMilestone && text}
+      </TooltipTrigger>
+      <TooltipContent 
+        side="top" 
+        className="p-3 bg-popover border border-border rounded-xl shadow-lg min-w-[220px] text-xs space-y-2 text-popover-foreground z-50 bg-white dark:bg-slate-950"
+      >
+        <div className="font-bold text-sm border-b border-border/50 pb-1.5">{text}</div>
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+          <span className="font-semibold text-foreground/80">Project:</span>
+          <span className="truncate">{projectTitle}</span>
+
+          <span className="font-semibold text-foreground/80">Dates:</span>
+          <span>{startFormatted} - {endFormatted}</span>
+
+          <span className="font-semibold text-foreground/80">Status:</span>
+          <span>{statusName}</span>
+
+          <span className="font-semibold text-foreground/80">Priority:</span>
+          <span className="capitalize">{priority}</span>
+
+          <span className="font-semibold text-foreground/80">Assignee:</span>
+          <span className="truncate">{assigneeName}</span>
+
+          <span className="font-semibold text-foreground/80">Progress:</span>
+          <span>{progress}%</span>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function ProjectTimeline({
   workspaceId,
   projectId,
@@ -41,10 +98,35 @@ export function ProjectTimeline({
 }: ProjectTimelineProps) {
   const [zoom, setZoom] = useState<ZoomLevel>("Month");
   const [searchQuery, setSearchQuery] = useState("");
-  const ganttContainerRef = useRef<HTMLDivElement | null>(null);
-  const ganttInstance = useRef<Gantt | null>(null);
-  const hasInitialScrolled = useRef<boolean>(false);
-  const prevZoomRef = useRef<ZoomLevel>(zoom);
+  const [api, setApi] = useState<any>(null);
+  const { resolvedTheme } = useTheme();
+  const queryClient = useQueryClient();
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, dueDate }: { taskId: string; dueDate: string | null }) => {
+      const response = await axiosInstance.patch(`/tasks/${taskId}`, { dueDate });
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["projects", workspaceId] });
+      toast.success("Task updated");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to update task");
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    }
+  });
+
+  const handleUpdateTask = (ev: any) => {
+    if (ev?.id && ev?.task?.end) {
+      const newDueDate = new Date(ev.task.end).toISOString();
+      updateTaskMutation.mutate({
+        taskId: String(ev.id),
+        dueDate: newDueDate,
+      });
+    }
+  };
 
   // 1. Fetch all projects in this workspace
   const { data: projects = [], isLoading: isProjectsLoading } = useQuery({
@@ -119,7 +201,7 @@ export function ProjectTimeline({
     );
   }, [allProjectsTasks, searchQuery]);
 
-  // Map state tasks to Frappe Gantt tasks format
+  // Map state tasks to SVAR Gantt tasks format
   const ganttTasks = useMemo(() => {
     return filteredTasks.map((t) => {
       const project = projects.find((p: any) => p.id == t.projectId);
@@ -142,158 +224,91 @@ export function ProjectTimeline({
 
       let end = t.dueDate ? new Date(t.dueDate) : addDays(start, 7);
       if (isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
-        end = addDays(start, 1); // Ensure at least 1 day duration so the task bar is visible
+        end = addDays(start, 1);
       }
 
       const progress = t.status?.category === "done" ? 100 : t.status?.category === "in_progress" ? 50 : 0;
-      const deps = (t.blockedByDependencies || [])
-        .map((d: any) => d.blockingTaskId)
-        .filter((depId: string) => filteredTasks.some((ft) => ft.id === depId))
-        .join(",");
+
+      // Populate global tasks cache for tooltip lookups
+      globalTasksCache.set(String(t.id), {
+        title: t.title || "Untitled Task",
+        projectTitle: t.projectTitle || "N/A",
+        statusName: t.status?.name || "Unknown",
+        priority: t.priority || "Medium",
+        assigneeName: t.assignee?.name || "Unassigned",
+      });
 
       return {
         id: t.id || "",
-        name: t.title || "Untitled Task",
-        start: format(start, "yyyy-MM-dd"),
-        end: format(end, "yyyy-MM-dd"),
+        text: t.title || "Untitled Task",
+        start,
+        end,
         progress,
-        dependencies: deps,
       };
-    })
-    .sort((a, b) => a.start.localeCompare(b.start));
+    });
   }, [filteredTasks, projects]);
 
-  // Diagnostic logs to help identify why the timeline might be empty
-  console.log("TIMELINE DIAGNOSTIC LOGS:", {
-    workspaceId,
-    projectId,
-    projectsLoaded: projects.length,
-    tasksLoaded: singleProjectTasks.length,
-    filteredTasksLoaded: filteredTasks.length,
-    isProjectsLoading,
-    isTasksLoading,
-    ganttTasksSample: JSON.stringify(ganttTasks?.slice(0, 3))
-  });
+  const ganttLinks = useMemo(() => {
+    const linksList: { id: string; source: string; target: string; type: string }[] = [];
+    filteredTasks.forEach((t) => {
+      (t.blockedByDependencies || []).forEach((d) => {
+        if (filteredTasks.some((ft) => ft.id === d.blockingTaskId)) {
+          linksList.push({
+            id: `${d.blockingTaskId}-${t.id}`,
+            source: d.blockingTaskId,
+            target: t.id,
+            type: "e2s",
+          });
+        }
+      });
+    });
+    return linksList;
+  }, [filteredTasks]);
+
+  // Handle zooming / scale units dynamically
+  const scales = useMemo(() => {
+    if (zoom === "Day") {
+      return [
+        { unit: "month", step: 1, format: "%F %Y" },
+        { unit: "day", step: 1, format: "%j" }
+      ];
+    }
+    if (zoom === "Week") {
+      return [
+        { unit: "month", step: 1, format: "%F %Y" },
+        { unit: "week", step: 1, format: "Week %w" }
+      ];
+    }
+    // Month
+    return [
+      { unit: "year", step: 1, format: "%Y" },
+      { unit: "month", step: 1, format: "%F" }
+    ];
+  }, [zoom]);
+
+  const columns = useMemo(() => [
+    { id: "text", header: "Task name", width: 250 },
+    { id: "start", header: "Start date", width: 120, align: "center" as const },
+    { id: "end", header: "Due date", width: 120, align: "center" as const },
+  ], []);
 
   const handleToday = () => {
-    const container = ganttContainerRef.current?.querySelector(".gantt-container");
-    const todayLine = ganttContainerRef.current?.querySelector(".current-highlight");
-    if (container) {
-      if (todayLine) {
-        const containerRect = container.getBoundingClientRect();
-        const todayRect = todayLine.getBoundingClientRect();
-        const scrollLeft = container.scrollLeft + todayRect.left - containerRect.left - (containerRect.width / 2);
-        container.scrollTo({ left: scrollLeft, behavior: "smooth" });
-      } else {
-        container.scrollTo({ left: container.scrollWidth / 2 - container.clientWidth / 2, behavior: "smooth" });
-      }
+    if (api) {
+      api.exec("scroll-chart", { date: new Date() });
     }
   };
 
-  // Sync and handle Gantt instance lifecycle
+  // Scroll to today on initial mount
   useEffect(() => {
-    if (!ganttContainerRef.current || ganttTasks.length === 0) {
-      if (ganttInstance.current) {
-        ganttContainerRef.current!.innerHTML = "";
-        ganttInstance.current = null;
-      }
-      return;
+    if (api) {
+      api.exec("scroll-chart", { date: new Date() });
     }
+  }, [api]);
 
-    try {
-      const container = ganttContainerRef.current!;
-      
-      // Save scroll position of the previous gantt-container (if it existed)
-      const prevGanttContainer = container.querySelector(".gantt-container");
-      const savedScrollLeft = prevGanttContainer ? prevGanttContainer.scrollLeft : 0;
-      const zoomChanged = prevZoomRef.current !== zoom;
-      prevZoomRef.current = zoom;
-
-      // Clear previous HTML to prevent duplicates
-      container.innerHTML = "";
-
-      ganttInstance.current = new Gantt(container, ganttTasks, {
-        view_mode: zoom,
-        today_button: false,
-        scroll_to: "today", // Auto-scroll to today to keep viewport aligned with current tasks
-        popup_on: "hover",
-        on_click: (task: any) => {
-          onSelectTask(task.id);
-        },
-        custom_popup_html: (task: any) => {
-          try {
-            const originalTask = filteredTasks.find((t) => t.id === task.id);
-            if (!originalTask) return "";
-
-            const startFormatted = format(new Date(task.start), "MMM dd, yyyy");
-            const endFormatted = format(new Date(task.end), "MMM dd, yyyy");
-
-            const assigneeName = originalTask.assignee?.name || "Unassigned";
-            const priority = originalTask.priority || "Medium";
-            const status = originalTask.status?.name || "Unknown";
-            const progress = task.progress || 0;
-
-            return `
-              <div class="p-3 bg-card border border-border rounded-xl shadow-lg min-w-[200px] text-xs space-y-2 pointer-events-none text-foreground bg-white dark:bg-slate-950 backdrop-blur-md">
-                <div class="font-bold text-sm border-b border-border/50 pb-1.5">${task.name}</div>
-                <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-                  <span class="font-semibold text-foreground/80">Project:</span>
-                  <span class="truncate">${originalTask.projectTitle}</span>
-
-                  <span class="font-semibold text-foreground/80">Dates:</span>
-                  <span>${startFormatted} - ${endFormatted}</span>
-
-                  <span class="font-semibold text-foreground/80">Status:</span>
-                  <span>${status}</span>
-
-                  <span class="font-semibold text-foreground/80">Priority:</span>
-                  <span class="capitalize">${priority}</span>
-
-                  <span class="font-semibold text-foreground/80">Assignee:</span>
-                  <span>${assigneeName}</span>
-
-                  <span class="font-semibold text-foreground/80">Progress:</span>
-                  <span>${progress}%</span>
-                </div>
-              </div>
-            `;
-          } catch (err) {
-            console.error("Error in custom_popup_html:", err);
-            return "";
-          }
-        },
-      } as any);
-
-      console.log("Gantt initialized. Container HTML length:", container.innerHTML.length);
-
-      // Scroll handling
-      if (zoomChanged || !hasInitialScrolled.current) {
-        setTimeout(() => {
-          handleToday();
-          hasInitialScrolled.current = true;
-        }, 150);
-      } else if (savedScrollLeft > 0) {
-        // Restore scroll position on data updates
-        const nextGanttContainer = container.querySelector(".gantt-container");
-        if (nextGanttContainer) {
-          requestAnimationFrame(() => {
-            nextGanttContainer.scrollLeft = savedScrollLeft;
-          });
-        }
-      }
-    } catch (err) {
-      console.error("Error updating Frappe Gantt:", err);
-    }
-  }, [ganttTasks, zoom, onSelectTask, filteredTasks]);
-
-  // Clean up instance on unmount
-  useEffect(() => {
-    return () => {
-      if (ganttInstance.current) {
-        ganttInstance.current = null;
-      }
-    };
-  }, []);
+  function highlightTime(date: Date, unit: "day" | "hour") {
+    const weekend = date.getDay() === 0 || date.getDay() === 6;
+    return unit === "day" && weekend ? "wx-weekend" : "";
+  }
 
   if (isProjectsLoading || isTasksLoading) {
     return (
@@ -303,6 +318,8 @@ export function ProjectTimeline({
     );
   }
 
+  const GanttTheme = resolvedTheme === "dark" ? WillowDark : Willow;
+
   return (
     <div className="space-y-4">
       {/* Controls Bar */}
@@ -311,10 +328,10 @@ export function ProjectTimeline({
           <div className="relative w-full max-w-xs">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              placeholder="Search roadmap..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-xs bg-background border-border placeholder:text-muted-foreground/60 w-full"
+               placeholder="Search roadmap..."
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               className="pl-9 h-9 text-xs bg-background border-border placeholder:text-muted-foreground/60 w-full"
             />
           </div>
         </div>
@@ -348,18 +365,36 @@ export function ProjectTimeline({
       </div>
 
       {/* Gantt Timeline Board */}
-      <Card className="bg-card border border-border rounded-xl p-4 overflow-x-auto shadow-xs">
+      <Card className="bg-card border border-border rounded-xl overflow-hidden shadow-xs">
         {ganttTasks.length === 0 ? (
           <div className="h-48 flex items-center justify-center text-xs text-muted-foreground italic">
             No tasks found.
           </div>
         ) : (
-          <div className="min-w-[800px] overflow-x-auto">
-            {/* Wrapper div instead of SVG element for stable DOM lifecycle with Frappe Gantt */}
-            <div ref={ganttContainerRef} className="w-full h-full min-h-[400px]" />
+          <div className="w-full h-[600px] ve-gantt-container">
+            <TooltipProvider delay={150}>
+              <GanttTheme>
+                <Gantt
+                  init={setApi}
+                  tasks={ganttTasks}
+                  links={ganttLinks}
+                  columns={columns}
+                  scales={scales}
+                  highlightTime={highlightTime}
+                  taskTemplate={GanttTaskBarWithTooltip}
+                  onSelectTask={(ev) => {
+                    if (ev?.id) {
+                      onSelectTask(String(ev.id));
+                    }
+                  }}
+                  onUpdateTask={handleUpdateTask}
+                />
+              </GanttTheme>
+            </TooltipProvider>
           </div>
         )}
       </Card>
     </div>
   );
 }
+

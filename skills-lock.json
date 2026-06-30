@@ -31,6 +31,12 @@
       "skillPath": "skills/shadcn/SKILL.md",
       "computedHash": "80a6226e78f6d1fe464214ae0ef449d49d8ffaa3e7704f011e9b418c678ad4d1"
     },
+    "svar-react": {
+      "source": "svar-widgets/skills",
+      "sourceType": "github",
+      "skillPath": "svar-react/SKILL.md",
+      "computedHash": "f5386157b42928b2833ee1d3d3e3c2aa50b00fdf4928c64534a7957a6a979421"
+    },
     "tiptap": {
       "source": "ueberdosis/tiptap",
       "sourceType": "github",
