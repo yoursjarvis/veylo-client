@@ -51,7 +51,6 @@ interface CreateTaskDialogProps {
   projectLabels?: { id: string; name: string; color: string }[]
 }
 
-
 export function CreateTaskDialog({
   open,
   projectId,
@@ -87,7 +86,9 @@ export function CreateTaskDialog({
   const [estimate, setEstimate] = useState<number | null>(null)
   const [dueDate, setDueDate] = useState("")
   type CustomFieldValue = string | number | boolean
-  const [customFields, setCustomFields] = useState<Record<string, CustomFieldValue>>({})
+  const [customFields, setCustomFields] = useState<
+    Record<string, CustomFieldValue>
+  >({})
   const [isInitializing, setIsInitializing] = useState(false)
 
   // Auto-initialize statuses if none exist
@@ -138,7 +139,7 @@ export function CreateTaskDialog({
         setMilestoneId(null)
         setSelectedLabels([])
         setAssigneeId(null)
-      setReporterId(null)
+        setReporterId(null)
         setEstimate(null)
         setDueDate("")
         setCustomFields({})
@@ -146,7 +147,10 @@ export function CreateTaskDialog({
     }
   }, [open])
 
-  const handleCustomFieldChange = (fieldId: string, value: CustomFieldValue) => {
+  const handleCustomFieldChange = (
+    fieldId: string,
+    value: CustomFieldValue
+  ) => {
     setCustomFields((prev) => ({ ...prev, [fieldId]: value }))
   }
 
@@ -470,26 +474,22 @@ export function CreateTaskDialog({
                     </Popover>
                   </div>
 
-                  {projectTemplate !== "simple" ? (
-                    <div className="space-y-2">
-                      <Label className="text-xs font-medium text-foreground">
-                        Estimate
-                      </Label>
-                      <Input
-                        type="number"
-                        placeholder="Points"
-                        value={estimate ?? ""}
-                        onChange={(e) =>
-                          setEstimate(
-                            e.target.value ? parseFloat(e.target.value) : null
-                          )
-                        }
-                        className="h-9 border-border bg-background text-xs text-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
-                      />
-                    </div>
-                  ) : (
-                    <div className="hidden"></div>
-                  )}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-foreground">
+                      Estimate
+                    </Label>
+                    <Input
+                      type="number"
+                      placeholder="Estimate"
+                      value={estimate ?? ""}
+                      onChange={(e) =>
+                        setEstimate(
+                          e.target.value ? parseFloat(e.target.value) : null
+                        )
+                      }
+                      className="h-9 border-border bg-background text-xs text-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
+                    />
+                  </div>
                 </div>
 
                 {/* Epic & Milestone */}
@@ -672,7 +672,11 @@ export function CreateTaskDialog({
                                 </div>
                               ) : fieldDef.type === "select" ? (
                                 <ComboboxSelect
-                                  value={(typeof fieldValue === "string" && fieldValue) ? fieldValue : "none"}
+                                  value={
+                                    typeof fieldValue === "string" && fieldValue
+                                      ? fieldValue
+                                      : "none"
+                                  }
                                   onValueChange={(val) =>
                                     handleCustomFieldChange(
                                       fieldDef.id,
@@ -700,7 +704,11 @@ export function CreateTaskDialog({
                                         ? "date"
                                         : "text"
                                   }
-                                  value={typeof fieldValue === "boolean" ? String(fieldValue) : fieldValue}
+                                  value={
+                                    typeof fieldValue === "boolean"
+                                      ? String(fieldValue)
+                                      : fieldValue
+                                  }
                                   onChange={(e) =>
                                     handleCustomFieldChange(
                                       fieldDef.id,

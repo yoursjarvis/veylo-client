@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { RichTextEditor } from "@/components/shared/rich-text-editor"
 import { ComboboxSelect } from "@/components/ui/combobox-select"
 import { Calendar } from "@/components/ui/calendar"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -58,6 +66,11 @@ export function TaskDetailsSidebar({
   const { data: workLogs = [], isLoading: isWorkLogsLoading } = useTaskWorkLogs(task.id)
   const createWorkLogMutation = useCreateWorkLog(task.id)
   const deleteWorkLogMutation = useDeleteWorkLog(task.id)
+
+  const [isLogWorkOpen, setIsLogWorkOpen] = React.useState(false)
+  const [hours, setHours] = React.useState("")
+  const [description, setDescription] = React.useState("")
+  const [descError, setDescError] = React.useState(false)
 
   const totalLoggedHours = workLogs.reduce((acc: number, log: any) => acc + log.hoursLogged, 0)
   const statusOptions = projectStatuses.map((st) => ({
@@ -248,25 +261,23 @@ export function TaskDetailsSidebar({
             </>
           )}
 
-          {projectTemplate !== "simple" && (
-            <>
-              <span className="font-medium text-muted-foreground">Estimate</span>
-              <div>
-                <Input
-                  type="number"
-                  value={task.estimate ?? ""}
-                  onChange={(e) =>
-                    onFieldChange(
-                      "estimate",
-                      e.target.value ? parseFloat(e.target.value) : null
-                    )
-                  }
-                  className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
-                  placeholder="Estimate value..."
-                />
-              </div>
-            </>
-          )}
+          <>
+            <span className="font-medium text-muted-foreground">Estimate</span>
+            <div>
+              <Input
+                type="number"
+                value={task.estimate ?? ""}
+                onChange={(e) =>
+                  onFieldChange(
+                    "estimate",
+                    e.target.value ? parseFloat(e.target.value) : null
+                  )
+                }
+                className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
+                placeholder="Estimate value..."
+              />
+            </div>
+          </>
 
           <span className="font-medium text-muted-foreground">Due Date</span>
           <div>
@@ -323,58 +334,124 @@ export function TaskDetailsSidebar({
               </div>
             ) : null}
 
-            <Popover>
-              <PopoverTrigger render={
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="h-7 w-full text-[11px] font-medium flex items-center justify-center gap-1 mt-1"
-                />
-              }>
-                <HugeiconsIcon icon={Add01Icon} size={11} />
-                Log Work
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-3 space-y-3" align="start">
-                <h4 className="font-bold text-xs">Log work hours</h4>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="h-7 w-full text-[11px] font-medium flex items-center justify-center gap-1 mt-1"
+              onClick={() => setIsLogWorkOpen(true)}
+            >
+              <HugeiconsIcon icon={Add01Icon} size={11} />
+              Log Work
+            </Button>
+
+            <Dialog open={isLogWorkOpen} onOpenChange={setIsLogWorkOpen}>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Log work hours</DialogTitle>
+                </DialogHeader>
                 <form 
                   onSubmit={(e) => {
                     e.preventDefault();
-                    const formData = new FormData(e.currentTarget);
-                    const hours = parseFloat(formData.get("hours") as string);
-                    const desc = formData.get("description") as string;
-                    if (!isNaN(hours) && hours > 0) {
-                      createWorkLogMutation.mutate({ hoursLogged: hours, description: desc || null });
-                      (e.target as HTMLFormElement).reset();
+                    const parsedHours = parseFloat(hours);
+                    if (isNaN(parsedHours) || parsedHours <= 0) {
+                      return;
                     }
+                    
+                    const doc = new DOMParser().parseFromString(description, 'text/html');
+                    const textContent = doc.body.textContent || "";
+                    if (textContent.trim().length === 0) {
+                      setDescError(true);
+                      return;
+                    }
+                    
+                    createWorkLogMutation.mutate({ 
+                      hoursLogged: parsedHours, 
+                      description: description || null 
+                    }, {
+                      onSuccess: () => {
+                        setHours("");
+                        setDescription("");
+                        setDescError(false);
+                        setIsLogWorkOpen(false);
+                      }
+                    });
                   }}
-                  className="space-y-2"
+                  className="space-y-4 py-2"
                 >
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-muted-foreground font-semibold">Hours spent</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-foreground">Hours spent <span className="text-destructive">*</span></label>
                     <Input 
                       type="number" 
                       step="0.1" 
-                      name="hours" 
+                      min="0.1"
+                      value={hours}
+                      onChange={(e) => setHours(e.target.value)}
                       placeholder="e.g. 1.5" 
                       required 
-                      className="h-8 text-xs" 
+                      className="h-9 text-xs" 
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-muted-foreground font-semibold">What did you do?</label>
-                    <Input 
-                      type="text" 
-                      name="description" 
-                      placeholder="e.g. Worked on styling" 
-                      className="h-8 text-xs" 
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-foreground">What did you do? <span className="text-destructive">*</span></label>
+                    <RichTextEditor
+                      placeholder="Describe what work you performed..."
+                      value={description}
+                      onChange={(val) => {
+                        setDescription(val);
+                        if (descError) {
+                          const doc = new DOMParser().parseFromString(val, 'text/html');
+                          const text = doc.body.textContent || "";
+                          if (text.trim().length > 0) {
+                            setDescError(false);
+                          }
+                        }
+                      }}
+                      projectMembers={projectMembers
+                        .filter((m) => !!m.user)
+                        .map((m) => ({
+                          user: {
+                            id: m.user!.id,
+                            name: m.user!.name,
+                            image: m.user!.image,
+                            email: m.user!.email,
+                          },
+                        }))}
+                      minHeight="120px"
+                      className="group [&>div:last-child]:hidden [&>div:last-child]:border-t-0 [&>div:last-child]:bg-transparent focus-within:[&>div:last-child]:flex"
                     />
+                    {descError && (
+                      <p className="text-[11px] font-medium text-destructive">
+                        What did you do is required.
+                      </p>
+                    )}
                   </div>
-                  <Button type="submit" disabled={createWorkLogMutation.isPending} className="h-8 w-full text-xs">
-                    {createWorkLogMutation.isPending ? "Logging..." : "Log Hours"}
-                  </Button>
+                  
+                  <DialogFooter className="pt-2">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={() => {
+                        setIsLogWorkOpen(false);
+                        setHours("");
+                        setDescription("");
+                        setDescError(false);
+                      }}
+                      className="h-9 text-xs"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createWorkLogMutation.isPending} 
+                      className="h-9 text-xs min-w-[80px]"
+                    >
+                      {createWorkLogMutation.isPending ? "Logging..." : "Log Hours"}
+                    </Button>
+                  </DialogFooter>
                 </form>
-              </PopoverContent>
-            </Popover>
+              </DialogContent>
+            </Dialog>
 
             {workLogs.length > 0 && (
               <Popover>

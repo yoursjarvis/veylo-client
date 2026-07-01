@@ -116,8 +116,8 @@ export function TaskDetailsMainContent({
         task={task}
         projectStatuses={projectStatuses}
         onNavigateToTask={onNavigateToSubtask}
-        onAddDependency={() => {}}
-        onRemoveDependency={() => {}}
+        onAddDependency={onCreateDependency}
+        onRemoveDependency={onDeleteDependency}
       />
 
       <Tabs defaultValue="comments" className="w-full">

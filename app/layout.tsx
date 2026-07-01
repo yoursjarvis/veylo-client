@@ -1,5 +1,5 @@
 // import { Geist, Geist_Mono, Inter } from "next/font/google"
-import { Inter, JetBrains_Mono } from "next/font/google"
+import { Alan_Sans, JetBrains_Mono } from "next/font/google"
 
 import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -20,12 +20,10 @@ import "./globals.css"
 //   variable: "--font-mono",
 // })
 
-const fontSans = Inter({
+const fontSans = Alan_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
-
-
 
 const fontMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -48,7 +46,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontSans.variable, fontMono.variable)}
     >
-      <body className="antialiased overflow-x-hidden">
+      <body className="overflow-x-hidden antialiased">
         <ThemeProvider>
           <ThemeToggle />
           <QueryProvider>
