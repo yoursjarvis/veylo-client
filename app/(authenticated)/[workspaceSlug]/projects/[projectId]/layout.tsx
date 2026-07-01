@@ -405,6 +405,7 @@ export default function ProjectLayout({
     { name: "Members", path: `${basePath}/settings/members` },
     { name: "Vault", path: `${basePath}/settings/vault` },
     { name: "Fields", path: `${basePath}/settings/fields` },
+    { name: "Statuses", path: `${basePath}/settings/statuses` },
     { name: "Labels", path: `${basePath}/settings/labels` },
     { name: "Webhooks", path: `${basePath}/settings/webhooks` },
     { name: "Automation", path: `${basePath}/settings/automation` },

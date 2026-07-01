@@ -14,6 +14,11 @@ import { Badge } from "@/components/reui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
 import {
@@ -77,7 +82,7 @@ interface Task {
 interface TaskBoardProps {
   projectId: string
   tasks: Task[]
-  statuses: { id: string; name: string }[]
+  statuses: { id: string; name: string; color?: string }[]
   projectMembers: Record<string, unknown>[]
   sprints: Record<string, unknown>[]
   projectTemplate: string
@@ -179,7 +184,7 @@ function SubtaskItem({
 }: {
   subtask: Task
   projectId: string
-  statuses: { id: string; name: string }[]
+  statuses: { id: string; name: string; color?: string }[]
   completedStatus?: { id: string }
   onSelectTask?: (id: string) => void
 }) {
@@ -256,7 +261,7 @@ function TaskCard({
 }: {
   task: Task
   projectId: string
-  statuses: { id: string; name: string }[]
+  statuses: { id: string; name: string; color?: string }[]
   isDragging?: boolean
   onSelectTask?: (id: string) => void
 }) {
@@ -564,7 +569,7 @@ function SortableTaskCard({
 }: {
   task: Task
   projectId: string
-  statuses: { id: string; name: string }[]
+  statuses: { id: string; name: string; color?: string }[]
   onSelectTask: (id: string) => void
 }) {
   const {
@@ -609,8 +614,8 @@ function SortableTaskCard({
 
 interface BoardColumnProps {
   projectId: string
-  statuses: { id: string; name: string }[]
-  status: { id: string; name: string }
+  statuses: { id: string; name: string; color?: string }[]
+  status: { id: string; name: string; color?: string }
   tasks: Task[]
   quickAddStatusId: string | null
   quickAddTitle: string
@@ -637,38 +642,6 @@ function BoardColumn({
     data: { type: "Column", status },
   })
 
-  const [isEditingStatus, setIsEditingStatus] = useState(false)
-  const [editedStatusName, setEditedStatusName] = useState(status.name)
-  const updateStatusMutation = useUpdateStatus(projectId)
-
-  useEffect(() => {
-    setEditedStatusName(status.name)
-  }, [status.name])
-
-  const handleStatusSave = () => {
-    if (
-      editedStatusName.trim() !== status.name &&
-      editedStatusName.trim() !== ""
-    ) {
-      updateStatusMutation.mutate({
-        id: status.id,
-        data: { name: editedStatusName.trim() },
-      })
-    } else {
-      setEditedStatusName(status.name)
-    }
-    setIsEditingStatus(false)
-  }
-
-  const handleStatusKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleStatusSave()
-    } else if (e.key === "Escape") {
-      setEditedStatusName(status.name)
-      setIsEditingStatus(false)
-    }
-  }
-
   return (
     <div
       ref={setNodeRef}
@@ -679,23 +652,12 @@ function BoardColumn({
     >
       <div className="mb-4 mt-0.5 flex items-center justify-between px-1.5">
         <div className="flex items-center gap-2.5">
-          {isEditingStatus ? (
-            <input
-              autoFocus
-              value={editedStatusName}
-              onChange={(e) => setEditedStatusName(e.target.value)}
-              onBlur={handleStatusSave}
-              onKeyDown={handleStatusKeyDown}
-              className="w-full border-none bg-transparent p-0 text-sm font-semibold tracking-tight text-foreground focus:ring-0 focus:outline-none"
-            />
-          ) : (
-            <span
-              onClick={() => setIsEditingStatus(true)}
-              className="cursor-text text-sm font-semibold tracking-tight text-foreground/90 transition-colors hover:text-primary"
-            >
-              {status.name}
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 text-sm font-semibold tracking-tight text-foreground/90">
+            {status.color && (
+              <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: status.color }} />
+            )}
+            <span className="truncate max-w-[140px] text-left">{status.name}</span>
+          </div>
           <Badge className="bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground hover:bg-muted">
             {tasks.length}
           </Badge>
