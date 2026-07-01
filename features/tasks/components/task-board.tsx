@@ -52,7 +52,6 @@ import {
   SparklesIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { motion } from "motion/react"
 
 interface Task {
   id: string
@@ -582,35 +581,29 @@ function SortableTaskCard({
 
   const style = {
     transition,
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
   }
 
   return (
-    <motion.div
-      layout
-      layoutId={task.id}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
+    <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
       className={cn(
-        "relative rounded-xl outline-none",
+        "relative rounded-xl outline-none touch-none",
         isDragging &&
           "z-50 border-2 border-dashed border-primary/40 bg-muted/60 shadow-inner"
       )}
     >
-      <div className={cn(isDragging ? "invisible" : "")}>
-        <TaskCard
-          task={task}
-          projectId={projectId}
-          statuses={statuses}
-          onSelectTask={onSelectTask}
-        />
-      </div>
-    </motion.div>
+      <TaskCard
+        task={task}
+        projectId={projectId}
+        statuses={statuses}
+        onSelectTask={onSelectTask}
+        isDragging={isDragging}
+      />
+    </div>
   )
 }
 
@@ -852,14 +845,28 @@ export function TaskBoard({
       if (isOverTask) {
         const activeTask = tasks[activeIndex]
         const overTask = tasks[overIndex]
+        
         if (activeTask.statusId !== overTask.statusId) {
-          const newTasks = [...tasks]
-          newTasks[activeIndex] = {
-            ...newTasks[activeIndex],
+          const newTasks = tasks.filter((t) => t.id !== activeId)
+          const targetIndex = newTasks.findIndex((t) => t.id === overId)
+          
+          const isBelowOverItem =
+            over &&
+            active.rect.current.translated &&
+            active.rect.current.translated.top > over.rect.top + over.rect.height
+            
+          const modifier = isBelowOverItem ? 1 : 0
+          const insertIndex = targetIndex >= 0 ? targetIndex + modifier : newTasks.length
+          
+          const updatedActiveTask = {
+            ...activeTask,
             statusId: overTask.statusId,
           }
-          return arrayMove(newTasks, activeIndex, overIndex)
+          
+          newTasks.splice(insertIndex, 0, updatedActiveTask)
+          return newTasks
         }
+        
         return arrayMove(tasks, activeIndex, overIndex)
       }
 
