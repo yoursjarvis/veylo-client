@@ -5,7 +5,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import {
   useCreateStatus,
   useCreateTask,
-  useUpdateStatus,
   useUpdateTask,
   useUpdateTaskOrder,
 } from "../hooks/use-tasks"
@@ -14,11 +13,6 @@ import { Badge } from "@/components/reui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
 import {
@@ -382,7 +376,7 @@ function TaskCard({
             className={cn(
               "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
               isCompleted
-                ? "border-success bg-success text-success-foreground"
+                ? "border-success bg-success/15 text-success-foreground"
                 : "border-muted-foreground/30 bg-background text-transparent hover:border-success/50 hover:text-success/30"
             )}
           >
@@ -408,7 +402,7 @@ function TaskCard({
                 className={cn(
                   "line-clamp-2 text-base font-semibold transition-colors",
                   isCompleted
-                    ? "text-muted-foreground line-through decoration-muted-foreground/50"
+                    ? "text-muted-foreground decoration-muted-foreground/50"
                     : "text-foreground"
                 )}
               >
@@ -421,7 +415,7 @@ function TaskCard({
 
       <div className="mt-3 flex items-center gap-3">
         {getPriorityBadge(task.priority)}
-        
+
         {task.dueDate && (
           <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
             <HugeiconsIcon
@@ -529,16 +523,16 @@ function TaskCard({
                 />
               </div>
             )}
-            
+
             {task.estimate !== undefined && (
               <div className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-foreground">
-                 <span>Est: {task.estimate}</span>
+                <span>Est: {task.estimate}</span>
               </div>
             )}
           </div>
-          
+
           <div className="flex items-center justify-center">
-             {getTypeIcon(task.type)}
+            {getTypeIcon(task.type)}
           </div>
         </div>
 
@@ -596,7 +590,7 @@ function SortableTaskCard({
       {...attributes}
       {...listeners}
       className={cn(
-        "relative rounded-xl outline-none touch-none",
+        "relative touch-none rounded-xl outline-none",
         isDragging &&
           "z-50 border-2 border-dashed border-primary/40 bg-muted/60 shadow-inner"
       )}
@@ -650,13 +644,16 @@ function BoardColumn({
         isOver ? "border-primary/40 bg-primary/5" : "border-border/60"
       )}
     >
-      <div className="mb-4 mt-0.5 flex items-center justify-between px-1.5">
+      <div className="mt-0.5 mb-4 flex items-center justify-between px-1.5">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-1.5 text-sm font-semibold tracking-tight text-foreground/90">
             {status.color && (
-              <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: status.color }} />
+              <div
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: status.color }}
+              />
             )}
-            <span className="truncate max-w-[140px] text-left">{status.name}</span>
+            <span className="max-w-35 truncate text-left">{status.name}</span>
           </div>
           <Badge className="bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground hover:bg-muted">
             {tasks.length}
@@ -807,28 +804,30 @@ export function TaskBoard({
       if (isOverTask) {
         const activeTask = tasks[activeIndex]
         const overTask = tasks[overIndex]
-        
+
         if (activeTask.statusId !== overTask.statusId) {
           const newTasks = tasks.filter((t) => t.id !== activeId)
           const targetIndex = newTasks.findIndex((t) => t.id === overId)
-          
+
           const isBelowOverItem =
             over &&
             active.rect.current.translated &&
-            active.rect.current.translated.top > over.rect.top + over.rect.height
-            
+            active.rect.current.translated.top >
+              over.rect.top + over.rect.height
+
           const modifier = isBelowOverItem ? 1 : 0
-          const insertIndex = targetIndex >= 0 ? targetIndex + modifier : newTasks.length
-          
+          const insertIndex =
+            targetIndex >= 0 ? targetIndex + modifier : newTasks.length
+
           const updatedActiveTask = {
             ...activeTask,
             statusId: overTask.statusId,
           }
-          
+
           newTasks.splice(insertIndex, 0, updatedActiveTask)
           return newTasks
         }
-        
+
         return arrayMove(tasks, activeIndex, overIndex)
       }
 

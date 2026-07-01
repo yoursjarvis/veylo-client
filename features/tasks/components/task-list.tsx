@@ -16,13 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { format, isPast, isToday } from "date-fns"
 import {
@@ -189,9 +182,9 @@ function UserSelect({
           >
             {selectedUser ? (
               <>
-                <Avatar className="h-5 w-5 shrink-0">
+                <Avatar className="h-7 w-7 shrink-0">
                   <AvatarImage src={selectedUser.image} />
-                  <AvatarFallback className="text-[9px]">
+                  <AvatarFallback className="text-[10px]">
                     {selectedUser.name?.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -199,8 +192,8 @@ function UserSelect({
               </>
             ) : (
               <>
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/30 bg-muted text-muted-foreground">
-                  <User className="h-3 w-3" />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/30 bg-muted text-muted-foreground">
+                  <User className="h-3.5 w-3.5" />
                 </div>
                 <span className="truncate text-muted-foreground italic">
                   {placeholder}
@@ -229,8 +222,8 @@ function UserSelect({
                 }}
                 className="py-1.5 text-xs"
               >
-                <div className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
-                  <User className="h-3 w-3" />
+                <div className="mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted">
+                  <User className="h-3.5 w-3.5" />
                 </div>
                 Unassigned
               </CommandItem>
@@ -243,9 +236,9 @@ function UserSelect({
                   }}
                   className="py-1.5 text-xs"
                 >
-                  <Avatar className="mr-2 h-5 w-5 shrink-0">
+                  <Avatar className="mr-2 h-7 w-7 shrink-0">
                     <AvatarImage src={member.user.image} />
-                    <AvatarFallback className="text-[9px]">
+                    <AvatarFallback className="text-[10px]">
                       {member.user.name?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -337,9 +330,16 @@ function StatusSelect({
             {selectedStatus ? (
               <>
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
-                  <div 
-                    className={cn("h-2 w-2 rounded-full", !selectedStatus.color && "bg-primary/60")} 
-                    style={selectedStatus.color ? { backgroundColor: selectedStatus.color } : undefined}
+                  <div
+                    className={cn(
+                      "h-2 w-2 rounded-full",
+                      !selectedStatus.color && "bg-primary/60"
+                    )}
+                    style={
+                      selectedStatus.color
+                        ? { backgroundColor: selectedStatus.color }
+                        : undefined
+                    }
                   />
                 </div>
                 <span className="truncate">{selectedStatus.name}</span>
@@ -363,7 +363,10 @@ function StatusSelect({
         onClick={(e) => e.stopPropagation()}
       >
         <Command>
-          <CommandInput placeholder="Search status..." className="h-8 text-xs" />
+          <CommandInput
+            placeholder="Search status..."
+            className="h-8 text-xs"
+          />
           <CommandList>
             <CommandEmpty className="py-2 text-center text-xs text-muted-foreground">
               No status found.
@@ -379,9 +382,14 @@ function StatusSelect({
                   className="py-1.5 text-xs"
                 >
                   <div className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
-                    <div 
-                      className={cn("h-2 w-2 rounded-full", !st.color && "bg-primary/60")}
-                      style={st.color ? { backgroundColor: st.color } : undefined}
+                    <div
+                      className={cn(
+                        "h-2 w-2 rounded-full",
+                        !st.color && "bg-primary/60"
+                      )}
+                      style={
+                        st.color ? { backgroundColor: st.color } : undefined
+                      }
                     />
                   </div>
                   <span className="truncate">{st.name}</span>
@@ -413,7 +421,9 @@ function PrioritySelect({
   placeholder?: string
 }) {
   const [open, setOpen] = useState(false)
-  const selectedPriority = PRIORITIES.find((p) => p.value === value?.toLowerCase())
+  const selectedPriority = PRIORITIES.find(
+    (p) => p.value === value?.toLowerCase()
+  )
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -449,7 +459,10 @@ function PrioritySelect({
         onClick={(e) => e.stopPropagation()}
       >
         <Command>
-          <CommandInput placeholder="Search priority..." className="h-8 text-xs" />
+          <CommandInput
+            placeholder="Search priority..."
+            className="h-8 text-xs"
+          />
           <CommandList>
             <CommandEmpty className="py-2 text-center text-xs text-muted-foreground">
               No priority found.
@@ -725,9 +738,12 @@ export function StatusSection({
                 <ChevronDown size={16} />
               )}
             </div>
-            <div className="flex items-center gap-1.5 h-full">
+            <div className="flex h-full items-center gap-1.5">
               {status.color && (
-                <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: status.color }} />
+                <div
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: status.color }}
+                />
               )}
               <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase transition-colors group-hover:text-foreground">
                 {status.name}{" "}
@@ -772,9 +788,12 @@ export function StatusSection({
               <ChevronDown size={16} />
             )}
           </div>
-          <div className="flex items-center gap-1.5 h-full">
+          <div className="flex h-full items-center gap-1.5">
             {status.color && (
-              <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: status.color }} />
+              <div
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: status.color }}
+              />
             )}
             <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase transition-colors group-hover:text-foreground">
               {status.name}{" "}
