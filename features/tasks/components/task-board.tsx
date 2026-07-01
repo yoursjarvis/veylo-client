@@ -88,7 +88,7 @@ interface TaskBoardProps {
 
 const getPriorityBadge = (prio: string) => {
   const baseClasses =
-    "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none capitalize h-4 flex items-center justify-center border-none"
+    "rounded-md px-2 py-1 text-xs font-medium leading-none capitalize flex items-center justify-center border-none"
   switch (prio) {
     case "urgent":
       return (
@@ -144,12 +144,12 @@ const getPriorityBadge = (prio: string) => {
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "bug":
-      return <HugeiconsIcon icon={Bug01Icon} className="h-3 w-3 text-red-500" />
+      return <HugeiconsIcon icon={Bug01Icon} className="h-4 w-4 text-red-500" />
     case "feature":
       return (
         <HugeiconsIcon
           icon={SparklesIcon}
-          className="h-3 w-3 text-violet-500"
+          className="h-4 w-4 text-violet-500"
         />
       )
     case "task":
@@ -157,7 +157,7 @@ const getTypeIcon = (type: string) => {
         <HugeiconsIcon
           icon={CheckmarkSquare03Icon}
           strokeWidth={2}
-          className="h-3 w-3 text-blue-500"
+          className="h-4 w-4 text-blue-500"
         />
       )
     default:
@@ -165,7 +165,7 @@ const getTypeIcon = (type: string) => {
         <HugeiconsIcon
           icon={ArrowRight01Icon}
           strokeWidth={2}
-          className="h-3 w-3 text-muted-foreground"
+          className="h-4 w-4 text-muted-foreground"
         />
       )
   }
@@ -196,7 +196,7 @@ function SubtaskItem({
 
   return (
     <div
-      className="group/subtask flex cursor-pointer items-center gap-2.5 rounded-md p-1.5 transition-colors hover:bg-muted/50"
+      className="group/subtask flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50"
       onClick={(e) => {
         e.stopPropagation()
         onSelectTask?.(subtask.id)
@@ -206,17 +206,17 @@ function SubtaskItem({
         type="button"
         onClick={handleToggle}
         className={cn(
-          "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
+          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
           isCompleted
             ? "border-success bg-success text-success-foreground"
             : "border-muted-foreground/30 bg-background text-transparent hover:border-success/50 hover:text-success/30"
         )}
       >
-        <HugeiconsIcon icon={CheckIcon} size={9} strokeWidth={3.5} />
+        <HugeiconsIcon icon={CheckIcon} size={10} strokeWidth={3.5} />
       </button>
       <span
         className={cn(
-          "line-clamp-1 flex-1 text-[12px] font-medium transition-colors",
+          "line-clamp-1 flex-1 text-sm font-medium transition-colors",
           isCompleted
             ? "text-muted-foreground/60 line-through decoration-muted-foreground/40"
             : "text-foreground/90 group-hover/subtask:text-foreground"
@@ -225,18 +225,18 @@ function SubtaskItem({
         {subtask.title}
       </span>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-3">
         {subtask.dueDate && (
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-            <HugeiconsIcon icon={Clock05Icon} />
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <HugeiconsIcon icon={Clock05Icon} className="h-4 w-4" />
             <span>{format(new Date(subtask.dueDate), "MMM d")}</span>
           </div>
         )}
 
         {subtask.assignee && (
-          <Avatar className="h-4.5 w-4.5">
+          <Avatar className="h-6 w-6">
             <AvatarImage src={subtask.assignee.image || ""} />
-            <AvatarFallback className="bg-primary/10 text-[8px] font-semibold text-primary">
+            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
               {subtask.assignee.name
                 ? subtask.assignee.name.charAt(0).toUpperCase()
                 : "-"}
@@ -333,8 +333,8 @@ function TaskCard({
         }
       }}
       className={cn(
-        "group relative flex flex-col rounded-[12px] border border-border/50 bg-card p-3.5 shadow-sm transition-all duration-200",
-        "hover:-translate-y-px hover:border-border hover:shadow-md",
+        "group relative flex flex-col rounded-xl border border-border/50 bg-card p-4 shadow-sm transition-all duration-200",
+        "hover:-translate-y-1 hover:border-border hover:shadow-md",
         isDragging ? "opacity-0" : "opacity-100",
         !isEditing ? "cursor-pointer active:cursor-grabbing" : "cursor-default"
       )}
@@ -344,18 +344,18 @@ function TaskCard({
           variant="ghost"
           size="icon"
           onClick={handleEditClick}
-          className="absolute top-2 right-2 z-10 h-6 w-6 bg-background/80 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 hover:bg-muted"
+          className="absolute top-3 right-3 z-10 h-7 w-7 bg-background/80 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 hover:bg-muted"
         >
           <HugeiconsIcon
             icon={Edit03Icon}
-            size={12}
+            size={14}
             className="text-muted-foreground"
           />
         </Button>
       )}
 
       {task.coverImage && (
-        <div className="mb-3 w-full overflow-hidden rounded-md border border-border/40">
+        <div className="mb-3 w-full overflow-hidden rounded-lg border border-border/40">
           <img
             src={task.coverImage}
             alt="Cover"
@@ -364,19 +364,19 @@ function TaskCard({
         </div>
       )}
 
-      <div className="flex flex-col gap-1 pr-6">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-medium tracking-wider text-muted-foreground/80">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-medium tracking-wider text-muted-foreground">
             {task.taskKey || task.id.substring(0, 8)}
           </span>
         </div>
 
-        <div className="flex items-start gap-2.5 py-0.5">
+        <div className="flex items-start gap-2.5">
           <button
             type="button"
             onClick={handleToggleComplete}
             className={cn(
-              "mt-0.75 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
+              "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
               isCompleted
                 ? "border-success bg-success text-success-foreground"
                 : "border-muted-foreground/30 bg-background text-transparent hover:border-success/50 hover:text-success/30"
@@ -394,15 +394,15 @@ function TaskCard({
                 onBlur={handleSave}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                className="w-full resize-none border-none bg-transparent p-0 text-[13px] leading-snug font-semibold text-foreground focus:ring-0 focus:outline-none"
+                className="w-full resize-none border-none bg-transparent p-0 text-base font-semibold text-foreground focus:ring-0 focus:outline-none"
                 spellCheck={false}
               />
             </div>
           ) : (
-            <div className="flex-1">
+            <div className="flex-1 pr-5">
               <span
                 className={cn(
-                  "line-clamp-2 text-[13px] leading-snug font-semibold transition-colors",
+                  "line-clamp-2 text-base font-semibold transition-colors",
                   isCompleted
                     ? "text-muted-foreground line-through decoration-muted-foreground/50"
                     : "text-foreground"
@@ -415,37 +415,65 @@ function TaskCard({
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-3">
         {getPriorityBadge(task.priority)}
-        {task.estimate !== undefined && (
-          <div className="flex h-4 items-center justify-center rounded bg-muted/60 px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            {task.estimate}
+        
+        {task.dueDate && (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+            <HugeiconsIcon
+              icon={Clock05Icon}
+              className="h-3.5 w-3.5 text-muted-foreground"
+              strokeWidth={1.5}
+            />
+            <span>{format(new Date(task.dueDate), "MMM d")}</span>
           </div>
         )}
-        <div className="ml-auto flex h-4 w-4 items-center justify-center rounded-full bg-muted/40">
-          {getTypeIcon(task.type)}
+
+        <div className="ml-auto flex items-center">
+          {task.assignees && task.assignees.length > 0 ? (
+            <div className="flex -space-x-1.5 overflow-hidden p-1">
+              {task.assignees.slice(0, 3).map((assignee, idx) => (
+                <Avatar
+                  key={idx}
+                  className="inline-block h-6 w-6 rounded-full ring-2 ring-card transition-transform hover:z-10 hover:scale-110"
+                >
+                  <AvatarImage src={assignee.image || ""} />
+                  <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+                    {assignee.name
+                      ? assignee.name.charAt(0).toUpperCase()
+                      : "-"}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+              {task.assignees.length > 3 && (
+                <div className="z-10 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground ring-2 ring-card transition-transform hover:z-20 hover:scale-110">
+                  +{task.assignees.length - 3}
+                </div>
+              )}
+            </div>
+          ) : task.assignee ? (
+            <div className="p-1">
+              <Avatar className="h-6 w-6 ring-2 ring-card transition-transform hover:scale-110">
+                <AvatarImage src={task.assignee.image || ""} />
+                <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+                  {task.assignee.name
+                    ? task.assignee.name.charAt(0).toUpperCase()
+                    : "-"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          ) : null}
         </div>
       </div>
 
-      <div className="mt-3.5 flex flex-col border-t border-border/30 pt-3">
+      <div className="mt-3 flex flex-col border-t border-border/40 pt-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5 text-muted-foreground">
-            {task.dueDate && (
-              <div className="flex items-center gap-1 text-[10px] font-medium transition-colors hover:text-foreground">
-                <HugeiconsIcon
-                  icon={Clock05Icon}
-                  className="h-3 w-3 text-muted-foreground/70"
-                  strokeWidth={1.5}
-                />
-                <span>{format(new Date(task.dueDate), "MMM d")}</span>
-              </div>
-            )}
-
+          <div className="flex items-center gap-3 text-muted-foreground">
             {task.commentCount !== undefined && task.commentCount > 0 && (
-              <div className="flex items-center gap-1 text-[10px] font-medium transition-colors hover:text-foreground">
+              <div className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-foreground">
                 <HugeiconsIcon
                   icon={Message01Icon}
-                  size={11}
+                  size={14}
                   className="text-muted-foreground/70"
                 />
                 <span>{task.commentCount}</span>
@@ -453,10 +481,10 @@ function TaskCard({
             )}
 
             {task.attachmentCount !== undefined && task.attachmentCount > 0 && (
-              <div className="flex items-center gap-1 text-[10px] font-medium transition-colors hover:text-foreground">
+              <div className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-foreground">
                 <HugeiconsIcon
                   icon={AttachmentSquareIcon}
-                  size={11}
+                  size={14}
                   className="text-muted-foreground/70"
                 />
                 <span>{task.attachmentCount}</span>
@@ -466,7 +494,7 @@ function TaskCard({
             {totalSubtasks > 0 && (
               <div
                 className={cn(
-                  "-ml-1 flex cursor-pointer items-center gap-1 rounded px-1 text-[10px] font-medium transition-colors hover:bg-muted",
+                  "-ml-1.5 flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium transition-colors hover:bg-muted",
                   isSubtasksExpanded
                     ? "bg-muted/50 text-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -478,7 +506,7 @@ function TaskCard({
               >
                 <HugeiconsIcon
                   icon={CheckmarkSquare03Icon}
-                  size={11}
+                  size={14}
                   className={
                     isSubtasksExpanded
                       ? "text-primary"
@@ -488,7 +516,7 @@ function TaskCard({
                 <span>{subtaskDisplay}</span>
                 <HugeiconsIcon
                   icon={ChevronDownIcon}
-                  size={11}
+                  size={14}
                   strokeWidth={3}
                   className={cn(
                     "transition-transform",
@@ -497,47 +525,21 @@ function TaskCard({
                 />
               </div>
             )}
+            
+            {task.estimate !== undefined && (
+              <div className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-foreground">
+                 <span>Est: {task.estimate}</span>
+              </div>
+            )}
           </div>
-
-          <div className="flex items-center">
-            {task.assignees && task.assignees.length > 0 ? (
-              <div className="flex -space-x-1.5 overflow-hidden p-0.5">
-                {task.assignees.slice(0, 3).map((assignee, idx) => (
-                  <Avatar
-                    key={idx}
-                    className="inline-block h-5.5 w-5.5 rounded-full ring-2 ring-card transition-transform hover:z-10 hover:scale-110"
-                  >
-                    <AvatarImage src={assignee.image || ""} />
-                    <AvatarFallback className="bg-primary/10 text-[9px] font-semibold text-primary">
-                      {assignee.name
-                        ? assignee.name.charAt(0).toUpperCase()
-                        : "-"}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-                {task.assignees.length > 3 && (
-                  <div className="z-10 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-muted text-[9px] font-semibold text-muted-foreground ring-2 ring-card transition-transform hover:z-20 hover:scale-110">
-                    +{task.assignees.length - 3}
-                  </div>
-                )}
-              </div>
-            ) : task.assignee ? (
-              <div className="p-0.5">
-                <Avatar className="h-5.5 w-5.5 ring-2 ring-card transition-transform hover:scale-110">
-                  <AvatarImage src={task.assignee.image || ""} />
-                  <AvatarFallback className="bg-primary/10 text-[9px] font-semibold text-primary">
-                    {task.assignee.name
-                      ? task.assignee.name.charAt(0).toUpperCase()
-                      : "-"}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-            ) : null}
+          
+          <div className="flex items-center justify-center">
+             {getTypeIcon(task.type)}
           </div>
         </div>
 
         {isSubtasksExpanded && task.subtasks && task.subtasks.length > 0 && (
-          <div className="mt-3 flex flex-col gap-0.5 border-t border-border/20 pt-2">
+          <div className="mt-3 flex flex-col gap-1 rounded-xl bg-muted/30 p-2">
             {task.subtasks.map((subtask) => (
               <SubtaskItem
                 key={subtask.id}
@@ -595,7 +597,7 @@ function SortableTaskCard({
       {...attributes}
       {...listeners}
       className={cn(
-        "relative rounded-[12px] outline-none",
+        "relative rounded-xl outline-none",
         isDragging &&
           "z-50 border-2 border-dashed border-primary/40 bg-muted/60 shadow-inner"
       )}
@@ -678,11 +680,11 @@ function BoardColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex h-full max-h-[75vh] w-75 shrink-0 flex-col rounded-xl border bg-secondary/20 p-3 shadow-sm backdrop-blur-md transition-colors duration-200",
+        "flex h-full max-h-[75vh] w-72 shrink-0 flex-col rounded-2xl border bg-secondary/20 p-3.5 shadow-sm backdrop-blur-md transition-colors duration-200 lg:w-80",
         isOver ? "border-primary/40 bg-primary/5" : "border-border/60"
       )}
     >
-      <div className="mt-1 mb-3.5 flex items-center justify-between px-1.5">
+      <div className="mb-4 mt-0.5 flex items-center justify-between px-1.5">
         <div className="flex items-center gap-2.5">
           {isEditingStatus ? (
             <input
@@ -691,17 +693,17 @@ function BoardColumn({
               onChange={(e) => setEditedStatusName(e.target.value)}
               onBlur={handleStatusSave}
               onKeyDown={handleStatusKeyDown}
-              className="w-full border-none bg-transparent p-0 text-[13px] font-semibold tracking-tight text-foreground focus:ring-0 focus:outline-none"
+              className="w-full border-none bg-transparent p-0 text-sm font-semibold tracking-tight text-foreground focus:ring-0 focus:outline-none"
             />
           ) : (
             <span
               onClick={() => setIsEditingStatus(true)}
-              className="cursor-text text-[13px] font-semibold tracking-tight text-foreground/90 transition-colors hover:text-primary"
+              className="cursor-text text-sm font-semibold tracking-tight text-foreground/90 transition-colors hover:text-primary"
             >
               {status.name}
             </span>
           )}
-          <Badge className="bg-muted px-1.5 py-0 text-[10px] font-semibold text-muted-foreground hover:bg-muted">
+          <Badge className="bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground hover:bg-muted">
             {tasks.length}
           </Badge>
         </div>
@@ -709,44 +711,44 @@ function BoardColumn({
           variant="ghost"
           size="icon"
           onClick={() => setQuickAddStatusId(status.id)}
-          className="h-6 w-6 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
-          <HugeiconsIcon icon={Add01Icon} size={14} />
+          <HugeiconsIcon icon={Add01Icon} size={16} />
         </Button>
       </div>
 
       {quickAddStatusId === status.id && (
         <form
           onSubmit={(e) => handleQuickAddSubmit(e, status.id)}
-          className="mb-3 rounded-[12px] border border-border/80 bg-card p-3 shadow-sm"
+          className="mb-3 rounded-xl border border-border/80 bg-card p-3 shadow-sm"
         >
           <Input
             autoFocus
             placeholder="What needs to be done?"
             value={quickAddTitle}
             onChange={(e) => setQuickAddTitle(e.target.value)}
-            className="h-8 border-none bg-transparent px-1 py-1 text-[13px] text-foreground placeholder-muted-foreground/60 shadow-none focus-visible:ring-0"
+            className="h-9 border-none bg-transparent px-1 py-1 text-[13px] text-foreground placeholder-muted-foreground/60 shadow-none focus-visible:ring-0"
           />
-          <div className="mt-2 flex justify-end gap-1.5">
+          <div className="mt-2.5 flex justify-end gap-2">
             <Button
               type="button"
               size="sm"
               variant="ghost"
               onClick={() => setQuickAddStatusId(null)}
-              className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground"
+              className="h-7 px-3 text-xs"
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="h-7 px-3 text-[11px]">
+            <Button type="submit" size="sm" className="h-7 px-3 text-xs">
               Save
             </Button>
           </div>
         </form>
       )}
 
-      <div className="flex-1 scrollbar-thin scrollbar-thumb-border/40 scrollbar-track-transparent space-y-3 overflow-y-auto pr-1 pb-2">
+      <div className="flex-1 scrollbar-thin scrollbar-thumb-border/40 scrollbar-track-transparent space-y-3 overflow-y-auto pr-1.5 pb-3">
         {tasks.length === 0 ? (
-          <div className="flex h-24 items-center justify-center rounded-[12px] border-2 border-dashed border-border/50 bg-background/50 text-[13px] font-medium text-muted-foreground/50 transition-colors">
+          <div className="flex h-28 items-center justify-center rounded-xl border-2 border-dashed border-border/50 bg-background/50 text-[13px] font-medium text-muted-foreground/50 transition-colors">
             Drop tasks here
           </div>
         ) : (
@@ -951,7 +953,7 @@ export function TaskBoard({
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
     >
-      <div className="flex min-h-0 w-full max-w-full min-w-0 flex-1 gap-5 overflow-x-auto px-1 py-2 pb-6">
+      <div className="flex min-h-0 w-full max-w-full min-w-0 flex-1 gap-5 overflow-x-auto px-4 py-4 pb-8 lg:gap-6">
         {statuses.map((status) => {
           const columnTasks = filteredTasks.filter(
             (t) => t.statusId === status.id
@@ -978,20 +980,20 @@ export function TaskBoard({
             </SortableContext>
           )
         })}
-        <div className="flex h-12 w-75 shrink-0 flex-col justify-start">
+        <div className="flex h-12 w-72 shrink-0 flex-col justify-start lg:w-80">
           {isAddingStatus ? (
             <form
               onSubmit={handleCreateStatus}
-              className="flex items-center gap-1.5 rounded-[12px] border border-border/80 bg-card p-2 shadow-sm"
+              className="flex items-center gap-2 rounded-xl border border-border/80 bg-card p-2.5 shadow-sm"
             >
               <Input
                 autoFocus
                 placeholder="Column name"
                 value={newStatusName}
                 onChange={(e) => setNewStatusName(e.target.value)}
-                className="h-8 border-none bg-transparent px-2 py-1 text-[13px] shadow-none focus-visible:ring-0"
+                className="h-9 border-none bg-transparent px-2 py-1 text-sm shadow-none focus-visible:ring-0"
               />
-              <Button type="submit" size="sm" className="h-7 px-3 text-[11px]">
+              <Button type="submit" size="sm" className="h-8">
                 Add
               </Button>
               <Button
@@ -999,7 +1001,7 @@ export function TaskBoard({
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsAddingStatus(false)}
-                className="h-7 px-2 text-[11px]"
+                className="h-8"
               >
                 Cancel
               </Button>
@@ -1010,8 +1012,8 @@ export function TaskBoard({
               onClick={() => setIsAddingStatus(true)}
               className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border-dashed border-border/60 bg-secondary/10 text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-foreground"
             >
-              <HugeiconsIcon icon={Add01Icon} size={16} />
-              <span className="text-[13px] font-medium">Add Column</span>
+              <HugeiconsIcon icon={Add01Icon} size={18} />
+              <span className="text-sm font-medium">Add Column</span>
             </Button>
           )}
         </div>
