@@ -7,6 +7,7 @@ import { axiosInstance } from "@/lib/axios";
 import { useWorkspaceContext } from "@/components/providers/workspace-provider";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
+import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 import { Plus, FileText, Loader2, AlertCircle, Layers, Kanban, UserPlus, Megaphone, DollarSign, Map, ClipboardList } from "lucide-react";
 
@@ -145,10 +146,8 @@ export default function ProjectsPage() {
   });
 
   // Permissions Check
-  const userRole = activeMember?.role;
-  const isOrgAdmin = userRole === "owner" || userRole === "admin";
-  const myWorkspaceMember = workspaceMembers?.find((m) => m.userId === currentUser?.id);
-  const isWorkspaceAdmin = isOrgAdmin || myWorkspaceMember?.role === "admin";
+  const { hasPermission } = usePermissions();
+  const isWorkspaceAdmin = hasPermission("project:create");
 
   // Upload project icon helper
   const uploadProjectIcon = async (projectId: string, file: File) => {

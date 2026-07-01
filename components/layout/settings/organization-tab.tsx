@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { LogoUpload } from "@/components/shared/logo-upload";
 import { useForm } from "@tanstack/react-form";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export function OrganizationTab() {
   const { data: auth } = useCurrentUser();
@@ -64,8 +65,8 @@ export function OrganizationTab() {
   }
 
   // Determine user role
-  const currentUserRole = activeOrg.members?.find((m: { userId?: string; role?: string }) => m.userId === auth?.user?.id)?.role;
-  const isOwnerOrAdmin = currentUserRole === "owner" || currentUserRole === "admin" || (activeOrg as { role?: string }).role === "owner" || (activeOrg as { role?: string }).role === "admin";
+  const { hasPermission } = usePermissions();
+  const isOwnerOrAdmin = hasPermission("organization:update");
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">

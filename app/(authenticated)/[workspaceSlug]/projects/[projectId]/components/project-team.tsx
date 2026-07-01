@@ -82,7 +82,7 @@ export function ProjectTeam({
                   {member.user?.name}
                 </p>
                 <p className="text-xs text-muted-foreground capitalize">
-                  {member.role === "owner" ? "Project Owner" : "Member"}
+                  {member.role?.replace("_", " ")}
                 </p>
               </div>
             </div>

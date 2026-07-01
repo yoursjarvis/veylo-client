@@ -56,7 +56,6 @@ import {
   useUnbanMember,
   usePendingInvitations,
   useRevokeInvitation,
-  useUpdateMemberRole,
 } from "../hooks/use-org"
 import { BulkInviteModal } from "./bulk-invite-modal"
 import { InviteMemberModal } from "./invite-member-modal"
@@ -72,6 +71,14 @@ type Member = {
     email: string
     image?: string | null
     banned: boolean
+    _count?: {
+      roleAssignments: number
+    }
+    roleAssignments?: Array<{
+      role: {
+        name: string
+      }
+    }>
   }
   role: string
 }
@@ -111,7 +118,6 @@ export function MembersTable() {
   const unbanMutation = useUnbanMember()
   const revokeMutation = useRevokeSessions()
   const impersonateMutation = useImpersonateUser()
-  const updateRoleMutation = useUpdateMemberRole()
 
   const flatData = useMemo(
     () => data?.pages.flatMap((page) => page.members) || [],
@@ -141,52 +147,46 @@ export function MembersTable() {
         },
       }),
       columnHelper.accessor("role", {
-        header: "Role",
+        header: "Roles",
         cell: (info) => {
-          const currentRole = info.getValue()
           const member = info.row.original
+          const roles = member.user.roleAssignments || []
+          const rolesCount = member.user._count?.roleAssignments || roles.length;
+          
           return (
-            <div className="flex items-center gap-2">
-              <Select
-                value={currentRole}
-                onValueChange={async (newRole) => {
-                  if (!newRole || newRole === currentRole) return
-                  try {
-                    await updateRoleMutation.mutateAsync({ memberId: member.id, role: newRole })
-                    toast.success("Role updated successfully")
-                    refetch()
-                  } catch (error) {
-                    const responseError = error as { message?: string };
-                    toast.error(responseError.message || "Failed to update role")
-                  }
-                }}
-                disabled={updateRoleMutation.isPending}
-              >
-                <SelectTrigger className="h-7 w-[140px] text-xs bg-secondary border-none hover:bg-secondary/80 focus:ring-0 capitalize">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ROLES.map((r) => (
-                    <SelectItem key={r.value} value={r.value} className="text-xs">
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-2 shrink-0"
                 onClick={() => {
-                  setAssignmentModal({ 
-                    isOpen: true, 
-                    userId: member.user.id, 
-                    userName: member.user.name || "User" 
-                  });
+                  setAssignmentModal({
+                    isOpen: true,
+                    userId: member.user.id,
+                    userName: member.user.name || "User",
+                  })
                 }}
               >
-                <HugeiconsIcon icon={Shield01Icon} className="h-3.5 w-3.5" />
+                <HugeiconsIcon icon={Shield01Icon} className="h-3.5 w-3.5 text-muted-foreground" />
+                Manage Roles
               </Button>
+              {roles.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {roles.slice(0, 2).map((assignment, index) => (
+                    <span 
+                      key={index} 
+                      className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-md capitalize"
+                    >
+                      {assignment.role.name.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                  {roles.length > 2 && (
+                    <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-md">
+                      +{roles.length - 2} more
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )
         },
@@ -197,7 +197,7 @@ export function MembersTable() {
           const isBanned = info.getValue()
           return (
             <span
-              className={`rounded-full px-2 py-1 text-xs ${isBanned ? "bg-destructive/10 text-destructive" : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"}`}
+              className={`rounded-full px-2 py-1 text-xs font-medium ${isBanned ? "bg-destructive/10 text-destructive" : "bg-secondary/50 text-secondary-foreground"}`}
             >
               {isBanned ? "Banned" : "Active"}
             </span>
@@ -290,7 +290,7 @@ export function MembersTable() {
         },
       }),
     ],
-    [banMutation, unbanMutation, revokeMutation, impersonateMutation, updateRoleMutation, refetch]
+    [banMutation, unbanMutation, revokeMutation, impersonateMutation, refetch]
   )
 
   const table = useReactTable({
@@ -576,7 +576,7 @@ function PendingInvitationsList() {
                 </span>
               </td>
               <td className="p-4 align-middle">
-                <span className="rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 px-2 py-1 text-xs font-medium capitalize">
+                <span className="rounded-full bg-secondary/50 text-secondary-foreground px-2 py-1 text-xs font-medium capitalize">
                   {invite.status}
                 </span>
               </td>

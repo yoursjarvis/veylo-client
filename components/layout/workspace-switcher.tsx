@@ -28,7 +28,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
 import { useState } from "react"
 
-import { authClient } from "@/lib/auth-client"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function WorkspaceSwitcher() {
   const {
@@ -40,9 +40,8 @@ export function WorkspaceSwitcher() {
   } = useWorkspaceContext()
   const [searchQuery, setSearchQuery] = useState("")
 
-  const { data: activeMember } = authClient.useActiveMember()
-  const userRole = activeMember?.role
-  const isOwnerOrAdmin = userRole === "owner" || userRole === "admin"
+  const { hasPermission } = usePermissions()
+  const isOwnerOrAdmin = hasPermission("workspace:create")
 
   if (isLoading) {
     return (

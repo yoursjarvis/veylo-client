@@ -23,6 +23,14 @@ export const useOrganizationRoles = (orgId: string) => {
   });
 };
 
+export const useUserAssignments = (userId: string, scopeType: string, scopeId: string) => {
+  return useQuery({
+    queryKey: [...rbacKeys.all, "userAssignments", userId, scopeType, scopeId],
+    queryFn: () => rbacService.getUserAssignments(userId, scopeType, scopeId),
+    enabled: !!userId && !!scopeType && !!scopeId,
+  });
+};
+
 export const useCreateRole = (orgId: string) => {
   const queryClient = useQueryClient();
 
@@ -38,8 +46,8 @@ export const useUpdateRolePermissions = (orgId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ roleId, permissionIds }: { roleId: string; permissionIds: string[] }) =>
-      rbacService.updateRolePermissions(roleId, permissionIds),
+    mutationFn: ({ roleId, name, permissionIds, bypassPermissions }: { roleId: string; name?: string; permissionIds: string[]; bypassPermissions?: boolean }) =>
+      rbacService.updateRolePermissions(roleId, name, permissionIds, bypassPermissions),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: rbacKeys.roles(orgId) });
     },

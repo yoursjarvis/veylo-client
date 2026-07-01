@@ -14,6 +14,7 @@ import { axiosInstance } from "@/lib/axios"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import { authClient } from "@/lib/auth-client"
+import { usePermissions } from "@/hooks/use-permissions"
 import { toast } from "sonner"
 import Link from "next/link"
 import {
@@ -260,12 +261,8 @@ export default function ProjectLayout({
     totalCount > 0 ? (completedCount / totalCount) * 100 : 0
 
   // Permissions Check
-  const userRole = activeMember?.role
-  const isOrgAdmin = userRole === "owner" || userRole === "admin"
-  const myWorkspaceMember = workspaceMembers?.find(
-    (m) => m.userId === currentUser?.id
-  )
-  const isWorkspaceAdmin = isOrgAdmin || myWorkspaceMember?.role === "admin"
+  const { hasPermission } = usePermissions()
+  const isWorkspaceAdmin = hasPermission("project:update")
 
   // Upload project icon helper
   const uploadProjectIcon = async (projId: string, file: File) => {

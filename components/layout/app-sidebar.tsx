@@ -20,14 +20,13 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
-import { authClient } from "@/lib/auth-client"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function AppSidebar() {
   const pathname = usePathname()
   const { workspaces } = useWorkspaceContext()
-  const { data: activeMember } = authClient.useActiveMember()
-  const userRole = activeMember?.role
-  const isOwnerOrAdmin = userRole === "owner" || userRole === "admin"
+  const { hasPermission } = usePermissions()
+  const isOwnerOrAdmin = hasPermission("member:read") // Assuming member:read implies they can see the "Members" tab
 
   const hasNoWorkspaces = workspaces && workspaces.length === 0
 

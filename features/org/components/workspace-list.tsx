@@ -48,6 +48,7 @@ import { IconPicker } from "@/components/shared/icon-picker"
 import { getThumbUrl } from "@/lib/utils"
 
 import { authClient } from "@/lib/auth-client"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function WorkspaceList() {
   const { workspaces, isLoading, setIsCreateModalOpen } = useWorkspaceContext()
@@ -55,9 +56,8 @@ export function WorkspaceList() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingWorkspace, setEditingWorkspace] = useState<{ id: string; name: string; slug: string; icon?: string | File | null } | null>(null)
 
-  const { data: activeMember } = authClient.useActiveMember()
-  const userRole = activeMember?.role
-  const isOwnerOrAdmin = userRole === "owner" || userRole === "admin"
+  const { hasPermission } = usePermissions()
+  const isOwnerOrAdmin = hasPermission("workspace:update")
 
   const uploadIcon = async (workspaceId: string, file: File) => {
     const formData = new FormData()

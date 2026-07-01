@@ -13,6 +13,7 @@ export interface Role {
   name: string;
   organizationId: string | null;
   isSystemDefault: boolean;
+  bypassPermissions?: boolean;
   permissions: {
     roleId: string;
     permissionId: string;
@@ -40,13 +41,13 @@ export const rbacService = {
     return data.data;
   },
 
-  createRole: async (payload: { name: string; organizationId: string; permissionIds: string[] }): Promise<Role> => {
+  createRole: async (payload: { name: string; organizationId: string; permissionIds: string[]; bypassPermissions?: boolean }): Promise<Role> => {
     const { data } = await axiosInstance.post("/rbac/roles", payload);
     return data.data;
   },
 
-  updateRolePermissions: async (roleId: string, permissionIds: string[]): Promise<Role> => {
-    const { data } = await axiosInstance.put(`/rbac/roles/${roleId}`, { permissionIds });
+  updateRolePermissions: async (roleId: string, name: string | undefined, permissionIds: string[], bypassPermissions?: boolean): Promise<Role> => {
+    const { data } = await axiosInstance.put(`/rbac/roles/${roleId}`, { name, permissionIds, bypassPermissions });
     return data.data;
   },
 
@@ -56,15 +57,22 @@ export const rbacService = {
 
   assignRoleToUser: async (payload: { 
     userId: string; 
-    roleId: string; 
+    roleIds: string[]; 
     scopeType: 'ORGANIZATION' | 'PROJECT' | 'DEPARTMENT'; 
     scopeId: string; 
-  }): Promise<RoleAssignment> => {
+  }): Promise<RoleAssignment[]> => {
     const { data } = await axiosInstance.post("/rbac/assignments", payload);
     return data.data;
   },
 
   removeRoleAssignment: async (assignmentId: string): Promise<void> => {
     await axiosInstance.delete(`/rbac/assignments/${assignmentId}`);
+  },
+
+  getUserAssignments: async (userId: string, scopeType: string, scopeId: string): Promise<RoleAssignment[]> => {
+    const { data } = await axiosInstance.get(`/rbac/assignments`, {
+      params: { userId, scopeType, scopeId },
+    });
+    return data.data;
   },
 };

@@ -67,7 +67,6 @@ export function RolesTable({ organizationId }: RolesTableProps) {
             <TableHeader className="bg-muted/50">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="px-4 py-3 font-medium text-muted-foreground">Role Name</TableHead>
-                <TableHead className="px-4 py-3 font-medium text-muted-foreground">Type</TableHead>
                 <TableHead className="px-4 py-3 font-medium text-muted-foreground">Permissions</TableHead>
                 <TableHead className="px-4 py-3 text-right font-medium text-muted-foreground">Actions</TableHead>
               </TableRow>
@@ -86,17 +85,6 @@ export function RolesTable({ organizationId }: RolesTableProps) {
                   className="group transition-colors hover:bg-muted/30"
                 >
                   <TableCell className="px-4 py-4 font-medium">{role.name}</TableCell>
-                  <TableCell className="px-4 py-4">
-                    {role.isSystemDefault ? (
-                      <Badge variant="secondary" className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-secondary/50 text-secondary-foreground">
-                        System
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="px-2 py-0.5 rounded-full text-[11px] font-medium text-primary border-primary/20 bg-primary/5">
-                        Custom
-                      </Badge>
-                    )}
-                  </TableCell>
                   <TableCell className="px-4 py-4 text-sm text-muted-foreground">
                     {role.permissions.length > 0 
                       ? `${role.permissions.length} permissions` 
@@ -114,9 +102,9 @@ export function RolesTable({ organizationId }: RolesTableProps) {
                         }}
                       >
                         <Edit2 className="w-3.5 h-3.5" />
-                        {role.isSystemDefault ? "View" : "Edit"}
+                        {role.name.toLowerCase() === "owner" ? "View" : "Edit"}
                       </Button>
-                      {!role.isSystemDefault && (
+                      {role.name.toLowerCase() !== "owner" && (
                         <Button
                           variant="ghost"
                           size="sm"

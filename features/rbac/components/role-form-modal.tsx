@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePermissions, useOrganizationRoles, useCreateRole, useUpdateRolePermissions } from "../hooks/use-rbac";
+import { usePermissions as useCatalogPermissions, useOrganizationRoles, useCreateRole, useUpdateRolePermissions } from "../hooks/use-rbac";
+import { usePermissions as useUserPermissions } from "@/hooks/use-permissions";
 import { PermissionMatrix } from "./permission-matrix";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,7 +20,8 @@ interface RoleFormModalProps {
 }
 
 export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: RoleFormModalProps) {
-  const { data: permissions } = usePermissions();
+  const { data: permissionsCatalog } = useCatalogPermissions();
+  const { permissions: userPermissions, hasPermission } = useUserPermissions({ organizationId });
   const { data: roles } = useOrganizationRoles(organizationId);
   
   const createRole = useCreateRole(organizationId);
@@ -27,19 +29,22 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
 
   const roleToEdit = roles?.find(r => r.id === roleId);
   const isEditing = !!roleId;
-  const isSystemDefault = roleToEdit?.isSystemDefault;
+  const isOwner = roleToEdit?.name.toLowerCase() === "owner";
 
   const [name, setName] = useState("");
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
+  const [bypassPermissions, setBypassPermissions] = useState(false);
 
   useEffect(() => {
     if (open) {
       if (roleToEdit) {
         setName(roleToEdit.name);
         setSelectedPermissionIds(roleToEdit.permissions.map(p => p.permissionId));
+        setBypassPermissions(roleToEdit.bypassPermissions || false);
       } else {
         setName("");
         setSelectedPermissionIds([]);
+        setBypassPermissions(false);
       }
     }
   }, [open, roleToEdit]);
@@ -50,18 +55,20 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
 
     try {
       if (isEditing) {
-        if (!isSystemDefault) {
-          await updateRole.mutateAsync({ roleId: roleId!, permissionIds: selectedPermissionIds });
-          toast.success("Role permissions updated successfully");
+        if (!isOwner) {
+          await updateRole.mutateAsync({ roleId: roleId!, name, permissionIds: selectedPermissionIds, bypassPermissions });
+          toast.success("Role updated successfully");
         }
       } else {
-        await createRole.mutateAsync({ name, organizationId, permissionIds: selectedPermissionIds });
+        await createRole.mutateAsync({ name, organizationId, permissionIds: selectedPermissionIds, bypassPermissions });
         toast.success("Role created successfully");
       }
       onOpenChange(false);
     } catch (error) {
       console.error("Role save error:", error);
-      toast.error("Failed to save role");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorMessage = (error as any)?.response?.data?.message || "Failed to save role";
+      toast.error(errorMessage);
     }
   };
 
@@ -71,11 +78,11 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
         <DialogHeader className="p-6 pb-4 border-b bg-background">
           <div className="space-y-1">
             <DialogTitle className="text-xl font-bold tracking-tight">
-              {isEditing ? (isSystemDefault ? "View Role" : "Edit Role") : "Create Custom Role"}
+              {isEditing ? (isOwner ? "View Role" : "Edit Role") : "Create Custom Role"}
             </DialogTitle>
             <DialogDescription>
-              {isSystemDefault 
-                ? "System default roles cannot be modified." 
+              {isOwner 
+                ? "The owner role cannot be modified." 
                 : "Define the permissions assigned to this role."}
             </DialogDescription>
           </div>
@@ -89,15 +96,10 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
                 id="name" 
                 value={name} 
                 onChange={e => setName(e.target.value)} 
-                disabled={isEditing} 
+                disabled={isOwner} 
                 placeholder="e.g. Guest Developer"
                 className="h-10"
               />
-              {isEditing && !isSystemDefault && (
-                <p className="text-xs text-muted-foreground italic">
-                  Role name cannot be changed after creation.
-                </p>
-              )}
             </div>
 
             <Separator className="opacity-50" />
@@ -109,11 +111,32 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
                   Assign capabilities to this role across the workspace.
                 </p>
               </div>
+
+              {userPermissions.includes("*") && !isOwner && (
+                <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <Label className="text-base font-semibold">Bypass All Permissions</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Users with this role will have full access to all resources. Only the organization owner can manage this.
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="bypassPermissions"
+                      checked={bypassPermissions}
+                      onChange={(e) => setBypassPermissions(e.target.checked)}
+                      className="w-5 h-5 accent-primary"
+                    />
+                  </div>
+                </div>
+              )}
+
               <PermissionMatrix 
-                permissions={permissions || []}
+                permissions={permissionsCatalog || []}
                 selectedPermissionIds={selectedPermissionIds}
                 onChange={setSelectedPermissionIds}
-                disabled={isSystemDefault}
+                disabled={isOwner}
               />
             </div>
           </form>
@@ -121,9 +144,9 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
 
         <DialogFooter className="p-6 pt-4 border-t bg-muted/30">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="gap-2">
-            {isSystemDefault ? "Close" : "Cancel"}
+            {isOwner ? "Close" : "Cancel"}
           </Button>
-          {!isSystemDefault && (
+          {!isOwner && (
             <Button 
               type="submit" 
               form="role-form" 
