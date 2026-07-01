@@ -60,21 +60,30 @@
     0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   --tracking-normal: 0em;
-  --spacing: 0.25rem; 
+  --spacing: 0.25rem;
 
-  --text-xs: 0.75rem; /* 12px (was 14px) */
-  --text-sm: 0.875rem; /* 14px (was 16px) */
-  --text-base: 1rem; /* 16px (was 18px) */
-  --text-lg: 1.125rem; /* 18px (was 20px) */
-  --text-xl: 1.25rem; /* 20px (was 22px) */
-  --text-2xl: 1.5rem; /* 24px (was 26px) */
-  --text-3xl: 1.875rem; /* 30px (was 32px) */
-  --text-4xl: 2.25rem; /* 36px (was 38px) */
-  --text-5xl: 3rem; /* 48px (was 50px) */
-  --text-6xl: 3.75rem; /* 60px (was 62px) */
-  --text-7xl: 4.5rem; /* 72px (was 74px) */
-  --text-8xl: 6rem; /* 96px (was 98px) */
-  --text-9xl: 8rem; /* 128px (was 130px) */ --success: var(--color-emerald-500); --success-foreground: var(--color-emerald-900); --info: var(--color-violet-500); --info-foreground: var(--color-violet-900); --warning: var(--color-yellow-500); --warning-foreground: var(--color-yellow-900); --invert: var(--color-zinc-900); --invert-foreground: var(--color-zinc-50);
+  --text-xs: 0.8125rem; /* 13px */
+  --text-sm: 0.9375rem; /* 15px */
+  --text-base: 1.0625rem; /* 17px */
+  --text-lg: 1.1875rem; /* 19px */
+  --text-xl: 1.3125rem; /* 21px */
+  --text-2xl: 1.5625rem; /* 25px */
+  --text-3xl: 1.9375rem; /* 31px */
+  --text-4xl: 2.3125rem; /* 37px */
+  --text-5xl: 3.0625rem; /* 49px */
+  --text-6xl: 3.8125rem; /* 61px */
+  --text-7xl: 4.5625rem; /* 73px */
+  --text-8xl: 6.0625rem; /* 97px */
+  --text-9xl: 8.0625rem; /* 129px */
+
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-900);
+  --info: var(--color-violet-500);
+  --info-foreground: var(--color-violet-900);
+  --warning: var(--color-yellow-500);
+  --warning-foreground: var(--color-yellow-900);
+  --invert: var(--color-zinc-900);
+  --invert-foreground: var(--color-zinc-50);
 }
 
 .dark {

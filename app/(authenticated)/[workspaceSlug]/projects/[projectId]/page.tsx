@@ -1,29 +1,28 @@
-"use client";
+"use client"
 
-import React from "react";
-import { useProject } from "./layout";
-import { ProjectDescription } from "./components/project-description";
-import { ProjectTeam } from "./components/project-team";
-import { ProjectResources } from "./components/project-resources";
-import { ProjectMilestones } from "./components/project-milestones";
-import { ProjectStatusPicker } from "./components/project-status-picker";
-import { ProjectHistory } from "./components/project-history";
+import { ProjectDescription } from "./components/project-description"
+import { ProjectHistory } from "./components/project-history"
+import { ProjectMilestones } from "./components/project-milestones"
+import { ProjectResources } from "./components/project-resources"
+import { ProjectStatusPicker } from "./components/project-status-picker"
+import { ProjectTeam } from "./components/project-team"
+import { useProject } from "./layout"
 
 export default function ProjectOverviewPage() {
-  const { projectId, workspaceSlug, selectedProject } = useProject();
+  const { projectId, workspaceSlug, selectedProject } = useProject()
 
   if (!projectId || !selectedProject) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="flex min-h-100 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
       </div>
-    );
+    )
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
+    <div className="grid animate-in grid-cols-1 gap-8 duration-300 fade-in lg:grid-cols-3">
       {/* Left Columns - Project Info & Resources */}
-      <div className="lg:col-span-2 space-y-8">
+      <div className="space-y-8 lg:col-span-2">
         {/* Project Description */}
         <ProjectDescription
           projectId={projectId}
@@ -32,7 +31,15 @@ export default function ProjectOverviewPage() {
 
         {/* Project Roles & Members */}
         <ProjectTeam
-          members={(selectedProject.members || []).map(m => ({ ...m, user: { id: m.user?.id || "", name: m.user?.name || "", email: m.user?.email || "", image: m.user?.image || null } }))}
+          members={(selectedProject.members || []).map((m) => ({
+            ...m,
+            user: {
+              id: m.user?.id || "",
+              name: m.user?.name || "",
+              email: m.user?.email || "",
+              image: m.user?.image || null,
+            },
+          }))}
           workspaceSlug={workspaceSlug || ""}
           projectId={projectId}
         />
@@ -51,10 +58,21 @@ export default function ProjectOverviewPage() {
 
         {/* Member Join Feed / Timeline */}
         <ProjectHistory
-          members={(selectedProject.members || []).filter(m => m.user) as (import("@/types/models").ProjectMember & { user: { id: string; name: string; email: string; image: string | null } })[]}
+          members={
+            (selectedProject.members || []).filter(
+              (m) => m.user
+            ) as (import("@/types/models").ProjectMember & {
+              user: {
+                id: string
+                name: string
+                email: string
+                image: string | null
+              }
+            })[]
+          }
           projectCreatedAt={selectedProject.createdAt}
         />
       </div>
     </div>
-  );
+  )
 }

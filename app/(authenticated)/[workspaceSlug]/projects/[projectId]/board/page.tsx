@@ -1,19 +1,19 @@
 "use client"
 
-
-import React, { useState } from "react"
-import { useProject } from "../layout"
-import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
-import { TaskBoard } from "@/features/tasks/components/task-board"
-import { Spinner } from "@/components/ui/spinner"
-import { Button } from "@/components/ui/button"
 import {
   Filters,
   FiltersContent,
   type Filter,
   type FilterFieldConfig,
 } from "@/components/reui/filters"
-import { SlidersHorizontal } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { TaskBoard } from "@/features/tasks/components/task-board"
+import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
+import { FilterHorizontalIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import React, { useState } from "react"
+import { useProject } from "../layout"
 
 export default function BoardPage() {
   const {
@@ -115,8 +115,8 @@ export default function BoardPage() {
   }, [epics, milestones, labels, selectedProject, statuses])
 
   const queryFilters = React.useMemo(() => {
-    if (activeFilters.length === 0) return {};
-    return { filters: JSON.stringify(activeFilters) };
+    if (activeFilters.length === 0) return {}
+    return { filters: JSON.stringify(activeFilters) }
   }, [activeFilters])
 
   const { data: tasks, isLoading } = useProjectTasks(projectId, queryFilters)
@@ -130,14 +130,14 @@ export default function BoardPage() {
   }
 
   const filterTrigger = (
-    <Button variant="outline" size="sm" className="gap-2 text-xs font-medium">
-      <SlidersHorizontal className="size-3.5" />
+    <Button variant="outline" size="lg" className="gap-2 text-xs font-medium">
+      <HugeiconsIcon icon={FilterHorizontalIcon} className="h-5 w-5" />
       Filter
     </Button>
   )
 
   return (
-    <div className="flex h-full w-full max-w-full flex-col min-h-0 gap-4 min-w-0 overflow-hidden">
+    <div className="flex h-full min-h-0 w-full max-w-full min-w-0 flex-col gap-4 overflow-hidden">
       {/* Filter bar - only visible when filters are active */}
       <div className="flex flex-wrap items-center gap-2">
         <Filters
@@ -164,9 +164,27 @@ export default function BoardPage() {
         projectId={projectId}
         tasks={tasks || []}
         statuses={statuses || []}
-        sprints={(sprints || []).map(s => ({ id: s.id, name: s.name, status: s.status, goal: s.goal || undefined, startDate: s.startDate || undefined, endDate: s.endDate || undefined }))}
+        sprints={(sprints || []).map((s) => ({
+          id: s.id,
+          name: s.name,
+          status: s.status,
+          goal: s.goal || undefined,
+          startDate: s.startDate || undefined,
+          endDate: s.endDate || undefined,
+        }))}
         projectTemplate={selectedProject?.template || "simple"}
-        projectMembers={(selectedProject?.members || []).map(m => ({ id: m.id, projectId: m.projectId, userId: m.userId, role: m.role, user: { id: m.user?.id || "", name: m.user?.name || "", email: m.user?.email || "", image: m.user?.image || null } }))}
+        projectMembers={(selectedProject?.members || []).map((m) => ({
+          id: m.id,
+          projectId: m.projectId,
+          userId: m.userId,
+          role: m.role,
+          user: {
+            id: m.user?.id || "",
+            name: m.user?.name || "",
+            email: m.user?.email || "",
+            image: m.user?.image || null,
+          },
+        }))}
         onSelectTask={handleSelectTask}
       />
     </div>

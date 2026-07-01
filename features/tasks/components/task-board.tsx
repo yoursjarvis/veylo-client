@@ -3,11 +3,11 @@
 import { format } from "date-fns"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import {
+  useCreateStatus,
   useCreateTask,
+  useUpdateStatus,
   useUpdateTask,
   useUpdateTaskOrder,
-  useCreateStatus,
-  useUpdateStatus,
 } from "../hooks/use-tasks"
 
 import { Badge } from "@/components/reui/badge"
@@ -15,19 +15,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import {
-  Bug,
-  Check,
-  CheckSquare,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  MessageSquare,
-  Paperclip,
-  Pencil,
-  Plus,
-  Sparkles,
-} from "lucide-react"
 
 import {
   closestCorners,
@@ -51,6 +38,20 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import {
+  Add01Icon,
+  ArrowRight01Icon,
+  AttachmentSquareIcon,
+  Bug01Icon,
+  CheckIcon,
+  CheckmarkSquare03Icon,
+  ChevronDownIcon,
+  Clock05Icon,
+  Edit03Icon,
+  Message01Icon,
+  SparklesIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { motion } from "motion/react"
 
 interface Task {
@@ -143,11 +144,30 @@ const getPriorityBadge = (prio: string) => {
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "bug":
-      return <Bug className="h-3 w-3 text-red-500" />
+      return <HugeiconsIcon icon={Bug01Icon} className="h-3 w-3 text-red-500" />
     case "feature":
-      return <Sparkles className="h-3 w-3 text-violet-500" />
+      return (
+        <HugeiconsIcon
+          icon={SparklesIcon}
+          className="h-3 w-3 text-violet-500"
+        />
+      )
+    case "task":
+      return (
+        <HugeiconsIcon
+          icon={CheckmarkSquare03Icon}
+          strokeWidth={2}
+          className="h-3 w-3 text-blue-500"
+        />
+      )
     default:
-      return <ChevronRight className="h-3 w-3 text-muted-foreground" />
+      return (
+        <HugeiconsIcon
+          icon={ArrowRight01Icon}
+          strokeWidth={2}
+          className="h-3 w-3 text-muted-foreground"
+        />
+      )
   }
 }
 
@@ -189,10 +209,10 @@ function SubtaskItem({
           "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
           isCompleted
             ? "border-success bg-success text-success-foreground"
-            : "hover:border-success/50 hover:text-success/30 border-muted-foreground/30 bg-background text-transparent"
+            : "border-muted-foreground/30 bg-background text-transparent hover:border-success/50 hover:text-success/30"
         )}
       >
-        <Check size={9} strokeWidth={3.5} />
+        <HugeiconsIcon icon={CheckIcon} size={9} strokeWidth={3.5} />
       </button>
       <span
         className={cn(
@@ -208,7 +228,7 @@ function SubtaskItem({
       <div className="flex shrink-0 items-center gap-2">
         {subtask.dueDate && (
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-            <Clock size={10} />
+            <HugeiconsIcon icon={Clock05Icon} />
             <span>{format(new Date(subtask.dueDate), "MMM d")}</span>
           </div>
         )}
@@ -326,7 +346,11 @@ function TaskCard({
           onClick={handleEditClick}
           className="absolute top-2 right-2 z-10 h-6 w-6 bg-background/80 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 hover:bg-muted"
         >
-          <Pencil size={12} className="text-muted-foreground" />
+          <HugeiconsIcon
+            icon={Edit03Icon}
+            size={12}
+            className="text-muted-foreground"
+          />
         </Button>
       )}
 
@@ -355,10 +379,10 @@ function TaskCard({
               "mt-0.75 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
               isCompleted
                 ? "border-success bg-success text-success-foreground"
-                : "hover:border-success/50 hover:text-success/30 border-muted-foreground/30 bg-background text-transparent"
+                : "border-muted-foreground/30 bg-background text-transparent hover:border-success/50 hover:text-success/30"
             )}
           >
-            <Check size={10} strokeWidth={3.5} />
+            <HugeiconsIcon icon={CheckIcon} size={10} strokeWidth={3.5} />
           </button>
 
           {isEditing ? (
@@ -408,21 +432,33 @@ function TaskCard({
           <div className="flex items-center gap-2.5 text-muted-foreground">
             {task.dueDate && (
               <div className="flex items-center gap-1 text-[10px] font-medium transition-colors hover:text-foreground">
-                <Clock size={11} className="text-muted-foreground/70" />
+                <HugeiconsIcon
+                  icon={Clock05Icon}
+                  className="h-3 w-3 text-muted-foreground/70"
+                  strokeWidth={1.5}
+                />
                 <span>{format(new Date(task.dueDate), "MMM d")}</span>
               </div>
             )}
 
             {task.commentCount !== undefined && task.commentCount > 0 && (
               <div className="flex items-center gap-1 text-[10px] font-medium transition-colors hover:text-foreground">
-                <MessageSquare size={11} className="text-muted-foreground/70" />
+                <HugeiconsIcon
+                  icon={Message01Icon}
+                  size={11}
+                  className="text-muted-foreground/70"
+                />
                 <span>{task.commentCount}</span>
               </div>
             )}
 
             {task.attachmentCount !== undefined && task.attachmentCount > 0 && (
               <div className="flex items-center gap-1 text-[10px] font-medium transition-colors hover:text-foreground">
-                <Paperclip size={11} className="text-muted-foreground/70" />
+                <HugeiconsIcon
+                  icon={AttachmentSquareIcon}
+                  size={11}
+                  className="text-muted-foreground/70"
+                />
                 <span>{task.attachmentCount}</span>
               </div>
             )}
@@ -440,7 +476,8 @@ function TaskCard({
                   setIsSubtasksExpanded(!isSubtasksExpanded)
                 }}
               >
-                <CheckSquare
+                <HugeiconsIcon
+                  icon={CheckmarkSquare03Icon}
                   size={11}
                   className={
                     isSubtasksExpanded
@@ -449,8 +486,10 @@ function TaskCard({
                   }
                 />
                 <span>{subtaskDisplay}</span>
-                <ChevronDown
+                <HugeiconsIcon
+                  icon={ChevronDownIcon}
                   size={11}
+                  strokeWidth={3}
                   className={cn(
                     "transition-transform",
                     isSubtasksExpanded && "rotate-180"
@@ -612,8 +651,14 @@ function BoardColumn({
   }, [status.name])
 
   const handleStatusSave = () => {
-    if (editedStatusName.trim() !== status.name && editedStatusName.trim() !== "") {
-      updateStatusMutation.mutate({ id: status.id, data: { name: editedStatusName.trim() } })
+    if (
+      editedStatusName.trim() !== status.name &&
+      editedStatusName.trim() !== ""
+    ) {
+      updateStatusMutation.mutate({
+        id: status.id,
+        data: { name: editedStatusName.trim() },
+      })
     } else {
       setEditedStatusName(status.name)
     }
@@ -651,7 +696,7 @@ function BoardColumn({
           ) : (
             <span
               onClick={() => setIsEditingStatus(true)}
-              className="cursor-text text-[13px] font-semibold tracking-tight text-foreground/90 hover:text-primary transition-colors"
+              className="cursor-text text-[13px] font-semibold tracking-tight text-foreground/90 transition-colors hover:text-primary"
             >
               {status.name}
             </span>
@@ -666,7 +711,7 @@ function BoardColumn({
           onClick={() => setQuickAddStatusId(status.id)}
           className="h-6 w-6 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
-          <Plus size={14} />
+          <HugeiconsIcon icon={Add01Icon} size={14} />
         </Button>
       </div>
 
@@ -753,7 +798,11 @@ export function TaskBoard({
   const handleCreateStatus = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newStatusName.trim()) return
-    createStatusMutation.mutate({ name: newStatusName.trim(), category: "todo", order: statuses.length })
+    createStatusMutation.mutate({
+      name: newStatusName.trim(),
+      category: "todo",
+      order: statuses.length,
+    })
     setNewStatusName("")
     setIsAddingStatus(false)
   }
@@ -902,7 +951,7 @@ export function TaskBoard({
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
     >
-      <div className="flex min-h-0 min-w-0 flex-1 w-full max-w-full gap-5 overflow-x-auto px-1 py-2 pb-6">
+      <div className="flex min-h-0 w-full max-w-full min-w-0 flex-1 gap-5 overflow-x-auto px-1 py-2 pb-6">
         {statuses.map((status) => {
           const columnTasks = filteredTasks.filter(
             (t) => t.statusId === status.id
@@ -959,9 +1008,9 @@ export function TaskBoard({
             <Button
               variant="outline"
               onClick={() => setIsAddingStatus(true)}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border-dashed border-border/60 bg-secondary/10 text-muted-foreground hover:bg-secondary/30 hover:text-foreground transition-colors"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border-dashed border-border/60 bg-secondary/10 text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-foreground"
             >
-              <Plus size={16} />
+              <HugeiconsIcon icon={Add01Icon} size={16} />
               <span className="text-[13px] font-medium">Add Column</span>
             </Button>
           )}

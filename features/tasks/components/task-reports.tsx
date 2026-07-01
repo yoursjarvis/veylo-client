@@ -15,16 +15,18 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status"
-import { format } from "date-fns"
 import {
-  AlertTriangle,
-  BarChart3,
-  CheckCircle,
-  ClipboardList,
-  Clock,
-  TrendingUp,
-  Users,
-} from "lucide-react"
+  AlertDiamondIcon,
+  AnalysisTextLinkIcon,
+  ChartBarBigIcon,
+  CheckmarkCircle01Icon,
+  Clock03Icon,
+  TaskDaily01Icon,
+  TeamWorkIcon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { format } from "date-fns"
 import {
   Area,
   AreaChart,
@@ -267,25 +269,36 @@ export function TaskReports({
 
   // 8. Calculate Active Sprint Burndown Data
   const activeSprint = sprints.find((s) => s.status === "active")
-  let burndownData: { date: string; remaining: number; ideal: number }[] = []
+  const burndownData: { date: string; remaining: number; ideal: number }[] = []
   if (activeSprint && activeSprint.startDate && activeSprint.endDate) {
-    const sprintTasks = activeTasks.filter((t) => t.sprintId === activeSprint.id)
-    const totalSprintPoints = sprintTasks.reduce((acc, t) => acc + (t.estimate || 1), 0)
+    const sprintTasks = activeTasks.filter(
+      (t) => t.sprintId === activeSprint.id
+    )
+    const totalSprintPoints = sprintTasks.reduce(
+      (acc, t) => acc + (t.estimate || 1),
+      0
+    )
 
     const start = new Date(activeSprint.startDate)
     const end = new Date(activeSprint.endDate)
-    const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-    
+    const duration = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+    )
+
     let currentRemaining = totalSprintPoints
     for (let i = 0; i <= duration; i++) {
       const d = new Date(start)
       d.setDate(d.getDate() + i)
-      
+
       const completedOnDay = sprintTasks
         .filter((t) => t.status?.category === "done" && t.updatedAt)
         .filter((t) => {
           const ud = new Date(t.updatedAt!)
-          return ud.getFullYear() === d.getFullYear() && ud.getMonth() === d.getMonth() && ud.getDate() === d.getDate()
+          return (
+            ud.getFullYear() === d.getFullYear() &&
+            ud.getMonth() === d.getMonth() &&
+            ud.getDate() === d.getDate()
+          )
         })
         .reduce((acc, t) => acc + (t.estimate || 1), 0)
 
@@ -294,13 +307,19 @@ export function TaskReports({
         burndownData.push({
           date: format(d, "MMM d"),
           remaining: Math.max(0, currentRemaining),
-          ideal: Math.max(0, totalSprintPoints - (totalSprintPoints / duration) * i),
+          ideal: Math.max(
+            0,
+            totalSprintPoints - (totalSprintPoints / duration) * i
+          ),
         })
       } else {
         burndownData.push({
           date: format(d, "MMM d"),
           remaining: 0,
-          ideal: Math.max(0, totalSprintPoints - (totalSprintPoints / duration) * i),
+          ideal: Math.max(
+            0,
+            totalSprintPoints - (totalSprintPoints / duration) * i
+          ),
         })
       }
     }
@@ -333,7 +352,7 @@ export function TaskReports({
               </span>
             </div>
             <Status variant="default" className="rounded-xl p-2.5">
-              <ClipboardList className="h-5 w-5" />
+              <HugeiconsIcon icon={TaskDaily01Icon} className="h-5 w-5" />
             </Status>
           </CardContent>
         </Card>
@@ -350,7 +369,7 @@ export function TaskReports({
               </span>
             </div>
             <Status variant="success" className="rounded-xl p-2.5">
-              <CheckCircle className="h-5 w-5" />
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5" />
             </Status>
           </CardContent>
         </Card>
@@ -367,7 +386,7 @@ export function TaskReports({
               </span>
             </div>
             <Status variant="info" className="rounded-xl p-2.5">
-              <Clock className="h-5 w-5" />
+              <HugeiconsIcon icon={Clock03Icon} className="h-5 w-5" />
             </Status>
           </CardContent>
         </Card>
@@ -384,7 +403,7 @@ export function TaskReports({
               </span>
             </div>
             <Status variant="destructive" className="rounded-xl p-2.5">
-              <AlertTriangle className="h-5 w-5" />
+              <HugeiconsIcon icon={AlertDiamondIcon} className="h-5 w-5" />
             </Status>
           </CardContent>
         </Card>
@@ -401,7 +420,7 @@ export function TaskReports({
               </span>
             </div>
             <Status variant="warning" className="rounded-xl p-2.5">
-              <Users className="h-5 w-5" />
+              <HugeiconsIcon icon={UserGroupIcon} className="h-5 w-5" />
             </Status>
           </CardContent>
         </Card>
@@ -414,7 +433,10 @@ export function TaskReports({
           {/* Tasks by Completion Status (Donut Chart) */}
           <Card>
             <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
-              <CheckCircle className="h-4.5 w-4.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={CheckmarkCircle01Icon}
+                className="h-4.5 w-4.5 text-muted-foreground"
+              />
               <CardTitle className="text-xs font-bold tracking-wider uppercase">
                 Tasks by Completion Status
               </CardTitle>
@@ -474,7 +496,10 @@ export function TaskReports({
           {/* Task Completion Over Time (Area Chart) */}
           <Card>
             <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
-              <TrendingUp className="h-4.5 w-4.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={AnalysisTextLinkIcon}
+                className="h-4.5 w-4.5 text-muted-foreground"
+              />
               <CardTitle className="text-xs font-bold tracking-wider uppercase">
                 Task Completion Over Time
               </CardTitle>
@@ -485,10 +510,7 @@ export function TaskReports({
                   No history details to report.
                 </div>
               ) : (
-                <ChartContainer
-                  config={timelineConfig}
-                  className="h-[240px] w-full"
-                >
+                <ChartContainer config={timelineConfig} className="h-60 w-full">
                   <AreaChart
                     data={timelineData}
                     margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
@@ -580,12 +602,15 @@ export function TaskReports({
           {/* Team Workload Distribution (Pie Chart) */}
           <Card>
             <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
-              <Users className="h-4.5 w-4.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={TeamWorkIcon}
+                className="h-4.5 w-4.5 text-muted-foreground"
+              />
               <CardTitle className="text-xs font-bold tracking-wider uppercase">
                 Team Workload Distribution
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex min-h-[300px] flex-col items-center justify-center p-6">
+            <CardContent className="flex min-h-75 flex-col items-center justify-center p-6">
               {workloadData.length === 0 ? (
                 <Empty>
                   <EmptyHeader>
@@ -596,10 +621,7 @@ export function TaskReports({
                   </EmptyHeader>
                 </Empty>
               ) : (
-                <ChartContainer
-                  config={teamConfig}
-                  className="h-[250px] w-full"
-                >
+                <ChartContainer config={teamConfig} className="h-62.5 w-full">
                   <PieChart>
                     <Pie
                       data={teamPieData}
@@ -634,20 +656,23 @@ export function TaskReports({
           {/* Incomplete Tasks by Section (Bar Chart) */}
           <Card>
             <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
-              <BarChart3 className="h-4.5 w-4.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={ChartBarBigIcon}
+                className="h-4.5 w-4.5 text-muted-foreground"
+              />
               <CardTitle className="text-xs font-bold tracking-wider uppercase">
                 Total Incomplete Tasks by Section
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               {barChartStatusData.length === 0 ? (
-                <div className="flex h-[240px] items-center justify-center text-xs text-muted-foreground italic">
+                <div className="flex h-60 items-center justify-center text-xs text-muted-foreground italic">
                   No incomplete tasks found.
                 </div>
               ) : (
                 <ChartContainer
                   config={barChartStatusConfig}
-                  className="h-[240px] w-full"
+                  className="h-60 w-full"
                 >
                   <BarChart
                     data={barChartStatusData}
@@ -681,141 +706,151 @@ export function TaskReports({
           {/* Sprint Velocity Chart (Scrum only) OR Stage Breakdown (Non-scrum) */}
           {projectTemplate === "scrum" ? (
             <>
-            <Card>
-              <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
-                <BarChart3 className="h-4.5 w-4.5 text-muted-foreground" />
-                <CardTitle className="text-xs font-bold tracking-wider uppercase">
-                  Sprint Velocity Chart
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex min-h-[300px] flex-col justify-center p-6">
-                {velocityData.length === 0 ? (
-                  <Empty>
-                    <EmptyHeader>
-                      <EmptyTitle>No completed sprints</EmptyTitle>
-                      <EmptyDescription>
-                        Complete your first work cycle/sprint to unlock velocity
-                        reporting metrics.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                  </Empty>
-                ) : (
-                  <ChartContainer
-                    config={velocityConfig}
-                    className="h-[250px] w-full"
-                  >
-                    <BarChart
-                      data={velocityData}
-                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
+                  <HugeiconsIcon
+                    icon={ChartBarBigIcon}
+                    className="h-4.5 w-4.5 text-muted-foreground"
+                  />
+                  <CardTitle className="text-xs font-bold tracking-wider uppercase">
+                    Sprint Velocity Chart
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex min-h-75 flex-col justify-center p-6">
+                  {velocityData.length === 0 ? (
+                    <Empty>
+                      <EmptyHeader>
+                        <EmptyTitle>No completed sprints</EmptyTitle>
+                        <EmptyDescription>
+                          Complete your first work cycle/sprint to unlock
+                          velocity reporting metrics.
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
+                  ) : (
+                    <ChartContainer
+                      config={velocityConfig}
+                      className="h-62.5 w-full"
                     >
-                      <XAxis
-                        dataKey="name"
-                        stroke="var(--muted-foreground)"
-                        fontSize={10}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        stroke="var(--muted-foreground)"
-                        fontSize={10}
-                        tickLine={false}
-                      />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <ChartLegend
-                        wrapperStyle={{
-                          fontSize: "11px",
-                          color: "var(--muted-foreground)",
-                        }}
-                      />
-                      <Bar
-                        dataKey="totalPlanned"
-                        fill="var(--color-totalPlanned)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar
-                        dataKey="completed"
-                        fill="var(--color-completed)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ChartContainer>
-                )}
-              </CardContent>
-            </Card>
-            
-            {/* Sprint Burndown Chart (Scrum only) */}
-            <Card>
-              <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
-                <TrendingUp className="h-4.5 w-4.5 text-muted-foreground" />
-                <CardTitle className="text-xs font-bold tracking-wider uppercase">
-                  Active Sprint Burndown
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex min-h-[300px] flex-col justify-center p-6">
-                {!activeSprint ? (
-                  <Empty>
-                    <EmptyHeader>
-                      <EmptyTitle>No active sprint</EmptyTitle>
-                      <EmptyDescription>
-                        Start a sprint to track burndown progress.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                  </Empty>
-                ) : burndownData.length === 0 ? (
-                   <div className="flex items-center justify-center h-full text-muted-foreground text-xs italic">
-                     Insufficient data for burndown.
-                   </div>
-                ) : (
-                  <ChartContainer
-                    config={burndownConfig}
-                    className="h-[250px] w-full"
-                  >
-                    <AreaChart
-                      data={burndownData}
-                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                      <BarChart
+                        data={velocityData}
+                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                      >
+                        <XAxis
+                          dataKey="name"
+                          stroke="var(--muted-foreground)"
+                          fontSize={10}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          stroke="var(--muted-foreground)"
+                          fontSize={10}
+                          tickLine={false}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartLegend
+                          wrapperStyle={{
+                            fontSize: "11px",
+                            color: "var(--muted-foreground)",
+                          }}
+                        />
+                        <Bar
+                          dataKey="totalPlanned"
+                          fill="var(--color-totalPlanned)"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="completed"
+                          fill="var(--color-completed)"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Sprint Burndown Chart (Scrum only) */}
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
+                  <HugeiconsIcon
+                    icon={AnalysisTextLinkIcon}
+                    className="h-4.5 w-4.5 text-muted-foreground"
+                  />
+                  <CardTitle className="text-xs font-bold tracking-wider uppercase">
+                    Active Sprint Burndown
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex min-h-75 flex-col justify-center p-6">
+                  {!activeSprint ? (
+                    <Empty>
+                      <EmptyHeader>
+                        <EmptyTitle>No active sprint</EmptyTitle>
+                        <EmptyDescription>
+                          Start a sprint to track burndown progress.
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
+                  ) : burndownData.length === 0 ? (
+                    <div className="flex h-full items-center justify-center text-xs text-muted-foreground italic">
+                      Insufficient data for burndown.
+                    </div>
+                  ) : (
+                    <ChartContainer
+                      config={burndownConfig}
+                      className="h-62.5 w-full"
                     >
-                      <XAxis
-                        dataKey="date"
-                        stroke="var(--muted-foreground)"
-                        fontSize={10}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        stroke="var(--muted-foreground)"
-                        fontSize={10}
-                        tickLine={false}
-                      />
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <ChartLegend
-                        wrapperStyle={{
-                          fontSize: "11px",
-                          color: "var(--muted-foreground)",
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="ideal"
-                        stroke="var(--color-ideal)"
-                        strokeDasharray="5 5"
-                        fill="transparent"
-                        strokeWidth={2}
-                      />
-                      <Area
-                        type="stepAfter"
-                        dataKey="remaining"
-                        stroke="var(--color-remaining)"
-                        fillOpacity={0.2}
-                        fill="var(--color-remaining)"
-                        strokeWidth={3}
-                      />
-                    </AreaChart>
-                  </ChartContainer>
-                )}
-              </CardContent>
-            </Card>
-          </>
+                      <AreaChart
+                        data={burndownData}
+                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                      >
+                        <XAxis
+                          dataKey="date"
+                          stroke="var(--muted-foreground)"
+                          fontSize={10}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          stroke="var(--muted-foreground)"
+                          fontSize={10}
+                          tickLine={false}
+                        />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                          stroke="var(--border)"
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartLegend
+                          wrapperStyle={{
+                            fontSize: "11px",
+                            color: "var(--muted-foreground)",
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="ideal"
+                          stroke="var(--color-ideal)"
+                          strokeDasharray="5 5"
+                          fill="transparent"
+                          strokeWidth={2}
+                        />
+                        <Area
+                          type="stepAfter"
+                          dataKey="remaining"
+                          stroke="var(--color-remaining)"
+                          fillOpacity={0.2}
+                          fill="var(--color-remaining)"
+                          strokeWidth={3}
+                        />
+                      </AreaChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </>
           ) : (
-            <Card className="flex min-h-[300px] flex-col justify-center p-6">
+            <Card className="flex min-h-75 flex-col justify-center p-6">
               <h4 className="mb-4 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Task Stage Breakdown
               </h4>
@@ -846,11 +881,11 @@ export function TaskReports({
                   const getProgressColorClass = (category: string) => {
                     switch (category) {
                       case "done":
-                        return "bg-green-500 dark:bg-green-400"
+                        return "bg-chart-1"
                       case "in_progress":
-                        return "bg-blue-500 dark:bg-blue-400"
+                        return "bg-chart-2"
                       case "todo":
-                        return "bg-orange-500 dark:bg-orange-400"
+                        return "bg-chart-3"
                       default:
                         return "bg-muted-foreground"
                     }
@@ -885,20 +920,23 @@ export function TaskReports({
           {/* Incomplete Tasks by Assignee (Bar Chart) */}
           <Card>
             <CardHeader className="flex flex-row items-center gap-2 border-b p-4">
-              <Users className="h-4.5 w-4.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={UserGroupIcon}
+                className="h-4.5 w-4.5 text-muted-foreground"
+              />
               <CardTitle className="text-xs font-bold tracking-wider uppercase">
                 Total Incomplete Tasks by Assignee
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               {barChartAssigneeData.length === 0 ? (
-                <div className="flex h-[240px] items-center justify-center text-xs text-muted-foreground italic">
+                <div className="flex h-60 items-center justify-center text-xs text-muted-foreground italic">
                   No active assignments.
                 </div>
               ) : (
                 <ChartContainer
                   config={assigneeBarConfig}
-                  className="h-[240px] w-full"
+                  className="h-60 w-full"
                 >
                   <BarChart
                     data={barChartAssigneeDataWithFill}

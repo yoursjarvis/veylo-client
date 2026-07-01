@@ -1,11 +1,11 @@
-import { mergeProps } from "@base-ui/react/merge-props";
-import { useRender } from "@base-ui/react/use-render";
-import { cva, type VariantProps } from "class-variance-authority";
-import type * as React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
+import { cva, type VariantProps } from "class-variance-authority"
+import type * as React from "react"
 
 const statusVariants = cva(
-  "inline-flex w-fit shrink-0 items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-full border px-2.5 py-1 font-medium text-xs transition-colors",
+  "inline-flex w-fit shrink-0 items-center gap-1.5 overflow-hidden rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors",
   {
     variants: {
       variant: {
@@ -23,16 +23,17 @@ const statusVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  },
-);
+  }
+)
 
 interface StatusProps
-  extends VariantProps<typeof statusVariants>,
+  extends
+    VariantProps<typeof statusVariants>,
     React.ComponentProps<"div">,
     useRender.ComponentProps<"div"> {}
 
 function Status(props: StatusProps) {
-  const { className, variant = "default", render, ...rootProps } = props;
+  const { className, variant = "default", render, ...rootProps } = props
 
   return useRender({
     defaultTagName: "div",
@@ -40,18 +41,18 @@ function Status(props: StatusProps) {
       {
         className: cn(statusVariants({ variant }), className),
       },
-      rootProps,
+      rootProps
     ),
     render,
     state: {
       slot: "status",
       variant,
     },
-  });
+  })
 }
 
 function StatusIndicator(props: React.ComponentProps<"div">) {
-  const { className, ...indicatorProps } = props;
+  const { className, ...indicatorProps } = props
 
   return (
     <div
@@ -61,14 +62,14 @@ function StatusIndicator(props: React.ComponentProps<"div">) {
         "relative flex size-2 shrink-0 rounded-full",
         "before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-inherit",
         "after:absolute after:inset-[2px] after:rounded-full after:bg-inherit",
-        className,
+        className
       )}
     />
-  );
+  )
 }
 
 function StatusLabel(props: React.ComponentProps<"div">) {
-  const { className, ...labelProps } = props;
+  const { className, ...labelProps } = props
 
   return (
     <div
@@ -76,7 +77,7 @@ function StatusLabel(props: React.ComponentProps<"div">) {
       {...labelProps}
       className={cn("leading-none", className)}
     />
-  );
+  )
 }
 
-export { Status, StatusIndicator, StatusLabel, statusVariants };
+export { Status, StatusIndicator, StatusLabel, statusVariants }
