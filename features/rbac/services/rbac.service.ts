@@ -69,7 +69,7 @@ export const rbacService = {
     await axiosInstance.delete(`/rbac/assignments/${assignmentId}`);
   },
 
-  getUserAssignments: async (userId: string, scopeType: string, scopeId: string): Promise<RoleAssignment[]> => {
+  getUserAssignments: async (userId: string, scopeType?: string, scopeId?: string): Promise<RoleAssignment[]> => {
     const { data } = await axiosInstance.get(`/rbac/assignments`, {
       params: { userId, scopeType, scopeId },
     });

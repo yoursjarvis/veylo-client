@@ -23,11 +23,11 @@ export const useOrganizationRoles = (orgId: string) => {
   });
 };
 
-export const useUserAssignments = (userId: string, scopeType: string, scopeId: string) => {
+export const useUserAssignments = (userId: string, scopeType?: string, scopeId?: string) => {
   return useQuery({
     queryKey: [...rbacKeys.all, "userAssignments", userId, scopeType, scopeId],
     queryFn: () => rbacService.getUserAssignments(userId, scopeType, scopeId),
-    enabled: !!userId && !!scopeType && !!scopeId,
+    enabled: !!userId,
   });
 };
 
