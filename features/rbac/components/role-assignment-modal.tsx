@@ -284,7 +284,7 @@ function AssignmentRowItem({
     <div className="flex w-full animate-in items-center gap-3 duration-200 fade-in zoom-in">
       <div className="min-w-0 flex-1">
         <Popover open={roleOpen} onOpenChange={setRoleOpen}>
-          <PopoverTrigger asChild>
+          <PopoverTrigger render={
             <Button
               variant="outline"
               role="combobox"
@@ -302,7 +302,7 @@ function AssignmentRowItem({
                 className="ml-2 h-4 w-4 shrink-0 opacity-50"
               />
             </Button>
-          </PopoverTrigger>
+          } />
           <PopoverContent
             className="w-[--radix-popover-trigger-width] p-0"
             align="start"
@@ -340,7 +340,7 @@ function AssignmentRowItem({
 
       <div className="min-w-0 flex-1">
         <Popover open={scopeOpen} onOpenChange={setScopeOpen}>
-          <PopoverTrigger asChild>
+          <PopoverTrigger render={
             <Button
               variant="outline"
               role="combobox"
@@ -357,7 +357,7 @@ function AssignmentRowItem({
                 className="ml-2 h-4 w-4 shrink-0 opacity-50"
               />
             </Button>
-          </PopoverTrigger>
+          } />
           <PopoverContent
             className="w-[--radix-popover-trigger-width] p-0"
             align="start"
@@ -406,7 +406,7 @@ function AssignmentRowItem({
       <div className="min-w-0 flex-1">
         {row.scopeType === "PROJECT" && (
           <Popover open={projectOpen} onOpenChange={setProjectOpen}>
-            <PopoverTrigger asChild>
+            <PopoverTrigger render={
               <Button
                 variant="outline"
                 role="combobox"
@@ -425,7 +425,7 @@ function AssignmentRowItem({
                   className="ml-2 h-4 w-4 shrink-0 opacity-50"
                 />
               </Button>
-            </PopoverTrigger>
+            } />
             <PopoverContent
               className="w-[--radix-popover-trigger-width] p-0"
               align="start"
@@ -466,7 +466,7 @@ function AssignmentRowItem({
 
       <div className="flex w-[80px] items-center gap-2">
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger render={
             <Button
               variant="ghost"
               size="icon"
@@ -475,7 +475,7 @@ function AssignmentRowItem({
             >
               <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
             </Button>
-          </TooltipTrigger>
+          } />
           <TooltipContent>
             <p>Remove Assignment</p>
           </TooltipContent>
@@ -483,7 +483,7 @@ function AssignmentRowItem({
 
         {isLast && (
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger render={
               <Button
                 variant="ghost"
                 size="icon"
@@ -492,7 +492,7 @@ function AssignmentRowItem({
               >
                 <HugeiconsIcon icon={PlusSignIcon} className="h-4 w-4" />
               </Button>
-            </TooltipTrigger>
+            } />
             <TooltipContent>
               <p>Add Assignment</p>
             </TooltipContent>

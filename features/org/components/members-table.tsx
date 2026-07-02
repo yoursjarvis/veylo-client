@@ -27,7 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ROLES } from "@/constants/roles"
+import { RoleAssignmentModal } from "@/features/rbac/components/role-assignment-modal"
+import { authClient } from "@/lib/auth-client"
 import {
   Cancel01Icon,
   Key01Icon,
@@ -37,6 +41,7 @@ import {
   StopIcon,
   UserAdd01Icon,
   UserBlock01Icon,
+  UserEdit01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -45,6 +50,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { useQueryState } from "nuqs"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -52,16 +58,14 @@ import {
   useBanMember,
   useImpersonateUser,
   useMembers,
-  useRevokeSessions,
-  useUnbanMember,
   usePendingInvitations,
   useRevokeInvitation,
+  useRevokeSessions,
+  useUnbanMember,
 } from "../hooks/use-org"
 import { BulkInviteModal } from "./bulk-invite-modal"
+import { EditMemberModal, type MemberProps } from "./edit-member-modal"
 import { InviteMemberModal } from "./invite-member-modal"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RoleAssignmentModal } from "@/features/rbac/components/role-assignment-modal"
-import { authClient } from "@/lib/auth-client"
 
 type Member = {
   id: string
@@ -91,19 +95,26 @@ export function MembersTable() {
   const [status, setStatus] = useQueryState("status", { defaultValue: "" })
   const [isBulkInviteOpen, setIsBulkInviteOpen] = useState(false)
   const [isInviteOpen, setIsInviteOpen] = useState(false)
-  
-  // State for Role Assignment Modal
-  const [assignmentModal, setAssignmentModal] = useState<{ 
-    isOpen: boolean; 
-    userId: string; 
-    userName: string 
-  }>({ 
-    isOpen: false, 
-    userId: "", 
-    userName: "" 
-  });
 
-  const { data: activeOrganization } = authClient.useActiveOrganization();
+  // State for Role Assignment Modal
+  const [assignmentModal, setAssignmentModal] = useState<{
+    isOpen: boolean
+    userId: string
+    userName: string
+  }>({
+    isOpen: false,
+    userId: "",
+    userName: "",
+  })
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean
+    member: MemberProps | null
+  }>({
+    isOpen: false,
+    member: null,
+  })
+
+  const { data: activeOrganization } = authClient.useActiveOrganization()
 
   const {
     data,
@@ -128,6 +139,7 @@ export function MembersTable() {
     () => [
       columnHelper.accessor("user", {
         header: "User",
+        size: 350,
         cell: (info) => {
           const user = info.getValue()
           return (
@@ -148,17 +160,18 @@ export function MembersTable() {
       }),
       columnHelper.accessor("role", {
         header: "Roles",
+        size: 400,
         cell: (info) => {
           const member = info.row.original
           const roles = member.user.roleAssignments || []
-          const rolesCount = member.user._count?.roleAssignments || roles.length;
-          
+          const rolesCount = member.user._count?.roleAssignments || roles.length
+
           return (
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs gap-2 shrink-0"
+                className="h-8 shrink-0 gap-2 text-xs"
                 onClick={() => {
                   setAssignmentModal({
                     isOpen: true,
@@ -167,21 +180,24 @@ export function MembersTable() {
                   })
                 }}
               >
-                <HugeiconsIcon icon={Shield01Icon} className="h-3.5 w-3.5 text-muted-foreground" />
+                <HugeiconsIcon
+                  icon={Shield01Icon}
+                  className="h-3.5 w-3.5 text-muted-foreground"
+                />
                 Manage Roles
               </Button>
               {roles.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {roles.slice(0, 2).map((assignment, index) => (
-                    <span 
-                      key={index} 
-                      className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-md capitalize"
+                    <span
+                      key={index}
+                      className="rounded-md bg-secondary px-2 py-1 text-xs text-muted-foreground capitalize"
                     >
-                      {assignment.role.name.replace(/_/g, ' ')}
+                      {assignment.role.name.replace(/_/g, " ")}
                     </span>
                   ))}
                   {roles.length > 2 && (
-                    <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-md">
+                    <span className="rounded-md bg-secondary px-2 py-1 text-xs text-muted-foreground">
                       +{roles.length - 2} more
                     </span>
                   )}
@@ -193,6 +209,7 @@ export function MembersTable() {
       }),
       columnHelper.accessor("user.banned", {
         header: "Status",
+        size: 150,
         cell: (info) => {
           const isBanned = info.getValue()
           return (
@@ -206,6 +223,7 @@ export function MembersTable() {
       }),
       columnHelper.display({
         id: "actions",
+        size: 80,
         cell: (info) => {
           const member = info.row.original
           const user = member.user
@@ -220,6 +238,15 @@ export function MembersTable() {
               <DropdownMenuContent align="end">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onClick={() => setEditModal({ isOpen: true, member })}
+                  >
+                    <HugeiconsIcon
+                      icon={UserEdit01Icon}
+                      className="mr-2 h-4 w-4"
+                    />
+                    Edit User
+                  </DropdownMenuItem>
                   {user.banned ? (
                     <DropdownMenuItem
                       onClick={() => {
@@ -279,10 +306,10 @@ export function MembersTable() {
                         },
                       })
                     }}
-                    >
-                      <HugeiconsIcon icon={Key01Icon} className="mr-2 h-4 w-4" />{" "}
-                      Impersonate
-                    </DropdownMenuItem>
+                  >
+                    <HugeiconsIcon icon={Key01Icon} className="mr-2 h-4 w-4" />{" "}
+                    Impersonate
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -299,31 +326,47 @@ export function MembersTable() {
     getCoreRowModel: getCoreRowModel(),
   })
 
-  const observerRef = useRef<HTMLDivElement>(null)
+  const parentRef = useRef<HTMLDivElement>(null)
+
+  const rows = table.getRowModel().rows
+
+  const rowVirtualizer = useVirtualizer({
+    count: hasNextPage ? rows.length + 5 : rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 73,
+    overscan: 20,
+  })
+
+  const virtualItems = rowVirtualizer.getVirtualItems()
 
   useEffect(() => {
-    if (!hasNextPage || isFetchingNextPage || isLoading) return
+    const [lastItem] = [...virtualItems].reverse()
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          fetchNextPage()
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    const currentRef = observerRef.current
-    if (currentRef) {
-      observer.observe(currentRef)
+    if (!lastItem) {
+      return
     }
 
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef)
-      }
+    if (
+      lastItem.index >= rows.length - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      fetchNextPage()
     }
-  }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage])
+  }, [
+    hasNextPage,
+    fetchNextPage,
+    rows.length,
+    isFetchingNextPage,
+    virtualItems,
+  ])
+
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0]?.start || 0 : 0
+  const paddingBottom =
+    virtualItems.length > 0
+      ? rowVirtualizer.getTotalSize() -
+        (virtualItems[virtualItems.length - 1]?.end || 0)
+      : 0
 
   const handleReset = () => {
     setSearch("")
@@ -335,17 +378,17 @@ export function MembersTable() {
 
   return (
     <Tabs defaultValue="members" className="w-full space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border pb-px gap-4">
-        <TabsList variant="line" className="bg-transparent p-0 gap-6">
+      <div className="flex flex-col items-start justify-between gap-4 border-b border-border pb-px sm:flex-row sm:items-center">
+        <TabsList variant="line" className="gap-6 bg-transparent p-0">
           <TabsTrigger
             value="members"
-            className="px-1 pb-3 rounded-none font-semibold text-sm"
+            className="rounded-none px-1 pb-3 text-sm font-semibold"
           >
             Active Members
           </TabsTrigger>
           <TabsTrigger
             value="invitations"
-            className="px-1 pb-3 rounded-none font-semibold text-sm"
+            className="rounded-none px-1 pb-3 text-sm font-semibold"
           >
             Pending Invitations
           </TabsTrigger>
@@ -411,7 +454,11 @@ export function MembersTable() {
             </Select>
 
             {hasFilters && (
-              <Button variant="ghost" onClick={handleReset} className="h-10 px-3">
+              <Button
+                variant="ghost"
+                onClick={handleReset}
+                className="h-10 px-3"
+              >
                 <HugeiconsIcon icon={Cancel01Icon} className="mr-2 h-4 w-4" />
                 Reset
               </Button>
@@ -419,7 +466,58 @@ export function MembersTable() {
           </div>
         </div>
 
-        {flatData.length === 0 && !isLoading ? (
+        {isLoading && flatData.length === 0 ? (
+          <div className="relative h-[calc(100vh-300px)] min-h-100 overflow-hidden rounded-md border">
+            <table className="w-full table-fixed text-left text-sm">
+              <thead className="border-b bg-muted/50">
+                <tr>
+                  <th className="h-10 px-4 align-middle" style={{ width: 350 }}>
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="h-10 px-4 align-middle" style={{ width: 400 }}>
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="h-10 px-4 align-middle" style={{ width: 150 }}>
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th
+                    className="h-10 px-4 text-right align-middle"
+                    style={{ width: 80 }}
+                  >
+                    <Skeleton className="ml-auto h-4 w-12" />
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="p-4 align-middle">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <div className="flex flex-col gap-1.5">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-40" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-8 w-24" />
+                        <Skeleton className="h-6 w-20 rounded-md" />
+                      </div>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
+                    <td className="p-4 text-right align-middle">
+                      <Skeleton className="ml-auto h-8 w-8 rounded-md" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : flatData.length === 0 ? (
           <Empty className="my-8">
             <EmptyTitle>No members found</EmptyTitle>
             <EmptyDescription>
@@ -427,15 +525,19 @@ export function MembersTable() {
             </EmptyDescription>
           </Empty>
         ) : (
-          <div className="rounded-md border">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b bg-muted/50">
+          <div
+            ref={parentRef}
+            className="relative h-[calc(100vh-300px)] min-h-100 overflow-auto rounded-md border"
+          >
+            <table className="w-full table-fixed text-left text-sm">
+              <thead className="sticky top-0 z-10 border-b bg-muted/50 shadow-sm backdrop-blur-sm">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
                       <th
                         key={header.id}
-                        className="h-10 px-4 align-middle font-medium text-muted-foreground"
+                        style={{ width: header.getSize() }}
+                        className="h-10 bg-muted/50 px-4 align-middle font-medium text-muted-foreground"
                       >
                         {flexRender(
                           header.column.columnDef.header,
@@ -447,34 +549,74 @@ export function MembersTable() {
                 ))}
               </thead>
               <tbody className="divide-y">
-                {table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="p-4 align-middle">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
+                {paddingTop > 0 && (
+                  <tr>
+                    <td
+                      style={{ height: `${paddingTop}px` }}
+                      colSpan={columns.length}
+                    />
                   </tr>
-                ))}
+                )}
+                {virtualItems.map((virtualRow) => {
+                  const isLoaderRow = virtualRow.index > rows.length - 1
+                  const row = rows[virtualRow.index]
+
+                  if (isLoaderRow) {
+                    return (
+                      <tr key={`loader-${virtualRow.index}`} className="h-14">
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="h-8 w-8 rounded-full" />
+                            <div className="flex flex-col gap-1.5">
+                              <Skeleton className="h-4 w-32" />
+                              <Skeleton className="h-3 w-40" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="h-8 w-24" />
+                            <Skeleton className="h-6 w-20 rounded-md" />
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <Skeleton className="h-6 w-16 rounded-full" />
+                        </td>
+                        <td className="p-4 text-right align-middle">
+                          <Skeleton className="ml-auto h-8 w-8 rounded-md" />
+                        </td>
+                      </tr>
+                    )
+                  }
+
+                  return (
+                    <tr
+                      key={row.id}
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="p-4 align-middle">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  )
+                })}
+                {paddingBottom > 0 && (
+                  <tr>
+                    <td
+                      style={{ height: `${paddingBottom}px` }}
+                      colSpan={columns.length}
+                    />
+                  </tr>
+                )}
               </tbody>
             </table>
-
-            <div
-              ref={observerRef}
-              className="py-4 text-center text-sm text-muted-foreground"
-            >
-              {isFetchingNextPage
-                ? "Loading more..."
-                : hasNextPage
-                  ? "Scroll down for more"
-                  : "No more members"}
-            </div>
           </div>
         )}
       </TabsContent>
@@ -495,12 +637,20 @@ export function MembersTable() {
         onSuccess={() => refetch()}
       />
 
-      <RoleAssignmentModal 
+      <RoleAssignmentModal
         userId={assignmentModal.userId}
         userName={assignmentModal.userName}
         organizationId={activeOrganization?.id || ""}
         open={assignmentModal.isOpen}
-        onOpenChange={(open) => setAssignmentModal(prev => ({ ...prev, isOpen: open }))}
+        onOpenChange={(open) =>
+          setAssignmentModal((prev) => ({ ...prev, isOpen: open }))
+        }
+      />
+
+      <EditMemberModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, member: null })}
+        member={editModal.member}
       />
     </Tabs>
   )
@@ -516,7 +666,7 @@ function PendingInvitationsList() {
         toast.success("Invitation revoked successfully")
       },
       onError: (error) => {
-        const responseError = error as { message?: string };
+        const responseError = error as { message?: string }
         toast.error(responseError.message || "Failed to revoke invitation")
       },
     })
@@ -524,8 +674,52 @@ function PendingInvitationsList() {
 
   if (isLoading) {
     return (
-      <div className="py-8 text-center text-sm text-muted-foreground">
-        Loading pending invitations...
+      <div className="rounded-md border">
+        <table className="w-full table-fixed text-left text-sm">
+          <thead className="border-b bg-muted/50">
+            <tr>
+              <th className="h-10 px-4 align-middle" style={{ width: "30%" }}>
+                <Skeleton className="h-4 w-16" />
+              </th>
+              <th className="h-10 px-4 align-middle" style={{ width: "25%" }}>
+                <Skeleton className="h-4 w-16" />
+              </th>
+              <th className="h-10 px-4 align-middle" style={{ width: "20%" }}>
+                <Skeleton className="h-4 w-16" />
+              </th>
+              <th className="h-10 px-4 align-middle" style={{ width: "15%" }}>
+                <Skeleton className="h-4 w-16" />
+              </th>
+              <th
+                className="h-10 px-4 text-right align-middle"
+                style={{ width: "10%" }}
+              >
+                <Skeleton className="ml-auto h-4 w-16" />
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i}>
+                <td className="p-4 align-middle">
+                  <Skeleton className="h-4 w-48" />
+                </td>
+                <td className="p-4 align-middle">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </td>
+                <td className="p-4 align-middle">
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </td>
+                <td className="p-4 align-middle">
+                  <Skeleton className="h-4 w-24" />
+                </td>
+                <td className="p-4 text-right align-middle">
+                  <Skeleton className="ml-auto h-8 w-16" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     )
   }
@@ -543,63 +737,86 @@ function PendingInvitationsList() {
 
   return (
     <div className="rounded-md border">
-      <table className="w-full text-left text-sm">
+      <table className="w-full table-fixed text-left text-sm">
         <thead className="border-b bg-muted/50">
           <tr>
-            <th className="h-10 px-4 align-middle font-medium text-muted-foreground">
+            <th
+              className="h-10 px-4 align-middle font-medium text-muted-foreground"
+              style={{ width: "30%" }}
+            >
               Email
             </th>
-            <th className="h-10 px-4 align-middle font-medium text-muted-foreground">
+            <th
+              className="h-10 px-4 align-middle font-medium text-muted-foreground"
+              style={{ width: "25%" }}
+            >
               Role
             </th>
-            <th className="h-10 px-4 align-middle font-medium text-muted-foreground">
+            <th
+              className="h-10 px-4 align-middle font-medium text-muted-foreground"
+              style={{ width: "20%" }}
+            >
               Status
             </th>
-            <th className="h-10 px-4 align-middle font-medium text-muted-foreground">
+            <th
+              className="h-10 px-4 align-middle font-medium text-muted-foreground"
+              style={{ width: "15%" }}
+            >
               Sent At
             </th>
-            <th className="h-10 px-4 align-middle font-medium text-muted-foreground text-right">
+            <th
+              className="h-10 px-4 text-right align-middle font-medium text-muted-foreground"
+              style={{ width: "10%" }}
+            >
               Actions
             </th>
           </tr>
         </thead>
         <tbody className="divide-y">
-          {invitations.map((invite: { id: string; email: string; role?: string; status: string; createdAt: string }) => (
-            <tr
-              key={invite.id}
-              className="transition-colors hover:bg-muted/50"
-            >
-              <td className="p-4 align-middle font-medium">{invite.email}</td>
-              <td className="p-4 align-middle">
-                <span className="rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground capitalize">
-                  {invite.role?.replace("_", " ")}
-                </span>
-              </td>
-              <td className="p-4 align-middle">
-                <span className="rounded-full bg-secondary/50 text-secondary-foreground px-2 py-1 text-xs font-medium capitalize">
-                  {invite.status}
-                </span>
-              </td>
-              <td className="p-4 align-middle text-muted-foreground">
-                {new Date(invite.createdAt).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </td>
-              <td className="p-4 align-middle text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-3"
-                  disabled={revokeMutation.isPending}
-                  onClick={() => handleRevoke(invite.id)}
-                >
-                  Revoke
-                </Button>
-              </td>
-            </tr>
-          ))}
+          {invitations.map(
+            (invite: {
+              id: string
+              email: string
+              role?: string
+              status: string
+              createdAt: string
+            }) => (
+              <tr
+                key={invite.id}
+                className="transition-colors hover:bg-muted/50"
+              >
+                <td className="p-4 align-middle font-medium">{invite.email}</td>
+                <td className="p-4 align-middle">
+                  <span className="rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground capitalize">
+                    {invite.role?.replace("_", " ")}
+                  </span>
+                </td>
+                <td className="p-4 align-middle">
+                  <span className="rounded-full bg-secondary/50 px-2 py-1 text-xs font-medium text-secondary-foreground capitalize">
+                    {invite.status}
+                  </span>
+                </td>
+                <td className="p-4 align-middle text-muted-foreground">
+                  {new Date(invite.createdAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </td>
+                <td className="p-4 text-right align-middle">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    disabled={revokeMutation.isPending}
+                    onClick={() => handleRevoke(invite.id)}
+                  >
+                    Revoke
+                  </Button>
+                </td>
+              </tr>
+            )
+          )}
         </tbody>
       </table>
     </div>
