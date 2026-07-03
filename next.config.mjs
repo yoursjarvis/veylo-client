@@ -9,6 +9,14 @@ const nextConfig = {
         hostname: 'api.veylo.com',
         port: '4000',
       },
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
     ],
   },
   allowedDevOrigins: ["veylo.com", "*.veylo.com", "localhost"],

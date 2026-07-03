@@ -52,3 +52,16 @@ export function useUpdateMemberPhoto(memberId: string) {
     },
   })
 }
+
+export function useUpdateMemberProfile(memberId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: { name: string; email: string }) => {
+      const res = await axiosInstance.put(`/org/members/${memberId}`, data)
+      return res.data.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["org-members"] })
+    },
+  })
+}

@@ -1,14 +1,12 @@
 import {
-  Camera01Icon,
   LaptopProgrammingIcon,
   Logout02Icon,
   SecurityPasswordIcon,
   UserEdit01Icon,
 } from "@hugeicons/core-free-icons"
-import { useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -20,19 +18,23 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { usePermissions } from "@/hooks/use-permissions"
-
+import { Pattern as AvatarUpload } from "@/components/reui/avatar-upload"
 import { HugeiconsIcon } from "@hugeicons/react"
+
 import {
   useChangeMemberPassword,
   useMemberSessions,
   useRevokeSpecificSession,
   useUpdateMemberPhoto,
+  useUpdateMemberProfile,
 } from "../api/use-member-actions"
 
 export interface MemberProps {
   user: {
     id: string
     name: string
+    firstName?: string
+    lastName?: string
     email: string
     image?: string
   }
@@ -62,7 +64,10 @@ export function EditMemberModal({
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+
 
   const { data: sessions, isLoading: sessionsLoading } = useMemberSessions(
     member?.user?.id as string
@@ -70,9 +75,21 @@ export function EditMemberModal({
   const revokeSession = useRevokeSpecificSession(member?.user?.id as string)
   const changePassword = useChangeMemberPassword(member?.user?.id as string)
   const updatePhoto = useUpdateMemberPhoto(member?.user?.id as string)
+  const updateProfile = useUpdateMemberProfile(member?.user?.id as string)
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  // Set initial state when member changes
+  useEffect(() => {
+    if (member) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFirstName(member.user.firstName || member.user.name?.split(" ")[0] || "")
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLastName(member.user.lastName || member.user.name?.split(" ").slice(1).join(" ") || "")
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEmail(member.user.email || "")
+    }
+  }, [member])
+
+  const handlePhotoUpload = (file: File | null) => {
     if (!file) return
 
     toast.promise(updatePhoto.mutateAsync(file), {
@@ -80,6 +97,21 @@ export function EditMemberModal({
       success: "Profile photo updated successfully!",
       error: "Failed to update profile photo",
     })
+  }
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await updateProfile.mutateAsync({
+        firstName,
+        lastName,
+        email,
+      })
+      toast.success("Profile updated successfully")
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } }
+      toast.error(err?.response?.data?.message || "Failed to update profile")
+    }
   }
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -108,7 +140,7 @@ export function EditMemberModal({
     try {
       await revokeSession.mutateAsync(sessionId)
       toast.success("Session revoked successfully")
-    } catch (error: unknown) {
+    } catch {
       toast.error("Failed to revoke session")
     }
   }
@@ -117,136 +149,151 @@ export function EditMemberModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-125">
-        <DialogHeader className="border-b border-border bg-card px-6 py-4">
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <HugeiconsIcon
-              icon={UserEdit01Icon}
-              className="h-5 w-5 text-muted-foreground"
-            />
+      <DialogContent className="overflow-hidden p-0 sm:max-w-[640px] border-border/50 shadow-lg">
+        <DialogHeader className="px-8 pt-8 pb-2">
+          <DialogTitle className="text-xl font-semibold tracking-tight">
             Edit Member
           </DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b border-border bg-muted/20 px-6 pt-4">
-            <TabsList className="grid h-auto w-full grid-cols-3 gap-4 rounded-none border-b-0 bg-transparent p-0">
+          <div className="border-b border-border/40 px-8">
+            <TabsList className="flex h-auto w-full justify-start gap-8 rounded-none bg-transparent p-0">
               <TabsTrigger
                 value="profile"
-                className="rounded-none border-b-2 border-transparent px-0 pb-3 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pb-4 pt-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Profile
               </TabsTrigger>
               <TabsTrigger
                 value="security"
                 disabled={!canChangePassword}
-                className="rounded-none border-b-2 border-transparent px-0 pb-3 disabled:opacity-30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pb-4 pt-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground disabled:opacity-30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Security
               </TabsTrigger>
               <TabsTrigger
                 value="sessions"
                 disabled={!canUpdate}
-                className="rounded-none border-b-2 border-transparent px-0 pb-3 disabled:opacity-30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pb-4 pt-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground disabled:opacity-30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Sessions
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <div className="p-6">
-            <TabsContent value="profile" className="mt-0 space-y-6">
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <div className="group relative">
-                  <Avatar className="h-24 w-24 border-4 border-background shadow-sm">
-                    <AvatarImage src={member?.user?.image || ""} />
-                    <AvatarFallback className="text-2xl">
-                      {member?.user?.name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
+          <div className="p-8">
+            <TabsContent value="profile" className="mt-0">
+              <div className="flex flex-col gap-8">
+                {/* Avatar Section */}
+                <div className="flex items-center gap-6 rounded-xl border border-border/50 bg-muted/20 p-5 transition-colors hover:bg-muted/30">
+                  <AvatarUpload
+                    defaultAvatar={member?.user?.image || undefined}
+                    onFileChange={(file) => handlePhotoUpload(file as File)}
+                    className="flex-row items-center justify-start gap-6"
+                  />
+                </div>
 
-                  {canUpdate && (
-                    <>
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-full bg-black/50 text-white opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100"
-                      >
-                        <HugeiconsIcon
-                          icon={Camera01Icon}
-                          className="h-6 w-6"
-                        />
-                        <span className="text-[10px] font-medium tracking-wider uppercase">
-                          Change
-                        </span>
-                      </div>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handlePhotoUpload}
-                        accept="image/*"
-                        className="hidden"
+                {/* Info Section */}
+                <form onSubmit={handleProfileSubmit} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2.5">
+                      <Label className="text-muted-foreground">First Name</Label>
+                      <Input
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="First Name"
+                        disabled={!canUpdate}
+                        className="transition-all focus-visible:ring-1"
                       />
-                    </>
+                    </div>
+                    <div className="space-y-2.5">
+                      <Label className="text-muted-foreground">Last Name</Label>
+                      <Input
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Last Name"
+                        disabled={!canUpdate}
+                        className="transition-all focus-visible:ring-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2.5">
+                    <Label className="text-muted-foreground">Email</Label>
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email"
+                      disabled={!canUpdate}
+                      className="transition-all focus-visible:ring-1"
+                    />
+                  </div>
+                  
+                  {canUpdate && (
+                    <div className="pt-2 flex justify-end">
+                      <Button
+                        type="submit"
+                        disabled={updateProfile.isPending}
+                        className="transition-all"
+                      >
+                        {updateProfile.isPending ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </div>
                   )}
-                </div>
-
-                <div className="space-y-1 text-center">
-                  <h3 className="text-lg font-semibold">
-                    {member?.user?.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {member?.user?.email}
-                  </p>
-                </div>
+                </form>
               </div>
             </TabsContent>
 
             <TabsContent value="security" className="mt-0">
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                <div className="mb-6 flex items-center gap-3 rounded-lg border border-border bg-muted/50 p-4">
-                  <div className="rounded-md border border-border/50 bg-background p-2 shadow-sm">
+              <form onSubmit={handlePasswordSubmit} className="space-y-6">
+                <div className="mb-2 flex items-start gap-4 rounded-xl border border-border/50 bg-muted/20 p-5">
+                  <div className="rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm">
                     <HugeiconsIcon
                       icon={SecurityPasswordIcon}
-                      className="h-5 w-5 text-primary"
+                      className="h-5 w-5 text-foreground"
                     />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-medium">Change Password</h4>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-medium leading-none">Change Password</h4>
+                    <p className="text-sm text-muted-foreground">
                       Force a password update for this user.
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>New Password</Label>
+                <div className="space-y-6">
+                  <div className="space-y-2.5">
+                    <Label className="text-muted-foreground">New Password</Label>
                     <Input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minimum 8 characters"
                       required
+                      className="transition-all focus-visible:ring-1"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Confirm Password</Label>
+                  <div className="space-y-2.5">
+                    <Label className="text-muted-foreground">Confirm Password</Label>
                     <Input
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm new password"
                       required
+                      className="transition-all focus-visible:ring-1"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-4">
+                <div className="flex justify-end pt-2">
                   <Button
                     type="submit"
                     disabled={
                       changePassword.isPending || !password || !confirmPassword
                     }
+                    className="transition-all"
                   >
                     {changePassword.isPending
                       ? "Updating..."
@@ -256,38 +303,38 @@ export function EditMemberModal({
               </form>
             </TabsContent>
 
-            <TabsContent value="sessions" className="mt-0 space-y-4">
-              <div className="mb-4 flex items-center gap-3 rounded-lg border border-border bg-muted/50 p-4">
-                <div className="rounded-md border border-border/50 bg-background p-2 shadow-sm">
+            <TabsContent value="sessions" className="mt-0 space-y-6">
+              <div className="flex items-start gap-4 rounded-xl border border-border/50 bg-muted/20 p-5">
+                <div className="rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm">
                   <HugeiconsIcon
                     icon={LaptopProgrammingIcon}
-                    className="h-5 w-5 text-primary"
+                    className="h-5 w-5 text-foreground"
                   />
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium">Active Sessions</h4>
-                  <p className="text-xs text-muted-foreground">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-medium leading-none">Active Sessions</h4>
+                  <p className="text-sm text-muted-foreground">
                     Manage and revoke active sessions.
                   </p>
                 </div>
               </div>
 
               {sessionsLoading ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
+                <div className="py-12 text-center text-sm text-muted-foreground">
                   Loading sessions...
                 </div>
               ) : sessions?.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
+                <div className="py-12 text-center text-sm text-muted-foreground">
                   No active sessions found.
                 </div>
               ) : (
-                <div className="max-h-[300px] space-y-3 overflow-y-auto pr-2">
+                <div className="max-h-75 space-y-3 overflow-y-auto pr-2">
                   {sessions?.map((session: Record<string, unknown>) => (
                     <div
                       key={session.id as string}
-                      className="flex items-center justify-between rounded-md border border-border p-3 transition-colors hover:bg-muted/50"
+                      className="flex items-center justify-between rounded-lg border border-border/40 bg-background p-4 transition-colors hover:bg-muted/30"
                     >
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium">
                             {(session.userAgent as string) || "Unknown Device"}
@@ -311,7 +358,7 @@ export function EditMemberModal({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          className="h-8 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
                           onClick={() =>
                             handleRevokeSession(session.id as string)
                           }
