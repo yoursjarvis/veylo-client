@@ -1,12 +1,13 @@
+import type { FileWithPreview } from "@/hooks/use-file-upload"
 import {
   LaptopProgrammingIcon,
   Logout02Icon,
   SecurityPasswordIcon,
-  UserEdit01Icon,
 } from "@hugeicons/core-free-icons"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
+import { Pattern as AvatarUpload } from "@/components/reui/avatar-upload"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -18,7 +19,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { usePermissions } from "@/hooks/use-permissions"
-import { Pattern as AvatarUpload } from "@/components/reui/avatar-upload"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import {
@@ -32,12 +32,21 @@ import {
 export interface MemberProps {
   user: {
     id: string
-    name: string
-    firstName?: string
-    lastName?: string
+    name?: string | null
+    firstName?: string | null
+    lastName?: string | null
     email: string
-    image?: string
+    image?: string | null
   }
+}
+
+interface SessionData {
+  id: string
+  userAgent?: string
+  isCurrent?: boolean
+  ipAddress?: string
+  lastActiveAt?: string
+  createdAt: string
 }
 
 interface EditMemberModalProps {
@@ -68,7 +77,6 @@ export function EditMemberModal({
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
 
-
   const { data: sessions, isLoading: sessionsLoading } = useMemberSessions(
     member?.user?.id as string
   )
@@ -77,22 +85,26 @@ export function EditMemberModal({
   const updatePhoto = useUpdateMemberPhoto(member?.user?.id as string)
   const updateProfile = useUpdateMemberProfile(member?.user?.id as string)
 
-  // Set initial state when member changes
   useEffect(() => {
     if (member) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFirstName(member.user.firstName || member.user.name?.split(" ")[0] || "")
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLastName(member.user.lastName || member.user.name?.split(" ").slice(1).join(" ") || "")
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setEmail(member.user.email || "")
+      setTimeout(() => {
+        setFirstName(
+          member.user.firstName || member.user.name?.split(" ")[0] || ""
+        )
+        setLastName(
+          member.user.lastName ||
+            member.user.name?.split(" ").slice(1).join(" ") ||
+            ""
+        )
+        setEmail(member.user.email || "")
+      }, 0)
     }
   }, [member])
 
-  const handlePhotoUpload = (file: File | null) => {
-    if (!file) return
+  const handlePhotoUpload = (fileData: FileWithPreview | null) => {
+    if (!fileData || !(fileData.file instanceof File)) return
 
-    toast.promise(updatePhoto.mutateAsync(file), {
+    toast.promise(updatePhoto.mutateAsync(fileData.file), {
       loading: "Uploading photo...",
       success: "Profile photo updated successfully!",
       error: "Failed to update profile photo",
@@ -149,7 +161,7 @@ export function EditMemberModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-[640px] border-border/50 shadow-lg">
+      <DialogContent className="overflow-hidden border-border/50 p-0 shadow-lg sm:max-w-160">
         <DialogHeader className="px-8 pt-8 pb-2">
           <DialogTitle className="text-xl font-semibold tracking-tight">
             Edit Member
@@ -161,21 +173,21 @@ export function EditMemberModal({
             <TabsList className="flex h-auto w-full justify-start gap-8 rounded-none bg-transparent p-0">
               <TabsTrigger
                 value="profile"
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pb-4 pt-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pt-2 pb-4 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Profile
               </TabsTrigger>
               <TabsTrigger
                 value="security"
                 disabled={!canChangePassword}
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pb-4 pt-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground disabled:opacity-30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pt-2 pb-4 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground disabled:opacity-30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Security
               </TabsTrigger>
               <TabsTrigger
                 value="sessions"
                 disabled={!canUpdate}
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pb-4 pt-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground disabled:opacity-30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-1 pt-2 pb-4 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground disabled:opacity-30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Sessions
               </TabsTrigger>
@@ -189,7 +201,7 @@ export function EditMemberModal({
                 <div className="flex items-center gap-6 rounded-xl border border-border/50 bg-muted/20 p-5 transition-colors hover:bg-muted/30">
                   <AvatarUpload
                     defaultAvatar={member?.user?.image || undefined}
-                    onFileChange={(file) => handlePhotoUpload(file as File)}
+                    onFileChange={handlePhotoUpload}
                     className="flex-row items-center justify-start gap-6"
                   />
                 </div>
@@ -198,7 +210,9 @@ export function EditMemberModal({
                 <form onSubmit={handleProfileSubmit} className="space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2.5">
-                      <Label className="text-muted-foreground">First Name</Label>
+                      <Label className="text-muted-foreground">
+                        First Name
+                      </Label>
                       <Input
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
@@ -229,9 +243,9 @@ export function EditMemberModal({
                       className="transition-all focus-visible:ring-1"
                     />
                   </div>
-                  
+
                   {canUpdate && (
-                    <div className="pt-2 flex justify-end">
+                    <div className="flex justify-end pt-2">
                       <Button
                         type="submit"
                         disabled={updateProfile.isPending}
@@ -255,7 +269,9 @@ export function EditMemberModal({
                     />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-sm font-medium leading-none">Change Password</h4>
+                    <h4 className="text-sm leading-none font-medium">
+                      Change Password
+                    </h4>
                     <p className="text-sm text-muted-foreground">
                       Force a password update for this user.
                     </p>
@@ -264,7 +280,9 @@ export function EditMemberModal({
 
                 <div className="space-y-6">
                   <div className="space-y-2.5">
-                    <Label className="text-muted-foreground">New Password</Label>
+                    <Label className="text-muted-foreground">
+                      New Password
+                    </Label>
                     <Input
                       type="password"
                       value={password}
@@ -275,7 +293,9 @@ export function EditMemberModal({
                     />
                   </div>
                   <div className="space-y-2.5">
-                    <Label className="text-muted-foreground">Confirm Password</Label>
+                    <Label className="text-muted-foreground">
+                      Confirm Password
+                    </Label>
                     <Input
                       type="password"
                       value={confirmPassword}
@@ -312,7 +332,9 @@ export function EditMemberModal({
                   />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-sm font-medium leading-none">Active Sessions</h4>
+                  <h4 className="text-sm leading-none font-medium">
+                    Active Sessions
+                  </h4>
                   <p className="text-sm text-muted-foreground">
                     Manage and revoke active sessions.
                   </p>
@@ -329,15 +351,15 @@ export function EditMemberModal({
                 </div>
               ) : (
                 <div className="max-h-75 space-y-3 overflow-y-auto pr-2">
-                  {sessions?.map((session: Record<string, unknown>) => (
+                  {sessions?.map((session: SessionData) => (
                     <div
-                      key={session.id as string}
+                      key={session.id}
                       className="flex items-center justify-between rounded-lg border border-border/40 bg-background p-4 transition-colors hover:bg-muted/30"
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium">
-                            {(session.userAgent as string) || "Unknown Device"}
+                            {session.userAgent || "Unknown Device"}
                           </p>
                           {session.isCurrent && (
                             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
@@ -346,11 +368,9 @@ export function EditMemberModal({
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          IP: {(session.ipAddress as string) || "Unknown"} •
-                          Last active:{" "}
+                          IP: {session.ipAddress || "Unknown"} • Last active:{" "}
                           {new Date(
-                            (session.lastActiveAt ||
-                              session.createdAt) as string
+                            session.lastActiveAt || session.createdAt
                           ).toLocaleDateString()}
                         </p>
                       </div>
@@ -359,9 +379,7 @@ export function EditMemberModal({
                           variant="ghost"
                           size="sm"
                           className="h-8 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
-                          onClick={() =>
-                            handleRevokeSession(session.id as string)
-                          }
+                          onClick={() => handleRevokeSession(session.id)}
                           disabled={revokeSession.isPending}
                         >
                           <HugeiconsIcon

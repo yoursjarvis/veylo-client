@@ -14,7 +14,12 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox"
-import { AlertOctagon, AlertTriangle, CheckCircle } from "lucide-react"
+import {
+  AlertDiamondIcon,
+  BadgeAlertIcon,
+  CheckmarkCircle01Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
@@ -53,14 +58,24 @@ export function ProjectStatusPicker({ projectId }: ProjectStatusPickerProps) {
     switch (projectStatus) {
       case "at_risk":
         return {
-          icon: <AlertTriangle className="h-5 w-5 text-warning" />,
+          icon: (
+            <HugeiconsIcon
+              icon={AlertDiamondIcon}
+              className="h-5 w-5 text-warning"
+            />
+          ),
           label: "At Risk",
           text: "The project has some blocker issues and requires attention.",
           bgClass: "bg-warning/10 border-warning/20 text-warning",
         }
       case "off_track":
         return {
-          icon: <AlertOctagon className="h-5 w-5 text-destructive" />,
+          icon: (
+            <HugeiconsIcon
+              icon={BadgeAlertIcon}
+              className="h-5 w-5 text-destructive"
+            />
+          ),
           label: "Off Track",
           text: "Critical objectives are delayed or blocked. Action needed.",
           bgClass: "bg-destructive/10 border-destructive/20 text-destructive",
@@ -68,7 +83,12 @@ export function ProjectStatusPicker({ projectId }: ProjectStatusPickerProps) {
       case "on_track":
       default:
         return {
-          icon: <CheckCircle className="h-5 w-5 text-success" />,
+          icon: (
+            <HugeiconsIcon
+              icon={CheckmarkCircle01Icon}
+              className="h-5 w-5 text-success"
+            />
+          ),
           label: "On Track",
           text: "All deliverables and milestones are progressing normally.",
           bgClass: "bg-success/10 border-success/20 text-success",
@@ -82,8 +102,11 @@ export function ProjectStatusPicker({ projectId }: ProjectStatusPickerProps) {
     <Card className="border border-border bg-card shadow-sm">
       <CardHeader className="space-y-1.5 pb-4">
         <CardTitle className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-          <CheckCircle className="h-4 w-4 text-primary" /> What&apos;s the
-          status?
+          <HugeiconsIcon
+            icon={CheckmarkCircle01Icon}
+            className="h-4 w-4 text-primary"
+          />{" "}
+          What&apos;s the status?
         </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
           Set the status of the project lifecycle to inform stakeholders.

@@ -7,7 +7,7 @@ import { TaskDependency } from "@/types/models";
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
 import { addDays, format } from "date-fns";
 import { Gantt, Willow, WillowDark } from "@svar-ui/react-gantt";
@@ -39,9 +39,26 @@ type TimelineTask = {
 
 type ZoomLevel = "Day" | "Week" | "Month";
 
-const globalTasksCache = new Map<string, any>();
+interface GlobalTaskCacheEntry {
+  title: string;
+  projectTitle: string;
+  statusName: string;
+  priority: string;
+  assigneeName: string;
+}
 
-function GanttTaskBarWithTooltip({ data }: { data: any }) {
+const globalTasksCache = new Map<string, GlobalTaskCacheEntry>();
+
+interface GanttTaskData {
+  id?: string | number;
+  text?: string;
+  progress?: number;
+  start?: Date | string;
+  end?: Date | string;
+  type?: string;
+}
+
+function GanttTaskBarWithTooltip({ data }: { data: GanttTaskData }) {
   const taskId = data.id;
   const metadata = taskId ? globalTasksCache.get(String(taskId)) : null;
 
@@ -98,7 +115,7 @@ export function ProjectTimeline({
 }: ProjectTimelineProps) {
   const [zoom, setZoom] = useState<ZoomLevel>("Month");
   const [searchQuery, setSearchQuery] = useState("");
-  const [api, setApi] = useState<any>(null);
+  const [api, setApi] = useState<{ exec: (command: string, params: unknown) => void } | null>(null);
   const { resolvedTheme } = useTheme();
   const queryClient = useQueryClient();
 
@@ -112,13 +129,14 @@ export function ProjectTimeline({
       queryClient.invalidateQueries({ queryKey: ["projects", workspaceId] });
       toast.success("Task updated");
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to update task");
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || "Failed to update task");
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     }
   });
 
-  const handleUpdateTask = (ev: any) => {
+  const handleUpdateTask = (ev: { id?: string | number; task?: { end?: Date | string } }) => {
     if (ev?.id && ev?.task?.end) {
       const newDueDate = new Date(ev.task.end).toISOString();
       updateTaskMutation.mutate({
@@ -164,9 +182,9 @@ export function ProjectTimeline({
   // 3. Combine tasks across all projects
   const allProjectsTasks = useMemo<TimelineTask[]>(() => {
     if (projectId) {
-      const project = projects.find((p: any) => p.id == projectId);
+      const project = projects.find((p: { id: string; title: string; createdAt?: string }) => p.id === projectId);
       const projectTitle = project?.title || "";
-      return (singleProjectTasks || []).map((t: any) => ({
+      return (singleProjectTasks || []).map((t: Omit<TimelineTask, "projectId" | "projectTitle">) => ({
         ...t,
         projectId,
         projectTitle,
@@ -204,7 +222,7 @@ export function ProjectTimeline({
   // Map state tasks to SVAR Gantt tasks format
   const ganttTasks = useMemo(() => {
     return filteredTasks.map((t) => {
-      const project = projects.find((p: any) => p.id == t.projectId);
+      const project = projects.find((p: { id: string; title: string; createdAt?: string }) => p.id === t.projectId);
       
       let projectStart = new Date();
       if (project?.createdAt) {
@@ -312,8 +330,15 @@ export function ProjectTimeline({
 
   if (isProjectsLoading || isTasksLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Spinner />
+      <div className="flex flex-col h-full space-y-6 p-6 w-full">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
+        <Skeleton className="flex-1 w-full rounded-lg min-h-[500px]" />
       </div>
     );
   }

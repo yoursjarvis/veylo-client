@@ -23,7 +23,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -87,7 +86,7 @@ export default function AutomationSettingsPage() {
   });
 
   const createRuleMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, string | null>) => {
       const res = await axiosInstance.post(`/projects/${projectId}/automation-rules`, data);
       return res.data.data;
     },
@@ -98,20 +97,20 @@ export default function AutomationSettingsPage() {
       setTriggerVal("");
       setActionVal("");
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to create rule");
     },
   });
 
   const updateRuleMutation = useMutation({
-    mutationFn: async ({ ruleId, data }: { ruleId: string; data: any }) => {
+    mutationFn: async ({ ruleId, data }: { ruleId: string; data: Partial<AutomationRule> }) => {
       const res = await axiosInstance.put(`/projects/${projectId}/automation-rules/${ruleId}`, data);
       return res.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project-automation-rules", projectId] });
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update rule");
     },
   });
@@ -124,7 +123,7 @@ export default function AutomationSettingsPage() {
       toast.success("Automation rule deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["project-automation-rules", projectId] });
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to delete rule");
     },
   });
@@ -159,7 +158,7 @@ export default function AutomationSettingsPage() {
     );
   }
 
-  const memberOptions = (members || []).map((m: any) => ({
+  const memberOptions = (members || []).map((m: { userId: string; user?: { name?: string | null; email?: string | null; image?: string | null } }) => ({
     value: m.userId,
     label: m.user?.name || m.user?.email || "Unknown User",
     icon: (
@@ -376,7 +375,7 @@ export default function AutomationSettingsPage() {
                   {rules.map((rule) => {
                     let friendlyActionVal = rule.actionVal;
                     if (rule.action === "assign_to_user") {
-                      const userOpt = memberOptions.find((opt: any) => opt.value === rule.actionVal);
+                      const userOpt = memberOptions.find((opt: { value: string; label: string }) => opt.value === rule.actionVal);
                       if (userOpt) friendlyActionVal = userOpt.label;
                     }
 

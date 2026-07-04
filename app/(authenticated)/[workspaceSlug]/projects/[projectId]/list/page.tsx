@@ -7,7 +7,7 @@ import {
   type FilterFieldConfig,
 } from "@/components/reui/filters"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { TaskList } from "@/features/tasks/components/task-list"
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
 import {
@@ -46,21 +46,6 @@ interface MemberOption {
   }
 }
 
-interface TaskItem {
-  id: string
-  title: string
-  description?: string
-  statusId?: string
-  priority: string
-  type: string
-  status: { name: string }
-  assignee?: { id?: string; image?: string; name?: string }
-  assigneeId?: string
-  dueDate?: string
-  estimate?: string | number
-  labels?: { labelId: string }[]
-  [key: string]: unknown
-}
 
 export default function ListPage() {
   const {
@@ -257,9 +242,29 @@ export default function ListPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Spinner className="size-8 text-primary" />
+        <div className="flex flex-col space-y-6 p-6 w-full">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-32" />
+          </div>
         </div>
+        <div className="rounded-md border border-border">
+          <div className="border-b border-border p-4 flex gap-4">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
       ) : (
         <TaskList
           projectId={projectId as string}
@@ -271,7 +276,13 @@ export default function ListPage() {
               typeof TaskList
             >[0]["statuses"]
           }
-          projectMembers={selectedProject?.members || []}
+          projectMembers={(selectedProject?.members || []).map(m => ({
+            user: {
+              id: m.user?.id || "",
+              name: m.user?.name || null,
+              image: m.user?.image || null,
+            }
+          }))}
           projectTemplate={selectedProject?.template || "simple"}
           onSelectTask={handleSelectTask}
           projectLabels={labels || []}

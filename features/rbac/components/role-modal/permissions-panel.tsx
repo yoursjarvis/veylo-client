@@ -8,7 +8,7 @@ import { PermissionCategory } from "./permission-category";
 import { Search, Maximize2, Minimize2 } from "lucide-react";
 
 interface PermissionsPanelProps {
-  permissions: any[];
+  permissions: { id: string; module: string; resource: string; action: string; description: string }[];
   selectedPermissionIds: string[];
   onChange: (id: string, checked: boolean) => void;
   disabled?: boolean;
@@ -16,10 +16,10 @@ interface PermissionsPanelProps {
 
 export function PermissionsPanel({ permissions, selectedPermissionIds, onChange, disabled }: PermissionsPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   const groupedPermissions = useMemo(() => {
-    const grouped: Record<string, { description: string, permissions: any[] }> = {};
+    const grouped: Record<string, { description: string, permissions: { id: string; module: string; resource: string; action: string; description: string }[] }> = {};
     
     permissions.forEach(p => {
       if (!grouped[p.module]) {

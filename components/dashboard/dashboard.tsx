@@ -2,9 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { axiosInstance } from "@/lib/axios"
 import { Project, Task } from "@/types/models"
+import type { TaskUpdateRequest } from "@/types/api-types"
 import {
   Briefcase01Icon,
   ChartLineData01Icon,
@@ -140,9 +141,9 @@ export function Dashboard() {
     }: {
       taskId: string
       statusId?: string
-      customFields?: any
+      customFields?: Record<string, unknown>
     }) => {
-      const payload: any = {}
+      const payload: TaskUpdateRequest = {}
       if (statusId) payload.statusId = statusId
       if (customFields) payload.customFields = customFields
       await axiosInstance.patch(`/tasks/${taskId}`, payload)
@@ -151,7 +152,7 @@ export function Dashboard() {
       queryClient.invalidateQueries()
       toast.success("Task status updated successfully")
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(
         err.response?.data?.message || "Failed to update approval status"
       )
@@ -163,24 +164,41 @@ export function Dashboard() {
       const statusName = t.status?.name.toLowerCase() || ""
       const customFieldApproval =
         t.customFields && typeof t.customFields === "object"
-          ? (t.customFields as any)["Approval Status"] === "Pending"
+          ? (t.customFields as Record<string, unknown>)["Approval Status"] === "Pending"
           : false
       return statusName.includes("approval") || customFieldApproval
     })
   }, [allTasks])
 
-  const colors = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)",
-  ]
+
 
   if (isProjectsLoading || isTasksLoading) {
     return (
-      <div className="flex h-[calc(100vh-200px)] items-center justify-center">
-        <Spinner className="h-8 w-8 text-primary" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-64" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl border bg-card text-card-foreground shadow">
+              <div className="flex flex-row items-center justify-between p-6 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-6 w-6 rounded-full" />
+              </div>
+              <div className="p-6 pt-0">
+                <Skeleton className="h-8 w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="col-span-4 rounded-xl border bg-card text-card-foreground shadow p-6">
+             <Skeleton className="h-[300px] w-full" />
+          </div>
+          <div className="col-span-3 rounded-xl border bg-card text-card-foreground shadow p-6">
+             <Skeleton className="h-[300px] w-full" />
+          </div>
+        </div>
       </div>
     )
   }
@@ -426,7 +444,7 @@ export function Dashboard() {
               {pendingApprovals.map((task) => {
                 const invoiceAmount =
                   task.customFields && typeof task.customFields === "object"
-                    ? (task.customFields as any)["Invoice Amount"]
+                    ? (task.customFields as Record<string, unknown>)["Invoice Amount"]
                     : null
                 return (
                   <div
@@ -460,7 +478,7 @@ export function Dashboard() {
                             task.customFields &&
                             typeof task.customFields === "object"
                               ? {
-                                  ...(task.customFields as any),
+                                  ...(task.customFields as Record<string, unknown>),
                                   "Approval Status": "Rejected",
                                 }
                               : { "Approval Status": "Rejected" }
@@ -481,7 +499,7 @@ export function Dashboard() {
                             task.customFields &&
                             typeof task.customFields === "object"
                               ? {
-                                  ...(task.customFields as any),
+                                  ...(task.customFields as Record<string, unknown>),
                                   "Approval Status": "Approved",
                                 }
                               : { "Approval Status": "Approved" }

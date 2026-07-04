@@ -1,6 +1,6 @@
 "use client"
 
-import { footerNavLinks, navGroups } from "@/components/layout/app-shared"
+import { getNavGroups, footerNavLinks } from "@/components/layout/app-shared"
 import { LatestChange } from "@/components/layout/latest-change"
 import { NavGroup } from "@/components/layout/nav-group"
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher"
@@ -24,34 +24,20 @@ import { usePermissions } from "@/hooks/use-permissions"
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const { workspaces } = useWorkspaceContext()
+  const { workspaces, activeWorkspace } = useWorkspaceContext()
+  const workspaceSlug = activeWorkspace?.slug || ""
   const { hasPermission } = usePermissions()
-  const isOwnerOrAdmin = hasPermission("member:read") // Assuming member:read implies they can see the "Members" tab
+  const isOwnerOrAdmin = hasPermission("member:read")
+  const canReadProjects = hasPermission("project:read")
+  const canReadRoles = hasPermission("role:read")
 
   const hasNoWorkspaces = workspaces && workspaces.length === 0
 
-  // Filter navigation groups based on workspace access and role
-  const filteredNavGroups = navGroups
-    .map((group) => {
-      if (hasNoWorkspaces) {
-        if (group.label === "WorkSpace") {
-          // Regular user with no workspaces has no workspace dashboard/projects
-          return null
-        }
-        if (group.label === "Organization") {
-          // Regular user with no workspace should only see "Workspaces" to get the empty state page
-          // Admin/Owner can also see "Members"
-          const filteredItems = group.items.filter((item) => {
-            if (item.title === "Workspaces") return true
-            if (item.title === "Members" && isOwnerOrAdmin) return true
-            return false
-          })
-          return { ...group, items: filteredItems }
-        }
-      }
-      return group
-    })
-    .filter(Boolean) as typeof navGroups
+  const navGroups = getNavGroups(workspaceSlug, !!hasNoWorkspaces, {
+    canReadProjects,
+    isOwnerOrAdmin,
+    canReadRoles,
+  })
 
   return (
     <Sidebar
@@ -75,7 +61,7 @@ export function AppSidebar() {
             <WorkspaceSwitcher />
           </SidebarGroup>
         )}
-        {filteredNavGroups.map((group, index) => (
+        {navGroups.map((group, index) => (
           <NavGroup key={`sidebar-group-${index}`} {...group} />
         ))}
       </SidebarContent>

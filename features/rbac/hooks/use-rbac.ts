@@ -46,8 +46,8 @@ export const useUpdateRolePermissions = (orgId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ roleId, name, permissionIds, bypassPermissions }: { roleId: string; name?: string; permissionIds: string[]; bypassPermissions?: boolean }) =>
-      rbacService.updateRolePermissions(roleId, name, permissionIds, bypassPermissions),
+    mutationFn: ({ roleId, name, permissionIds, bypassPermissions }: { roleId: string; name?: string; permissionIds?: string[]; bypassPermissions?: boolean }) =>
+      rbacService.updateRolePermissions(roleId, { name, permissionIds, bypassPermissions }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: rbacKeys.roles(orgId) });
     },
@@ -70,7 +70,7 @@ export const useAssignRole = () => {
 
   return useMutation({
     mutationFn: rbacService.assignRoleToUser,
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       // We don't know the exact orgId here, but we can invalidate general rbac keys 
       // or a specific one if we pass it in. 
       queryClient.invalidateQueries({ queryKey: rbacKeys.all });

@@ -80,27 +80,31 @@ export function RoleAssignmentModal({
 
   useEffect(() => {
     if (userAssignments && open) {
-      if (userAssignments.length === 0) {
-        setRows([
-          {
-            id: Math.random().toString(36),
-            roleId: "",
-            scopeType: "ORGANIZATION",
-            scopeId: organizationId,
-          },
-        ])
-      } else {
-        setRows(
-          userAssignments.map((a: any) => ({
-            id: a.id || Math.random().toString(36),
-            roleId: a.roleId,
-            scopeType: a.scopeType as any,
-            scopeId: a.scopeId,
-          }))
-        )
-      }
+      setTimeout(() => {
+        if (userAssignments.length === 0) {
+          setRows([
+            {
+              id: Math.random().toString(36),
+              roleId: "",
+              scopeType: "ORGANIZATION",
+              scopeId: organizationId,
+            },
+          ])
+        } else {
+          setRows(
+            userAssignments.map((a: { id?: string; roleId: string; scopeType: string; scopeId: string }) => ({
+              id: a.id || Math.random().toString(36),
+              roleId: a.roleId,
+              scopeType: a.scopeType as "ORGANIZATION" | "PROJECT" | "DEPARTMENT",
+              scopeId: a.scopeId,
+            }))
+          )
+        }
+      }, 0)
     } else if (!open) {
-      setRows([])
+      setTimeout(() => {
+        setRows([])
+      }, 0)
     }
   }, [userAssignments, organizationId, open])
 
@@ -160,9 +164,9 @@ export function RoleAssignmentModal({
         assignRole({
           userId,
           roleIds: scope.roleIds,
-          scopeType: scope.scopeType as any,
+          scopeType: scope.scopeType as "ORGANIZATION" | "PROJECT",
           scopeId: scope.scopeId,
-        } as any)
+        })
       )
 
       await Promise.all(promises)
@@ -226,7 +230,6 @@ export function RoleAssignmentModal({
               <AssignmentRowItem
                 key={row.id}
                 row={row}
-                index={index}
                 isLast={index === rows.length - 1}
                 roles={roles || []}
                 projects={projects || []}
@@ -257,7 +260,6 @@ export function RoleAssignmentModal({
 
 function AssignmentRowItem({
   row,
-  index,
   isLast,
   roles,
   projects,
@@ -267,10 +269,9 @@ function AssignmentRowItem({
   addRow,
 }: {
   row: AssignmentRow
-  index: number
   isLast: boolean
-  roles: any[]
-  projects: any[]
+  roles: { id: string; name: string }[]
+  projects: { id: string; name?: string; title?: string }[]
   organizationId: string
   updateRow: (id: string, updates: Partial<AssignmentRow>) => void
   removeRow: (id: string) => void
@@ -377,7 +378,7 @@ function AssignmentRowItem({
                       value={item.label}
                       onSelect={() => {
                         updateRow(row.id, {
-                          scopeType: item.value as any,
+                          scopeType: item.value as "ORGANIZATION" | "PROJECT" | "DEPARTMENT",
                           scopeId:
                             item.value === "ORGANIZATION" ? organizationId : "",
                         })
@@ -415,8 +416,8 @@ function AssignmentRowItem({
               >
                 <span className="truncate">
                   {row.scopeId && projects?.length
-                    ? projects.find((p: any) => p.id === row.scopeId)?.title ||
-                      projects.find((p: any) => p.id === row.scopeId)?.name ||
+                    ? projects.find((p) => p.id === row.scopeId)?.title ||
+                      projects.find((p) => p.id === row.scopeId)?.name ||
                       "Select project..."
                     : "Select project..."}
                 </span>
@@ -435,7 +436,7 @@ function AssignmentRowItem({
                 <CommandList>
                   <CommandEmpty>No projects found.</CommandEmpty>
                   <CommandGroup>
-                    {projects?.map((project: any) => (
+                    {projects?.map((project) => (
                       <CommandItem
                         key={project.id}
                         value={project.title || project.name}

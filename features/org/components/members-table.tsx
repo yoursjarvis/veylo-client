@@ -164,7 +164,6 @@ export function MembersTable() {
         cell: (info) => {
           const member = info.row.original
           const roles = member.user.roleAssignments || []
-          const rolesCount = member.user._count?.roleAssignments || roles.length
 
           return (
             <div className="flex items-center gap-3">

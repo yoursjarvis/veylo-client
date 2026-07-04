@@ -46,8 +46,6 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { IconPicker } from "@/components/shared/icon-picker"
 import { getThumbUrl } from "@/lib/utils"
-
-import { authClient } from "@/lib/auth-client"
 import { usePermissions } from "@/hooks/use-permissions"
 
 export function WorkspaceList() {

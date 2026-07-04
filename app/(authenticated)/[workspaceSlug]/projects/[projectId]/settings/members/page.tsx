@@ -8,7 +8,7 @@ import { axiosInstance } from "@/lib/axios"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardHeader,
@@ -210,9 +210,29 @@ export default function ProjectMembersPage() {
  
           <div className="max-h-[300px] space-y-2.5 overflow-y-auto py-4">
             {isWorkspaceMembersLoading ? (
-              <div className="flex h-20 items-center justify-center">
-                <Spinner className="text-primary" />
-              </div>
+              <div className="flex flex-col space-y-6 p-6 w-full">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+        <div className="rounded-md border border-border">
+          <div className="border-b border-border p-4 flex gap-4">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
             ) : workspaceMembers?.length === 0 ? (
               <p className="text-center text-xs italic text-muted-foreground">
                 No workspace members found.

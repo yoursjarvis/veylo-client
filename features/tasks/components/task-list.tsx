@@ -90,12 +90,11 @@ interface TaskRowProps {
   projectLabels: { id: string; name: string; color?: string }[]
   isSelected: boolean
   onToggleSelect: (taskId: string, selected: boolean) => void
-  isDragging?: boolean
   dragHandleProps?: DraggableAttributes
   dragHandleListeners?: SyntheticListenerMap
   projectId: string
   statuses: { id: string; name: string }[]
-  projectMembers: any[]
+  projectMembers: { user: { id: string; name?: string | null; image?: string | null } }[]
 }
 
 const gridCols =
@@ -131,33 +130,6 @@ const getPriorityIcon = (prio: string) => {
   }
 }
 
-const getStatusBadge = (name: string) => {
-  const n = name.toLowerCase()
-  let bg =
-    "bg-slate-100 text-slate-700 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-  if (n === "done" || n === "completed" || n === "closed") {
-    bg =
-      "bg-emerald-100 text-emerald-800 border border-emerald-200 dark:border-emerald-800/50 dark:bg-emerald-900/30 dark:text-emerald-400"
-  } else if (n === "in progress" || n === "review") {
-    bg =
-      "bg-blue-100 text-blue-800 border border-blue-200 dark:border-blue-800/50 dark:bg-blue-900/30 dark:text-blue-400"
-  } else if (n === "blocked") {
-    bg =
-      "bg-red-100 text-red-800 border border-red-200 dark:border-red-800/50 dark:bg-red-900/30 dark:text-red-400"
-  }
-
-  return (
-    <span
-      className={cn(
-        "inline-flex max-w-full items-center truncate rounded-sm px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase",
-        bg
-      )}
-    >
-      {name}
-    </span>
-  )
-}
-
 function UserSelect({
   value,
   onChange,
@@ -166,7 +138,7 @@ function UserSelect({
 }: {
   value: string | null
   onChange: (userId: string | null) => void
-  users: any[]
+  users: { user: { id: string; name?: string | null; image?: string | null } }[]
   placeholder?: string
 }) {
   const [open, setOpen] = useState(false)
@@ -183,7 +155,7 @@ function UserSelect({
             {selectedUser ? (
               <>
                 <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarImage src={selectedUser.image} />
+                  <AvatarImage src={selectedUser.image || undefined} />
                   <AvatarFallback className="text-[10px]">
                     {selectedUser.name?.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
@@ -237,7 +209,7 @@ function UserSelect({
                   className="py-1.5 text-xs"
                 >
                   <Avatar className="mr-2 h-7 w-7 shrink-0">
-                    <AvatarImage src={member.user.image} />
+                    <AvatarImage src={member.user.image || undefined} />
                     <AvatarFallback className="text-[10px]">
                       {member.user.name?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -253,7 +225,7 @@ function UserSelect({
   )
 }
 
-function DatePicker({
+export function DatePicker({
   value,
   onChange,
 }: {
@@ -305,7 +277,7 @@ function DatePicker({
   )
 }
 
-function StatusSelect({
+export function StatusSelect({
   value,
   onChange,
   statuses,
@@ -411,7 +383,7 @@ const PRIORITIES = [
   { value: "urgent", label: "Urgent" },
 ]
 
-function PrioritySelect({
+export function PrioritySelect({
   value,
   onChange,
   placeholder = "Priority",
@@ -496,7 +468,6 @@ export function TaskRow({
   onSelectTask,
   isSelected,
   onToggleSelect,
-  isDragging,
   dragHandleProps,
   dragHandleListeners,
   projectId,
@@ -602,7 +573,7 @@ export function TaskRow({
       <div className="flex items-center truncate px-3 py-2">
         <PrioritySelect
           value={task.priority}
-          onChange={(val) => updateTaskMutation.mutate({ priority: val })}
+          onChange={(val) => updateTaskMutation.mutate({ priority: val as "low" | "medium" | "high" | "urgent" })}
         />
       </div>
       <div className="flex items-center truncate px-3 py-2">
@@ -674,7 +645,6 @@ function SortableTaskRow(props: TaskRowProps) {
       <div className={cn(isDragging ? "invisible" : "")}>
         <TaskRow
           {...props}
-          isDragging={isDragging}
           dragHandleProps={attributes as DraggableAttributes}
           dragHandleListeners={listeners as SyntheticListenerMap}
         />
@@ -695,7 +665,7 @@ interface StatusSectionProps {
   onToggleSelect: (taskId: string, selected: boolean) => void
   projectId: string
   statuses: { id: string; name: string }[]
-  projectMembers: any[]
+  projectMembers: { user: { id: string; name?: string | null; image?: string | null } }[]
 }
 
 export function StatusSection({
@@ -844,7 +814,7 @@ interface TaskListProps {
   projectId: string
   tasks: Task[]
   statuses: { id: string; name: string }[]
-  projectMembers?: unknown[]
+  projectMembers?: { user: { id: string; name?: string | null; image?: string | null } }[]
   projectTemplate: string
   onSelectTask: (taskId: string) => void
   projectLabels?: { id: string; name: string; color?: string }[]
@@ -1124,7 +1094,6 @@ export function TaskList({
               projectLabels={projectLabels}
               isSelected={selectedTasks.has(activeTask.id)}
               onToggleSelect={handleToggleSelect}
-              isDragging={false}
               projectId={projectId}
               statuses={statuses}
               projectMembers={projectMembers || []}

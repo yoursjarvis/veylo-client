@@ -8,6 +8,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
@@ -107,8 +108,28 @@ export function TaskDetailsDrawer({
         </SheetHeader>
 
         {isLoading ? (
-          <div className="flex flex-1 items-center justify-center">
-            <span className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></span>
+          <div className="flex flex-1 flex-row overflow-hidden">
+            <div className="flex-1 p-6 space-y-6 border-r border-border">
+              <Skeleton className="h-8 w-3/4" />
+              <div className="space-y-2 mt-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+              </div>
+              <Skeleton className="h-[200px] w-full mt-8" />
+              <div className="space-y-4 mt-8">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+            <div className="w-[320px] p-6 space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 flex-1" /></div>
+                <div className="flex items-center space-x-4"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 flex-1" /></div>
+                <div className="flex items-center space-x-4"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 flex-1" /></div>
+                <div className="flex items-center space-x-4"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 flex-1" /></div>
+              </div>
+            </div>
           </div>
         ) : !task ? (
           <div className="flex flex-1 items-center justify-center">
@@ -131,7 +152,7 @@ export function TaskDetailsDrawer({
                   projectMembers={projectMembers}
                   completedStatus={completedStatus}
                   projectStatuses={projectStatuses}
-                  onUpdateSubtask={(id, data) => manager.mutations.updateSubtaskMutation.mutate({ id, data })}
+                  onUpdateSubtask={(id, data) => manager.mutations.updateSubtaskMutation.mutate({ id, data: data as import("@/types/api-types").TaskUpdateRequest })}
                   onDeleteSubtask={(id) => manager.mutations.deleteSubtaskMutation.mutate(id)}
                   onNavigateToSubtask={(id) => router.push(`${pathname}?taskId=${id}`)}
                   onAddSubtask={(title) => manager.mutations.createSubtaskMutation.mutate({

@@ -63,7 +63,7 @@ export function TaskDetailsSidebar({
 }: TaskDetailsSidebarProps) {
   const { data: user } = useCurrentUser()
   const currentUser = user?.user
-  const { data: workLogs = [], isLoading: isWorkLogsLoading } = useTaskWorkLogs(task.id)
+  const { data: workLogs = [] } = useTaskWorkLogs(task.id)
   const createWorkLogMutation = useCreateWorkLog(task.id)
   const deleteWorkLogMutation = useDeleteWorkLog(task.id)
 
@@ -72,7 +72,7 @@ export function TaskDetailsSidebar({
   const [description, setDescription] = React.useState("")
   const [descError, setDescError] = React.useState(false)
 
-  const totalLoggedHours = workLogs.reduce((acc: number, log: any) => acc + log.hoursLogged, 0)
+  const totalLoggedHours = workLogs.reduce((acc: number, log: { hoursLogged: number }) => acc + log.hoursLogged, 0)
   const statusOptions = projectStatuses.map((st) => ({
     value: st.id,
     label: st.name,
@@ -466,7 +466,7 @@ export function TaskDetailsSidebar({
                 </PopoverTrigger>
                 <PopoverContent className="w-72 p-3 max-h-60 overflow-y-auto space-y-2" align="start">
                   <h4 className="font-bold text-xs border-b border-border pb-1">Work Log History</h4>
-                  {workLogs.map((log: any) => (
+                  {workLogs.map((log: { id: string; hoursLogged: number; description?: string; loggedAt?: string; user?: { name?: string } }) => (
                     <div key={log.id} className="text-[11px] flex justify-between gap-2 border-b border-border/30 pb-2 last:border-0 last:pb-0">
                       <div className="space-y-0.5">
                         <div className="font-medium text-foreground">

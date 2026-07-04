@@ -1,11 +1,9 @@
 import {
-  Analytics02Icon,
   BookOpen01Icon,
   Briefcase02Icon,
+  CheckmarkSquare02Icon,
   DashboardSquare01Icon,
   HelpCircleIcon,
-  Key01Icon,
-  Plug01Icon,
   Shield01Icon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
@@ -25,58 +23,70 @@ export type SidebarNavGroup = {
   items: SidebarNavItem[]
 }
 
-export const navGroups: SidebarNavGroup[] = [
+export const getNavGroups = (
+  workspaceSlug: string,
+  hasNoWorkspaces: boolean,
+  permissions: {
+    canReadProjects: boolean
+    isOwnerOrAdmin: boolean
+    canReadRoles: boolean
+  }
+): SidebarNavGroup[] => [
   {
-    label: "WorkSpace",
+    label: "Your Work",
     items: [
       {
         title: "Dashboard",
-        path: "/dashboard",
+        path: `/${workspaceSlug}/dashboard`,
         icon: <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />,
+        isActive: false,
       },
       {
-        title: "Analytics",
-        path: "/analytics",
-        icon: <HugeiconsIcon icon={Analytics02Icon} strokeWidth={2} />,
+        title: "My Tasks",
+        path: `/${workspaceSlug}/tasks`,
+        icon: <HugeiconsIcon icon={CheckmarkSquare02Icon} strokeWidth={2} />,
+        isActive: false,
       },
       {
         title: "Projects",
-        path: "/projects",
+        path: `/${workspaceSlug}/projects`,
         icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} />,
+        isActive: false,
       },
-    ],
+    ].filter((item) => {
+      if (hasNoWorkspaces) return false
+      if (item.title === "Dashboard" || item.title === "Projects") return permissions.canReadProjects
+      return true
+    }),
   },
   {
-    label: "Organization",
+    label: "Administration",
     items: [
       {
         title: "Members",
         path: "/members",
         icon: <HugeiconsIcon icon={UserMultipleIcon} strokeWidth={2} />,
+        isActive: false,
       },
       {
         title: "Workspaces",
         path: "/workspaces",
         icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} />,
+        isActive: false,
       },
       {
         title: "Roles & Permissions",
         path: "/roles",
         icon: <HugeiconsIcon icon={Shield01Icon} strokeWidth={2} />,
+        isActive: false,
       },
-      {
-        title: "Integrations",
-        path: "/integrations",
-        icon: <HugeiconsIcon icon={Plug01Icon} strokeWidth={2} />,
-      },
-      {
-        title: "API Keys",
-        path: "/api-keys",
-        icon: <HugeiconsIcon icon={Key01Icon} strokeWidth={2} />,
-      },
-    ],
+    ].filter((item) => {
+      if (item.title === "Members") return permissions.isOwnerOrAdmin
+      if (item.title === "Roles & Permissions") return permissions.canReadRoles
+      return true
+    }),
   },
-]
+].filter((group) => group.items.length > 0)
 
 export const footerNavLinks: SidebarNavItem[] = [
   {
@@ -91,8 +101,16 @@ export const footerNavLinks: SidebarNavItem[] = [
   },
 ]
 
-export const navLinks: SidebarNavItem[] = [
-  ...navGroups.flatMap((group) =>
+export const getNavLinks = (
+  workspaceSlug: string,
+  hasNoWorkspaces: boolean,
+  permissions: {
+    canReadProjects: boolean
+    isOwnerOrAdmin: boolean
+    canReadRoles: boolean
+  }
+): SidebarNavItem[] => [
+  ...getNavGroups(workspaceSlug, hasNoWorkspaces, permissions).flatMap((group) =>
     group.items.flatMap((item) =>
       item.subItems?.length ? [item, ...item.subItems] : [item]
     )

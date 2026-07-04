@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import {
   formatBytes,
   useFileUpload,
@@ -323,10 +324,13 @@ export function Pattern({
                 <div className="shrink-0">
                   {fileItem.preview &&
                   fileItem.file.type.startsWith("image/") ? (
-                    <img
+                    <Image
                       src={fileItem.preview}
                       alt={fileItem.file.name}
+                      width={48}
+                      height={48}
                       className="rounded-lg h-12 w-12 border object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="border-border text-muted-foreground rounded-lg flex h-12 w-12 items-center justify-center border">

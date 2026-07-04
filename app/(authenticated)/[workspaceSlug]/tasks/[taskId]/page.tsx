@@ -215,7 +215,7 @@ export default function TaskDetailPage() {
               projectMembers={projectMembers}
               completedStatus={completedStatus}
               projectStatuses={projectStatuses}
-              onUpdateSubtask={(id, data) => manager.mutations.updateSubtaskMutation.mutate({ id, data })}
+              onUpdateSubtask={(id, data) => manager.mutations.updateSubtaskMutation.mutate({ id, data: data as import("@/types/api-types").TaskUpdateRequest })}
               onDeleteSubtask={(id) => manager.mutations.deleteSubtaskMutation.mutate(id)}
               onNavigateToSubtask={(id) => router.push(`/${workspaceSlug}/tasks/${id}`)}
               onAddSubtask={(title) => manager.mutations.createSubtaskMutation.mutate({

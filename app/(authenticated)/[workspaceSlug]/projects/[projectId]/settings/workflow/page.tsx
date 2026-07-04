@@ -1,12 +1,11 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect } from "react"
 import { useProject } from "../../layout"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { axiosInstance } from "@/lib/axios"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Card,
   CardHeader,
@@ -18,10 +17,8 @@ import {
   Plus, 
   Trash2, 
   ArrowRight, 
-  Save, 
   GitBranch, 
   ShieldAlert, 
-  Info 
 } from "lucide-react"
 import {
   Select,
@@ -81,9 +78,11 @@ export default function WorkflowSettingsPage() {
   })
 
   useEffect(() => {
-    if (projectData) setStatuses(projectData)
-    if (projectRoles) setRoles(projectRoles)
-    if (workflowData) setTransitions(workflowData)
+    setTimeout(() => {
+      if (projectData) setStatuses(projectData)
+      if (projectRoles) setRoles(projectRoles)
+      if (workflowData) setTransitions(workflowData)
+    }, 0)
   }, [projectData, projectRoles, workflowData])
 
   const addTransitionMutation = useMutation({
@@ -101,7 +100,7 @@ export default function WorkflowSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ["project-workflow", projectId] })
       toast.success("Transition added successfully")
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to add transition")
     }
   })
@@ -114,7 +113,7 @@ export default function WorkflowSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ["project-workflow", projectId] })
       toast.success("Transition removed")
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to remove transition")
     }
   })

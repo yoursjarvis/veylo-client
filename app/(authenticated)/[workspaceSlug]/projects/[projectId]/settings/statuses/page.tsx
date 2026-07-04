@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   useCreateStatus,
   useDeleteStatus,
@@ -221,11 +221,11 @@ export default function StatusesSettingsPage() {
   const createStatusMutation = useCreateStatus(projectId)
   const updateStatusMutation = useUpdateStatus(projectId)
 
-  const [localStatuses, setLocalStatuses] = useState<any[]>([])
+  const [localStatuses, setLocalStatuses] = useState<{ id: string; name: string; color?: string; order?: number }[]>([])
 
   useEffect(() => {
     if (statuses) {
-      setLocalStatuses(statuses)
+      setTimeout(() => setLocalStatuses(statuses), 0)
     }
   }, [statuses])
 
@@ -326,9 +326,29 @@ export default function StatusesSettingsPage() {
       </div>
 
       {isStatusesLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Spinner className="size-8" />
+        <div className="flex flex-col space-y-6 p-6 w-full">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-32" />
+          </div>
         </div>
+        <div className="rounded-md border border-border">
+          <div className="border-b border-border p-4 flex gap-4">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
       ) : (
         <div className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-2">
           {/* List of Statuses */}
@@ -357,7 +377,7 @@ export default function StatusesSettingsPage() {
                       items={localStatuses.map(s => s.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      {localStatuses.map((st: any) => (
+                      {localStatuses.map((st: { id: string; name: string; color?: string; order?: number }) => (
                         <StatusRow 
                           key={st.id} 
                           status={st} 

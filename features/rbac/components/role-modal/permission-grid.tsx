@@ -3,7 +3,7 @@
 import { PermissionItem } from "./permission-item";
 
 interface PermissionGridProps {
-  permissions: any[];
+  permissions: { id: string; action: string; description: string }[];
   selectedPermissionIds: string[];
   onChange: (id: string, checked: boolean) => void;
   disabled?: boolean;

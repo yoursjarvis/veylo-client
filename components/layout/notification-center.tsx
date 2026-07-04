@@ -40,9 +40,21 @@ export function NotificationCenter() {
   const { data: auth } = useCurrentUser();
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllNotificationsRead();
+  const shownIds = React.useRef(new Set<string>());
 
-  const shownNotificationIds = React.useRef<Set<Set<string>>>(new Set());
-  const shownIds = React.useRef<Set<string>>(new Set());
+  const handleNotificationClick = React.useCallback((n: NotificationType) => {
+    // Mark as read
+    if (!n.isRead) {
+      markReadMutation.mutate(n.id);
+    }
+
+    // Redirect to task drawer or project
+    if (n.taskId && workspaceSlug) {
+      router.push(`/${workspaceSlug}/projects?taskId=${n.taskId}`);
+    } else if (n.projectId && workspaceSlug) {
+      router.push(`/${workspaceSlug}/projects/${n.projectId}`);
+    }
+  }, [markReadMutation, workspaceSlug, router]);
 
   React.useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
@@ -88,24 +100,12 @@ export function NotificationCenter() {
         }
       });
     }
-  }, [notifications, auth]);
+  }, [notifications, auth, handleNotificationClick]);
 
   const unreadNotifications = notifications.filter((n: NotificationType) => !n.isRead);
   const unreadCount = unreadNotifications.length;
 
-  const handleNotificationClick = (n: NotificationType) => {
-    // Mark as read
-    if (!n.isRead) {
-      markReadMutation.mutate(n.id);
-    }
 
-    // Redirect to task drawer or project
-    if (n.taskId && workspaceSlug) {
-      router.push(`/${workspaceSlug}/projects?taskId=${n.taskId}`);
-    } else if (n.projectId && workspaceSlug) {
-      router.push(`/${workspaceSlug}/projects/${n.projectId}`);
-    }
-  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {

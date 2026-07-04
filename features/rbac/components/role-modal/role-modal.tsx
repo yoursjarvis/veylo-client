@@ -56,13 +56,17 @@ export function RoleModal({
   useEffect(() => {
     if (open) {
       if (roleToEdit) {
-        setName(roleToEdit.name)
-        setSelectedPermissionIds(
-          roleToEdit.permissions.map((p) => p.permissionId)
-        )
+        setTimeout(() => {
+          setName(roleToEdit.name)
+          setSelectedPermissionIds(
+            roleToEdit.permissions.map((p) => p.permissionId)
+          )
+        }, 0)
       } else {
-        setName("")
-        setSelectedPermissionIds([])
+        setTimeout(() => {
+          setName("")
+          setSelectedPermissionIds([])
+        }, 0)
       }
     }
   }, [open, roleToEdit])
