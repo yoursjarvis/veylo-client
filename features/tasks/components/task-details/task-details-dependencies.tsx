@@ -50,14 +50,17 @@ export function TaskDetailsDependencies({
   const [isRendered, setIsRendered] = useState(false)
 
   React.useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
     if (popoverOpen) {
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setIsRendered(true)
       }, 50)
-      return () => clearTimeout(timer)
     } else {
-      setIsRendered(false)
+      timer = setTimeout(() => {
+        setIsRendered(false)
+      }, 0)
     }
+    return () => clearTimeout(timer)
   }, [popoverOpen])
 
   React.useEffect(() => {
@@ -74,7 +77,7 @@ export function TaskDetailsDependencies({
   const { data: allTasks } = useProjectTasks(task.projectId, {})
 
   const availableTasks = (allTasks || []).filter(
-    (t: any) =>
+    (t: Task) =>
       t.id !== task.id &&
       !blockingDeps.some((d) => d.blockedTaskId === t.id) &&
       !blockedByDeps.some((d) => d.blockingTaskId === t.id)
@@ -134,7 +137,7 @@ export function TaskDetailsDependencies({
             <CommandList>
               <CommandEmpty>No tasks found.</CommandEmpty>
               <CommandGroup>
-                {availableTasks.map((t: any) => (
+                {availableTasks.map((t: Task) => (
                   <CommandItem
                     key={t.id}
                     value={t.taskKey + " " + t.title}

@@ -65,7 +65,7 @@ export function ComboboxSelect({
     ? { value: selectedOption.value, label: selectedOption.label }
     : null
 
-  const ComboboxComponent = Combobox as any
+  const ComboboxComponent = Combobox as React.ElementType
 
   return (
     <ComboboxComponent

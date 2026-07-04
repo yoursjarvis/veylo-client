@@ -1,6 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
+import type {
+  TaskCreateRequest,
+  TaskUpdateRequest,
+  SprintCreateRequest,
+  SprintUpdateRequest,
+  StatusRequest,
+  StatusUpdateRequest,
+  CommentRequest,
+  CustomFieldRequest,
+  EpicCreateRequest,
+  EpicUpdateRequest,
+  LabelCreateRequest,
+  MilestoneCreateRequest,
+  MilestoneUpdateRequest
+} from "@/types/api-types";
 
 // --- TASKS ---
 export function useProjectTasks(projectId: string, filters: Record<string, unknown> = {}) {
@@ -29,7 +44,7 @@ export function useTaskDetails(taskId: string | null) {
 export function useCreateTask(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: TaskCreateRequest) => {
       const response = await axiosInstance.post(`/projects/${projectId}/tasks`, data);
       return response.data.data;
     },
@@ -46,7 +61,7 @@ export function useCreateTask(projectId: string) {
 export function useUpdateTask(projectId: string, taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: TaskUpdateRequest) => {
       const response = await axiosInstance.patch(`/tasks/${taskId}`, data);
       return response.data.data;
     },
@@ -145,7 +160,7 @@ export function useProjectSprints(projectId: string) {
 export function useCreateSprint(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: SprintCreateRequest) => {
       const response = await axiosInstance.post(`/projects/${projectId}/sprints`, data);
       return response.data.data;
     },
@@ -159,7 +174,7 @@ export function useCreateSprint(projectId: string) {
 export function useUpdateSprint(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: SprintUpdateRequest }) => {
       const response = await axiosInstance.patch(`/sprints/${id}`, data);
       return response.data.data;
     },
@@ -189,7 +204,7 @@ export function useProjectStatuses(projectId: string) {
 export function useCreateStatus(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: StatusRequest) => {
       const response = await axiosInstance.post(`/projects/${projectId}/statuses`, data);
       return response.data.data;
     },
@@ -203,7 +218,7 @@ export function useCreateStatus(projectId: string) {
 export function useUpdateStatus(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: StatusUpdateRequest }) => {
       await axiosInstance.patch(`/statuses/${id}`, data);
     },
     onSuccess: () => {
@@ -233,7 +248,7 @@ export function useDeleteStatus(projectId: string) {
 export function useCreateSubtask(projectId: string, taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: Partial<TaskCreateRequest>) => {
       const payload = { ...data, parentTaskId: taskId };
       const response = await axiosInstance.post(`/projects/${projectId}/tasks`, payload);
       return response.data.data;
@@ -248,7 +263,7 @@ export function useCreateSubtask(projectId: string, taskId: string) {
 export function useUpdateSubtask(taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: TaskUpdateRequest }) => {
       const response = await axiosInstance.patch(`/tasks/${id}`, data);
       return response.data.data;
     },
@@ -275,7 +290,7 @@ export function useDeleteSubtask(taskId: string) {
 export function useCreateComment(taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: CommentRequest) => {
       const response = await axiosInstance.post(`/tasks/${taskId}/comments`, data);
       return response.data.data;
     },
@@ -353,7 +368,7 @@ export function useProjectCustomFields(projectId: string) {
 export function useCreateCustomField(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: CustomFieldRequest) => {
       const response = await axiosInstance.post(`/projects/${projectId}/custom-fields`, data);
       return response.data.data;
     },
@@ -430,7 +445,7 @@ export function useProjectSlackWebhooks(projectId: string) {
 export function useCreateSlackWebhook(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { url: string; channel?: string | null }) => {
+    mutationFn: async (data: SlackWebhookRequest) => {
       const response = await axiosInstance.post(`/projects/${projectId}/slack-webhooks`, data);
       return response.data.data;
     },
@@ -529,7 +544,7 @@ export function useEpicDetails(epicId: string | null) {
 export function useCreateEpic(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: EpicCreateRequest) => {
       const response = await axiosInstance.post(`/projects/${projectId}/epics`, data);
       return response.data.data;
     },
@@ -543,7 +558,7 @@ export function useCreateEpic(projectId: string) {
 export function useUpdateEpic(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: EpicUpdateRequest }) => {
       const response = await axiosInstance.patch(`/epics/${id}`, data);
       return response.data.data;
     },
@@ -585,7 +600,7 @@ export function useProjectLabels(projectId: string) {
 export function useCreateLabel(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: LabelCreateRequest) => {
       const response = await axiosInstance.post(`/projects/${projectId}/labels`, data);
       return response.data.data;
     },
@@ -599,7 +614,7 @@ export function useCreateLabel(projectId: string) {
 export function useUpdateLabel(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<LabelCreateRequest> }) => {
       const response = await axiosInstance.patch(`/labels/${id}`, data);
       return response.data.data;
     },
@@ -640,7 +655,7 @@ export function useProjectMilestones(projectId: string) {
 export function useCreateMilestone(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
+    mutationFn: async (data: MilestoneCreateRequest) => {
       const response = await axiosInstance.post(`/projects/${projectId}/milestones`, data);
       return response.data.data;
     },
@@ -654,7 +669,7 @@ export function useCreateMilestone(projectId: string) {
 export function useUpdateMilestone(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: MilestoneUpdateRequest }) => {
       const response = await axiosInstance.patch(`/milestones/${id}`, data);
       return response.data.data;
     },

@@ -46,21 +46,6 @@ interface MemberOption {
   }
 }
 
-interface TaskItem {
-  id: string
-  title: string
-  description?: string
-  statusId?: string
-  priority: string
-  type: string
-  status: { name: string }
-  assignee?: { id?: string; image?: string; name?: string }
-  assigneeId?: string
-  dueDate?: string
-  estimate?: string | number
-  labels?: { labelId: string }[]
-  [key: string]: unknown
-}
 
 export default function ListPage() {
   const {
@@ -271,7 +256,13 @@ export default function ListPage() {
               typeof TaskList
             >[0]["statuses"]
           }
-          projectMembers={selectedProject?.members || []}
+          projectMembers={(selectedProject?.members || []).map(m => ({
+            user: {
+              id: m.user?.id || "",
+              name: m.user?.name || null,
+              image: m.user?.image || null,
+            }
+          }))}
           projectTemplate={selectedProject?.template || "simple"}
           onSelectTask={handleSelectTask}
           projectLabels={labels || []}

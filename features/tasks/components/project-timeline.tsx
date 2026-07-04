@@ -39,9 +39,26 @@ type TimelineTask = {
 
 type ZoomLevel = "Day" | "Week" | "Month";
 
-const globalTasksCache = new Map<string, any>();
+interface GlobalTaskCacheEntry {
+  title: string;
+  projectTitle: string;
+  statusName: string;
+  priority: string;
+  assigneeName: string;
+}
 
-function GanttTaskBarWithTooltip({ data }: { data: any }) {
+const globalTasksCache = new Map<string, GlobalTaskCacheEntry>();
+
+interface GanttTaskData {
+  id?: string | number;
+  text?: string;
+  progress?: number;
+  start?: Date | string;
+  end?: Date | string;
+  type?: string;
+}
+
+function GanttTaskBarWithTooltip({ data }: { data: GanttTaskData }) {
   const taskId = data.id;
   const metadata = taskId ? globalTasksCache.get(String(taskId)) : null;
 
@@ -98,7 +115,7 @@ export function ProjectTimeline({
 }: ProjectTimelineProps) {
   const [zoom, setZoom] = useState<ZoomLevel>("Month");
   const [searchQuery, setSearchQuery] = useState("");
-  const [api, setApi] = useState<any>(null);
+  const [api, setApi] = useState<{ exec: (command: string, params: unknown) => void } | null>(null);
   const { resolvedTheme } = useTheme();
   const queryClient = useQueryClient();
 
@@ -112,13 +129,14 @@ export function ProjectTimeline({
       queryClient.invalidateQueries({ queryKey: ["projects", workspaceId] });
       toast.success("Task updated");
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to update task");
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || "Failed to update task");
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     }
   });
 
-  const handleUpdateTask = (ev: any) => {
+  const handleUpdateTask = (ev: { id?: string | number; task?: { end?: Date | string } }) => {
     if (ev?.id && ev?.task?.end) {
       const newDueDate = new Date(ev.task.end).toISOString();
       updateTaskMutation.mutate({
@@ -164,9 +182,9 @@ export function ProjectTimeline({
   // 3. Combine tasks across all projects
   const allProjectsTasks = useMemo<TimelineTask[]>(() => {
     if (projectId) {
-      const project = projects.find((p: any) => p.id == projectId);
+      const project = projects.find((p: { id: string; title: string; createdAt?: string }) => p.id === projectId);
       const projectTitle = project?.title || "";
-      return (singleProjectTasks || []).map((t: any) => ({
+      return (singleProjectTasks || []).map((t: Omit<TimelineTask, "projectId" | "projectTitle">) => ({
         ...t,
         projectId,
         projectTitle,
@@ -204,7 +222,7 @@ export function ProjectTimeline({
   // Map state tasks to SVAR Gantt tasks format
   const ganttTasks = useMemo(() => {
     return filteredTasks.map((t) => {
-      const project = projects.find((p: any) => p.id == t.projectId);
+      const project = projects.find((p: { id: string; title: string; createdAt?: string }) => p.id === t.projectId);
       
       let projectStart = new Date();
       if (project?.createdAt) {

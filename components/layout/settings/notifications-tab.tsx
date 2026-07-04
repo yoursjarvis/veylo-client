@@ -86,8 +86,8 @@ export function NotificationsTab() {
   });
 
   useEffect(() => {
-    let parsedTypes: Record<string, boolean> = {};
-    let parsedChannels: Record<string, boolean> = {};
+    const parsedTypes: Record<string, boolean> = {};
+    const parsedChannels: Record<string, boolean> = {};
 
     // Initialize with defaults (all true)
     NOTIFICATION_TYPES.forEach((opt) => {
@@ -124,10 +124,12 @@ export function NotificationsTab() {
       }
     }
 
-    setPreferences({
-      types: parsedTypes,
-      channels: parsedChannels,
-    });
+    setTimeout(() => {
+      setPreferences({
+        types: parsedTypes,
+        channels: parsedChannels,
+      });
+    }, 0);
   }, [auth]);
 
   const handleToggleType = (id: string) => {
@@ -164,7 +166,7 @@ export function NotificationsTab() {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const { error } = await (authClient.updateUser as any)({
+      const { error } = await (authClient.updateUser as unknown as (data: { notificationPreferences: string }) => Promise<{ error?: { message?: string } }>)({
         notificationPreferences: JSON.stringify(preferences),
       });
 

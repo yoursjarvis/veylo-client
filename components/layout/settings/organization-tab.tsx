@@ -2,7 +2,6 @@
 
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
-import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +12,8 @@ import { useForm } from "@tanstack/react-form";
 import { usePermissions } from "@/hooks/use-permissions";
 
 export function OrganizationTab() {
-  const { data: auth } = useCurrentUser();
   const { data: activeOrg, isPending, refetch } = authClient.useActiveOrganization();
+  const { hasPermission } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -65,7 +64,6 @@ export function OrganizationTab() {
   }
 
   // Determine user role
-  const { hasPermission } = usePermissions();
   const isOwnerOrAdmin = hasPermission("organization:update");
 
   return (

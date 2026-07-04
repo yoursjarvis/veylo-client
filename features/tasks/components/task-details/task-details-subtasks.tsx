@@ -79,7 +79,7 @@ export function TaskDetailsSubtasks({
               <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 border-b border-border/40 mb-1">
                 Apply Checklist Template
               </div>
-              {templates.map((tpl: any) => (
+              {templates.map((tpl: { id: string; name: string; description?: string }) => (
                 <button
                   key={tpl.id}
                   type="button"

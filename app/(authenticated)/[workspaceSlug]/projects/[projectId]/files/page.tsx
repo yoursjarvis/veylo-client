@@ -1,19 +1,20 @@
 "use client"
 
-import React from "react"
-import { useProject } from "../layout"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { axiosInstance } from "@/lib/axios"
-import { toast } from "sonner"
-import {
-  File as FileIcon,
-  Upload,
-  Download,
-  Trash,
-  Loader2,
-} from "lucide-react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
+import { axiosInstance } from "@/lib/axios"
+import {
+  Delete02FreeIcons,
+  Download03Icon,
+  File02Icon,
+  Upload03Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Loader2 } from "lucide-react"
+import React from "react"
+import { toast } from "sonner"
+import { useProject } from "../layout"
 
 interface ProjectFile {
   id: string
@@ -127,7 +128,8 @@ export default function FilesPage() {
       <div className="flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
         <div>
           <h3 className="flex items-center gap-2 text-lg font-bold">
-            <FileIcon className="h-5 w-5 text-primary" /> Project Drive
+            <HugeiconsIcon icon={File02Icon} className="h-5 w-5 text-primary" />{" "}
+            Project Drive
           </h3>
           <p className="mt-1 text-xs">
             Store and share documents, CSVs, PDFs, images, spreadsheets, and
@@ -151,7 +153,7 @@ export default function FilesPage() {
               {uploadFileMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Upload className="mr-2 h-4 w-4" />
+                <HugeiconsIcon icon={Upload03Icon} className="mr-2 h-4 w-4" />
               )}
               Upload File
             </Button>
@@ -164,8 +166,8 @@ export default function FilesPage() {
           <Spinner className="size-8" />
         </div>
       ) : files && files.length === 0 ? (
-        <div className="flex min-h-[300px] flex-col items-center justify-center rounded-xl border-dashed p-6 text-center">
-          <Upload className="mb-3 h-10 w-10" />
+        <div className="flex min-h-75 flex-col items-center justify-center rounded-xl border-dashed p-6 text-center">
+          <HugeiconsIcon icon={Upload03Icon} className="mb-3 h-10 w-10" />
           <h4 className="text-sm font-bold">No Files Uploaded</h4>
           <p className="mt-1 max-w-xs text-xs leading-relaxed">
             Upload images, PDFs, docs, spreadsheets, or CSVs. Executable/script
@@ -190,7 +192,10 @@ export default function FilesPage() {
                   <tr key={file.id} className="hover text-xs transition-colors">
                     <td className="p-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <FileIcon className="h-4 w-4 text-primary" />
+                        <HugeiconsIcon
+                          icon={File02Icon}
+                          className="h-4 w-4 text-primary"
+                        />
                         <span className="font-semibold">{file.name}</span>
                       </div>
                     </td>
@@ -212,7 +217,10 @@ export default function FilesPage() {
                           rel="noreferrer"
                           className={`${buttonVariants({ variant: "ghost", size: "icon" })} h-8 w-8`}
                         >
-                          <Download className="h-4 w-4" />
+                          <HugeiconsIcon
+                            icon={Download03Icon}
+                            className="h-4 w-4"
+                          />
                         </a>
                         <Button
                           variant="ghost"
@@ -227,7 +235,10 @@ export default function FilesPage() {
                             }
                           }}
                         >
-                          <Trash className="h-4 w-4" />
+                          <HugeiconsIcon
+                            icon={Delete02FreeIcons}
+                            className="h-4 w-4"
+                          />
                         </Button>
                       </div>
                     </td>

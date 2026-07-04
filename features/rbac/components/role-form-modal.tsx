@@ -21,7 +21,7 @@ interface RoleFormModalProps {
 
 export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: RoleFormModalProps) {
   const { data: permissionsCatalog } = useCatalogPermissions();
-  const { permissions: userPermissions, hasPermission } = useUserPermissions({ organizationId });
+  const { permissions: userPermissions } = useUserPermissions({ organizationId });
   const { data: roles } = useOrganizationRoles(organizationId);
   
   const createRole = useCreateRole(organizationId);
@@ -37,15 +37,17 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
 
   useEffect(() => {
     if (open) {
-      if (roleToEdit) {
-        setName(roleToEdit.name);
-        setSelectedPermissionIds(roleToEdit.permissions.map(p => p.permissionId));
-        setBypassPermissions(roleToEdit.bypassPermissions || false);
-      } else {
-        setName("");
-        setSelectedPermissionIds([]);
-        setBypassPermissions(false);
-      }
+      setTimeout(() => {
+        if (roleToEdit) {
+          setName(roleToEdit.name);
+          setSelectedPermissionIds(roleToEdit.permissions.map(p => p.permissionId));
+          setBypassPermissions(roleToEdit.bypassPermissions || false);
+        } else {
+          setName("");
+          setSelectedPermissionIds([]);
+          setBypassPermissions(false);
+        }
+      }, 0);
     }
   }, [open, roleToEdit]);
 
@@ -66,8 +68,8 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
       onOpenChange(false);
     } catch (error) {
       console.error("Role save error:", error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const errorMessage = (error as any)?.response?.data?.message || "Failed to save role";
+      const err = error as { response?: { data?: { message?: string } } };
+      const errorMessage = err?.response?.data?.message || "Failed to save role";
       toast.error(errorMessage);
     }
   };

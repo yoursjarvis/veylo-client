@@ -11,7 +11,7 @@ import { PermissionGrid } from "./permission-grid"
 interface PermissionCategoryProps {
   name: string
   description: string
-  permissions: any[]
+  permissions: { id: string; [key: string]: unknown }[]
   selectedPermissionIds: string[]
   onChange: (id: string, checked: boolean) => void
   disabled?: boolean
@@ -30,9 +30,7 @@ export function PermissionCategory({
   const allSelected =
     permissions.length > 0 &&
     permissions.every((p) => selectedPermissionIds.includes(p.id))
-  const someSelected =
-    permissions.some((p) => selectedPermissionIds.includes(p.id)) &&
-    !allSelected
+
 
   const toggleAll = (checked: boolean) => {
     if (checked) {

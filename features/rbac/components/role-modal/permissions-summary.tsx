@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 
 interface PermissionsSummaryProps {
   selectedIds: string[]
-  permissions: any[]
+  permissions: { id: string; module: string; resource: string }[]
 }
 
 export function PermissionsSummary({

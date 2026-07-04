@@ -3,7 +3,6 @@
 import { useOrganizationRoles, useDeleteRole } from "../hooks/use-rbac";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { RoleModal } from "./role-modal/role-modal";
@@ -38,7 +37,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
       await deleteRole.mutateAsync(roleToDelete.id);
       toast.success("Role deleted successfully");
       setRoleToDelete(null);
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete role");
     }
   };

@@ -1,50 +1,52 @@
 "use client"
-import { Project, ProjectMember, TaskStatus, Sprint, Epic, Milestone, Label, CustomFieldDefinition, ProjectTemplate } from "@/types/models";
-
-import Image from "next/image"
-import React, { createContext, useContext, useState, useEffect } from "react"
 import {
-  useParams,
-  useRouter,
-  useSearchParams,
-  usePathname,
-} from "next/navigation"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { axiosInstance } from "@/lib/axios"
+  CustomFieldDefinition,
+  Epic,
+  Label,
+  Milestone,
+  Project,
+  ProjectMember,
+  ProjectTemplate,
+  Sprint,
+  TaskStatus,
+} from "@/types/models"
+
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
-import { useCurrentUser } from "@/features/auth/hooks/use-auth"
-import { authClient } from "@/lib/auth-client"
 import { usePermissions } from "@/hooks/use-permissions"
-import { toast } from "sonner"
+import { axiosInstance } from "@/lib/axios"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { ArrowLeft, CheckCircle2, ChevronRight, Circle, X } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import {
-  Plus,
-  ArrowLeft,
-  ChevronRight,
-  AlertCircle,
-  CheckCircle2,
-  Circle,
-  X,
-} from "lucide-react"
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation"
+import React, { createContext, useContext, useEffect, useState } from "react"
+import { toast } from "sonner"
 
+import { IconPicker } from "@/components/shared/icon-picker"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status"
-import { IconPicker } from "@/components/shared/icon-picker"
 import { getThumbUrl } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+import { CreateTaskDialog } from "@/features/tasks/components/create-task-dialog"
+import { TaskDetailsDrawer } from "@/features/tasks/components/task-details-drawer"
 import {
-  useProjectStatuses,
-  useProjectSprints,
   useProjectCustomFields,
   useProjectEpics,
   useProjectLabels,
   useProjectMilestones,
+  useProjectSprints,
+  useProjectStatuses,
   useProjectTasks,
 } from "@/features/tasks/hooks/use-tasks"
-import { TaskDetailsDrawer } from "@/features/tasks/components/task-details-drawer"
-import { CreateTaskDialog } from "@/features/tasks/components/create-task-dialog"
+import { AlertDiamondIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 interface ProjectContextType {
   workspaceSlug: string
@@ -73,18 +75,6 @@ export function useProject() {
   return context
 }
 
-interface WorkspaceMember {
-  id: string
-  userId: string
-  role: string
-  user: {
-    id: string
-    name: string
-    email: string
-    image: string | null
-  }
-}
-
 export default function ProjectLayout({
   children,
 }: {
@@ -100,12 +90,6 @@ export default function ProjectLayout({
   const queryClient = useQueryClient()
   const { activeWorkspace, isLoading: isWorkspaceLoading } =
     useWorkspaceContext()
-  const { data: auth } = useCurrentUser()
-  const currentUser = auth?.user as
-    | { id?: string; name?: string; email?: string }
-    | undefined
-  const { data: activeMember } = authClient.useActiveMember()
-
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false)
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
 
@@ -153,15 +137,16 @@ export default function ProjectLayout({
   }
 
   // Queries
-  const { data: selectedProject, isLoading: isProjectDetailLoading } =
-    useQuery<Project & { members?: ProjectMember[] }>({
-      queryKey: ["project", projectId],
-      queryFn: async () => {
-        const response = await axiosInstance.get(`/projects/${projectId}`)
-        return response.data.data
-      },
-      enabled: !!projectId,
-    })
+  const { data: selectedProject, isLoading: isProjectDetailLoading } = useQuery<
+    Project & { members?: ProjectMember[] }
+  >({
+    queryKey: ["project", projectId],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/projects/${projectId}`)
+      return response.data.data
+    },
+    enabled: !!projectId,
+  })
 
   const { data: statuses } = useProjectStatuses(projectId || "")
   const { data: sprints } = useProjectSprints(projectId || "")
@@ -169,18 +154,6 @@ export default function ProjectLayout({
   const { data: epics } = useProjectEpics(projectId || "")
   const { data: labels } = useProjectLabels(projectId || "")
   const { data: milestones } = useProjectMilestones(projectId || "")
-
-  const { data: workspaceMembers } = useQuery<WorkspaceMember[]>({
-    queryKey: ["workspace-members", activeWorkspace?.id],
-    queryFn: async () => {
-      if (!activeWorkspace) return []
-      const response = await axiosInstance.get(
-        `/workspaces/${activeWorkspace.id}/members`
-      )
-      return response.data.data
-    },
-    enabled: !!activeWorkspace,
-  })
 
   const { data: templateDetails } = useQuery<ProjectTemplate>({
     queryKey: ["project-template", selectedProject?.template],
@@ -361,7 +334,10 @@ export default function ProjectLayout({
   if (!activeWorkspace) {
     return (
       <div className="flex h-[calc(100vh-4rem)] w-full flex-col items-center justify-center p-4">
-        <AlertCircle className="mb-4 h-12 w-12 animate-bounce text-muted-foreground" />
+        <HugeiconsIcon
+          icon={AlertDiamondIcon}
+          className="mb-4 h-12 w-12 animate-bounce text-muted-foreground"
+        />
         <h2 className="text-xl font-semibold">No Workspace Selected</h2>
         <p className="mt-2 max-w-md text-center text-muted-foreground">
           Please select or create a workspace to view projects.
@@ -374,20 +350,21 @@ export default function ProjectLayout({
   const basePath = `/${workspaceSlug}/projects/${projectId}`
   const isSoftware = selectedProject?.teamMode === "software"
   const isGeneral = selectedProject?.teamMode === "general"
-  const isHybrid = selectedProject?.teamMode === "hybrid" || !selectedProject?.teamMode
+  const isHybrid =
+    selectedProject?.teamMode === "hybrid" || !selectedProject?.teamMode
 
   const navLinks = [
     { name: "Overview", path: basePath },
     { name: "List", path: `${basePath}/list` },
     { name: "Board", path: `${basePath}/board` },
-    ...((isGeneral || isHybrid)
+    ...(isGeneral || isHybrid
       ? [{ name: "Calendar", path: `${basePath}/calendar` }]
       : []),
     ...(isScrum && (isSoftware || isHybrid)
       ? [{ name: "Backlog", path: `${basePath}/backlog` }]
       : []),
     { name: "Timeline", path: `${basePath}/timeline` },
-    ...((isSoftware || isHybrid)
+    ...(isSoftware || isHybrid
       ? [{ name: "Epics", path: `${basePath}/epics` }]
       : []),
     { name: "Reports", path: `${basePath}/reports` },
@@ -437,9 +414,9 @@ export default function ProjectLayout({
         setIsCreateTaskOpen,
       }}
     >
-      <div className="flex min-h-[calc(100vh-4rem)] w-full flex-col min-w-0 bg-background text-foreground overflow-x-hidden">
+      <div className="flex min-h-[calc(100vh-4rem)] w-full min-w-0 flex-col overflow-x-hidden bg-background text-foreground">
         {/* Main Content Area */}
-        <div className="ml-2 flex min-h-screen flex-1 min-w-0 flex-col overflow-x-hidden">
+        <div className="ml-2 flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden">
           {/* Header */}
           <header className="flex shrink-0 flex-col gap-4 border-b border-border bg-card/85 px-8 pt-5 pb-0 backdrop-blur-md">
             {/* Top Row: Back Navigation, Breadcrumb, Project Title, Status & Actions */}
@@ -511,7 +488,7 @@ export default function ProjectLayout({
                     className="rounded-full border border-border/20 bg-muted/40 px-2.5 py-0.5 text-xs font-medium text-foreground/90 shadow-xs"
                   >
                     <StatusIndicator />
-                    <StatusLabel className="py-0.5 uppercase font-bold text-[9px] tracking-wide">
+                    <StatusLabel className="py-0.5 text-[9px] font-bold tracking-wide uppercase">
                       {projectStatus === "on_track"
                         ? "On Track"
                         : projectStatus === "at_risk"
@@ -552,9 +529,13 @@ export default function ProjectLayout({
                   onClick={() => setIsCreateTaskOpen(true)}
                   variant="default"
                   size="sm"
-                  className="h-8.5 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/95 shadow-xs"
+                  className="h-8.5 gap-1.5 bg-primary text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95"
                 >
-                  <Plus size={14} className="h-3.5 w-3.5" />
+                  <HugeiconsIcon
+                    icon={PlusSignIcon}
+                    size={14}
+                    className="h-3.5 w-3.5"
+                  />
                   <span>New Task</span>
                 </Button>
               </div>
@@ -611,8 +592,8 @@ export default function ProjectLayout({
           )}
 
           {/* Children View Content */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 bg-background p-8">
-            <div className="mx-auto space-y-6 min-w-0 w-full max-w-full">
+          <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-background p-8">
+            <div className="mx-auto w-full max-w-full min-w-0 space-y-6">
               {showOnboarding && (
                 <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xs backdrop-blur-md transition-all duration-300">
                   {/* Background glowing gradient using theme colors */}
@@ -623,16 +604,24 @@ export default function ProjectLayout({
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
                         <span className="flex h-2 w-2 animate-pulse rounded-full bg-primary" />
-                        <h3 className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
+                        <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                           Getting Started Guide
                         </h3>
                       </div>
                       <h2 className="text-lg font-bold text-foreground">
-                        {(templateDetails?.config as { guidance?: { welcome?: string } })?.guidance?.welcome ||
+                        {(
+                          templateDetails?.config as {
+                            guidance?: { welcome?: string }
+                          }
+                        )?.guidance?.welcome ||
                           "Welcome to your new workspace!"}
                       </h2>
                       <p className="max-w-xl text-xs text-muted-foreground">
-                        {(templateDetails?.config as { guidance?: { firstStep?: string } })?.guidance?.firstStep ||
+                        {(
+                          templateDetails?.config as {
+                            guidance?: { firstStep?: string }
+                          }
+                        )?.guidance?.firstStep ||
                           "Complete these quick setup tasks to onboard your team."}
                       </p>
 
@@ -654,7 +643,7 @@ export default function ProjectLayout({
                     </div>
 
                     {/* Onboarding steps list */}
-                    <div className="flex min-w-[280px] flex-col gap-2">
+                    <div className="flex min-w-70 flex-col gap-2">
                       {onboardingSteps.map((step) => {
                         const Icon = step.completed ? CheckCircle2 : Circle
                         const buttonStyles = `flex items-center gap-3 p-3 rounded-lg border text-left text-xs font-medium transition-all ${
@@ -721,7 +710,11 @@ export default function ProjectLayout({
         <TaskDetailsDrawer
           taskId={activeTaskId}
           projectId={projectId!}
-          projectMembers={(selectedProject?.members || []) as (ProjectMember & { user: { id: string; name: string; image?: string | null } })[]}
+          projectMembers={
+            (selectedProject?.members || []) as (ProjectMember & {
+              user: { id: string; name: string; image?: string | null }
+            })[]
+          }
           projectStatuses={statuses || []}
           projectSprints={sprints || []}
           projectTemplate={selectedProject?.template || "simple"}
@@ -736,7 +729,11 @@ export default function ProjectLayout({
         <CreateTaskDialog
           open={isCreateTaskOpen}
           projectId={projectId!}
-          projectMembers={(selectedProject?.members || []) as (ProjectMember & { user: { id: string; name: string; image?: string | null } })[]}
+          projectMembers={
+            (selectedProject?.members || []) as (ProjectMember & {
+              user: { id: string; name: string; image?: string | null }
+            })[]
+          }
           projectStatuses={statuses || []}
           projectSprints={sprints || []}
           projectTemplate={selectedProject?.template || "simple"}

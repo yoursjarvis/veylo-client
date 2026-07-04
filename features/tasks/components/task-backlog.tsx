@@ -31,6 +31,7 @@ import {
   Plus,
 } from "lucide-react"
 import React, { useState } from "react"
+import type { ProjectMember } from "@/types/models"
 import {
   useCreateSprint,
   useCreateTask,
@@ -56,7 +57,7 @@ interface TaskBacklogProps {
     startDate?: string
     endDate?: string
   }[]
-  projectMembers: Record<string, unknown>[]
+  projectMembers: ProjectMember[]
   statuses: { id: string }[]
   onSelectTask: (taskId: string) => void
 }

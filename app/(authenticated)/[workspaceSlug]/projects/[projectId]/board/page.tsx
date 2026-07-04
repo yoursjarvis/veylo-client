@@ -75,7 +75,7 @@ export default function BoardPage() {
         type: "select",
         options: [
           { value: "null", label: "Unassigned" },
-          ...(selectedProject?.members || []).map((m: any) => ({
+          ...(selectedProject?.members || []).map((m: { userId: string; user?: { name?: string | null; email?: string | null } }) => ({
             value: m.userId,
             label: m.user?.name || m.user?.email || "Unknown User",
           })),
@@ -85,7 +85,7 @@ export default function BoardPage() {
         key: "statusId",
         label: "Status",
         type: "select",
-        options: (statuses || []).map((s: any) => ({
+        options: (statuses || []).map((s: { id: string; name: string }) => ({
           value: s.id,
           label: s.name,
         })),

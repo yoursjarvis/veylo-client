@@ -1,7 +1,9 @@
 "use client"
 
 import { format } from "date-fns"
+import Image from "next/image"
 import React, { useEffect, useMemo, useRef, useState } from "react"
+import type { ProjectMember, Sprint } from "@/types/models"
 import {
   useCreateStatus,
   useCreateTask,
@@ -77,8 +79,8 @@ interface TaskBoardProps {
   projectId: string
   tasks: Task[]
   statuses: { id: string; name: string; color?: string }[]
-  projectMembers: Record<string, unknown>[]
-  sprints: Record<string, unknown>[]
+  projectMembers: ProjectMember[]
+  sprints: Sprint[]
   projectTemplate: string
   activeSprintId?: string | null
   onSelectTask: (taskId: string) => void
@@ -325,7 +327,7 @@ function TaskCard({
 
   return (
     <div
-      onClick={(e) => {
+      onClick={() => {
         if (!isEditing && onSelectTask) {
           onSelectTask(task.id)
         }
@@ -353,11 +355,12 @@ function TaskCard({
       )}
 
       {task.coverImage && (
-        <div className="mb-3 w-full overflow-hidden rounded-lg border border-border/40">
-          <img
+        <div className="relative mb-3 h-28 w-full overflow-hidden rounded-lg border border-border/40">
+          <Image
             src={task.coverImage}
             alt="Cover"
-            className="h-28 w-full object-cover"
+            fill
+            className="object-cover"
           />
         </div>
       )}

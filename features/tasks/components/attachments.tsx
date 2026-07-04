@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
@@ -27,10 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import Lightbox from "yet-another-react-lightbox"
-import "yet-another-react-lightbox/styles.css"
-import Zoom from "yet-another-react-lightbox/plugins/zoom"
-import Download from "yet-another-react-lightbox/plugins/download"
 import { useMediaAnnotations, useCreateAnnotation, useDeleteAnnotation, useUploadNewVersion } from "@/features/tasks/hooks/use-tasks"
 interface AttachmentItemProps {
   taskId: string
@@ -38,6 +33,13 @@ interface AttachmentItemProps {
   allAttachments?: Media[]
   onDelete: (id: string) => void
   canDelete: boolean
+}
+interface Annotation {
+  id: string
+  x: number
+  y: number
+  content: string
+  user?: { name?: string }
 }
 
 export function AttachmentItem({
@@ -239,14 +241,17 @@ export function AttachmentItem({
                 className="relative cursor-crosshair max-w-full max-h-[70vh] shadow-2xl rounded"
                 onClick={handleImageClick}
               >
-                <img
+                <Image
                   src={activeVersion.url}
                   alt={activeVersion.name}
-                  className="max-w-full max-h-[70vh] select-none object-contain"
+                  width={1200}
+                  height={1200}
+                  className="max-w-full max-h-[70vh] w-auto h-auto select-none object-contain"
+                  unoptimized
                 />
 
                 {/* Render Saved Annotation Pins */}
-                {annotations.map((anno: any, idx: number) => (
+                {annotations.map((anno: Annotation, idx: number) => (
                   <div
                     key={anno.id}
                     className="absolute w-6 h-6 bg-red-600 border border-white text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg transform -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:scale-115 transition"
@@ -391,7 +396,7 @@ export function AttachmentItem({
 
               {annotations.length > 0 ? (
                 <div className="space-y-2.5">
-                  {annotations.map((anno: any, idx: number) => (
+                  {annotations.map((anno: Annotation, idx: number) => (
                     <div
                       key={anno.id}
                       className="p-2 border border-border/80 rounded bg-muted/20 space-y-1 relative group"

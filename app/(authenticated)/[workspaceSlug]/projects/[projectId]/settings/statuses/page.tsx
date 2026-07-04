@@ -221,11 +221,11 @@ export default function StatusesSettingsPage() {
   const createStatusMutation = useCreateStatus(projectId)
   const updateStatusMutation = useUpdateStatus(projectId)
 
-  const [localStatuses, setLocalStatuses] = useState<any[]>([])
+  const [localStatuses, setLocalStatuses] = useState<{ id: string; name: string; color?: string; order?: number }[]>([])
 
   useEffect(() => {
     if (statuses) {
-      setLocalStatuses(statuses)
+      setTimeout(() => setLocalStatuses(statuses), 0)
     }
   }, [statuses])
 
@@ -357,7 +357,7 @@ export default function StatusesSettingsPage() {
                       items={localStatuses.map(s => s.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      {localStatuses.map((st: any) => (
+                      {localStatuses.map((st: { id: string; name: string; color?: string; order?: number }) => (
                         <StatusRow 
                           key={st.id} 
                           status={st} 

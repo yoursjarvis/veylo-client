@@ -56,7 +56,7 @@ export function useUpdateMemberPhoto(memberId: string) {
 export function useUpdateMemberProfile(memberId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (data: { name: string; email: string }) => {
+    mutationFn: async (data: { firstName: string; lastName: string; email: string }) => {
       const res = await axiosInstance.put(`/org/members/${memberId}`, data)
       return res.data.data
     },
