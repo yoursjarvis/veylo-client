@@ -164,7 +164,7 @@ export function RoleAssignmentModal({
         assignRole({
           userId,
           roleIds: scope.roleIds,
-          scopeType: scope.scopeType as "ORGANIZATION" | "PROJECT" | "DEPARTMENT",
+          scopeType: scope.scopeType as "ORGANIZATION" | "PROJECT",
           scopeId: scope.scopeId,
         })
       )

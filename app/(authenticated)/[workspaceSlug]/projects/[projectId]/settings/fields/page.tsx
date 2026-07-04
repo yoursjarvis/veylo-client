@@ -17,7 +17,7 @@ import {
   CardDescription,
 } from "@/components/ui/card"
 import { Columns, Trash, Plus } from "lucide-react"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 import {
@@ -104,9 +104,29 @@ export default function CustomFieldsSettingsPage() {
       </div>
 
       {isFieldsLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Spinner className="size-8" />
+        <div className="flex flex-col space-y-6 p-6 w-full">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-32" />
+          </div>
         </div>
+        <div className="rounded-md border border-border">
+          <div className="border-b border-border p-4 flex gap-4">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
       ) : (
         <div className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-2">
           {/* List of Custom Fields */}

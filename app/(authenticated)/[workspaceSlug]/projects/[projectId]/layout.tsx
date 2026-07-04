@@ -30,7 +30,7 @@ import { toast } from "sonner"
 import { IconPicker } from "@/components/shared/icon-picker"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status"
 import { getThumbUrl } from "@/lib/utils"
 
@@ -325,8 +325,14 @@ export default function ProjectLayout({
 
   if (isWorkspaceLoading || isProjectDetailLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center">
-        <Spinner className="size-8" />
+      <div className="flex flex-col space-y-4 p-6 w-full">
+        <Skeleton className="h-12 w-[250px]" />
+        <Skeleton className="h-8 w-[150px]" />
+        <div className="space-y-4 mt-8">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
       </div>
     )
   }

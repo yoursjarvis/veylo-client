@@ -445,7 +445,7 @@ export function useProjectSlackWebhooks(projectId: string) {
 export function useCreateSlackWebhook(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: SlackWebhookRequest) => {
+    mutationFn: async (data: { url: string; channel?: string | null }) => {
       const response = await axiosInstance.post(`/projects/${projectId}/slack-webhooks`, data);
       return response.data.data;
     },

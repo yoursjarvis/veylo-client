@@ -40,6 +40,7 @@ export function NotificationCenter() {
   const { data: auth } = useCurrentUser();
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllNotificationsRead();
+  const shownIds = React.useRef(new Set<string>());
 
   const handleNotificationClick = React.useCallback((n: NotificationType) => {
     // Mark as read

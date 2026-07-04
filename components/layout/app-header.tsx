@@ -1,7 +1,7 @@
 "use client"
 
 import { AppBreadcrumbs } from "@/components/layout/app-breadcrumbs"
-import { navLinks } from "@/components/layout/app-shared"
+import { getNavLinks } from "@/components/layout/app-shared"
 import { CustomSidebarTrigger } from "@/components/layout/custom-sidebar-trigger"
 import { NavUser } from "@/components/layout/nav-user"
 import { DecorIcon } from "@/components/shared/decor-icon"
@@ -13,9 +13,26 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { usePathname } from "next/navigation"
 
 import { NotificationCenter } from "@/components/layout/notification-center"
+import { useWorkspaceContext } from "@/components/providers/workspace-provider"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function AppHeader() {
   const pathname = usePathname()
+  const { activeWorkspace, workspaces } = useWorkspaceContext()
+  const { hasPermission } = usePermissions()
+
+  const workspaceSlug = activeWorkspace?.slug || ""
+  const hasNoWorkspaces = workspaces && workspaces.length === 0
+  const isOwnerOrAdmin = hasPermission("member:read")
+  const canReadProjects = hasPermission("project:read")
+  const canReadRoles = hasPermission("role:read")
+
+  const navLinks = getNavLinks(workspaceSlug, !!hasNoWorkspaces, {
+    canReadProjects,
+    isOwnerOrAdmin,
+    canReadRoles,
+  })
+
   const activeItem = navLinks.find((item) => item.path === pathname)
 
   return (

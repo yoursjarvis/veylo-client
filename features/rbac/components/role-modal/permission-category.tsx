@@ -11,7 +11,7 @@ import { PermissionGrid } from "./permission-grid"
 interface PermissionCategoryProps {
   name: string
   description: string
-  permissions: { id: string; [key: string]: unknown }[]
+  permissions: { id: string; action: string; description: string }[]
   selectedPermissionIds: string[]
   onChange: (id: string, checked: boolean) => void
   disabled?: boolean

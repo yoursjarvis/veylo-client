@@ -225,7 +225,7 @@ function UserSelect({
   )
 }
 
-function DatePicker({
+export function DatePicker({
   value,
   onChange,
 }: {
@@ -277,7 +277,7 @@ function DatePicker({
   )
 }
 
-function StatusSelect({
+export function StatusSelect({
   value,
   onChange,
   statuses,
@@ -383,7 +383,7 @@ const PRIORITIES = [
   { value: "urgent", label: "Urgent" },
 ]
 
-function PrioritySelect({
+export function PrioritySelect({
   value,
   onChange,
   placeholder = "Priority",
@@ -573,7 +573,7 @@ export function TaskRow({
       <div className="flex items-center truncate px-3 py-2">
         <PrioritySelect
           value={task.priority}
-          onChange={(val) => updateTaskMutation.mutate({ priority: val })}
+          onChange={(val) => updateTaskMutation.mutate({ priority: val as "low" | "medium" | "high" | "urgent" })}
         />
       </div>
       <div className="flex items-center truncate px-3 py-2">

@@ -7,7 +7,7 @@ import {
   type FilterFieldConfig,
 } from "@/components/reui/filters"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { TaskBoard } from "@/features/tasks/components/task-board"
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
 import { FilterHorizontalIcon } from "@hugeicons/core-free-icons"
@@ -123,8 +123,23 @@ export default function BoardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Spinner className="size-8" />
+      <div className="flex flex-col h-full space-y-6 p-6 w-full">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="flex flex-1 gap-6 overflow-hidden">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex h-full min-w-[300px] flex-col rounded-lg bg-muted/30 p-4">
+              <Skeleton className="h-6 w-32 mb-4" />
+              <div className="space-y-3">
+                <Skeleton className="h-24 w-full rounded-md" />
+                <Skeleton className="h-24 w-full rounded-md" />
+                <Skeleton className="h-24 w-full rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     )
   }

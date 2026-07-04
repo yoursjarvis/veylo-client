@@ -70,5 +70,5 @@ export function useAuthForm<
   return useForm({
     ...(options as unknown as Parameters<typeof useForm>[0]),
     validatorAdapter: zodValidator(),
-  })
+  } as any)
 }

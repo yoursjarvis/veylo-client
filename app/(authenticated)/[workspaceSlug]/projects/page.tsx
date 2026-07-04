@@ -36,7 +36,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { getThumbUrl } from "@/lib/utils"
 import {
@@ -260,8 +260,35 @@ export default function ProjectsPage() {
 
   if (isWorkspaceLoading || isProjectsLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center bg-background">
-        <Spinner className="size-8 text-primary" />
+      <div className="min-h-[calc(100vh-4rem)] bg-background p-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="space-y-1">
+              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <Skeleton className="h-10 w-32" />
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex flex-col justify-between overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
+                <div className="flex flex-row items-start gap-4 p-6 pb-4">
+                  <Skeleton className="h-12 w-12 rounded-lg" />
+                  <div className="space-y-2 w-full">
+                    <Skeleton className="h-5 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                  </div>
+                </div>
+                <div className="flex justify-between border-t bg-muted/30 px-6 py-3">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
