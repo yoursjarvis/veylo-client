@@ -1,10 +1,9 @@
-import React from "react"
+import { GitMerge, MessageSquare, Tag, UserPlus, Zap } from "lucide-react"
 import {
-  AutomationTrigger,
   AutomationAction,
   AutomationCondition,
+  AutomationTrigger,
 } from "../types/automation"
-import { Zap, MessageSquare, Tag, GitMerge, UserPlus } from "lucide-react"
 
 interface AutomationNodeProps {
   type: "TRIGGER" | "ACTION" | "CONDITION"
@@ -13,12 +12,7 @@ interface AutomationNodeProps {
   onClick: () => void
 }
 
-export function AutomationNode({
-  type,
-  data,
-  isSelected,
-  onClick,
-}: AutomationNodeProps) {
+export function AutomationNode({ type, data, onClick }: AutomationNodeProps) {
   let title = ""
   let description = ""
   let icon = <Zap className="h-4 w-4" />
@@ -82,17 +76,16 @@ export function AutomationNode({
   return (
     <div
       onClick={onClick}
-      className={`
-        group relative z-10 flex w-[300px] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md
-        \${isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "hover:border-foreground/30"}
-      `}
+      className={`group \${isSelected ? "ring-2 ring-offset-background" : "hover:border-foreground/30"} relative z-10 flex w-[300px] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm ring-primary ring-offset-2 transition-all hover:shadow-md`}
     >
       <div className="flex flex-row items-center gap-3 border-b border-border/50 p-3">
-        <div className={`flex h-8 w-8 items-center justify-center rounded-lg \${colorClass}`}>
+        <div
+          className={`\${colorClass} flex h-8 w-8 items-center justify-center rounded-lg`}
+        >
           {icon}
         </div>
         <div className="flex flex-1 flex-col">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
             {type}
           </span>
           <span className="text-sm font-medium">{title}</span>

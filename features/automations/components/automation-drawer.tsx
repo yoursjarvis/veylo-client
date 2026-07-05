@@ -1,28 +1,34 @@
-import React from "react"
+import { RichTextEditor } from "@/components/shared/rich-text-editor"
+import { Button } from "@/components/ui/button"
+import { ComboboxSelect } from "@/components/ui/combobox-select"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  AutomationActionType,
+  AutomationConditionOperator,
   AutomationRule,
   AutomationStep,
   AutomationTrigger,
   AutomationTriggerType,
-  AutomationActionType,
-  AutomationConditionOperator,
 } from "../types/automation"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ComboboxSelect } from "@/components/ui/combobox-select"
-import { RichTextEditor } from "@/components/shared/rich-text-editor"
- // Wait, I need to check where useProjectMembers is. It's actually useMembers or just standard query. Let's write the query manually or find the hook.
+// Wait, I need to check where useProjectMembers is. It's actually useMembers or just standard query. Let's write the query manually or find the hook.
 
-import { useQuery } from "@tanstack/react-query"
-import { axiosInstance } from "@/lib/axios"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { axiosInstance } from "@/lib/axios"
+import { useQuery } from "@tanstack/react-query"
 
-import { X } from "lucide-react"
+import { Cancel01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 interface AutomationDrawerProps {
-  projectId?: string;
+  projectId?: string
   rule: AutomationRule
   selectedNodeId: string | null
   onClose: () => void
@@ -72,15 +78,15 @@ export function AutomationDrawer({
   if (!nodeType || !selectedNodeData) return null
 
   return (
-    <div className="w-[400px] border-l border-border bg-card p-6 shadow-xl flex flex-col h-full overflow-y-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex h-full w-100 flex-col overflow-y-auto border-l border-border bg-card p-6 shadow-xl">
+      <div className="mb-6 flex items-center justify-between">
         <h3 className="text-lg font-bold">Configure {nodeType}</h3>
         <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-4 w-4" />
+          <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="space-y-6 flex-1">
+      <div className="flex-1 space-y-6">
         {nodeType === "TRIGGER" && (
           <TriggerForm
             trigger={selectedNodeData as AutomationTrigger}
@@ -103,15 +109,23 @@ export function AutomationDrawer({
         )}
       </div>
 
-      <div className="pt-6 border-t border-border mt-auto">
-        <Button className="w-full" onClick={onClose}>Done</Button>
+      <div className="mt-auto border-t border-border pt-6">
+        <Button className="w-full" onClick={onClose}>
+          Done
+        </Button>
       </div>
     </div>
   )
 }
 
-interface StatusObj { id: string; name: string }
-interface MemberObj { userId: string; user?: { name?: string | null; email?: string | null; image?: string | null } }
+interface StatusObj {
+  id: string
+  name: string
+}
+interface MemberObj {
+  userId: string
+  user?: { name?: string | null; email?: string | null; image?: string | null }
+}
 
 function TriggerForm({
   trigger,
@@ -125,11 +139,11 @@ function TriggerForm({
   const { data: statuses = [] } = useQuery({
     queryKey: ["project-statuses", projectId],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/projects/${projectId}/statuses`);
-      return res.data.data;
+      const res = await axiosInstance.get(`/projects/${projectId}/statuses`)
+      return res.data.data
     },
     enabled: !!projectId,
-  });
+  })
 
   return (
     <div className="space-y-4">
@@ -144,7 +158,7 @@ function TriggerForm({
             })
           }
         >
-          <SelectTrigger className="w-full bg-background border-input">
+          <SelectTrigger className="w-full border-input bg-background">
             <SelectValue placeholder="Select Event Type">
               {(val: string) => {
                 const labels: Record<string, string> = {
@@ -152,8 +166,8 @@ function TriggerForm({
                   STATUS_UPDATED: "Status Updated",
                   FIELD_UPDATED: "Custom Field Updated",
                   ASSIGNEE_CHANGED: "Assignee Changed",
-                };
-                return labels[val] || val || "Select Event Type";
+                }
+                return labels[val] || val || "Select Event Type"
               }}
             </SelectValue>
           </SelectTrigger>
@@ -175,16 +189,19 @@ function TriggerForm({
               onValueChange={(val) =>
                 onChange({
                   ...trigger,
-                  config: { ...trigger.config, fromStatus: val === "any" ? null : val },
+                  config: {
+                    ...trigger.config,
+                    fromStatus: val === "any" ? null : val,
+                  },
                 })
               }
             >
-              <SelectTrigger className="w-full bg-background border-input">
+              <SelectTrigger className="w-full border-input bg-background">
                 <SelectValue placeholder="Any Status">
                   {(val: string) => {
-                    if (!val || val === "any") return "Any Status";
-                    const status = statuses.find((s: StatusObj) => s.id === val);
-                    return status ? status.name : val;
+                    if (!val || val === "any") return "Any Status"
+                    const status = statuses.find((s: StatusObj) => s.id === val)
+                    return status ? status.name : val
                   }}
                 </SelectValue>
               </SelectTrigger>
@@ -205,16 +222,19 @@ function TriggerForm({
               onValueChange={(val) =>
                 onChange({
                   ...trigger,
-                  config: { ...trigger.config, toStatus: val === "any" ? null : val },
+                  config: {
+                    ...trigger.config,
+                    toStatus: val === "any" ? null : val,
+                  },
                 })
               }
             >
-              <SelectTrigger className="w-full bg-background border-input">
+              <SelectTrigger className="w-full border-input bg-background">
                 <SelectValue placeholder="Any Status">
                   {(val: string) => {
-                    if (!val || val === "any") return "Any Status";
-                    const status = statuses.find((s: StatusObj) => s.id === val);
-                    return status ? status.name : val;
+                    if (!val || val === "any") return "Any Status"
+                    const status = statuses.find((s: StatusObj) => s.id === val)
+                    return status ? status.name : val
                   }}
                 </SelectValue>
               </SelectTrigger>
@@ -231,8 +251,9 @@ function TriggerForm({
         </>
       )}
 
-      <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg border border-border">
-        This automation will run whenever the selected event occurs in the workspace or project.
+      <div className="rounded-lg border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
+        This automation will run whenever the selected event occurs in the
+        workspace or project.
       </div>
     </div>
   )
@@ -247,25 +268,25 @@ function ActionForm({
   onChange: (s: AutomationStep) => void
   projectId?: string
 }) {
-  const isAction = step.type === "ACTION";
-  
+  const isAction = step.type === "ACTION"
+
   const { data: members = [] } = useQuery({
     queryKey: ["project-members", projectId],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/projects/${projectId}/members`);
-      return res.data.data;
+      const res = await axiosInstance.get(`/projects/${projectId}/members`)
+      return res.data.data
     },
     enabled: !!projectId && isAction,
-  });
+  })
 
   const { data: statuses = [] } = useQuery({
     queryKey: ["project-statuses", projectId],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/projects/${projectId}/statuses`);
-      return res.data.data;
+      const res = await axiosInstance.get(`/projects/${projectId}/statuses`)
+      return res.data.data
     },
     enabled: !!projectId && isAction,
-  });
+  })
 
   if (!isAction) return null
   const action = step.action
@@ -274,14 +295,14 @@ function ActionForm({
     value: m.userId,
     label: m.user?.name || m.user?.email || "Unknown User",
     icon: (
-      <Avatar className="h-5 w-5 border border-border shrink-0">
+      <Avatar className="h-5 w-5 shrink-0 border border-border">
         <AvatarImage src={m.user?.image || ""} />
         <AvatarFallback className="bg-muted text-[8px] font-bold text-foreground">
           {m.user?.name?.charAt(0).toUpperCase() || "?"}
         </AvatarFallback>
       </Avatar>
     ),
-  }));
+  }))
 
   return (
     <div className="space-y-4">
@@ -299,7 +320,7 @@ function ActionForm({
             })
           }
         >
-          <SelectTrigger className="w-full bg-background border-input">
+          <SelectTrigger className="w-full border-input bg-background">
             <SelectValue placeholder="Select Action Type">
               {(val: string) => {
                 const labels: Record<string, string> = {
@@ -307,8 +328,8 @@ function ActionForm({
                   ADD_COMMENT: "Add Comment",
                   CHANGE_STATUS: "Change Status",
                   SEND_EMAIL: "Send Email",
-                };
-                return labels[val] || val || "Select Action Type";
+                }
+                return labels[val] || val || "Select Action Type"
               }}
             </SelectValue>
           </SelectTrigger>
@@ -345,7 +366,7 @@ function ActionForm({
       {action.type === "ADD_COMMENT" && (
         <div className="space-y-2">
           <Label>Comment Text</Label>
-          <div className="border border-input rounded-md overflow-hidden bg-background">
+          <div className="overflow-hidden rounded-md border border-input bg-background">
             <RichTextEditor
               value={(action.payload.text as string) || ""}
               onChange={(content) =>
@@ -378,12 +399,12 @@ function ActionForm({
               })
             }
           >
-            <SelectTrigger className="w-full bg-background border-input">
+            <SelectTrigger className="w-full border-input bg-background">
               <SelectValue placeholder="Select Status">
                 {(val: string) => {
-                  if (!val) return "Select Status";
-                  const status = statuses.find((s: StatusObj) => s.id === val);
-                  return status ? status.name : val;
+                  if (!val) return "Select Status"
+                  const status = statuses.find((s: StatusObj) => s.id === val)
+                  return status ? status.name : val
                 }}
               </SelectValue>
             </SelectTrigger>
@@ -401,7 +422,7 @@ function ActionForm({
       {action.type === "SEND_EMAIL" && (
         <div className="space-y-2">
           <Label>Email Content</Label>
-          <div className="border border-input rounded-md overflow-hidden bg-background">
+          <div className="overflow-hidden rounded-md border border-input bg-background">
             <RichTextEditor
               value={(action.payload.emailContent as string) || ""}
               onChange={(content) =>
@@ -462,7 +483,7 @@ function ConditionForm({
             })
           }
         >
-          <SelectTrigger className="w-full bg-background border-input">
+          <SelectTrigger className="w-full border-input bg-background">
             <SelectValue placeholder="Select Operator">
               {(val: string) => {
                 const labels: Record<string, string> = {
@@ -471,8 +492,8 @@ function ConditionForm({
                   CONTAINS: "Contains",
                   IS_EMPTY: "Is Empty",
                   IS_NOT_EMPTY: "Is Not Empty",
-                };
-                return labels[val] || val || "Select Operator";
+                }
+                return labels[val] || val || "Select Operator"
               }}
             </SelectValue>
           </SelectTrigger>

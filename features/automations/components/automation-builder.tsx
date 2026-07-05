@@ -1,13 +1,15 @@
-import React, { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { PlayIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Plus } from "lucide-react"
+import { useState } from "react"
 import {
   AutomationRule,
   AutomationStep,
   AutomationTrigger,
 } from "../types/automation"
-import { AutomationNode } from "./automation-node"
 import { AutomationDrawer } from "./automation-drawer"
-import { Button } from "@/components/ui/button"
-import { Plus, Play } from "lucide-react"
+import { AutomationNode } from "./automation-node"
 
 interface AutomationBuilderProps {
   initialRule?: AutomationRule
@@ -157,7 +159,7 @@ export function AutomationBuilder(props: AutomationBuilderProps) {
               </p>
             </div>
             <Button onClick={() => onSave?.(rule)}>
-              <Play className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={PlayIcon} className="mr-2 h-4 w-4" />
               Save & Enable
             </Button>
           </div>
@@ -191,7 +193,7 @@ export function AutomationBuilder(props: AutomationBuilderProps) {
               className="z-10 h-8 w-8 rounded-full border-border bg-background shadow-sm hover:border-primary hover:text-primary"
               onClick={() => handleAddStep(null, "main")}
             >
-              <Plus className="h-4 w-4" />
+              <HugeiconsIcon icon={PlusSignIcon} className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -225,8 +227,6 @@ interface AutomationBranchProps {
 
 function AutomationBranch({
   steps,
-  parentId,
-  branchName,
   selectedNodeId,
   onNodeClick,
   onAddStep,
@@ -268,8 +268,8 @@ function AutomationBranch({
                 {/* Branches Container */}
                 <div className="relative mt-8 flex w-full max-w-2xl justify-between">
                   {/* Top horizontal connection line */}
-                  <div className="absolute top-0 left-1/4 right-1/4 h-px bg-border" />
-                  
+                  <div className="absolute top-0 right-1/4 left-1/4 h-px bg-border" />
+
                   {/* Vertical drops from horizontal line */}
                   <div className="absolute top-0 left-1/4 h-4 w-px bg-border" />
                   <div className="absolute top-0 right-1/4 h-4 w-px bg-border" />

@@ -2,6 +2,7 @@ import {
   BookOpen01Icon,
   Briefcase02Icon,
   CheckmarkSquare02Icon,
+  Clock01Icon,
   DashboardSquare01Icon,
   HelpCircleIcon,
   Shield01Icon,
@@ -45,6 +46,12 @@ export const getNavGroups = (
         title: "My Tasks",
         path: `/${workspaceSlug}/tasks`,
         icon: <HugeiconsIcon icon={CheckmarkSquare02Icon} strokeWidth={2} />,
+        isActive: false,
+      },
+      {
+        title: "Timesheets",
+        path: `/${workspaceSlug}/timesheets`,
+        icon: <HugeiconsIcon icon={Clock01Icon} strokeWidth={2} />,
         isActive: false,
       },
       {

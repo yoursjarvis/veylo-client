@@ -17,7 +17,7 @@ import { RichTextEditor } from "@/components/shared/rich-text-editor"
 import { ComboboxSelect } from "@/components/ui/combobox-select"
 import { Calendar } from "@/components/ui/calendar"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Add01Icon, Calendar01Icon } from "@hugeicons/core-free-icons"
+import { Add01Icon, Calendar01Icon, Clock01Icon, PlayIcon, StopIcon } from "@hugeicons/core-free-icons"
 import {
   Task,
   TaskStatus,
@@ -71,6 +71,88 @@ export function TaskDetailsSidebar({
   const [hours, setHours] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [descError, setDescError] = React.useState(false)
+
+  const [isTimerRunning, setIsTimerRunning] = React.useState(false)
+  const [timerSeconds, setTimerSeconds] = React.useState(0)
+  const timerIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  React.useEffect(() => {
+    const activeTimerKey = `task-timer-${task.id}`
+    const stored = localStorage.getItem(activeTimerKey)
+    
+    const startInterval = (startTime: number, initialElapsed: number) => {
+      timerIntervalRef.current = setInterval(() => {
+        setTimerSeconds(Math.floor((Date.now() - startTime) / 1000) + initialElapsed)
+      }, 1000)
+    }
+
+    if (stored) {
+      try {
+        const data = JSON.parse(stored)
+        if (data.isRunning) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setIsTimerRunning(true)
+          const currentElapsed = Math.floor((Date.now() - data.startTime) / 1000) + data.elapsed
+          setTimerSeconds(currentElapsed)
+          startInterval(data.startTime, data.elapsed)
+        } else {
+          setTimerSeconds(data.elapsed || 0)
+        }
+      } catch (e) {
+        console.error("Failed to parse timer state", e)
+      }
+    }
+
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+    }
+  }, [task.id])
+
+  const toggleTimer = () => {
+    const activeTimerKey = `task-timer-${task.id}`
+    if (isTimerRunning) {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+      setIsTimerRunning(false)
+      localStorage.setItem(activeTimerKey, JSON.stringify({
+        isRunning: false,
+        elapsed: timerSeconds,
+      }))
+    } else {
+      setIsTimerRunning(true)
+      const now = Date.now()
+      localStorage.setItem(activeTimerKey, JSON.stringify({
+        isRunning: true,
+        startTime: now,
+        elapsed: timerSeconds,
+      }))
+      timerIntervalRef.current = setInterval(() => {
+        setTimerSeconds(Math.floor((Date.now() - now) / 1000) + timerSeconds)
+      }, 1000)
+    }
+  }
+
+  const resetTimer = () => {
+    const activeTimerKey = `task-timer-${task.id}`
+    localStorage.removeItem(activeTimerKey)
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+    setIsTimerRunning(false)
+    setTimerSeconds(0)
+  }
+
+  const submitTimer = () => {
+    if (timerSeconds === 0) return
+    const hoursVal = (timerSeconds / 3600).toFixed(2)
+    setHours(hoursVal)
+    setIsLogWorkOpen(true)
+    resetTimer()
+  }
+
+  const formatTimer = (totalSeconds: number) => {
+    const h = Math.floor(totalSeconds / 3600)
+    const m = Math.floor((totalSeconds % 3600) / 60)
+    const s = totalSeconds % 60
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
 
   const totalLoggedHours = workLogs.reduce((acc: number, log: { hoursLogged: number }) => acc + log.hoursLogged, 0)
   const statusOptions = projectStatuses.map((st) => ({
@@ -334,6 +416,48 @@ export function TaskDetailsSidebar({
               </div>
             ) : null}
 
+            <div className="bg-muted/50 rounded-md p-2 mt-2 border border-border/50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium">
+                  <HugeiconsIcon icon={Clock01Icon} size={14} className={isTimerRunning ? "text-primary animate-pulse" : "text-muted-foreground"} />
+                  <span className={isTimerRunning ? "text-foreground" : "text-muted-foreground"}>
+                    {formatTimer(timerSeconds)}
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant={isTimerRunning ? "destructive" : "outline"}
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={toggleTimer}
+                  >
+                    <HugeiconsIcon icon={isTimerRunning ? StopIcon : PlayIcon} size={12} />
+                  </Button>
+                  {timerSeconds > 0 && !isTimerRunning && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-6 px-2 text-[10px]"
+                      onClick={submitTimer}
+                    >
+                      Log
+                    </Button>
+                  )}
+                  {timerSeconds > 0 && !isTimerRunning && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive"
+                      onClick={resetTimer}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <Button 
               type="button" 
               variant="outline" 
@@ -341,7 +465,7 @@ export function TaskDetailsSidebar({
               onClick={() => setIsLogWorkOpen(true)}
             >
               <HugeiconsIcon icon={Add01Icon} size={11} />
-              Log Work
+              Manual Log Work
             </Button>
 
             <Dialog open={isLogWorkOpen} onOpenChange={setIsLogWorkOpen}>
