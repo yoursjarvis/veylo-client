@@ -1,4 +1,6 @@
 import {
+  Target02Icon,
+  ChartBarLineIcon,
   BookOpen01Icon,
   Briefcase02Icon,
   CheckmarkSquare02Icon,
@@ -58,6 +60,18 @@ export const getNavGroups = (
         title: "Projects",
         path: `/${workspaceSlug}/projects`,
         icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} />,
+        isActive: false,
+      },
+      {
+        title: "Goals & OKRs",
+        path: `/${workspaceSlug}/okrs`,
+        icon: <HugeiconsIcon icon={Target02Icon} strokeWidth={2} />,
+        isActive: false,
+      },
+      {
+        title: "Portfolio",
+        path: `/${workspaceSlug}/portfolio`,
+        icon: <HugeiconsIcon icon={ChartBarLineIcon} strokeWidth={2} />,
         isActive: false,
       },
     ].filter((item) => {
