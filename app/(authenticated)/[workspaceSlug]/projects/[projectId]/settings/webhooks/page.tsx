@@ -27,7 +27,7 @@ export default function SlackIntegrationsSettingsPage() {
         </p>
       </div>
 
-      <div className="max-w-2xl border border-slate-800 rounded-xl p-6 shadow-md">
+      <div className="max-w-2xl border border-border rounded-xl p-6 shadow-md">
         <SlackWebhooksConfig projectId={projectId} />
       </div>
     </div>

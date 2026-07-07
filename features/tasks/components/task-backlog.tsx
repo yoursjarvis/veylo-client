@@ -228,7 +228,7 @@ export function TaskBacklog({
     >
       <div className="flex min-w-0 items-center gap-3">
         <Badge
-          className={`py-0.5 text-[9px] font-bold uppercase ${task.type === "bug" ? "bg-red-950 text-red-400" : task.type === "feature" ? "bg-violet-950 text-violet-400" : "bg-muted text-muted-foreground"}`}
+          className={`py-0.5 text-[9px] font-bold uppercase ${task.type === "bug" ? "bg-destructive/20 text-destructive" : task.type === "feature" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
         >
           {task.type}
         </Badge>
@@ -316,7 +316,7 @@ export function TaskBacklog({
                   <CardTitle className="flex items-center gap-2 text-sm font-bold text-foreground">
                     {sprint.name}
                     {sprint.status === "active" && (
-                      <Badge className="border border-emerald-800 bg-emerald-950 py-0 text-[9px] text-emerald-400">
+                      <Badge className="border border-success/20 bg-success/10 py-0 text-[9px] text-success">
                         Active
                       </Badge>
                     )}
@@ -363,7 +363,7 @@ export function TaskBacklog({
                     <Button
                       onClick={() => triggerCompleteSprint(sprint)}
                       size="sm"
-                      className="h-7 bg-emerald-600 px-2.5 text-[10px] hover:bg-emerald-700"
+                      className="h-7 bg-success px-2.5 text-[10px] text-success-foreground hover:bg-success/90"
                     >
                       <CheckCircle size={10} className="mr-1" /> Complete Sprint
                     </Button>
@@ -462,7 +462,7 @@ export function TaskBacklog({
       {/* DIALOG 1: CREATE SPRINT MODAL */}
       {isCreateSprintOpen && (
         <Dialog open={isCreateSprintOpen} onOpenChange={setIsCreateSprintOpen}>
-          <DialogContent className="border border-border bg-card p-6 text-foreground">
+          <DialogContent className="border border-border bg-card p-6 text-foreground sm:max-w-112.5">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground">
                 Create New Sprint
@@ -584,7 +584,7 @@ export function TaskBacklog({
           open={!!completingSprint}
           onOpenChange={(open) => !open && setCompletingSprint(null)}
         >
-          <DialogContent className="border border-border bg-card p-6 text-foreground">
+          <DialogContent className="border border-border bg-card p-6 text-foreground sm:max-w-112.5">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground">
                 Complete {completingSprint.name}

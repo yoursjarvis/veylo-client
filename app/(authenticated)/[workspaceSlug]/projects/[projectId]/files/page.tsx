@@ -125,7 +125,7 @@ export default function FilesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
         <div>
           <h3 className="flex items-center gap-2 text-lg font-bold">
             <HugeiconsIcon icon={File02Icon} className="h-5 w-5 text-primary" />{" "}
@@ -207,7 +207,7 @@ export default function FilesPage() {
                   <th className="p-4 pr-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-slate-850 divide-y">
+              <tbody className="divide-border divide-y">
                 {files?.map((file) => (
                   <tr key={file.id} className="hover text-xs transition-colors">
                     <td className="p-4 pl-6">

@@ -1,6 +1,8 @@
 "use client"
+"use no memo"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Combobox,
@@ -48,9 +50,9 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  useReactTable,
 } from "@tanstack/react-table"
-import { useVirtualizer } from "@tanstack/react-virtual"
+import * as TanStackTable from "@tanstack/react-table"
+import * as TanStackVirtual from "@tanstack/react-virtual"
 import { useQueryState } from "nuqs"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -88,6 +90,7 @@ type Member = {
 }
 
 const columnHelper = createColumnHelper<Member>()
+const coreRowModelFactory = getCoreRowModel<Member>()
 
 export function MembersTable() {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" })
@@ -149,7 +152,7 @@ export function MembersTable() {
                 <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">{user.name}</span>
+                <span className="text-sm font-semibold text-foreground">{user.name}</span>
                 <span className="text-xs text-muted-foreground">
                   {user.email}
                 </span>
@@ -188,17 +191,20 @@ export function MembersTable() {
               {roles.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {roles.slice(0, 2).map((assignment, index) => (
-                    <span
-                      key={index}
-                      className="rounded-md bg-secondary px-2 py-1 text-xs text-muted-foreground capitalize"
-                    >
-                      {assignment.role.name.replace(/_/g, " ")}
-                    </span>
+<Badge
+  key={index}
+  variant="default"
+  className="capitalize"
+>
+  {assignment.role.name.replace(/_/g, " ")}
+</Badge>
                   ))}
                   {roles.length > 2 && (
-                    <span className="rounded-md bg-secondary px-2 py-1 text-xs text-muted-foreground">
-                      +{roles.length - 2} more
-                    </span>
+<Badge
+  variant="default"
+>
+  +{roles.length - 2} more
+</Badge>
                   )}
                 </div>
               )}
@@ -212,11 +218,9 @@ export function MembersTable() {
         cell: (info) => {
           const isBanned = info.getValue()
           return (
-            <span
-              className={`rounded-full px-2 py-1 text-xs font-medium ${isBanned ? "bg-destructive/10 text-destructive" : "bg-secondary/50 text-secondary-foreground"}`}
-            >
-              {isBanned ? "Banned" : "Active"}
-            </span>
+<Badge variant={isBanned ? "destructive" : "secondary"}>
+  {isBanned ? "Banned" : "Active"}
+</Badge>
           )
         },
       }),
@@ -319,17 +323,19 @@ export function MembersTable() {
     [banMutation, unbanMutation, revokeMutation, impersonateMutation, refetch]
   )
 
-  const table = useReactTable({
+  const { useReactTable: useTable } = { ...TanStackTable }
+  const table = useTable({
     data: flatData,
     columns,
-    getCoreRowModel: getCoreRowModel(),
+    getCoreRowModel: coreRowModelFactory,
   })
 
   const parentRef = useRef<HTMLDivElement>(null)
 
   const rows = table.getRowModel().rows
 
-  const rowVirtualizer = useVirtualizer({
+  const { useVirtualizer: useVirt } = { ...TanStackVirtual }
+  const rowVirtualizer = useVirt({
     count: hasNextPage ? rows.length + 5 : rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 73,
@@ -468,7 +474,7 @@ export function MembersTable() {
         {isLoading && flatData.length === 0 ? (
           <div className="relative h-[calc(100vh-300px)] min-h-100 overflow-hidden rounded-md border">
             <table className="w-full table-fixed text-left text-sm">
-              <thead className="border-b bg-muted/50">
+              <thead className="bg-background border-b border-border/50">
                 <tr>
                   <th className="h-10 px-4 align-middle" style={{ width: 350 }}>
                     <Skeleton className="h-4 w-16" />
@@ -487,7 +493,7 @@ export function MembersTable() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-border/50">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
                     <td className="p-4 align-middle">
@@ -526,17 +532,17 @@ export function MembersTable() {
         ) : (
           <div
             ref={parentRef}
-            className="relative h-[calc(100vh-300px)] min-h-100 overflow-auto rounded-md border"
+            className="relative h-[calc(100vh-300px)] min-h-100 overflow-auto rounded-md border scrollbar-thin scrollbar-thumb-border/40 scrollbar-track-transparent"
           >
-            <table className="w-full table-fixed text-left text-sm">
-              <thead className="sticky top-0 z-10 border-b bg-muted/50 shadow-sm backdrop-blur-sm">
+            <table className="w-full table-fixed min-w-[980px] text-left text-sm">
+              <thead className="sticky top-0 z-10 bg-background border-b border-border/50">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
                       <th
                         key={header.id}
                         style={{ width: header.getSize() }}
-                        className="h-10 bg-muted/50 px-4 align-middle font-medium text-muted-foreground"
+                        className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
                       >
                         {flexRender(
                           header.column.columnDef.header,
@@ -547,7 +553,7 @@ export function MembersTable() {
                   </tr>
                 ))}
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-border/50">
                 {paddingTop > 0 && (
                   <tr>
                     <td
@@ -673,9 +679,9 @@ function PendingInvitationsList() {
 
   if (isLoading) {
     return (
-      <div className="rounded-md border">
-        <table className="w-full table-fixed text-left text-sm">
-          <thead className="border-b bg-muted/50">
+      <div className="relative overflow-auto rounded-md border">
+        <table className="w-full table-fixed min-w-[600px] text-left text-sm">
+          <thead className="bg-background border-b border-border/50">
             <tr>
               <th className="h-10 px-4 align-middle" style={{ width: "30%" }}>
                 <Skeleton className="h-4 w-16" />
@@ -697,7 +703,7 @@ function PendingInvitationsList() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody className="divide-y divide-border/50">
             {Array.from({ length: 5 }).map((_, i) => (
               <tr key={i}>
                 <td className="p-4 align-middle">
@@ -737,41 +743,41 @@ function PendingInvitationsList() {
   return (
     <div className="rounded-md border">
       <table className="w-full table-fixed text-left text-sm">
-        <thead className="border-b bg-muted/50">
+        <thead className="bg-background border-b border-border/50">
           <tr>
             <th
-              className="h-10 px-4 align-middle font-medium text-muted-foreground"
+              className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
               style={{ width: "30%" }}
             >
               Email
             </th>
             <th
-              className="h-10 px-4 align-middle font-medium text-muted-foreground"
+              className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
               style={{ width: "25%" }}
             >
               Role
             </th>
             <th
-              className="h-10 px-4 align-middle font-medium text-muted-foreground"
+              className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
               style={{ width: "20%" }}
             >
               Status
             </th>
             <th
-              className="h-10 px-4 align-middle font-medium text-muted-foreground"
+              className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
               style={{ width: "15%" }}
             >
               Sent At
             </th>
             <th
-              className="h-10 px-4 text-right align-middle font-medium text-muted-foreground"
+              className="h-10 px-4 text-right align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
               style={{ width: "10%" }}
             >
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y">
+        <tbody className="divide-y divide-border/50">
           {invitations.map(
             (invite: {
               id: string
@@ -786,14 +792,14 @@ function PendingInvitationsList() {
               >
                 <td className="p-4 align-middle font-medium">{invite.email}</td>
                 <td className="p-4 align-middle">
-                  <span className="rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground capitalize">
+                  <Badge variant="default" className="capitalize">
                     {invite.role?.replace("_", " ")}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="p-4 align-middle">
-                  <span className="rounded-full bg-secondary/50 px-2 py-1 text-xs font-medium text-secondary-foreground capitalize">
+                  <Badge variant="secondary" className="capitalize">
                     {invite.status}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="p-4 align-middle text-muted-foreground">
                   {new Date(invite.createdAt).toLocaleDateString(undefined, {

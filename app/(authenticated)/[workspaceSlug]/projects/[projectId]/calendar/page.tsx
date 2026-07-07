@@ -77,13 +77,13 @@ export default function CalendarPage() {
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case "urgent":
-        return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+        return "bg-destructive/10 text-destructive border border-destructive/20"
       case "high":
-        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+        return "bg-warning/10 text-warning border border-warning/20"
       case "medium":
-        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+        return "bg-info/10 text-info border border-info/20"
       default:
-        return "bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20"
+        return "bg-muted/10 text-muted-foreground border border-muted/20"
     }
   }
 

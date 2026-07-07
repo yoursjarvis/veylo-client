@@ -1,22 +1,34 @@
 "use client"
 
-import React, { useState } from "react"
+import {
+  RichTextEditor,
+  RichTextRenderer,
+} from "@/components/shared/rich-text-editor"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { RichTextEditor, RichTextRenderer } from "@/components/shared/rich-text-editor"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { SmilePlusIcon, Message01Icon } from "@hugeicons/core-free-icons"
-import { Comment, CommentReaction, User, ProjectMember } from "@/types/models"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import EmojiPicker, { Theme } from "emoji-picker-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useTheme } from "next-themes"
-import { useReactionUsers } from "../../hooks/use-tasks"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Card } from "@/components/ui/card"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
+import { Comment, CommentReaction, ProjectMember, User } from "@/types/models"
+import { Message01Icon, SmilePlusIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { format } from "date-fns"
+import EmojiPicker, { Theme } from "emoji-picker-react"
+import { useTheme } from "next-themes"
+import React, { useState } from "react"
+import { useReactionUsers } from "../../hooks/use-tasks"
 
 interface TaskDetailsCommentsProps {
   comments: Comment[]
@@ -57,7 +69,12 @@ const ReactionChip = ({
   onToggle: (emoji: string) => void
 }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const { data: users, isLoading, isFetching, isError } = useReactionUsers(commentId, emoji, isOpen)
+  const {
+    data: users,
+    isLoading,
+    isFetching,
+    isError,
+  } = useReactionUsers(commentId, emoji, isOpen)
 
   return (
     <TooltipProvider delay={300}>
@@ -77,7 +94,7 @@ const ReactionChip = ({
         <TooltipContent
           side="top"
           align="center"
-          className="p-0 border-none shadow-none bg-transparent"
+          className="border-none bg-transparent p-0 shadow-none"
         >
           <Card className="w-auto min-w-[200px] border-border bg-popover shadow-md">
             <div className="space-y-3 p-3">
@@ -272,6 +289,7 @@ const CommentNode = ({
                 </Button>
                 <Button
                   type="button"
+                  variant="default"
                   size="sm"
                   className="h-7 px-2.5 text-[10px]"
                   onClick={() => handleUpdateComment(comment.id)}
@@ -282,8 +300,8 @@ const CommentNode = ({
             </div>
           ) : (
             <>
-              <RichTextRenderer 
-                content={comment.content} 
+              <RichTextRenderer
+                content={comment.content}
                 projectMembers={
                   projectMembers.filter((m) => m.user) as (ProjectMember & {
                     user: User
@@ -328,23 +346,21 @@ const CommentNode = ({
 
           {Object.keys(reactionGroups).length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {Object.entries(reactionGroups).map(
-                ([emoji, reactions]) => {
-                  const hasReacted = reactions.some(
-                    (r: CommentReaction) => r.userId === currentUser?.user?.id
-                  )
-                  return (
-                    <ReactionChip
-                      key={emoji}
-                      commentId={comment.id}
-                      emoji={emoji}
-                      count={reactions.length}
-                      hasReacted={hasReacted}
-                      onToggle={handleToggleReaction}
-                    />
-                  )
-                }
-              )}
+              {Object.entries(reactionGroups).map(([emoji, reactions]) => {
+                const hasReacted = reactions.some(
+                  (r: CommentReaction) => r.userId === currentUser?.user?.id
+                )
+                return (
+                  <ReactionChip
+                    key={emoji}
+                    commentId={comment.id}
+                    emoji={emoji}
+                    count={reactions.length}
+                    hasReacted={hasReacted}
+                    onToggle={handleToggleReaction}
+                  />
+                )
+              })}
               <Popover>
                 <PopoverTrigger className="flex h-6 w-6 items-center justify-center self-center rounded-full border border-border/50 bg-muted/50 text-muted-foreground transition-colors hover:bg-muted">
                   <HugeiconsIcon icon={SmilePlusIcon} size={12} />
@@ -391,6 +407,7 @@ const CommentNode = ({
             </Button>
             <Button
               type="button"
+              variant="default"
               size="sm"
               className="h-7 px-2.5 text-[10px]"
               onClick={() => handleAddReply(comment.id)}
@@ -528,28 +545,26 @@ export function TaskDetailsComments({
         </div>
       </div>
       <div className="space-y-4">
-        {buildCommentThreads(comments).map(
-          (comment: Comment) => (
-            <CommentNode
-              key={comment.id}
-              comment={comment}
-              currentUser={currentUser}
-              projectMembers={projectMembers}
-              replyingToCommentId={replyingToCommentId}
-              setReplyingToCommentId={setReplyingToCommentId}
-              replyContent={replyContent}
-              setReplyContent={setReplyContent}
-              handleAddReply={handleAddReply}
-              editingCommentId={editingCommentId}
-              setEditingCommentId={setEditingCommentId}
-              editingContent={editingContent}
-              setEditingContent={setEditingContent}
-              handleUpdateComment={handleUpdateComment}
-              deleteCommentMutation={deleteCommentMutation}
-              toggleReactionMutation={toggleReactionMutation}
-            />
-          )
-        )}
+        {buildCommentThreads(comments).map((comment: Comment) => (
+          <CommentNode
+            key={comment.id}
+            comment={comment}
+            currentUser={currentUser}
+            projectMembers={projectMembers}
+            replyingToCommentId={replyingToCommentId}
+            setReplyingToCommentId={setReplyingToCommentId}
+            replyContent={replyContent}
+            setReplyContent={setReplyContent}
+            handleAddReply={handleAddReply}
+            editingCommentId={editingCommentId}
+            setEditingCommentId={setEditingCommentId}
+            editingContent={editingContent}
+            setEditingContent={setEditingContent}
+            handleUpdateComment={handleUpdateComment}
+            deleteCommentMutation={deleteCommentMutation}
+            toggleReactionMutation={toggleReactionMutation}
+          />
+        ))}
       </div>
     </div>
   )

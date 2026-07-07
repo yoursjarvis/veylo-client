@@ -1,19 +1,20 @@
-"use client";
+"use client"
 
-import React from "react";
-import { useProject } from "../layout";
-import { useProjectTasks } from "@/features/tasks/hooks/use-tasks";
-import { TaskBacklog } from "@/features/tasks/components/task-backlog";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton"
+import { TaskBacklog } from "@/features/tasks/components/task-backlog"
+import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
+import { AlertCircleIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useProject } from "../layout"
 
 export default function BacklogPage() {
-  const { projectId, sprints, statuses, selectedProject, handleSelectTask } = useProject();
-  const { data: tasks, isLoading } = useProjectTasks(projectId);
+  const { projectId, sprints, statuses, selectedProject, handleSelectTask } =
+    useProject()
+  const { data: tasks, isLoading } = useProjectTasks(projectId)
 
   if (isLoading) {
     return (
-      <div className="flex flex-col space-y-6 p-6 w-full">
+      <div className="flex w-full flex-col space-y-6 p-6">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
           <div className="flex gap-2">
@@ -22,13 +23,16 @@ export default function BacklogPage() {
           </div>
         </div>
         <div className="rounded-md border border-border">
-          <div className="border-b border-border p-4 flex gap-4">
+          <div className="flex gap-4 border-b border-border p-4">
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-full" />
           </div>
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+            <div
+              key={i}
+              className="flex gap-4 border-b border-border p-4 last:border-0"
+            >
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
@@ -36,29 +40,42 @@ export default function BacklogPage() {
           ))}
         </div>
       </div>
-    );
+    )
   }
 
-  if (selectedProject?.template !== "software-scrum" && selectedProject?.template !== "scrum") {
+  if (
+    selectedProject?.template !== "software-scrum" &&
+    selectedProject?.template !== "scrum"
+  ) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 border border-slate-800 rounded-xl mt-10">
-        <AlertCircle className="h-10 w-10 text-amber-500 mb-3" />
-        <h3 className="font-bold text-lg">Backlog Disabled</h3>
-        <p className="text-sm mt-1 text-center max-w-sm">
+      <div className="mt-10 flex flex-col items-center justify-center rounded-xl border border-border p-8">
+        <HugeiconsIcon
+          icon={AlertCircleIcon}
+          className="mb-3 h-10 w-10 text-warning"
+        />
+        <h3 className="text-lg font-bold">Backlog Disabled</h3>
+        <p className="mt-1 max-w-sm text-center text-sm">
           The backlog planner is only available for Scrum template projects.
         </p>
       </div>
-    );
+    )
   }
 
   return (
     <TaskBacklog
       projectId={projectId}
       tasks={tasks || []}
-      sprints={(sprints || []).map(s => ({ id: s.id, name: s.name, status: s.status, goal: s.goal || undefined, startDate: s.startDate || undefined, endDate: s.endDate || undefined }))}
+      sprints={
+        sprints?.map((s) => ({
+          ...s,
+          goal: s.goal ?? undefined,
+          startDate: s.startDate ?? undefined,
+          endDate: s.endDate ?? undefined,
+        })) || []
+      }
       statuses={statuses || []}
-      projectMembers={(selectedProject?.members || []).map(m => ({ id: m.id, projectId: m.projectId, userId: m.userId, role: m.role, user: { id: m.user?.id || "", name: m.user?.name || "", email: m.user?.email || "", image: m.user?.image || null } }))}
+      projectMembers={selectedProject?.members || []}
       onSelectTask={handleSelectTask}
     />
-  );
+  )
 }

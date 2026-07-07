@@ -85,10 +85,10 @@ export function TaskDetailsDependencies({
 
   const getStatusColor = (statusId: string) => {
     const status = projectStatuses.find((s) => s.id === statusId)
-    if (!status) return "bg-slate-500/10 text-slate-500"
-    if (status.category === "done") return "bg-emerald-500/10 text-emerald-600"
-    if (status.category === "in_progress") return "bg-blue-500/10 text-blue-600"
-    return "bg-slate-500/10 text-slate-500"
+    if (!status) return "bg-muted/10 text-muted-foreground"
+    if (status.category === "done") return "bg-success/10 text-success"
+    if (status.category === "in_progress") return "bg-primary/10 text-primary"
+    return "bg-muted/10 text-muted-foreground"
   }
 
   const getStatusName = (statusId: string) => {
@@ -160,7 +160,7 @@ export function TaskDetailsDependencies({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <h3 className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
           <LinkIcon className="h-4 w-4 text-muted-foreground" />
           Dependencies
         </h3>
@@ -205,8 +205,8 @@ export function TaskDetailsDependencies({
           {/* Blocked By Section */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                <AlertCircle className="h-3.5 w-3.5 text-orange-500" />
+              <h4 className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                <AlertCircle className="h-3.5 w-3.5 text-warning" />
                 Blocked By
               </h4>
               {renderAddDependencyButton("blocked_by")}
@@ -265,8 +265,8 @@ export function TaskDetailsDependencies({
           {/* Blocking Section */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                <LinkIcon className="h-3.5 w-3.5 text-emerald-500" />
+              <h4 className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                <LinkIcon className="h-3.5 w-3.5 text-success" />
                 Blocks
               </h4>
               {renderAddDependencyButton("blocking")}

@@ -48,14 +48,14 @@ export function TaskDetailsHeader({
     <div className="space-y-4">
       <div className="flex flex-row items-center justify-between border-b border-border px-6 py-4 sm:border-none sm:px-0 sm:py-0">
         <div className="hidden sm:block">
-          <span className="text-sm font-semibold text-muted-foreground">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
             Task Details
           </span>
         </div>
         {task && (
           <div className="flex items-center gap-2">
             <Button
-              variant={isCompleted ? "secondary" : "outline"}
+              variant={isCompleted ? "ghost" : "default"}
               size="sm"
               className="flex h-8 items-center gap-1.5 text-xs font-medium"
               onClick={() => onToggleCompletion()}

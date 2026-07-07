@@ -85,7 +85,7 @@ export default function AutomationsPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs font-semibold ${rule.isActive ? 'text-green-500' : 'text-muted-foreground'}`}>
+                  <span className={`text-xs font-semibold ${rule.isActive ? 'text-success' : 'text-muted-foreground'}`}>
                     {rule.isActive ? "Active" : "Inactive"}
                   </span>
                   <Switch 

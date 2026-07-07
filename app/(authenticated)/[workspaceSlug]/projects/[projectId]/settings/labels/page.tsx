@@ -100,7 +100,7 @@ export default function LabelsSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-800 pb-5">
+      <div className="border-b border-border pb-5">
         <h3 className="flex items-center gap-2 text-lg font-bold">
           <Tag className="h-5 w-5" /> Project Labels
         </h3>
@@ -159,7 +159,7 @@ export default function LabelsSettingsPage() {
                     >
                       <div className="flex items-center gap-3">
                         <span
-                          className="rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+                          className="rounded-full px-2.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-sm"
                           style={{ backgroundColor: lbl.color }}
                         >
                           {lbl.name}
@@ -232,7 +232,7 @@ export default function LabelsSettingsPage() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="text-[11px] text-rose-500 font-medium mt-1">
+                          <p className="text-[11px] text-destructive font-medium mt-1">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -254,9 +254,9 @@ export default function LabelsSettingsPage() {
                             type="button"
                             onClick={() => field.handleChange(preset.hex)}
                             className={cn(
-                              "flex h-8 w-full items-center justify-center rounded-md border text-[9px] font-semibold text-white transition-all hover:scale-105",
+                              "flex h-8 w-full items-center justify-center rounded-md border text-[9px] font-semibold text-primary-foreground transition-all hover:scale-105",
                               field.state.value === preset.hex
-                                ? "border-white ring-2 ring-primary scale-100"
+                                ? "border-primary-foreground ring-2 ring-primary scale-100"
                                 : "border-transparent"
                             )}
                             style={{ backgroundColor: preset.hex }}
@@ -278,7 +278,7 @@ export default function LabelsSettingsPage() {
                             className="pl-9 font-mono"
                           />
                           <span
-                            className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-white/20"
+                            className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-border/20"
                             style={{ backgroundColor: field.state.value }}
                           />
                         </div>
@@ -294,7 +294,7 @@ export default function LabelsSettingsPage() {
                 </form.Field>
 
                 {/* Form Actions */}
-                <div className="flex justify-end border-t border-slate-800/80 pt-4">
+                <div className="flex justify-end border-t border-border/80 pt-4">
                   <form.Subscribe selector={(state) => [state.values.name, state.canSubmit] as const}>
                     {([nameVal, canSubmit]) => (
                       <Button

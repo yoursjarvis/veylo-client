@@ -1,8 +1,6 @@
 "use client"
 
 import React from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ClockIcon } from "@hugeicons/core-free-icons"
 import { TaskActivity } from "@/types/models"
 import { format } from "date-fns"
 
@@ -16,29 +14,33 @@ export function TaskDetailsActivity({
   formatActivityText,
 }: TaskDetailsActivityProps) {
   return (
-    <div className="space-y-4">
-      <div className="space-y-3 pl-1">
-        {activityLogs.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex items-start gap-2.5 text-xs text-muted-foreground"
-          >
-            <HugeiconsIcon
-              icon={ClockIcon}
-              size={13}
-              className="mt-0.5 flex-shrink-0 text-muted-foreground/60"
-            />
-            <div>
-              <span className="font-semibold text-foreground">
-                {activity.user?.name}{" "}
-              </span>
-              <span>{formatActivityText(activity)}</span>
-              <span className="mt-0.5 block text-[10px] text-muted-foreground/80">
-                {format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}
-              </span>
+    <div className="relative space-y-6">
+      <div className="absolute left-2 top-0 bottom-0 w-px bg-border/50" />
+      <div className="space-y-6 pl-6">
+        {activityLogs.length > 0 ? (
+          activityLogs.map((activity) => (
+            <div
+              key={activity.id}
+              className="relative flex flex-col gap-1 text-xs"
+            >
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground">
+                    {activity.user?.name || "System"}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {formatActivityText(activity)}
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground/60">
+                  {format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <div className="text-xs text-muted-foreground italic">No activity recorded for this task.</div>
+        )}
       </div>
     </div>
   )

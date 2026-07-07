@@ -91,14 +91,14 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
         </DialogHeader>
         
         <ScrollArea className="flex-1 p-6">
-          <form id="role-form" onSubmit={handleSubmit} className="space-y-8">
+          <form id="role-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="space-y-3">
-              <Label htmlFor="name" className="text-sm font-medium">Role Name</Label>
-              <Input 
-                id="name" 
-                value={name} 
-                onChange={e => setName(e.target.value)} 
-                disabled={isOwner} 
+              <Label htmlFor="name" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Role Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                disabled={isOwner}
                 placeholder="e.g. Guest Developer"
                 className="h-10"
               />
@@ -108,16 +108,15 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
 
             <div className="space-y-4">
               <div className="flex flex-col gap-1">
-                <Label className="text-sm font-semibold">Permissions</Label>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Permissions</Label>
                 <p className="text-xs text-muted-foreground">
                   Assign capabilities to this role across the workspace.
                 </p>
               </div>
-
               {userPermissions.includes("*") && !isOwner && (
-                <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="flex flex-row items-center justify-between rounded-lg border border-border/50 p-4">
                   <div className="space-y-0.5">
-                    <Label className="text-base font-semibold">Bypass All Permissions</Label>
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Bypass All Permissions</Label>
                     <p className="text-sm text-muted-foreground">
                       Users with this role will have full access to all resources. Only the organization owner can manage this.
                     </p>
@@ -133,8 +132,7 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
                   </div>
                 </div>
               )}
-
-              <PermissionMatrix 
+              <PermissionMatrix
                 permissions={permissionsCatalog || []}
                 selectedPermissionIds={selectedPermissionIds}
                 onChange={setSelectedPermissionIds}
@@ -145,13 +143,13 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
         </ScrollArea>
 
         <DialogFooter className="p-6 pt-4 border-t bg-muted/30">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="gap-2">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="gap-2">
             {isOwner ? "Close" : "Cancel"}
           </Button>
           {!isOwner && (
-            <Button 
-              type="submit" 
-              form="role-form" 
+            <Button
+              type="submit"
+              form="role-form"
               disabled={createRole.isPending || updateRole.isPending}
               className="px-6"
             >

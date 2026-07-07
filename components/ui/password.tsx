@@ -16,11 +16,11 @@ type StrengthScore = 0 | 1 | 2 | 3 | 4 | 5
 const STRENGTH_CONFIG = {
   colors: {
     0: "bg-border",
-    1: "bg-red-500",
-    2: "bg-orange-500",
-    3: "bg-amber-500",
-    4: "bg-amber-700",
-    5: "bg-emerald-500",
+    1: "bg-destructive",
+    2: "bg-warning",
+    3: "bg-warning",
+    4: "bg-warning",
+    5: "bg-success",
   } satisfies Record<StrengthScore, string>,
   texts: {
     0: "Enter a password",
@@ -75,7 +75,7 @@ const PasswordInput = () => {
             placeholder="Password"
             aria-invalid={calculateStrength.score < 4}
             aria-describedby="password-strength"
-            className="w-full rounded-md border-2 bg-neutral-50 p-2 outline-hidden transition focus-within:border-blue-700 dark:bg-neutral-950"
+            className="w-full rounded-md border-2 bg-background p-2 outline-hidden transition focus-within:border-primary dark:bg-background"
           />
           <button
             type="button"
@@ -91,36 +91,36 @@ const PasswordInput = () => {
         <span
           className={`${
             calculateStrength.score >= 1
-              ? "bg-green-200"
-              : "bg-neutral-50 dark:bg-neutral-950"
+              ? "bg-success/20"
+              : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
         <span
           className={`${
             calculateStrength.score >= 2
-              ? "bg-green-300"
-              : "bg-neutral-50 dark:bg-neutral-950"
+              ? "bg-success/30"
+              : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
         <span
           className={`${
             calculateStrength.score >= 3
-              ? "bg-green-400"
-              : "bg-neutral-50 dark:bg-neutral-950"
+              ? "bg-success/40"
+              : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
         <span
           className={`${
             calculateStrength.score >= 4
-              ? "bg-green-500"
-              : "bg-neutral-50 dark:bg-neutral-950"
+              ? "bg-success/50"
+              : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
         <span
           className={`${
             calculateStrength.score >= 5
-              ? "bg-green-600"
-              : "bg-neutral-50 dark:bg-neutral-950"
+              ? "bg-success"
+              : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
       </div>

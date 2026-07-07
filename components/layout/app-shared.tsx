@@ -41,37 +41,37 @@ export const getNavGroups = (
       {
         title: "Dashboard",
         path: `/${workspaceSlug}/dashboard`,
-        icon: <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
       {
         title: "My Tasks",
         path: `/${workspaceSlug}/tasks`,
-        icon: <HugeiconsIcon icon={CheckmarkSquare02Icon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={CheckmarkSquare02Icon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
       {
         title: "Timesheets",
         path: `/${workspaceSlug}/timesheets`,
-        icon: <HugeiconsIcon icon={Clock01Icon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={Clock01Icon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
       {
         title: "Projects",
         path: `/${workspaceSlug}/projects`,
-        icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
       {
         title: "Goals & OKRs",
         path: `/${workspaceSlug}/okrs`,
-        icon: <HugeiconsIcon icon={Target02Icon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={Target02Icon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
       {
         title: "Portfolio",
         path: `/${workspaceSlug}/portfolio`,
-        icon: <HugeiconsIcon icon={ChartBarLineIcon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={ChartBarLineIcon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
     ].filter((item) => {
@@ -86,19 +86,19 @@ export const getNavGroups = (
       {
         title: "Members",
         path: "/members",
-        icon: <HugeiconsIcon icon={UserMultipleIcon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={UserMultipleIcon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
       {
         title: "Workspaces",
         path: "/workspaces",
-        icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={Briefcase02Icon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
       {
         title: "Roles & Permissions",
         path: "/roles",
-        icon: <HugeiconsIcon icon={Shield01Icon} strokeWidth={2} />,
+        icon: <HugeiconsIcon icon={Shield01Icon} strokeWidth={2} className="h-4 w-4" />,
         isActive: false,
       },
     ].filter((item) => {
@@ -113,12 +113,12 @@ export const footerNavLinks: SidebarNavItem[] = [
   {
     title: "Help Center",
     path: "/help",
-    icon: <HugeiconsIcon icon={HelpCircleIcon} strokeWidth={2} />,
+    icon: <HugeiconsIcon icon={HelpCircleIcon} strokeWidth={2} className="h-4 w-4" />,
   },
   {
     title: "Documentation",
     path: "/documentation",
-    icon: <HugeiconsIcon icon={BookOpen01Icon} strokeWidth={2} />,
+    icon: <HugeiconsIcon icon={BookOpen01Icon} strokeWidth={2} className="h-4 w-4" />,
   },
 ]
 

@@ -181,7 +181,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                         className="h-9 w-full rounded border border-border bg-background px-3 py-1.5 text-xs text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none"
                       />
                       {hasError && (
-                        <p className="mt-1 text-[11px] font-medium text-rose-500">
+                        <p className="mt-1 text-[11px] font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -259,7 +259,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                         </PopoverContent>
                       </Popover>
                       {hasError && (
-                        <p className="mt-1 text-[11px] font-medium text-rose-500">
+                        <p className="mt-1 text-[11px] font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}

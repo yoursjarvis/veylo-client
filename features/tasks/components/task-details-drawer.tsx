@@ -99,9 +99,9 @@ export function TaskDetailsDrawer({
   return (
     <Sheet open={!!taskId} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="flex h-full w-full flex-col border-l border-border bg-card p-0 text-foreground data-[side=right]:sm:max-w-[90vw] data-[side=right]:md:max-w-[80vw] data-[side=right]:lg:max-w-[70vw] data-[side=right]:xl:max-w-[60vw]">
-        <SheetHeader className="flex flex-row items-center justify-between border-b border-border px-6 py-4">
+        <SheetHeader className="flex flex-row items-center justify-between border-b border-border/50 px-6 py-4">
           <div>
-            <SheetTitle className="text-sm font-semibold text-muted-foreground">
+            <SheetTitle className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
               Task Details
             </SheetTitle>
           </div>
@@ -137,8 +137,8 @@ export function TaskDetailsDrawer({
           </div>
         ) : (
           <div className="flex flex-1 flex-row overflow-hidden">
-            <ScrollArea className="h-full flex-1 border-r border-border p-6">
-              <div className="space-y-8">
+            <ScrollArea className="h-full flex-1 border-r border-border/50 p-6">
+              <div className="space-y-6">
                 <TaskDetailsHeader
                   task={task!}
                   isCompleted={isCompleted}
@@ -192,6 +192,7 @@ export function TaskDetailsDrawer({
 
             <div className="h-full w-87.5 shrink-0 space-y-6 overflow-y-auto bg-background p-5">
               <TaskDetailsSidebar
+                key={task!.id}
                 task={task!}
                 projectStatuses={projectStatuses}
                 projectSprints={projectSprints}

@@ -453,7 +453,7 @@ export function SecurityTab() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="text-[11px] text-rose-500 font-medium mt-1">
+                          <p className="text-[11px] text-destructive font-medium mt-1">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -493,7 +493,7 @@ export function SecurityTab() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="text-[11px] text-rose-500 font-medium mt-1">
+                          <p className="text-[11px] text-destructive font-medium mt-1">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -532,7 +532,7 @@ export function SecurityTab() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="text-[11px] text-rose-500 font-medium mt-1">
+                          <p className="text-[11px] text-destructive font-medium mt-1">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -619,7 +619,7 @@ export function SecurityTab() {
                             </p>
                             
                             <div className="flex items-center gap-1.5 mt-2">
-                               <div className={cn("size-1.5 rounded-full", isCurrent ? "bg-green-500 animate-pulse" : "bg-muted-foreground/40")} />
+                               <div className={cn("size-1.5 rounded-full", isCurrent ? "bg-success animate-pulse" : "bg-muted-foreground/40")} />
                                <p className="text-[11px] font-medium text-muted-foreground">
                                  {isCurrent ? "Active now" : `Last active: ${new Date(session.updatedAt).toLocaleString()}`}
                                </p>
@@ -771,7 +771,7 @@ export function SecurityTab() {
               </div>
             ) : twoFactorStep === "qr" ? (
               <>
-                <div className="p-4 bg-white rounded-lg border">
+                <div className="p-4 bg-card rounded-lg border">
                   <QRCode value={totpUri} size={192}>
                     <QRCodeCanvas />
                   </QRCode>

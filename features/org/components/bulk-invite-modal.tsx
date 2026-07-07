@@ -10,6 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useBulkInvite } from "../hooks/use-org";
 import { toast } from "sonner";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -50,31 +51,36 @@ export function BulkInviteModal({ open, onOpenChange, onSuccess }: { open: boole
             The file should contain at least two columns: <strong>email</strong> and <strong>role</strong>.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col items-center justify-center space-y-4 py-8 border-2 border-dashed rounded-lg">
-          <HugeiconsIcon icon={CloudUploadIcon} className="h-10 w-10 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground text-center px-4">
-            Drag and drop your file here, or click below to select a file.
-          </p>
-          <label htmlFor="file-upload">
-            <Button variant="outline" render={<span />}>
-              Select File
-            </Button>
-            <input
-              id="file-upload"
-              type="file"
-              className="hidden"
-              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-            />
-          </label>
-          {file && (
-            <p className="text-sm font-medium text-primary">Selected: {file.name}</p>
-          )}
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Invitation File</Label>
+            <div className="flex flex-col items-center justify-center space-y-4 py-8 border-2 border-dashed border-border/50 rounded-lg">
+              <HugeiconsIcon icon={CloudUploadIcon} className="h-10 w-10 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground text-center px-4">
+                Drag and drop your file here, or click below to select a file.
+              </p>
+              <label htmlFor="file-upload">
+                <Button variant="outline" render={<span />}>
+                  Select File
+                </Button>
+                <input
+                  id="file-upload"
+                  type="file"
+                  className="hidden"
+                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
+              </label>
+              {file && (
+                <p className="text-sm font-medium text-primary">Selected: {file.name}</p>
+              )}
+            </div>
+          </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button 
-            onClick={handleUpload} 
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button
+            onClick={handleUpload}
             disabled={!file || bulkInviteMutation.isPending}
           >
             {bulkInviteMutation.isPending ? "Processing..." : "Upload & Invite"}

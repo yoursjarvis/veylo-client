@@ -12,7 +12,7 @@ interface AutomationNodeProps {
   onClick: () => void
 }
 
-export function AutomationNode({ type, data, onClick }: AutomationNodeProps) {
+export function AutomationNode({ type, data, isSelected, onClick }: AutomationNodeProps) {
   let title = ""
   let description = ""
   let icon = <Zap className="h-4 w-4" />
@@ -20,7 +20,7 @@ export function AutomationNode({ type, data, onClick }: AutomationNodeProps) {
 
   if (type === "TRIGGER") {
     const trigger = data as AutomationTrigger
-    colorClass = "bg-blue-600 text-white"
+    colorClass = "bg-primary text-primary-foreground"
     switch (trigger.type) {
       case "TASK_CREATED":
         title = "When Task is Created"
@@ -42,7 +42,7 @@ export function AutomationNode({ type, data, onClick }: AutomationNodeProps) {
     }
   } else if (type === "ACTION") {
     const action = data as AutomationAction
-    colorClass = "bg-emerald-600 text-white"
+    colorClass = "bg-success text-success-foreground"
     switch (action.type) {
       case "ASSIGN_USER":
         title = "Assign User"
@@ -67,20 +67,20 @@ export function AutomationNode({ type, data, onClick }: AutomationNodeProps) {
     }
   } else if (type === "CONDITION") {
     const condition = data as AutomationCondition
-    colorClass = "bg-purple-600 text-white"
+    colorClass = "bg-info text-info-foreground"
     title = "If Condition Matches"
-    description = `Check if \${condition.field} \${condition.operator.toLowerCase().replace("_", " ")} \${String(condition.value)}`
+    description = `Check if ${condition.field} ${condition.operator.toLowerCase().replace("_", " ")} ${String(condition.value)}`
     icon = <GitMerge className="h-4 w-4" />
   }
 
   return (
     <div
       onClick={onClick}
-      className={`group \${isSelected ? "ring-2 ring-offset-background" : "hover:border-foreground/30"} relative z-10 flex w-[300px] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm ring-primary ring-offset-2 transition-all hover:shadow-md`}
+      className={`group ${isSelected ? "ring-2 ring-offset-background" : "hover:border-foreground/30"} relative z-10 flex w-[300px] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm ring-primary ring-offset-2 transition-all hover:shadow-md`}
     >
       <div className="flex flex-row items-center gap-3 border-b border-border/50 p-3">
         <div
-          className={`\${colorClass} flex h-8 w-8 items-center justify-center rounded-lg`}
+          className={`${colorClass} flex h-8 w-8 items-center justify-center rounded-lg`}
         >
           {icon}
         </div>

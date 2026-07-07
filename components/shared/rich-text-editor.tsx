@@ -518,7 +518,7 @@ export function RichTextEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-blue-500 underline cursor-pointer",
+          class: "text-primary underline cursor-pointer",
         },
       }),
       Image.configure({
@@ -1137,7 +1137,7 @@ export function RichTextRenderer({
       Link.configure({
         openOnClick: true,
         HTMLAttributes: {
-          class: "text-blue-500 underline cursor-pointer",
+          class: "text-primary underline cursor-pointer",
         },
       }),
       Image.configure({

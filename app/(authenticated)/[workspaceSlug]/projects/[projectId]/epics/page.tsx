@@ -188,7 +188,7 @@ export default function EpicsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
         <div>
           <h3 className="flex items-center gap-2 text-lg font-bold">
             <Target className="h-5 w-5" /> Epics & Initiatives
@@ -283,7 +283,7 @@ export default function EpicsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-rose-500 hover:bg-rose-500/10 hover:text-rose-400"
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
                         onClick={() => handleDelete(epic.id, epic.title)}
                       >
                         <Trash className="h-3.5 w-3.5" />
@@ -395,7 +395,7 @@ export default function EpicsPage() {
                         className="h-9 text-xs"
                       />
                       {hasError && (
-                        <p className="mt-1 text-[11px] font-medium text-rose-500">
+                        <p className="mt-1 text-[11px] font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -431,7 +431,7 @@ export default function EpicsPage() {
                         className="min-h-22.5 text-xs"
                       />
                       {hasError && (
-                        <p className="mt-1 text-[11px] font-medium text-rose-500">
+                        <p className="mt-1 text-[11px] font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -611,7 +611,7 @@ export default function EpicsPage() {
                           type="button"
                           className={`h-7 w-7 rounded-full border-2 transition-all duration-200 ${
                             field.state.value === c.value
-                              ? "scale-110 border-white shadow-lg"
+                              ? "scale-110 border-primary-foreground shadow-lg"
                               : "border-transparent hover:scale-105"
                           }`}
                           style={{ backgroundColor: c.value }}
@@ -625,7 +625,7 @@ export default function EpicsPage() {
               </form.Field>
             </div>
 
-            <DialogFooter className="border-slate-850 flex gap-2 border-t pt-4">
+            <DialogFooter className="border-border flex gap-2 border-t pt-4">
               <Button
                 type="button"
                 variant="ghost"

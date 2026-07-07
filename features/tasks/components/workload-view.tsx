@@ -143,7 +143,7 @@ export function WorkloadView() {
               key={member.id}
               className={
                 isOverAllocated
-                  ? "border-red-500/50 dark:border-red-900/50"
+                  ? "border-destructive/50"
                   : ""
               }
             >
@@ -197,7 +197,7 @@ export function WorkloadView() {
                   <div className="flex items-center space-x-2">
                     <Progress
                       value={capacityPercentage}
-                      className={`h-2 flex-1 ${isOverAllocated ? "[&>div]:bg-red-500" : ""}`}
+                      className={`h-2 flex-1 ${isOverAllocated ? "[&>div]:bg-destructive" : ""}`}
                     />
                     <span className="w-12 text-right text-sm font-medium">
                       {Math.round((totalHours / 40) * 100)}%

@@ -37,11 +37,11 @@ export function NoticeAlert({
         "items-start gap-3 rounded-md border bg-background py-2.5 pb-2 shadow-none",
         tone === "primary" && "border-primary/25 bg-primary/10 text-primary",
         tone === "success" &&
-          "border-emerald-500/25 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100",
+          "border-success/25 bg-success/10 text-success",
         tone === "warning" &&
-          "border-amber-500/25 bg-amber-500/10 text-amber-950 dark:text-amber-100",
+          "border-warning/25 bg-warning/10 text-warning",
         tone === "info" &&
-          "border-blue-500/25 bg-blue-500/10 text-blue-950 dark:text-blue-100",
+          "border-info/25 bg-info/10 text-info",
         tone === "destructive" &&
           "border-destructive/35 bg-destructive/10 text-destructive dark:bg-destructive/15",
         className

@@ -42,14 +42,12 @@ export function AppSidebar() {
   return (
     <Sidebar
       className={cn(
-        "*:data-[slot=sidebar-inner]:bg-background",
-        "*:data-[slot=sidebar-inner]:dark:bg-[radial-gradient(60%_18%_at_10%_0%,--theme(--color-foreground/.08),transparent)]",
-        "**:data-[slot=sidebar-menu-button]:[&>span]:text-foreground/75"
+        "*:data-[slot=sidebar-inner]:bg-card"
       )}
       collapsible="icon"
       variant="sidebar"
     >
-      <SidebarHeader className="h-14 justify-center border-b px-4">
+      <SidebarHeader className="h-14 justify-center border-b border-border/50 px-4">
         <div className="flex items-center gap-2 overflow-hidden">
           <Logo className="h-5 w-auto text-foreground group-data-[collapsible=icon]:hidden" />
           <LogoIcon className="hidden h-6 w-6 text-foreground group-data-[collapsible=icon]:block" />
@@ -67,11 +65,10 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="gap-0 p-0">
         <LatestChange />
-        <SidebarMenu className="border-t p-2">
+        <SidebarMenu className="border-t border-border/50 p-2">
           {footerNavLinks.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
-                className="text-muted-foreground"
                 isActive={item.path === pathname}
                 size="sm"
                 render={<Link href={item.path || "#"} />}
@@ -83,7 +80,7 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
         <div className="px-4 pt-4 pb-2 transition-opacity group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:opacity-0">
-          <p className="text-[9px] text-nowrap text-muted-foreground">
+          <p className="text-[10px] text-nowrap text-muted-foreground">
             © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME} LLC
           </p>
         </div>

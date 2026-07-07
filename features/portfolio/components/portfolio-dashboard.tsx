@@ -105,18 +105,18 @@ export function PortfolioDashboard() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={burndownData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#888" strokeOpacity={0.2} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" strokeOpacity={0.2} />
                   <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                   <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow-md)' }}
                   />
                   <Legend />
                   <Line 
                     type="monotone" 
                     dataKey="remaining" 
                     name="Actual Remaining" 
-                    stroke="#3b82f6" 
+                    stroke="var(--primary)"
                     strokeWidth={3} 
                     dot={{ r: 4 }} 
                     activeDot={{ r: 6 }} 
@@ -125,7 +125,7 @@ export function PortfolioDashboard() {
                     type="monotone" 
                     dataKey="ideal" 
                     name="Ideal Guideline" 
-                    stroke="#10b981" 
+                    stroke="var(--success)"
                     strokeWidth={2} 
                     strokeDasharray="5 5" 
                     dot={false} 
@@ -145,16 +145,16 @@ export function PortfolioDashboard() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={healthData} layout="vertical" margin={{ top: 0, right: 0, left: 20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#888" strokeOpacity={0.2} />
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" strokeOpacity={0.2} />
                   <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#888" }} width={120} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} width={120} />
                   <Tooltip 
-                    cursor={{ fill: 'rgba(0,0,0,0.05)' }} 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    cursor={{ fill: 'var(--muted)' }}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow-md)' }}
                   />
                   <Legend />
-                  <Bar dataKey="completed" name="Completed Tasks" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} barSize={24} />
-                  <Bar dataKey="delayed" name="Delayed/At Risk" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={24} />
+                  <Bar dataKey="completed" name="Completed Tasks" stackId="a" fill="var(--success)" radius={[0, 0, 0, 0]} barSize={24} />
+                  <Bar dataKey="delayed" name="Delayed/At Risk" stackId="a" fill="var(--destructive)" radius={[0, 4, 4, 0]} barSize={24} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

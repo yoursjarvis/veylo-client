@@ -1,11 +1,8 @@
 "use client";
 
 import { Permission } from "../services/rbac.service";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { useMemo } from "react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PermissionMatrixProps {
   permissions: Permission[];
@@ -15,10 +12,9 @@ interface PermissionMatrixProps {
 }
 
 export function PermissionMatrix({ permissions, selectedPermissionIds, onChange, disabled = false }: PermissionMatrixProps) {
-  // Group by Module -> Resource
   const groupedPermissions = useMemo(() => {
     const grouped: Record<string, Record<string, Permission[]>> = {};
-    
+
     permissions.forEach(p => {
       if (!p.module || !p.resource) return;
       if (!grouped[p.module]) {
@@ -41,16 +37,6 @@ export function PermissionMatrix({ permissions, selectedPermissionIds, onChange,
     }
   };
 
-  const toggleResource = (resourcePermissions: Permission[], checked: boolean) => {
-    const ids = resourcePermissions.map(p => p.id);
-    if (checked) {
-      const newSelection = new Set([...selectedPermissionIds, ...ids]);
-      onChange(Array.from(newSelection));
-    } else {
-      onChange(selectedPermissionIds.filter(id => !ids.includes(id)));
-    }
-  };
-
   if (permissions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 text-center border rounded-lg border-dashed">
@@ -70,74 +56,103 @@ export function PermissionMatrix({ permissions, selectedPermissionIds, onChange,
   }
 
   return (
-    <div className="space-y-4">
-      <Accordion 
-        className="w-full space-y-4"
-      >
-        {Object.entries(groupedPermissions).map(([moduleName, resources]) => (
-          <AccordionItem 
-            key={moduleName} 
-            value={moduleName} 
-            className="border-l-2 border-transparent hover:border-primary/50 transition-colors pl-4"
-          >
-            <AccordionTrigger className="py-3 hover:no-underline text-left font-semibold capitalize">
-              <div className="flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                {moduleName.replace(/_/g, " ")}
+    <div className="space-y-8">
+      {Object.entries(groupedPermissions).map(([moduleName, resources]) => (
+        <ModuleRow
+          key={moduleName}
+          moduleName={moduleName}
+          resources={resources}
+          selectedPermissionIds={selectedPermissionIds}
+          togglePermission={togglePermission}
+          disabled={disabled}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ModuleRow({
+  moduleName,
+  resources,
+  selectedPermissionIds,
+  togglePermission,
+  disabled,
+}: {
+  moduleName: string
+  resources: Record<string, Permission[]>
+  selectedPermissionIds: string[]
+  togglePermission: (id: string, checked: boolean) => void
+  disabled: boolean
+}) {
+  const allActions = useMemo(() => {
+    const actions = new Set<string>();
+    Object.values(resources).forEach(resPerms => {
+      resPerms.forEach(p => actions.add(p.action));
+    });
+    return Array.from(actions).sort();
+  }, [resources]);
+
+  return (
+    <div className="space-y-3">
+      <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold px-1">
+        {moduleName.replace(/_/g, " ")}
+      </div>
+
+      <div className="overflow-hidden border border-border/50 rounded-md bg-background/50">
+        <div className="grid grid-cols-1" style={{ gridTemplateColumns: `minmax(200px, 1fr) repeat(${allActions.length}, minmax(100px, 1fr))` }}>
+          {/* Header */}
+          <div className="flex items-center px-3 py-2 border-b border-border/50 bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+            Resource
+          </div>
+          {allActions.map(action => (
+            <div key={action} className="flex items-center justify-center px-3 py-2 border-b border-border/50 border-l border-border/50 bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground font-semibold text-center">
+              {action.replace(/_/g, " ")}
+            </div>
+          ))}
+
+          {/* Rows */}
+          {Object.entries(resources).map(([resourceName, resourcePermissions]) => (
+            <div key={resourceName} className="contents">
+              <div className="flex items-center px-3 py-2 border-b border-border/50 text-xs uppercase tracking-wider text-muted-foreground font-semibold bg-background">
+                {resourceName.replace(/_/g, " ")}
               </div>
-            </AccordionTrigger>
-            <AccordionContent className="pt-2 space-y-6">
-              {Object.entries(resources).map(([resourceName, resourcePermissions]) => {
-                const allSelected = resourcePermissions.every(p => selectedPermissionIds.includes(p.id));
+              {allActions.map(action => {
+                const permission = resourcePermissions.find(p => p.action === action);
+                const isSelected = permission && selectedPermissionIds.includes(permission.id);
 
                 return (
-                  <div key={resourceName} className="space-y-3">
-                    <div className="flex items-center space-x-2 group">
-                      <Checkbox 
-                        id={`res-${resourceName}`}
-                        checked={allSelected}
-                        onCheckedChange={(checked) => toggleResource(resourcePermissions, !!checked)}
+                  <div
+                    key={action}
+                    className="flex items-center justify-center px-3 py-2 border-b border-border/50 border-l border-border/50 bg-background transition-colors hover:bg-muted/20 group"
+                  >
+                    {permission ? (
+                      <button
+                        onClick={() => togglePermission(permission.id, !isSelected)}
                         disabled={disabled}
-                      />
-                      <Label 
-                        htmlFor={`res-${resourceName}`} 
-                        className="text-sm font-semibold capitalize cursor-pointer group-hover:text-primary transition-colors"
+                        className="relative flex items-center justify-center w-4 h-4 transition-all"
                       >
-                        {resourceName.replace(/_/g, " ")}
-                      </Label>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 pl-6">
-                      {resourcePermissions.map((p) => (
-                        <div key={p.id} className="flex items-start space-x-3 group/perm">
-                          <Checkbox 
-                            id={`perm-${p.id}`}
-                            checked={selectedPermissionIds.includes(p.id)}
-                            onCheckedChange={(checked) => togglePermission(p.id, !!checked)}
-                            disabled={disabled}
-                            className="mt-1"
-                          />
-                          <div className="grid gap-0.5">
-                            <Label 
-                              htmlFor={`perm-${p.id}`} 
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer capitalize group-hover/perm:text-primary transition-colors"
-                            >
-                              {p.action.replace(/_/g, " ")}
-                            </Label>
-                            <p className="text-[11px] text-muted-foreground leading-tight">
-                              {p.description || `Allows the role to ${p.action.replace(/_/g, " ")} ${p.resource.replace(/_/g, " ")}.`}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        <div
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full transition-all",
+                            isSelected
+                              ? "bg-primary scale-100 shadow-primary/60"
+                              : "bg-muted-foreground/30 scale-75"
+                          )}
+                        />
+                        {isSelected && (
+                          <div className="absolute inset-0 rounded-full border border-primary/30 animate-pulse" />
+                        )}
+                      </button>
+                    ) : (
+                      <div className="w-1.5 h-1.5 rounded-full bg-muted/20" />
+                    )}
                   </div>
                 );
               })}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

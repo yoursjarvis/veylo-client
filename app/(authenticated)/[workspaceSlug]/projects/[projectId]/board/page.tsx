@@ -179,27 +179,9 @@ export default function BoardPage() {
         projectId={projectId}
         tasks={tasks || []}
         statuses={statuses || []}
-        sprints={(sprints || []).map((s) => ({
-          id: s.id,
-          name: s.name,
-          status: s.status,
-          goal: s.goal || undefined,
-          startDate: s.startDate || undefined,
-          endDate: s.endDate || undefined,
-        }))}
+        sprints={sprints || []}
         projectTemplate={selectedProject?.template || "simple"}
-        projectMembers={(selectedProject?.members || []).map((m) => ({
-          id: m.id,
-          projectId: m.projectId,
-          userId: m.userId,
-          role: m.role,
-          user: {
-            id: m.user?.id || "",
-            name: m.user?.name || "",
-            email: m.user?.email || "",
-            image: m.user?.image || null,
-          },
-        }))}
+        projectMembers={selectedProject?.members || []}
         onSelectTask={handleSelectTask}
       />
     </div>

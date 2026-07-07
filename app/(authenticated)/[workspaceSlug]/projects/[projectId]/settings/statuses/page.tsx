@@ -16,8 +16,16 @@ import {
   useUpdateStatus,
 } from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useForm } from "@tanstack/react-form"
 import { Check, Edit2, Plus, Tag, Trash, X, GripVertical } from "lucide-react"
+
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
@@ -264,6 +272,7 @@ export default function StatusesSettingsPage() {
     defaultValues: {
       name: "",
       color: "#e2e8f0",
+      category: "todo",
     },
     onSubmit: async ({ value }) => {
       setValidationErrors({})
@@ -273,6 +282,7 @@ export default function StatusesSettingsPage() {
         {
           name: value.name.trim(),
           color: value.color,
+          category: value.category as "backlog" | "todo" | "in_progress" | "done",
         },
         {
           onSuccess: () => {
@@ -315,7 +325,7 @@ export default function StatusesSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-800 pb-5">
+      <div className="border-b border-border pb-5">
         <h3 className="flex items-center gap-2 text-lg font-bold">
           <Tag className="h-5 w-5" /> Project Statuses
         </h3>
@@ -444,13 +454,37 @@ export default function StatusesSettingsPage() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="mt-1 text-[11px] font-medium text-rose-500">
+                          <p className="mt-1 text-[11px] font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
                       </div>
                     )
                   }}
+                </form.Field>
+
+                <form.Field
+                  name="category"
+                >
+                  {(field) => (
+                    <div className="space-y-1.5">
+                      <label className="font-semibold">Category</label>
+                      <Select
+                        value={field.state.value}
+                        onValueChange={(val) => field.handleChange(val as "backlog" | "todo" | "in_progress" | "done")}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Select category..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="backlog">Backlog</SelectItem>
+                          <SelectItem value="todo">To Do</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="done">Done</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </form.Field>
 
                 <form.Field name="color">
@@ -466,9 +500,9 @@ export default function StatusesSettingsPage() {
                             type="button"
                             onClick={() => field.handleChange(preset.hex)}
                             className={cn(
-                              "flex h-8 w-full items-center justify-center rounded-md border text-[9px] font-semibold text-white transition-all hover:scale-105",
+                              "flex h-8 w-full items-center justify-center rounded-md border text-[9px] font-semibold text-primary-foreground transition-all hover:scale-105",
                               field.state.value === preset.hex
-                                ? "scale-100 border-white ring-2 ring-primary"
+                                ? "scale-100 border-primary-foreground ring-2 ring-primary"
                                 : "border-transparent"
                             )}
                             style={{ backgroundColor: preset.hex }}
@@ -490,7 +524,7 @@ export default function StatusesSettingsPage() {
                             className="pl-9 font-mono"
                           />
                           <span
-                            className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 rounded-full border border-white/20"
+                            className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 rounded-full border border-border/20"
                             style={{ backgroundColor: field.state.value }}
                           />
                         </div>
@@ -506,7 +540,7 @@ export default function StatusesSettingsPage() {
                 </form.Field>
 
                 {/* Form Actions */}
-                <div className="flex justify-end border-t border-slate-800/80 pt-4">
+                <div className="flex justify-end border-t border-border/80 pt-4">
                   <form.Subscribe
                     selector={(state) =>
                       [state.values.name, state.canSubmit] as const

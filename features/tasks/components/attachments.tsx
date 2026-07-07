@@ -100,7 +100,8 @@ export function AttachmentItem({
 
   const getFileIcon = () => {
     if (isImage) return null
-    if (isPdf) return <HugeiconsIcon icon={File02Icon} className="h-8 w-8 text-rose-400" />
+    if (isPdf) return <HugeiconsIcon icon={File02Icon} className="h-8 w-8 text-destructive" />
+
     return <HugeiconsIcon icon={File02Icon} className="h-8 w-8 text-muted-foreground/50" />
   }
 
@@ -138,14 +139,14 @@ export function AttachmentItem({
               unoptimized
             />
             {/* Hover overlay with actions */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted/40 opacity-0 transition-opacity group-hover:opacity-100">
               <div className="flex items-center gap-1 rounded-full bg-background/80 p-1 backdrop-blur-sm">
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     setIsPreviewOpen(true)
                   }}
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-white transition hover:bg-primary"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-primary-foreground transition hover:bg-primary"
                   title="View Proof"
                 >
                   <HugeiconsIcon icon={EyeIcon} size={14} />
@@ -153,7 +154,7 @@ export function AttachmentItem({
                 <a
                   href={attachment.url}
                   download={attachment.name}
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-white transition hover:bg-primary"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-primary-foreground transition hover:bg-primary"
                   title="Download"
                 >
                   <HugeiconsIcon icon={Download01Icon} size={14} />
@@ -164,7 +165,7 @@ export function AttachmentItem({
                       e.stopPropagation()
                       setIsDeleteDialogOpen(true)
                     }}
-                    className="flex h-6 w-6 items-center justify-center rounded-full text-white transition hover:bg-destructive"
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-primary-foreground transition hover:bg-destructive"
                     title="Delete"
                   >
                     <HugeiconsIcon icon={Cancel01Icon} size={14} />
@@ -235,7 +236,7 @@ export function AttachmentItem({
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="sm:max-w-7xl w-[95vw] p-0 overflow-hidden flex flex-col md:flex-row h-[85vh]">
           {/* Left panel: Media viewer */}
-          <div className="flex-1 bg-neutral-900 flex flex-col items-center justify-center p-4 relative overflow-auto">
+          <div className="flex-1 bg-background flex flex-col items-center justify-center p-4 relative overflow-auto">
             {isImage ? (
               <div
                 className="relative cursor-crosshair max-w-full max-h-[70vh] shadow-2xl rounded"
@@ -254,7 +255,7 @@ export function AttachmentItem({
                 {annotations.map((anno: Annotation, idx: number) => (
                   <div
                     key={anno.id}
-                    className="absolute w-6 h-6 bg-red-600 border border-white text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg transform -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:scale-115 transition"
+                    className="absolute w-6 h-6 bg-destructive border border-primary-foreground text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold shadow-lg transform -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:scale-115 transition"
                     style={{ left: `${anno.x}%`, top: `${anno.y}%` }}
                     title={anno.content}
                   >
@@ -269,7 +270,7 @@ export function AttachmentItem({
                     style={{ left: `${tempCoords.x}%`, top: `${tempCoords.y}%` }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="w-6 h-6 bg-amber-500 border border-white text-white rounded-full flex items-center justify-center text-xs font-bold animate-pulse shadow-lg mb-1">
+                    <div className="w-6 h-6 bg-warning border border-border text-warning-foreground rounded-full flex items-center justify-center text-xs font-bold animate-pulse shadow-lg mb-1">
                       +
                     </div>
                     <form
@@ -402,7 +403,7 @@ export function AttachmentItem({
                       className="p-2 border border-border/80 rounded bg-muted/20 space-y-1 relative group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span className="w-4 h-4 bg-red-600 text-white rounded-full flex items-center justify-center text-[9px] font-bold">
+                        <span className="w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-[9px] font-bold">
                           {idx + 1}
                         </span>
                         <span className="text-[10px] font-semibold text-foreground">
