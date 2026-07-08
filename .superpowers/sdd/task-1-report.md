@@ -1,28 +1,64 @@
-# Global Theme & Contrast Audit Report - Stealth Pro Redesign
+# Task 1 Report: Refactor Form & Deduplicate Options in OkrsDashboard
 
-## Audit Summary
-Performed a comprehensive global audit of the codebase to ensure 100% compliance with the "Stealth Pro" semantic color system. All hardcoded colors (hex, rgba, generic Tailwind colors) have been removed and replaced with semantic variables from `globals.css`.
+## Overview
 
-## Hardcoded Colors Removed
+Successfully refactored the OKR creation form inside [OkrsDashboard](file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-client/features/okrs/components/okrs-dashboard.tsx) to use TanStack React Form with Zod validation. Additionally, resolved the duplicate projects and epics lists bug by implementing deduplication logic using `React.useMemo` and a `Set`.
 
-| File | Hardcoded Color | Semantic Replacement | Context |
-| :--- | :--- | :--- | :--- |
-| `app/globals.css` | `hsl(212, 100%, 50%)` | `var(--primary)` | ProseMirror links |
-| `components/ui/qr-code.tsx` | `#ffffff` | `var(--background)` | QR Code Background |
-| `components/ui/qr-code.tsx` | `#000000` | `var(--foreground)` | QR Code Foreground |
-| `components/reui/filters.tsx` | `#000000` | `var(--foreground)` | Default color picker value |
-| `features/portfolio/components/portfolio-dashboard.tsx` | `rgba(0,0,0,0.1)` | `var(--shadow-md)` | Tooltip boxShadow |
-| `features/portfolio/components/portfolio-dashboard.tsx` | `rgba(0,0,0,0.05)` | `var(--muted)` | Chart cursor fill |
+In this latest update, we addressed validation error rendering, cleaned up the form initialization, and eliminated the `Object.assign` hack.
 
-## Verifications
-- **Light Mode Audit**: Verified that high-contrast light mode (Near White background, Deep Black text) is preserved. All semantic variables correctly map to light mode values.
-- **Dark Mode Audit**: Verified "Deep Charcoal" layering consistency. Verified that the Electric Indigo accent provides high contrast without overwhelming the aesthetic.
-- **WCAG Contrast**: Confirmed that primary text, secondary text, and accent elements meet WCAG AA contrast ratios using semantic tokens.
-- **Zero Hardcoded Colors**: Confirmed zero hardcoded hex/rgba/generic colors in product components. (Note: Syntax highlighting in `globals.css` and user-selectable color palettes for Epics/Labels/Statuses were kept as they are functional requirements for those specific features).
+## Changes Implemented
 
-## Final Confirmation
-- No git commits were made.
-- Both Light and Dark modes have been audited.
-- All replacements use valid semantic variables from `app/globals.css`.
+1. **Fix Validation Error Rendering**:
+   - Updated the `<FieldError>` component in the form to map `field.state.meta.errors` (which are strings) to the object format expected by `FieldError`'s `errors` prop:
+     ```tsx
+     errors={field.state.meta.errors.map((err) => ({ message: String(err) }))}
+     ```
+   - This fixes the type mismatch where `FieldError` expects an array of `{ message?: string }` objects, but `field.state.meta.errors` contains strings.
 
-**Status: DONE**
+2. **Clean Form Initialization and Removal of `Object.assign` Hack**:
+   - Completely removed `formRaw` and the `Object.assign(formRaw, ...)` hack.
+   - Declared `form` directly using `useForm` with explicit 12 type parameters to ensure type inference is preserved for the form values.
+   - Addressed the `@tanstack/react-form` library type misalignment for the `validatorAdapter` property cleanly, using an intersection cast of the parameters of `useForm` instead of casting `as any`:
+     ```tsx
+     as Parameters<
+       typeof useForm<
+         {
+           title: string
+           description: string
+           krTitle: string
+           krTarget: string
+           projectId: string | null
+           epicId: string | null
+         },
+         undefined,
+         undefined,
+         undefined,
+         undefined,
+         undefined,
+         undefined,
+         undefined,
+         undefined,
+         undefined,
+         undefined,
+         never
+       >
+     >[0] & { validatorAdapter?: unknown }
+     ```
+     This bypasses the excess property check for `validatorAdapter` while maintaining strict type safety and zero `any` usage.
+   - Added explicit type signature to the destructured `value` parameter in `onSubmit` to prevent implicit `any` errors.
+
+3. **Type-Safe Form State Watching**:
+   - Refactored the `selectedProjectId` tracking to cleanly watch `projectId` using the `useStore` hook imported from `@tanstack/react-form` directly:
+     ```tsx
+     const selectedProjectId = useStore(form.store, (state) => state.values.projectId)
+     ```
+
+## Verification Results
+
+- **TypeScript Compilation Check**:
+  - Command: `npm run typecheck`
+  - Result: **0 errors** (Success)
+
+- **ESLint Linting Check**:
+  - Command: `npm run lint`
+  - Result: **0 errors, 0 warnings** (Success)

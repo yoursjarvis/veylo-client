@@ -1,3 +1,21 @@
+# TanStack Form Refactor & Deduplication Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Refactor the Create New Objective modal form in `okrs-dashboard.tsx` to use TanStack React Form and Zod validation, and resolve the duplicate project names bug.
+
+**Architecture:** Use `@tanstack/react-form` for form state management and `@tanstack/zod-form-adapter` for validation. Replace state variables with form fields. Wrap the form in `<form>` and handle submit through `form.handleSubmit`. Deduplicate query values using `React.useMemo` and a unique identifier `Set`.
+
+**Tech Stack:** React, TanStack React Form, Zod, TanStack Zod Form Adapter.
+
+## Global Constraints
+- Do not commit any changes on Git (do not run `git commit`, `git add`, etc.).
+- Never use `any`, `@ts-ignore`, or `@ts-expect-error`.
+- For icons, always use Hugeicons. Only use Lucide React icons if not present.
+- Support both light and dark modes.
+
+---
+
 ### Task 1: Refactor Form & Deduplicate Options in OkrsDashboard
 
 **Files:**

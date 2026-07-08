@@ -1,30 +1,67 @@
-# Task 2: Responsive Layout Calibration
+### Task 2: Integrate `SearchableSelect` Component in `OkrsDashboard`
 
-**Goal:** Calibrate the application layout across mobile, tablet, and desktop breakpoints to ensure a seamless, professional, and "invisible" grid experience.
+**Files:**
+- Modify: `features/okrs/components/okrs-dashboard.tsx`
 
-**Files to Modify:**
-- `components/layout/app-shell.tsx`
-- `app/(authenticated)/layout.tsx`
-- `features/tasks/components/task-board.tsx`
-- `features/org/components/members-table.tsx`
-- `app/(authenticated)/[workspaceSlug]/projects/page.tsx`
+**Interfaces:**
+- Consumes: `SearchableSelect` from `@/components/ui/searchable-select`
 
-**Requirements:**
-1. **Mobile Navigation & Shell Review:**
-   - Verify that the `AppSidebar` and `AppHeader` collapse gracefully on mobile.
-   - Ensure the main content area (`AppShell` and `AuthenticatedLayout`) handles the transition from `p-6` to `p-8` (or mobile equivalent) without horizontal overflow.
-2. **Grid & Table Adaptation:**
-   - **Project Grid**: Ensure the project grid in `projects/page.tsx` handles column shifts (1 $\rightarrow$ 2 $\rightarrow$ 3) perfectly.
-   - **Members Table**: Implement an overflow container for the `MembersTable` to ensure that horizontal scrolling is smooth and doesn't break the overall page layout on small screens.
-   - **Task Board**: Verify that the `TaskBoard` (Kanban) horizontal scroll is intuitive and that columns maintain their minimum width (`w-72` / `lg:w-80`) without shrinking.
-3. **Modal & Drawer Sizing:**
-   - Audit all "Surgical" Dialogs and Drawers.
-   - Ensure `sm:max-w-112.5` or similar constraints are applied to maintain professional proportions on tablets and desktops while filling the screen reasonably on mobile.
+- [ ] **Step 1: Modify okrs-dashboard.tsx**
 
-**Global Constraints:**
-- Ultra-minimalist, High-contrast, Dark-mode-first.
-- No horizontal scrolling at the page level (only inside specific components like tables/boards).
-- No git commits (manual review at end).
+Replace the Select components for Project and Epic inside the Create Objective dialog in [okrs-dashboard.tsx](file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-client/features/okrs/components/okrs-dashboard.tsx) with the new `SearchableSelect`.
 
-**Deliverable:**
-A fully responsive application where the "Stealth Pro" aesthetic is preserved across all device categories.
+Update imports in `okrs-dashboard.tsx`:
+```tsx
+import { SearchableSelect } from "@/components/ui/searchable-select"
+```
+
+Prepare options arrays before the Dialog content rendering:
+```tsx
+  const projectOptions = projects.map((p) => ({ value: p.id, label: p.title }))
+  const epicOptions = epics.map((e: Epic) => ({ value: e.id, label: e.title }))
+```
+
+Replace the Select sections:
+```tsx
+              <div className="mt-2 space-y-4 border-t pt-4">
+                <h4 className="text-sm font-medium text-muted-foreground">
+                  Link Project & Epic
+                </h4>
+                <div className="space-y-2">
+                  <Label>Project</Label>
+                  <SearchableSelect
+                    value={selectedProjectId}
+                    onValueChange={(val) => {
+                      setSelectedProjectId(val)
+                      setSelectedEpicId(null)
+                    }}
+                    options={projectOptions}
+                    placeholder="Select a project"
+                  />
+                </div>
+
+                {selectedProjectId && (
+                  <div className="space-y-2">
+                    <Label>Epic (Optional)</Label>
+                    <SearchableSelect
+                      value={selectedEpicId}
+                      onValueChange={(val) => setSelectedEpicId(val)}
+                      options={epicOptions}
+                      placeholder="Select an epic"
+                      clearable
+                    />
+                  </div>
+                )}
+              </div>
+```
+
+- [ ] **Step 2: Verify types and linting**
+
+Run: `npm run typecheck`
+Expected: PASS
+
+Run: `npm run lint`
+Expected: PASS
+
+Run: `npm run build`
+Expected: PASS (no build errors)
