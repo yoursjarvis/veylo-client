@@ -67,7 +67,7 @@ export function EditMemberModal({
     hasPermission("member:edit") ||
     hasPermission("*") // Or assuming organization owner
   const canChangePassword =
-    hasPermission("member:change_password") || hasPermission("*")
+    hasPermission("member:change-password") || hasPermission("*")
 
   const [activeTab, setActiveTab] = useState("profile")
   const [password, setPassword] = useState("")

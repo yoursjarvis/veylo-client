@@ -5,6 +5,7 @@ import { LatestChange } from "@/components/layout/latest-change"
 import { NavGroup } from "@/components/layout/nav-group"
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher"
 import { Logo, LogoIcon } from "@/components/shared/logo"
+import { motion, AnimatePresence } from "motion/react"
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -24,6 +26,7 @@ import { usePermissions } from "@/hooks/use-permissions"
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { state } = useSidebar()
   const { workspaces, activeWorkspace } = useWorkspaceContext()
   const workspaceSlug = activeWorkspace?.slug || ""
   const { hasPermission } = usePermissions()
@@ -32,6 +35,7 @@ export function AppSidebar() {
   const canReadRoles = hasPermission("role:read")
 
   const hasNoWorkspaces = workspaces && workspaces.length === 0
+  const isCollapsed = state === "collapsed"
 
   const navGroups = getNavGroups(workspaceSlug, !!hasNoWorkspaces, {
     canReadProjects,
@@ -47,10 +51,33 @@ export function AppSidebar() {
       collapsible="icon"
       variant="sidebar"
     >
-      <SidebarHeader className="h-14 justify-center border-b border-border/50 px-4">
-        <div className="flex items-center gap-2 overflow-hidden">
-          <Logo className="h-5 w-auto text-foreground group-data-[collapsible=icon]:hidden" />
-          <LogoIcon className="hidden h-6 w-6 text-foreground group-data-[collapsible=icon]:block" />
+      <SidebarHeader className="h-14 justify-center border-b border-border/50 px-4 group-data-[collapsible=icon]:px-0">
+        <div className="flex items-center gap-2 overflow-hidden group-data-[collapsible=icon]:justify-center">
+          <AnimatePresence mode="wait" initial={false}>
+            {isCollapsed ? (
+              <motion.div
+                key="collapsed-logo"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.15, ease: "easeInOut" }}
+                className="flex items-center justify-center h-8 w-8 text-foreground"
+              >
+                <LogoIcon className="h-8 w-8" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="expanded-logo"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.15, ease: "easeInOut" }}
+                className="flex items-center h-8 w-auto text-foreground"
+              >
+                <Logo className="h-8 w-auto" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </SidebarHeader>
       <SidebarContent>

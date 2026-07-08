@@ -33,6 +33,18 @@ const fontMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME,
   description: "Project Management Tool",
+  icons: {
+    icon: [
+      {
+        url: "/logos/orbiq-logo-icon-black.svg",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/logos/orbiq-logo-icon-white.svg",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
 }
 
 export default function RootLayout({
