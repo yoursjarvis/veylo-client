@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import React, { useState, useRef, useEffect } from "react";
+import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Search,
   Download,
   Filter,
   RotateCcw,
   Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
   Info,
   Laptop,
   Globe,
@@ -24,16 +23,9 @@ import { axiosInstance } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -174,7 +166,7 @@ export default function AuditLogsPage() {
     parseAsString.withDefault("").withOptions({ clearOnDefault: true, shallow: true })
   );
 
-  const [page, setPage] = useQueryState(
+  const [, setPage] = useQueryState(
     "page",
     parseAsInteger.withDefault(1).withOptions({ clearOnDefault: true, shallow: true })
   );
@@ -209,8 +201,14 @@ export default function AuditLogsPage() {
     enabled: !!activeWorkspace?.id,
   });
 
-  // Fetch Audit Logs with filters
-  const { data: logsData, isLoading: isLogsLoading } = useQuery<PaginatedAuditLogs>({
+  // Fetch Audit Logs with filters (using Infinite Query for virtual scrolling)
+  const {
+    data: logsData,
+    isLoading: isLogsLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery<PaginatedAuditLogs>({
     queryKey: [
       "audit-logs",
       activeWorkspace?.id,
@@ -219,16 +217,15 @@ export default function AuditLogsPage() {
       selectedActions,
       startDateStr,
       endDateStr,
-      page,
       limit,
     ],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 1 }) => {
       if (!activeWorkspace?.id) {
         return { data: [], meta: { total: 0, page: 1, limit: 15, totalPages: 0 } };
       }
 
       const params = new URLSearchParams();
-      params.append("page", String(page));
+      params.append("page", String(pageParam));
       params.append("limit", String(limit));
 
       if (search) params.append("search", search);
@@ -241,8 +238,40 @@ export default function AuditLogsPage() {
       const res = await axiosInstance.get(`/workspaces/${activeWorkspace.id}/audit-logs?${params.toString()}`);
       return res.data.data;
     },
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.meta.page + 1;
+      return nextPage <= lastPage.meta.totalPages ? nextPage : undefined;
+    },
+    initialPageParam: 1,
     enabled: !!activeWorkspace?.id,
   });
+
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const allRows = logsData ? logsData.pages.flatMap((page) => page.data) : [];
+
+  const rowVirtualizer = useVirtualizer({
+    count: hasNextPage ? allRows.length + 1 : allRows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 64, // estimated row height
+    overscan: 5,
+  });
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
+
+  useEffect(() => {
+    const [lastItem] = [...virtualRows].reverse();
+    if (!lastItem) return;
+
+    if (
+      lastItem.index >= allRows.length - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, fetchNextPage, allRows.length, isFetchingNextPage, virtualRows]);
 
   // Export Mutation
   const exportMutation = useMutation({
@@ -502,11 +531,65 @@ export default function AuditLogsPage() {
         <Card className="border border-border/80 bg-card shadow-sm overflow-hidden">
           <CardContent className="p-0">
             {isLogsLoading ? (
-              <div className="py-20 flex flex-col items-center justify-center space-y-3">
-                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-                <p className="text-sm text-muted-foreground">Retrieving immutable audit logs...</p>
+              <div className="w-full overflow-x-auto">
+                <div className="min-w-[1100px] flex flex-col">
+                  {/* Skeleton Header */}
+                  <div className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border bg-muted/30 py-3 px-4 text-sm font-semibold text-muted-foreground">
+                    <div>Timestamp</div>
+                    <div>Actor</div>
+                    <div>Action</div>
+                    <div>Entity</div>
+                    <div>Description</div>
+                    <div>Origin IP</div>
+                    <div className="text-center">Data</div>
+                  </div>
+                  {/* Skeleton Rows */}
+                  <div className="flex flex-col divide-y divide-border/40">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center py-4 px-4 min-h-[64px]"
+                      >
+                        {/* Timestamp */}
+                        <div className="pr-2">
+                          <Skeleton className="h-4 w-28" />
+                        </div>
+                        {/* Actor */}
+                        <div className="pr-2 flex items-center gap-2">
+                          <Skeleton className="h-6 w-6 rounded-full" />
+                          <div className="space-y-1 flex-1">
+                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-2 w-28" />
+                          </div>
+                        </div>
+                        {/* Action */}
+                        <div className="pr-2">
+                          <Skeleton className="h-5 w-24 rounded-full" />
+                        </div>
+                        {/* Entity */}
+                        <div className="pr-2 space-y-1">
+                          <Skeleton className="h-2 w-12" />
+                          <Skeleton className="h-3 w-16" />
+                        </div>
+                        {/* Description */}
+                        <div className="pr-2">
+                          <Skeleton className="h-4 w-full max-w-[200px]" />
+                        </div>
+                        {/* Origin IP */}
+                        <div className="pr-2 space-y-1">
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-2 w-20" />
+                        </div>
+                        {/* Data */}
+                        <div className="flex justify-center">
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            ) : !logsData?.data.length ? (
+            ) : !allRows.length ? (
               <div className="py-20 flex flex-col items-center justify-center text-center px-4">
                 <Info className="h-10 w-10 text-muted-foreground mb-4" />
                 <h3 className="text-base font-semibold text-foreground">No Logs Found</h3>
@@ -515,125 +598,158 @@ export default function AuditLogsPage() {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-muted/30">
-                    <TableRow>
-                      <TableHead className="w-[180px] font-semibold">Timestamp</TableHead>
-                      <TableHead className="w-[200px] font-semibold">Actor</TableHead>
-                      <TableHead className="w-[160px] font-semibold">Action</TableHead>
-                      <TableHead className="w-[180px] font-semibold">Entity</TableHead>
-                      <TableHead className="font-semibold">Description</TableHead>
-                      <TableHead className="w-[160px] font-semibold">Origin IP</TableHead>
-                      <TableHead className="w-[80px] font-semibold text-center">Data</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody className="divide-y divide-border/40">
-                    {logsData.data.map((log) => (
-                      <TableRow key={log.id} className="hover:bg-muted/10 transition-colors">
-                        <TableCell className="text-xs font-mono text-muted-foreground">
-                          {format(new Date(log.createdAt), "yyyy-MM-dd hh:mm a")}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6 shrink-0 border border-border">
-                              <AvatarImage src={log.user.image || ""} />
-                              <AvatarFallback className="text-[10px] bg-muted font-bold text-foreground">
-                                {log.user.name.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-sm font-medium truncate text-foreground">
-                                {log.user.name}
-                              </span>
-                              <span className="text-[11px] text-muted-foreground truncate">
-                                {log.user.email}
-                              </span>
-                            </div>
+              <div className="w-full overflow-x-auto">
+                <div className="min-w-[1100px] flex flex-col">
+                  {/* Header */}
+                  <div className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border bg-muted/30 py-3 px-4 text-sm font-semibold text-muted-foreground">
+                    <div>Timestamp</div>
+                    <div>Actor</div>
+                    <div>Action</div>
+                    <div>Entity</div>
+                    <div>Description</div>
+                    <div>Origin IP</div>
+                    <div className="text-center">Data</div>
+                  </div>
+
+                  {/* Scrollable Container */}
+                  <div
+                    ref={parentRef}
+                    className="overflow-y-auto max-h-[600px] relative w-full"
+                  >
+                    <div style={{ height: `${totalSize}px`, position: "relative" }} className="w-full">
+                      {virtualRows.map((virtualRow) => {
+                        const isLoaderRow = virtualRow.index > allRows.length - 1;
+                        const log = allRows[virtualRow.index];
+
+                        return (
+                          <div
+                            key={virtualRow.key}
+                            data-index={virtualRow.index}
+                            ref={rowVirtualizer.measureElement}
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: "100%",
+                              transform: `translateY(${virtualRow.start}px)`,
+                            }}
+                            className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border/40 hover:bg-muted/10 transition-colors py-3 px-4 min-h-[64px]"
+                          >
+                            {isLoaderRow ? (
+                              isFetchingNextPage ? (
+                                <>
+                                  <div className="pr-2">
+                                    <Skeleton className="h-4 w-28" />
+                                  </div>
+                                  <div className="pr-2 flex items-center gap-2">
+                                    <Skeleton className="h-6 w-6 rounded-full" />
+                                    <div className="space-y-1 flex-1">
+                                      <Skeleton className="h-3 w-20" />
+                                      <Skeleton className="h-2 w-28" />
+                                    </div>
+                                  </div>
+                                  <div className="pr-2">
+                                    <Skeleton className="h-5 w-24 rounded-full" />
+                                  </div>
+                                  <div className="pr-2 space-y-1">
+                                    <Skeleton className="h-2 w-12" />
+                                    <Skeleton className="h-3 w-16" />
+                                  </div>
+                                  <div className="pr-2">
+                                    <Skeleton className="h-4 w-full max-w-[200px]" />
+                                  </div>
+                                  <div className="pr-2 space-y-1">
+                                    <Skeleton className="h-3 w-16" />
+                                    <Skeleton className="h-2 w-20" />
+                                  </div>
+                                  <div className="flex justify-center">
+                                    <Skeleton className="h-8 w-8 rounded-md" />
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="col-span-7 text-center py-4 text-sm text-muted-foreground w-full">
+                                  No more logs to load
+                                </div>
+                              )
+                            ) : (
+                              <>
+                                <div className="text-xs font-mono text-muted-foreground pr-2">
+                                  {format(new Date(log.createdAt), "yyyy-MM-dd hh:mm a")}
+                                </div>
+                                <div className="pr-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <Avatar className="h-6 w-6 shrink-0 border border-border">
+                                      <AvatarImage src={log.user.image || ""} />
+                                      <AvatarFallback className="text-[10px] bg-muted font-bold text-foreground">
+                                        {log.user.name.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="text-sm font-medium truncate text-foreground">
+                                        {log.user.name}
+                                      </span>
+                                      <span className="text-[11px] text-muted-foreground truncate">
+                                        {log.user.email}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="pr-2">
+                                  <Badge variant={getActionBadgeVariant(log.action)} className="text-[11px] px-2 py-0.5">
+                                    {log.action}
+                                  </Badge>
+                                </div>
+                                <div className="pr-2">
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                      {log.entityType}
+                                    </span>
+                                    <span className="text-xs font-mono font-medium text-foreground truncate max-w-[150px]">
+                                      {log.entityName || log.entityId || "N/A"}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-sm text-foreground max-w-xs break-words font-medium pr-2">
+                                  {log.description}
+                                </div>
+                                <div className="pr-2">
+                                  <div className="flex flex-col text-xs space-y-0.5 text-muted-foreground">
+                                    <span className="flex items-center gap-1">
+                                      <Globe className="h-3 w-3 shrink-0" />
+                                      {log.ipAddress || "Unknown"}
+                                    </span>
+                                    <span className="flex items-center gap-1 font-medium text-[10px]">
+                                      <Laptop className="h-3 w-3 shrink-0" />
+                                      {formatBrowser(log.userAgent)}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  {log.metadata ? (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => setSelectedMetadata(log.metadata)}
+                                      className="h-8 w-8 hover:bg-muted text-primary hover:text-primary-foreground"
+                                    >
+                                      <Database className="h-4 w-4" />
+                                    </Button>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground font-mono">—</span>
+                                  )}
+                                </div>
+                              </>
+                            )}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getActionBadgeVariant(log.action)} className="text-[11px] px-2 py-0.5">
-                            {log.action}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {log.entityType}
-                            </span>
-                            <span className="text-xs font-mono font-medium text-foreground truncate max-w-[150px]">
-                              {log.entityName || log.entityId || "N/A"}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-foreground max-w-xs break-words font-medium">
-                          {log.description}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col text-xs space-y-0.5 text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Globe className="h-3 w-3 shrink-0" />
-                              {log.ipAddress || "Unknown"}
-                            </span>
-                            <span className="flex items-center gap-1 font-medium text-[10px]">
-                              <Laptop className="h-3 w-3 shrink-0" />
-                              {formatBrowser(log.userAgent)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {log.metadata ? (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setSelectedMetadata(log.metadata)}
-                              className="h-8 w-8 hover:bg-muted text-primary hover:text-primary-foreground"
-                            >
-                              <Database className="h-4 w-4" />
-                            </Button>
-                          ) : (
-                            <span className="text-xs text-muted-foreground font-mono">—</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
-
-        {/* Pagination Section */}
-        {logsData && logsData.meta.totalPages > 1 && (
-          <div className="flex items-center justify-between pt-2">
-            <span className="text-xs text-muted-foreground">
-              Showing page <strong>{logsData.meta.page}</strong> of{" "}
-              <strong>{logsData.meta.totalPages}</strong> ({logsData.meta.total} total logs)
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="h-8 px-2 flex items-center gap-1"
-              >
-                <ChevronLeft className="h-4 w-4" /> Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(logsData.meta.totalPages, p + 1))}
-                disabled={page === logsData.meta.totalPages}
-                className="h-8 px-2 flex items-center gap-1"
-              >
-                Next <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* JSON Metadata View Dialog */}

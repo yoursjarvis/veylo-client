@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --experimental-https --experimental-https-key ./certs/key.pem --experimental-https-cert ./certs/cert.pem -H veylo.com -p 3000",
+    "dev:webpack": "next dev --experimental-https --experimental-https-key ./certs/key.pem --experimental-https-cert ./certs/cert.pem -H veylo.com -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

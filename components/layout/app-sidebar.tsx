@@ -1,11 +1,10 @@
 "use client"
 
-import { getNavGroups, footerNavLinks } from "@/components/layout/app-shared"
+import { footerNavLinks, getNavGroups } from "@/components/layout/app-shared"
 import { LatestChange } from "@/components/layout/latest-change"
 import { NavGroup } from "@/components/layout/nav-group"
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher"
 import { Logo, LogoIcon } from "@/components/shared/logo"
-import { motion, AnimatePresence } from "motion/react"
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +17,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
+import { AnimatePresence, motion } from "motion/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -45,9 +45,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={cn(
-        "*:data-[slot=sidebar-inner]:bg-card"
-      )}
+      className={cn("*:data-[slot=sidebar-inner]:bg-card")}
       collapsible="icon"
       variant="sidebar"
     >
@@ -61,7 +59,7 @@ export function AppSidebar() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.15, ease: "easeInOut" }}
-                className="flex items-center justify-center h-8 w-8 text-foreground"
+                className="flex h-8 w-8 items-center justify-center text-foreground"
               >
                 <LogoIcon className="h-8 w-8" />
               </motion.div>
@@ -72,7 +70,7 @@ export function AppSidebar() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.15, ease: "easeInOut" }}
-                className="flex items-center h-8 w-auto text-foreground"
+                className="flex h-8 w-auto items-center text-foreground"
               >
                 <Logo className="h-8 w-auto" />
               </motion.div>

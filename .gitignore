@@ -37,5 +37,14 @@ next-env.d.ts
 .env
 
 #ai-misc
-# .superpowers/
-# docs/superpowers
+.superpowers/
+.agents/
+.roo/
+.claude/
+.cursor/
+.codex/
+.trae/
+.windsurf/
+.qoder/
+.qwen/
+docs/superpowers/
