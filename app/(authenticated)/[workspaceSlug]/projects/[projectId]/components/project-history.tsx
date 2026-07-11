@@ -1,7 +1,17 @@
 "use client"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/reui/badge"
+import { Frame, FrameHeader, FramePanel } from "@/components/reui/frame"
+import {
+  Timeline,
+  TimelineContent,
+  TimelineHeader,
+  TimelineIndicator,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineTitle,
+} from "@/components/reui/timeline"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Card,
   CardContent,
@@ -14,20 +24,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import {
-  Frame,
-  FrameHeader,
-  FramePanel,
-} from "@/components/reui/frame"
-import {
-  Timeline,
-  TimelineContent,
-  TimelineHeader,
-  TimelineIndicator,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineTitle,
-} from "@/components/reui/timeline"
 import { cn } from "@/lib/utils"
 import {
   ArrowRightIcon,
@@ -72,7 +68,8 @@ export function ProjectHistory({
             type: "initialization" as const,
             date: new Date(projectCreatedAt),
             title: "Project record initialized in workspace",
-            description: "The project record was successfully created and initialized in this workspace.",
+            description:
+              "The project record was successfully created and initialized in this workspace.",
           },
         ]
       : []),
@@ -106,11 +103,17 @@ export function ProjectHistory({
       </CardHeader>
       <CardContent>
         {events.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No history available yet.</p>
+          <p className="text-sm text-muted-foreground">
+            No history available yet.
+          </p>
         ) : (
           <Timeline defaultValue={events.length}>
             {events.map((event, index) => (
-              <TimelineItem key={event.id} step={index + 1} className="ms-10 pb-10">
+              <TimelineItem
+                key={event.id}
+                step={index + 1}
+                className="ms-10 pb-10"
+              >
                 <TimelineHeader>
                   <TimelineSeparator className="group-data-[orientation=vertical]/timeline:-left-7 group-data-[orientation=vertical]/timeline:h-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=vertical]/timeline:translate-y-7" />
                   <div className="flex items-center gap-2">
@@ -118,7 +121,11 @@ export function ProjectHistory({
                       {event.title}
                     </TimelineTitle>
                     <Badge
-                      variant={event.type === "initialization" ? "success-light" : "primary-light"}
+                      variant={
+                        event.type === "initialization"
+                          ? "success-light"
+                          : "primary-light"
+                      }
                       size="sm"
                     >
                       {format(event.date, "PPP")}
@@ -126,11 +133,15 @@ export function ProjectHistory({
                   </div>
                   <TimelineIndicator
                     className={cn(
-                      "bg-muted text-muted-foreground group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground flex size-6 items-center justify-center border-none group-data-[orientation=vertical]/timeline:-left-7"
+                      "flex size-6 items-center justify-center border-none bg-muted text-muted-foreground group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground group-data-[orientation=vertical]/timeline:-left-7"
                     )}
                   >
                     <HugeiconsIcon
-                      icon={event.type === "initialization" ? SparklesIcon : UserAdd01Icon}
+                      icon={
+                        event.type === "initialization"
+                          ? SparklesIcon
+                          : UserAdd01Icon
+                      }
                       strokeWidth={2}
                       className="size-3.5"
                     />
@@ -152,25 +163,25 @@ export function ProjectHistory({
                                   {event.user.name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="text-muted-foreground text-xs font-medium">
+                              <span className="text-xs font-medium text-muted-foreground">
                                 {event.user.name} ({event.user.email})
                               </span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground text-xs font-medium">
+                            <span className="text-xs font-medium text-muted-foreground">
                               System Milestone
                             </span>
                           )}
                           <HugeiconsIcon
                             icon={ArrowRightIcon}
                             strokeWidth={2}
-                            className="text-muted-foreground size-4 transition-transform duration-200 group-data-open/collapsible:rotate-90"
+                            className="size-4 text-muted-foreground transition-transform duration-200 group-data-open/collapsible:rotate-90"
                           />
                         </FrameHeader>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <FramePanel>
-                          <p className="text-muted-foreground text-sm leading-relaxed">
+                          <p className="text-sm leading-relaxed text-muted-foreground">
                             {event.description}
                           </p>
                         </FramePanel>

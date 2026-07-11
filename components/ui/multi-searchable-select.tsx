@@ -1,8 +1,6 @@
 "use client"
 
-import * as React from "react"
-import { Check } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
 import {
   Command,
   CommandEmpty,
@@ -11,8 +9,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+import { Check } from "lucide-react"
+import * as React from "react"
 
 export type MultiSearchableSelectOption = {
   value: string
@@ -59,12 +63,12 @@ export function MultiSearchableSelect({
         <PopoverTrigger
           disabled={disabled}
           className={cn(
-            "flex min-h-9 h-auto w-full items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-1.5 pr-8 pl-2.5 text-sm transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+            "flex h-auto min-h-9 w-full items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-1.5 pr-8 pl-2.5 text-sm transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
             selectedOptions.length === 0 && "text-muted-foreground",
             triggerClassName
           )}
         >
-          <div className="flex flex-wrap gap-1 max-w-[90%] truncate">
+          <div className="flex max-w-[90%] flex-wrap gap-1 truncate">
             {selectedOptions.length === 0 ? (
               <span className="truncate">{placeholder}</span>
             ) : selectedOptions.length <= 2 ? (
@@ -72,7 +76,7 @@ export function MultiSearchableSelect({
                 <Badge
                   key={opt.value}
                   variant="secondary"
-                  className="text-[10px] h-5 px-1.5 font-medium shrink-0"
+                  className="h-5 shrink-0 px-1.5 text-[10px] font-medium"
                 >
                   {opt.label}
                 </Badge>
@@ -80,18 +84,18 @@ export function MultiSearchableSelect({
             ) : (
               <Badge
                 variant="secondary"
-                className="text-[10px] h-5 px-1.5 font-medium shrink-0"
+                className="h-5 shrink-0 px-1.5 text-[10px] font-medium"
               >
                 {selectedOptions.length} Selected
               </Badge>
             )}
           </div>
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center">
+          <span className="absolute top-1/2 right-2.5 flex h-4 w-4 -translate-y-1/2 items-center justify-center">
             <span className="text-[10px] text-muted-foreground">▼</span>
           </span>
         </PopoverTrigger>
         <PopoverContent
-          className="w-[var(--anchor-width)] min-w-36 p-0 z-50 bg-card border border-border"
+          className="z-50 w-[var(--anchor-width)] min-w-36 border border-border bg-card p-0"
           align="start"
         >
           <Command>
@@ -107,10 +111,12 @@ export function MultiSearchableSelect({
                       value={opt.label}
                       data-checked={isChecked}
                       onSelect={() => handleToggle(opt.value)}
-                      className="flex items-center justify-between cursor-pointer"
+                      className="flex cursor-pointer items-center justify-between"
                     >
                       <span className="truncate pr-4">{opt.label}</span>
-                      {isChecked && <Check className="h-4 w-4 text-primary shrink-0" />}
+                      {isChecked && (
+                        <Check className="h-4 w-4 shrink-0 text-primary" />
+                      )}
                     </CommandItem>
                   )
                 })}

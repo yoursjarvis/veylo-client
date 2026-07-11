@@ -92,11 +92,11 @@ const growthPctNum = growthPctForWindow(chartRows)
 const chartConfig = {
   retail: {
     label: "Retail",
-    color: "var(--chart-2)",
+    color: "var(--color-chart-2)",
   },
   online: {
     label: "Online",
-    color: "var(--chart-1)",
+    color: "var(--color-chart-1)",
   },
 } satisfies ChartConfig
 

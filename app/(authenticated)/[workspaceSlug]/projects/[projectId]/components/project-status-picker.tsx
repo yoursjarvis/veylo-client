@@ -7,13 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox"
+import { ComboboxSelect } from "@/components/ui/combobox-select"
 import {
   AlertDiamondIcon,
   BadgeAlertIcon,
@@ -114,27 +108,19 @@ export function ProjectStatusPicker({ projectId }: ProjectStatusPickerProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Combobox
+          <ComboboxSelect
             value={projectStatus}
             onValueChange={(val) => {
               if (val) handleUpdateStatus(val)
             }}
-          >
-            <ComboboxInput
-              placeholder="Select project status..."
-              className="w-full border border-border bg-background"
-              showTrigger
-            />
-            <ComboboxContent className="border border-border bg-popover">
-              <ComboboxList>
-                {statusOptions.map((status) => (
-                  <ComboboxItem key={status.key} value={status.key}>
-                    {status.name}
-                  </ComboboxItem>
-                ))}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
+            options={statusOptions.map((status) => ({
+              value: status.key,
+              label: status.name,
+            }))}
+            placeholder="Select project status..."
+            className="w-full"
+            isSearchable={false}
+          />
         </div>
 
         <div

@@ -319,14 +319,14 @@ export function Dashboard() {
                     dataKey="done"
                     name="Completed"
                     stackId="a"
-                    fill="var(--chart-1)"
+                    fill="var(--color-chart-1)"
                     radius={[0, 0, 0, 0]}
                   />
                   <Bar
                     dataKey="incomplete"
                     name="Incomplete"
                     stackId="a"
-                    fill="var(--chart-2)"
+                    fill="var(--color-chart-2)"
                     radius={[0, 4, 4, 0]}
                   />
                 </BarChart>

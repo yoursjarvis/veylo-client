@@ -84,6 +84,16 @@ export function useRevokeInvitation() {
   });
 }
 
+export function useResendInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => orgService.resendInvitation(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orgKeys.invitations() });
+    },
+  });
+}
+
 export function useUpdateMemberRole() {
   const queryClient = useQueryClient();
   return useMutation({

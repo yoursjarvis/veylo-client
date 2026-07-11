@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,16 +8,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { cn } from "@/lib/utils"
+import { Task } from "@/types/models"
 import {
+  CircleCheckIcon,
   CopyIcon,
   ExternalLinkIcon,
   MoreHorizontalIcon,
-  CircleCheckIcon,
 } from "@hugeicons/core-free-icons"
-import { Task } from "@/types/models"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
 
 interface TaskDetailsHeaderProps {
   task: Task
@@ -48,24 +47,21 @@ export function TaskDetailsHeader({
     <div className="space-y-4">
       <div className="flex flex-row items-center justify-between border-b border-border px-6 py-4 sm:border-none sm:px-0 sm:py-0">
         <div className="hidden sm:block">
-          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+          <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
             Task Details
           </span>
         </div>
         {task && (
           <div className="flex items-center gap-2">
             <Button
-              variant={isCompleted ? "ghost" : "default"}
+              variant={isCompleted ? "ghost" : "outline-success"}
               size="sm"
               className="flex h-8 items-center gap-1.5 text-xs font-medium"
               onClick={() => onToggleCompletion()}
             >
               <HugeiconsIcon
                 icon={CircleCheckIcon}
-                size={13}
-                className={cn(
-                  isCompleted && "fill-success/10 text-success"
-                )}
+                className={cn(isCompleted && "fill-success/10 text-success")}
               />
               {isCompleted ? "Completed" : "Mark Complete"}
             </Button>
@@ -83,11 +79,11 @@ export function TaskDetailsHeader({
                 )}
               />
               <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem
-                  onClick={copyTaskUrl}
-                  className="text-xs"
-                >
-                  <HugeiconsIcon icon={CopyIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                <DropdownMenuItem onClick={copyTaskUrl} className="text-xs">
+                  <HugeiconsIcon
+                    icon={CopyIcon}
+                    className="mr-2 h-3.5 w-3.5 text-muted-foreground"
+                  />
                   Copy Link
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -96,7 +92,10 @@ export function TaskDetailsHeader({
                   }}
                   className="text-xs"
                 >
-                  <HugeiconsIcon icon={ExternalLinkIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <HugeiconsIcon
+                    icon={ExternalLinkIcon}
+                    className="mr-2 h-3.5 w-3.5 text-muted-foreground"
+                  />
                   Open Page
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -114,7 +113,7 @@ export function TaskDetailsHeader({
         />
         <div className="flex items-center gap-2 px-1.5 text-xs text-muted-foreground">
           <span>Task Key:</span>
-          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold text-foreground uppercase tracking-wider">
+          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-foreground uppercase">
             {task.taskKey || task.id.substring(0, 8)}
           </span>
         </div>

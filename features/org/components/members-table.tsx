@@ -39,6 +39,7 @@ import {
   Key01Icon,
   LeftToRightListBulletIcon,
   MoreHorizontalIcon,
+  MoreVerticalIcon,
   Shield01Icon,
   StopIcon,
   UserAdd01Icon,
@@ -61,6 +62,7 @@ import {
   useImpersonateUser,
   useMembers,
   usePendingInvitations,
+  useResendInvitation,
   useRevokeInvitation,
   useRevokeSessions,
   useUnbanMember,
@@ -98,6 +100,7 @@ export function MembersTable() {
   const [status, setStatus] = useQueryState("status", { defaultValue: "" })
   const [isBulkInviteOpen, setIsBulkInviteOpen] = useState(false)
   const [isInviteOpen, setIsInviteOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState("members")
 
   // State for Role Assignment Modal
   const [assignmentModal, setAssignmentModal] = useState<{
@@ -382,7 +385,7 @@ export function MembersTable() {
   const hasFilters = search || role || status
 
   return (
-    <Tabs defaultValue="members" className="w-full space-y-6">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 border-b border-border pb-px sm:flex-row sm:items-center">
         <TabsList variant="line" className="gap-6 bg-transparent p-0">
           <TabsTrigger
@@ -415,7 +418,9 @@ export function MembersTable() {
       </div>
 
       <TabsContent value="members" className="space-y-4 outline-none">
-        <div className="flex items-center justify-between">
+        {activeTab === "members" && (
+          <>
+            <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Input
               placeholder="Search users..."
@@ -624,7 +629,9 @@ export function MembersTable() {
             </table>
           </div>
         )}
-      </TabsContent>
+      </>
+    )}
+  </TabsContent>
 
       <TabsContent value="invitations" className="space-y-4 outline-none">
         <PendingInvitationsList />
@@ -664,6 +671,7 @@ export function MembersTable() {
 function PendingInvitationsList() {
   const { data: invitations, isLoading } = usePendingInvitations()
   const revokeMutation = useRevokeInvitation()
+  const resendMutation = useResendInvitation()
 
   const handleRevoke = (id: string) => {
     revokeMutation.mutate(id, {
@@ -673,6 +681,18 @@ function PendingInvitationsList() {
       onError: (error) => {
         const responseError = error as { message?: string }
         toast.error(responseError.message || "Failed to revoke invitation")
+      },
+    })
+  }
+
+  const handleResend = (id: string) => {
+    resendMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success("Invitation resent successfully")
+      },
+      onError: (error) => {
+        const responseError = error as { message?: string }
+        toast.error(responseError.message || "Failed to resend invitation")
       },
     })
   }
@@ -809,15 +829,30 @@ function PendingInvitationsList() {
                   })}
                 </td>
                 <td className="p-4 text-right align-middle">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    disabled={revokeMutation.isPending}
-                    onClick={() => handleRevoke(invite.id)}
-                  >
-                    Revoke
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={<Button variant="ghost" className="h-8 w-8 p-0" />}
+                    >
+                      <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem
+                          disabled={resendMutation.isPending}
+                          onClick={() => handleResend(invite.id)}
+                        >
+                          Resend
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          disabled={revokeMutation.isPending}
+                          onClick={() => handleRevoke(invite.id)}
+                        >
+                          Revoke
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </td>
               </tr>
             )

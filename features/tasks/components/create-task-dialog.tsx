@@ -335,7 +335,7 @@ export function CreateTaskDialog({
             </div>
 
             {/* Section 2: Assignment & Planning */}
-            <div className="grid grid-cols-1 gap-8 border-t border-border pt-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-8 border-t border-border pt-6">
               {/* Left Column: Assignment */}
               <div className="space-y-6">
                 <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
@@ -343,7 +343,7 @@ export function CreateTaskDialog({
                 </h3>
 
                 {/* Status & Type */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-xs font-medium text-foreground">
                       Status *{" "}
@@ -379,7 +379,7 @@ export function CreateTaskDialog({
                 </div>
 
                 {/* Priority & Assignee */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">
                       Priority
@@ -437,7 +437,7 @@ export function CreateTaskDialog({
                 </h3>
 
                 {/* Due Date & Estimate */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="block text-xs font-medium text-foreground">
                       Due Date
@@ -493,7 +493,7 @@ export function CreateTaskDialog({
                 </div>
 
                 {/* Epic & Milestone */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">
                       Epic / Goal

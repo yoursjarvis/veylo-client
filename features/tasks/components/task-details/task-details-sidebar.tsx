@@ -360,7 +360,7 @@ export function TaskDetailsSidebar({
           Planning
         </h3>
         <div className="space-y-4">
-          {projectTemplate === "scrum" && (
+          {(projectTemplate === "scrum" || projectTemplate === "software-scrum" || (projectSprints && projectSprints.length > 0)) && (
             <div className="space-y-1.5 border-b border-border/50 pb-3">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sprint</span>
               <div className="pt-1">
@@ -371,8 +371,8 @@ export function TaskDetailsSidebar({
                   placeholder="Select sprint..."
                   className="h-8"
                 />
-              </div >
-            </div >
+              </div>
+            </div>
           )}
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">

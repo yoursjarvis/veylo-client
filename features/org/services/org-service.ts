@@ -82,4 +82,9 @@ export const orgService = {
     const { data } = await axiosInstance.post(`/org/invitations/${id}/revoke`);
     return data;
   },
+
+  resendInvitation: async (id: string) => {
+    const { data } = await axiosInstance.post(`/org/invitations/${id}/resend`);
+    return data;
+  },
 };
