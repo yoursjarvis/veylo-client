@@ -214,7 +214,7 @@ export default function CalendarPage() {
                   {format(day, "d")}
                 </span>
                 {dayTasks.length > 0 && (
-                  <span className="rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                  <span className="rounded-md bg-muted/60 px-1.5 py-0.5 text-2xs font-bold text-muted-foreground">
                     {dayTasks.length} {dayTasks.length === 1 ? "task" : "tasks"}
                   </span>
                 )}
@@ -229,7 +229,7 @@ export default function CalendarPage() {
                     className="group flex cursor-pointer flex-col rounded-lg border border-border/50 bg-background/80 p-1.5 text-left shadow-2xs transition-all hover:bg-muted/60 active:scale-[0.98]"
                   >
                     <div className="flex w-full items-center justify-between gap-1">
-                      <span className="text-[9px] font-bold tracking-tight text-primary/80 transition-colors group-hover:text-primary">
+                      <span className="text-2xs font-bold tracking-tight text-primary/80 transition-colors group-hover:text-primary">
                         {task.taskKey}
                       </span>
                       <div className="flex items-center gap-0.5">
@@ -240,17 +240,17 @@ export default function CalendarPage() {
                           />
                         )}
                         <span
-                          className={`rounded-sm px-1 text-[8px] font-semibold ${getPriorityColor(task.priority)}`}
+                          className={`rounded-sm px-1 text-2xs font-semibold ${getPriorityColor(task.priority)}`}
                         >
                           {task.priority}
                         </span>
                       </div>
                     </div>
-                    <span className="mt-0.5 truncate text-[11px] leading-tight font-medium text-foreground/90">
+                    <span className="mt-0.5 truncate text-2xs leading-tight font-medium text-foreground/90">
                       {task.title}
                     </span>
                     {task.assignee && (
-                      <span className="mt-1 truncate text-[8px] text-muted-foreground">
+                      <span className="mt-1 truncate text-2xs text-muted-foreground">
                         👤 {task.assignee.name}
                       </span>
                     )}

@@ -105,7 +105,7 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
         <div className="px-4 pt-4 pb-2 transition-opacity group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:opacity-0">
-          <p className="text-[10px] text-nowrap text-muted-foreground">
+          <p className="text-2xs text-nowrap text-muted-foreground">
             © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME} LLC
           </p>
         </div>

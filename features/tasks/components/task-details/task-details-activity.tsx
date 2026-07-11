@@ -32,7 +32,7 @@ export function TaskDetailsActivity({
                     {formatActivityText(activity)}
                   </span>
                 </div>
-                <span className="text-[10px] text-muted-foreground/60">
+                <span className="text-2xs text-muted-foreground/60">
                   {format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}
                 </span>
               </div>

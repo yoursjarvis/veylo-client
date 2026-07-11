@@ -453,7 +453,7 @@ export function SecurityTab() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="text-[11px] text-destructive font-medium mt-1">
+                          <p className="text-2xs text-destructive font-medium mt-1">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -493,7 +493,7 @@ export function SecurityTab() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="text-[11px] text-destructive font-medium mt-1">
+                          <p className="text-2xs text-destructive font-medium mt-1">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -532,7 +532,7 @@ export function SecurityTab() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="text-[11px] text-destructive font-medium mt-1">
+                          <p className="text-2xs text-destructive font-medium mt-1">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -603,7 +603,7 @@ export function SecurityTab() {
                                 {session.deviceName || (isMac ? "MacBook Pro" : isMobile ? "Smartphone" : "Desktop Computer")}
                               </p>
                               {isCurrent && (
-                                <span className="text-[10px] font-medium text-primary uppercase tracking-wider">
+                                <span className="text-2xs font-medium text-primary uppercase tracking-wider">
                                   This device
                                 </span>
                               )}
@@ -620,7 +620,7 @@ export function SecurityTab() {
                             
                             <div className="flex items-center gap-1.5 mt-2">
                                <div className={cn("size-1.5 rounded-full", isCurrent ? "bg-success animate-pulse" : "bg-muted-foreground/40")} />
-                               <p className="text-[11px] font-medium text-muted-foreground">
+                               <p className="text-2xs font-medium text-muted-foreground">
                                  {isCurrent ? "Active now" : `Last active: ${new Date(session.updatedAt).toLocaleString()}`}
                                </p>
                             </div>

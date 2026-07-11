@@ -133,7 +133,7 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                         <p className="text-xs font-bold text-foreground truncate">
                           {webhook.channel || "Default Channel"}
                         </p>
-                        <p className="text-[10px] text-muted-foreground truncate max-w-md">
+                        <p className="text-2xs text-muted-foreground truncate max-w-md">
                           {webhook.url}
                         </p>
                       </div>

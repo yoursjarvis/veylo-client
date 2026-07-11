@@ -104,7 +104,7 @@ export function LoginForm({ callbackUrl, error }: LoginFormProps) {
             <span className="whitespace-nowrap font-medium">Continue with Google</span>
             <div className="flex flex-1 items-center justify-end overflow-hidden pl-2">
               {lastMethod === "google" && (
-                <span className="hidden whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground sm:inline-block">
+                <span className="hidden whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-2xs font-medium text-secondary-foreground sm:inline-block">
                   Last used
                 </span>
               )}
@@ -122,7 +122,7 @@ export function LoginForm({ callbackUrl, error }: LoginFormProps) {
             <span className="whitespace-nowrap font-medium">Continue with GitHub</span>
             <div className="flex flex-1 items-center justify-end overflow-hidden pl-2">
               {lastMethod === "github" && (
-                <span className="hidden whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground sm:inline-block">
+                <span className="hidden whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-2xs font-medium text-secondary-foreground sm:inline-block">
                   Last used
                 </span>
               )}

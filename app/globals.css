@@ -68,19 +68,21 @@
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
+  --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.8125rem;
+  --text-3xl: 2.1875rem;
+  --text-4xl: 2.5rem;
   --text-5xl: 3rem;
   --text-6xl: 3.75rem;
   --text-7xl: 4.5rem;
   --text-8xl: 6rem;
   --text-9xl: 8rem;
+  --font-size-base: 14px;
 
   --success: oklch(63.3% 0.117 142.8);
   --success-foreground: oklch(0.216 0.006 56.043);
@@ -178,7 +180,7 @@
     0 8px 24px 0px hsl(0 0% 0% / 0.45), 0 8px 10px -4px hsl(0 0% 0% / 0.35);
   --shadow-2xl: 0 16px 48px 0px hsl(0 0% 0% / 0.5);
 
-  --font-size-base: 16px;
+  --font-size-base: 14px;
   --success: oklch(0.75 0.11 142.8);
   --success-foreground: oklch(0.216 0.006 56.043);
   --info: oklch(0.75 0.12 250);
@@ -241,6 +243,7 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
 
+  --text-2xs: var(--text-2xs);
   --text-xs: var(--text-xs);
   --text-sm: var(--text-sm);
   --text-base: var(--text-base);

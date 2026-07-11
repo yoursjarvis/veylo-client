@@ -120,7 +120,7 @@ export function ProfileTab() {
                       aria-invalid={hasError}
                     />
                     {hasError && (
-                      <p className="text-[11px] text-destructive font-medium mt-1">
+                      <p className="text-2xs text-destructive font-medium mt-1">
                         {fieldErrors.join(", ")}
                       </p>
                     )}
@@ -159,7 +159,7 @@ export function ProfileTab() {
                       aria-invalid={hasError}
                     />
                     {hasError && (
-                      <p className="text-[11px] text-destructive font-medium mt-1">
+                      <p className="text-2xs text-destructive font-medium mt-1">
                         {fieldErrors.join(", ")}
                       </p>
                     )}

@@ -159,7 +159,7 @@ export function ProjectHistory({
                                   src={event.user.avatar || ""}
                                   alt={event.user.name}
                                 />
-                                <AvatarFallback className="bg-muted text-[8px] font-bold text-muted-foreground">
+                                <AvatarFallback className="bg-muted text-2xs font-bold text-muted-foreground">
                                   {event.user.name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>

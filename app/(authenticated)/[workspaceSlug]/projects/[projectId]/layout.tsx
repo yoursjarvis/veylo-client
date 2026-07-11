@@ -478,7 +478,7 @@ export default function ProjectLayout({
                   </h1>
 
                   {isScrum && (
-                    <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-muted-foreground">
+                    <span className="rounded bg-muted px-1.5 py-0.5 text-2xs font-medium tracking-wide text-muted-foreground">
                       Scrum
                     </span>
                   )}
@@ -495,7 +495,7 @@ export default function ProjectLayout({
                     className="rounded-full border border-border/20 bg-muted/40 px-2.5 py-0.5 text-xs font-medium text-foreground/90 shadow-xs"
                   >
                     <StatusIndicator />
-                    <StatusLabel className="py-0.5 text-[9px] font-bold tracking-wide uppercase">
+                    <StatusLabel className="py-0.5 text-2xs font-bold tracking-wide uppercase">
                       {projectStatus === "on_track"
                         ? "On Track"
                         : projectStatus === "at_risk"
@@ -518,7 +518,7 @@ export default function ProjectLayout({
                         className="h-6.5 w-6.5 border-2 border-background transition-all hover:scale-105"
                       >
                         <AvatarImage src={member.user?.image || ""} />
-                        <AvatarFallback className="bg-muted text-[9px] font-extrabold text-muted-foreground">
+                        <AvatarFallback className="bg-muted text-2xs font-extrabold text-muted-foreground">
                           {member.user?.name
                             ? member.user?.name.charAt(0).toUpperCase()
                             : "?"}
@@ -526,7 +526,7 @@ export default function ProjectLayout({
                       </Avatar>
                     ))}
                   {(selectedProject?.members || []).length > 5 && (
-                    <div className="flex h-6.5 w-6.5 items-center justify-center rounded-full border-2 border-background bg-muted text-[9px] font-extrabold text-muted-foreground">
+                    <div className="flex h-6.5 w-6.5 items-center justify-center rounded-full border-2 border-background bg-muted text-2xs font-extrabold text-muted-foreground">
                       +{(selectedProject?.members || []).length - 5}
                     </div>
                   )}
@@ -574,7 +574,7 @@ export default function ProjectLayout({
           {/* Settings Sub-Navbar (only when on a settings subpage) */}
           {pathname.includes("/settings") && (
             <div className="flex scrollbar-none items-center gap-2 overflow-x-auto border-b border-border bg-card/45 px-8 py-2">
-              <span className="mr-3 text-[10px] font-extrabold tracking-wider text-muted-foreground uppercase">
+              <span className="mr-3 text-2xs font-extrabold tracking-wider text-muted-foreground uppercase">
                 Settings Module:
               </span>
               <div className="flex gap-2">
@@ -634,7 +634,7 @@ export default function ProjectLayout({
 
                       {/* Progress Bar */}
                       <div className="max-w-sm space-y-1.5 pt-2">
-                        <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
+                        <div className="flex justify-between text-2xs font-semibold text-muted-foreground uppercase">
                           <span>Setup Progress</span>
                           <span>
                             {completedCount}/{totalCount} completed

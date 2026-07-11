@@ -456,7 +456,7 @@ export function Dashboard() {
                         <span className="text-sm font-semibold text-foreground">
                           {task.title}
                         </span>
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground uppercase">
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-2xs font-bold text-muted-foreground uppercase">
                           {task.projectTitle}
                         </span>
                       </div>

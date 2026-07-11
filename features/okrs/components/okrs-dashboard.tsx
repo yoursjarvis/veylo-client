@@ -110,7 +110,7 @@ export function OkrsDashboard() {
   const renderProjectIcon = (icon?: string | null) => {
     const baseClasses = "flex items-center justify-center rounded bg-secondary/80 border border-border/40 shrink-0"
     const sizeClass = "h-5 w-5"
-    const textClass = "text-[10px]"
+    const textClass = "text-2xs"
     if (!icon) {
       return (
         <span className={`${baseClasses} ${sizeClass} ${textClass}`}>
@@ -510,7 +510,7 @@ export function OkrsDashboard() {
                   <h3 className="text-xl font-semibold flex items-center gap-2">
                     {obj.title}
                     {obj.deletedAt && (
-                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 leading-normal">
+                      <Badge variant="destructive" className="text-2xs px-1.5 py-0 leading-normal">
                         Deleted
                       </Badge>
                     )}
@@ -662,7 +662,7 @@ export function OkrsDashboard() {
                               )}
                               <span>{item.title}</span>
                             </span>
-                            <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                            <Badge variant="secondary" className="text-2xs px-2 py-0">
                               {item.type}
                             </Badge>
                           </div>

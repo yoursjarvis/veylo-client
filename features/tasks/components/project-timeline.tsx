@@ -447,7 +447,7 @@ export function ProjectTimeline({
                   />
                   <span>Filter</span>
                   {(activeFilters || []).length > 0 && (
-                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
                       {(activeFilters || []).length}
                     </span>
                   )}
@@ -518,7 +518,7 @@ export function ProjectTimeline({
       {/* Filter UX Pills & Clear All */}
       {(activeFilters || []).length > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/40 bg-muted/20 px-1 py-1">
-          <span className="mr-1 pl-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <span className="mr-1 pl-2 text-2xs font-bold tracking-wider text-muted-foreground uppercase">
             Active Filters ({(activeFilters || []).length}):
           </span>
           <FiltersContent

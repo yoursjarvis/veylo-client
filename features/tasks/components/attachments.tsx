@@ -214,7 +214,7 @@ export function AttachmentItem({
               </div>
             </div>
             {isPdf && (
-              <span className="text-[10px] font-medium text-muted-foreground">
+              <span className="text-2xs font-medium text-muted-foreground">
                 View PDF
               </span>
             )}
@@ -227,7 +227,7 @@ export function AttachmentItem({
           {attachment.name}
         </span>
         {versions.length > 1 && (
-          <span className="shrink-0 bg-muted px-1.5 py-0.5 rounded text-[10px] font-semibold text-muted-foreground">
+          <span className="shrink-0 bg-muted px-1.5 py-0.5 rounded text-2xs font-semibold text-muted-foreground">
             v{versions[0].version || 1}
           </span>
         )}
@@ -291,11 +291,11 @@ export function AttachmentItem({
                           size="xs"
                           variant="ghost"
                           onClick={() => setTempCoords(null)}
-                          className="h-5 text-[10px]"
+                          className="h-5 text-2xs"
                         >
                           Cancel
                         </Button>
-                        <Button size="xs" type="submit" className="h-5 text-[10px]">
+                        <Button size="xs" type="submit" className="h-5 text-2xs">
                           Save
                         </Button>
                       </div>
@@ -339,7 +339,7 @@ export function AttachmentItem({
               {/* Version Selector & Upload version */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Version History</label>
+                  <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">Version History</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -358,7 +358,7 @@ export function AttachmentItem({
                     <Button
                       size="xs"
                       variant="outline"
-                      className="h-6 text-[10px] font-medium"
+                      className="h-6 text-2xs font-medium"
                       disabled={uploadVersionMutation.isPending}
                     >
                       {uploadVersionMutation.isPending ? "Uploading..." : "New Version"}
@@ -371,7 +371,7 @@ export function AttachmentItem({
                     <button
                       key={v.id}
                       onClick={() => setActiveVersionId(v.id)}
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded transition ${
+                      className={`text-2xs font-semibold px-2 py-0.5 rounded transition ${
                         v.id === activeVersionId
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -386,12 +386,12 @@ export function AttachmentItem({
 
             {/* Proofing notes list */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+              <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                 Annotations ({annotations.length})
               </label>
 
               {isImage && (
-                <p className="text-[10px] text-muted-foreground italic mb-2">
+                <p className="text-2xs text-muted-foreground italic mb-2">
                   Tip: Click anywhere on the image to place a feedback pin.
                 </p>
               )}
@@ -404,10 +404,10 @@ export function AttachmentItem({
                       className="p-2 border border-border/80 rounded bg-muted/20 space-y-1 relative group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span className="w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-[9px] font-bold">
+                        <span className="w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-2xs font-bold">
                           {idx + 1}
                         </span>
-                        <span className="text-[10px] font-semibold text-foreground">
+                        <span className="text-2xs font-semibold text-foreground">
                           {anno.user?.name || "Member"}
                         </span>
                       </div>

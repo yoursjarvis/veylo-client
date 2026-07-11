@@ -204,7 +204,7 @@ export function ProjectResources({ projectId }: ProjectResourcesProps) {
               variant="outline"
               size="sm"
               onClick={() => setIsAddingLink(!isAddingLink)}
-              className="h-7 text-[10px] font-bold uppercase"
+              className="h-7 text-2xs font-bold uppercase"
             >
               <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3 w-3" /> Add
               Link
@@ -300,7 +300,7 @@ export function ProjectResources({ projectId }: ProjectResourcesProps) {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="mt-1 text-[11px] font-medium text-destructive">
+                          <p className="mt-1 text-2xs font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}

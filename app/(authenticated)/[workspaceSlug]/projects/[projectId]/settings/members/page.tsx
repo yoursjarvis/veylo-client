@@ -161,14 +161,14 @@ export default function ProjectMembersPage() {
                       </Avatar>
                       <div>
                         <p className="font-semibold text-foreground">{member.user?.name}</p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        <p className="mt-0.5 text-2xs text-muted-foreground">
                           {member.user?.email}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-secondary text-secondary-foreground px-2.5 py-0.5 text-[9px] font-semibold tracking-wider uppercase">
+                      <span className="rounded-full bg-secondary text-secondary-foreground px-2.5 py-0.5 text-2xs font-semibold tracking-wider uppercase">
                         {member.role || "Member"}
                       </span>
                       <Button
@@ -257,7 +257,7 @@ export default function ProjectMembersPage() {
                         <p className="font-semibold text-foreground">
                           {wMember.user.name}
                         </p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        <p className="mt-0.5 text-2xs text-muted-foreground">
                           {wMember.user.email}
                         </p>
                       </div>

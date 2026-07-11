@@ -235,7 +235,7 @@ export function TaskBacklog({
     >
       <div className="flex min-w-0 items-center gap-3">
         <Badge
-          className={`py-0.5 text-[9px] font-bold uppercase ${task.type === "bug" ? "bg-destructive/20 text-destructive" : task.type === "feature" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+          className={`py-0.5 text-2xs font-bold uppercase ${task.type === "bug" ? "bg-destructive/20 text-destructive" : task.type === "feature" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
         >
           {task.type}
         </Badge>
@@ -246,13 +246,13 @@ export function TaskBacklog({
 
       <div className="flex items-center gap-3">
         {/* Status */}
-        <Badge className="border border-border bg-muted py-0 text-[10px] text-muted-foreground">
+        <Badge className="border border-border bg-muted py-0 text-2xs text-muted-foreground">
           {task.status.name}
         </Badge>
 
         {/* Estimate */}
         {task.estimate !== null && (
-          <span className="rounded bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+          <span className="rounded bg-muted px-2 py-0.5 font-mono text-2xs text-muted-foreground">
             {task.estimate}
           </span>
         )}
@@ -260,7 +260,7 @@ export function TaskBacklog({
         {/* Assignee */}
         <Avatar className="h-5 w-5 border border-border">
           <AvatarImage src={task.assignee?.image || ""} />
-          <AvatarFallback className="bg-muted text-[8px] font-bold text-muted-foreground">
+          <AvatarFallback className="bg-muted text-2xs font-bold text-muted-foreground">
             {task.assignee?.name
               ? task.assignee.name.charAt(0).toUpperCase()
               : "-"}
@@ -278,7 +278,7 @@ export function TaskBacklog({
           <h3 className="text-sm font-semibold text-foreground">
             Sprint Backlog Planner
           </h3>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Plan sprints, assign estimations, drag items, and track velocity.
           </p>
         </div>
@@ -323,17 +323,17 @@ export function TaskBacklog({
                   <CardTitle className="flex items-center gap-2 text-sm font-bold text-foreground">
                     {sprint.name}
                     {sprint.status === "active" && (
-                      <Badge className="border border-success/20 bg-success/10 py-0 text-[9px] text-success">
+                      <Badge className="border border-success/20 bg-success/10 py-0 text-2xs text-success">
                         Active
                       </Badge>
                     )}
                     {sprint.status === "completed" && (
-                      <Badge className="bg-muted py-0 text-[9px] text-muted-foreground">
+                      <Badge className="bg-muted py-0 text-2xs text-muted-foreground">
                         Completed
                       </Badge>
                     )}
                   </CardTitle>
-                  <span className="font-mono text-[10px] text-muted-foreground">
+                  <span className="font-mono text-2xs text-muted-foreground">
                     {sprintTasks.length} tasks • {totalPoints} pts
                   </span>
                 </div>
@@ -341,14 +341,14 @@ export function TaskBacklog({
                 <div className="flex items-center gap-3">
                   {/* Goal */}
                   {sprint.goal && (
-                    <span className="max-w-[200px] truncate text-[10px] text-muted-foreground italic">
+                    <span className="max-w-[200px] truncate text-2xs text-muted-foreground italic">
                       &quot;{sprint.goal}&quot;
                     </span>
                   )}
 
                   {/* Dates */}
                   {sprint.startDate && sprint.endDate && (
-                    <span className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+                    <span className="flex items-center gap-1.5 font-mono text-2xs text-muted-foreground">
                       <CalendarIcon size={12} />
                       {format(new Date(sprint.startDate), "MMM d")} -{" "}
                       {format(new Date(sprint.endDate), "MMM d")}
@@ -360,7 +360,7 @@ export function TaskBacklog({
                     <Button
                       onClick={() => handleStartSprint(sprint)}
                       size="sm"
-                      className="h-7 px-2.5 text-[10px]"
+                      className="h-7 px-2.5 text-2xs"
                     >
                       <Play size={10} className="mr-1" /> Start Sprint
                     </Button>
@@ -370,7 +370,7 @@ export function TaskBacklog({
                     <Button
                       onClick={() => triggerCompleteSprint(sprint)}
                       size="sm"
-                      className="h-7 bg-success px-2.5 text-[10px] text-success-foreground hover:bg-success/90"
+                      className="h-7 bg-success px-2.5 text-2xs text-success-foreground hover:bg-success/90"
                     >
                       <CheckCircle size={10} className="mr-1" /> Complete Sprint
                     </Button>
@@ -430,7 +430,7 @@ export function TaskBacklog({
           <CardTitle className="text-sm font-bold text-foreground">
             Product Backlog (Unscheduled)
           </CardTitle>
-          <span className="font-mono text-[10px] text-muted-foreground">
+          <span className="font-mono text-2xs text-muted-foreground">
             {tasks.filter((t) => t.sprintId === null).length} tasks
           </span>
         </div>

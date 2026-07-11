@@ -76,7 +76,7 @@ export function MultiSearchableSelect({
                 <Badge
                   key={opt.value}
                   variant="secondary"
-                  className="h-5 shrink-0 px-1.5 text-[10px] font-medium"
+                  className="h-5 shrink-0 px-1.5 text-2xs font-medium"
                 >
                   {opt.label}
                 </Badge>
@@ -84,14 +84,14 @@ export function MultiSearchableSelect({
             ) : (
               <Badge
                 variant="secondary"
-                className="h-5 shrink-0 px-1.5 text-[10px] font-medium"
+                className="h-5 shrink-0 px-1.5 text-2xs font-medium"
               >
                 {selectedOptions.length} Selected
               </Badge>
             )}
           </div>
           <span className="absolute top-1/2 right-2.5 flex h-4 w-4 -translate-y-1/2 items-center justify-center">
-            <span className="text-[10px] text-muted-foreground">▼</span>
+            <span className="text-2xs text-muted-foreground">▼</span>
           </span>
         </PopoverTrigger>
         <PopoverContent

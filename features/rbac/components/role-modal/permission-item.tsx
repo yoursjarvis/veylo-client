@@ -41,7 +41,7 @@ export function PermissionItem({ permission, isSelected, onChange, disabled }: P
         >
           {permission.action.replace(/_/g, " ")}
         </Label>
-        <p className="text-[11px] text-muted-foreground leading-tight line-clamp-2">
+        <p className="text-2xs text-muted-foreground leading-tight line-clamp-2">
           {permission.description || `Allows the role to ${permission.action.replace(/_/g, " ")}.`}
         </p>
       </div>

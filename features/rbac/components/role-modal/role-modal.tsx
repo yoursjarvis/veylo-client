@@ -148,7 +148,7 @@ export function RoleModal({
                   placeholder="Describe the purpose of this role..."
                   className="min-h-[100px] resize-none"
                 />
-                <p className="text-[10px] text-muted-foreground italic">
+                <p className="text-2xs text-muted-foreground italic">
                   Note: Description is currently for UI reference and not saved
                   to the backend.
                 </p>

@@ -251,7 +251,7 @@ export function CommandPalette({
               aria-autocomplete="list"
               className="h-12 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
             />
-            <kbd className="hidden rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground sm:inline-block">
+            <kbd className="hidden rounded border border-border bg-background px-1.5 py-0.5 text-2xs text-muted-foreground sm:inline-block">
               ESC
             </kbd>
           </div>
@@ -271,7 +271,7 @@ export function CommandPalette({
                 <div key={group} className="mb-1 last:mb-0">
                   <div
                     aria-hidden
-                    className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                    className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground"
                   >
                     {group}
                   </div>
@@ -331,7 +331,7 @@ export function CommandPalette({
                           </span>
                         ) : null}
                         {it.hint ? (
-                          <kbd className="relative z-10 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                          <kbd className="relative z-10 rounded border border-border bg-background px-1.5 py-0.5 text-2xs text-muted-foreground">
                             {it.hint}
                           </kbd>
                         ) : null}

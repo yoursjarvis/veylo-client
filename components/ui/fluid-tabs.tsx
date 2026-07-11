@@ -91,7 +91,7 @@ export const FluidTabs: FC<FluidTabsProps> = ({
                 </motion.div>
               )}
 
-              <span className="text-[11px] tracking-tight whitespace-nowrap">
+              <span className="text-2xs tracking-tight whitespace-nowrap">
                 {tab.label}
               </span>
             </motion.div>

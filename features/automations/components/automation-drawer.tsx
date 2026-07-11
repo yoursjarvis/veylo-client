@@ -297,7 +297,7 @@ function ActionForm({
     icon: (
       <Avatar className="h-5 w-5 shrink-0 border border-border">
         <AvatarImage src={m.user?.image || ""} />
-        <AvatarFallback className="bg-muted text-[8px] font-bold text-foreground">
+        <AvatarFallback className="bg-muted text-2xs font-bold text-foreground">
           {m.user?.name?.charAt(0).toUpperCase() || "?"}
         </AvatarFallback>
       </Avatar>

@@ -265,7 +265,7 @@ export function WorkspaceMemberManagement({
                             <span className="text-sm font-medium">
                               {member.user.name}
                               {isAlreadyInWorkspace && (
-                                <span className="ml-2 text-[10px] text-muted-foreground">
+                                <span className="ml-2 text-2xs text-muted-foreground">
                                   (In Workspace)
                                 </span>
                               )}

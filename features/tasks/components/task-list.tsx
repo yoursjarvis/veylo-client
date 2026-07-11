@@ -218,7 +218,7 @@ function UserSelect({
                     <>
                       <Avatar className="h-7 w-7 shrink-0">
                         <AvatarImage src={selectedUser.image || undefined} />
-                        <AvatarFallback className="text-[10px]">
+                        <AvatarFallback className="text-2xs">
                           {selectedUser.name?.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -262,10 +262,10 @@ function UserSelect({
                   </p>
                 )}
                 <div className="flex items-center gap-1.5 mt-2">
-                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-2xs font-medium text-emerald-600 dark:text-emerald-400">
                     Active
                   </span>
-                  <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+                  <span className="text-2xs text-muted-foreground uppercase font-semibold tracking-wider">
                     {selectedMember?.role || "Member"}
                   </span>
                 </div>
@@ -309,7 +309,7 @@ function UserSelect({
                 >
                   <Avatar className="mr-2 h-7 w-7 shrink-0">
                     <AvatarImage src={member.user.image || undefined} />
-                    <AvatarFallback className="text-[10px]">
+                    <AvatarFallback className="text-2xs">
                       {member.user.name?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -836,7 +836,7 @@ export function StatusSection({
         {!isCollapsed && (
           <div
             className={cn(
-              "mx-2 my-2 flex h-12 items-center justify-center rounded-md border-2 border-dashed border-border/40 text-[11px] font-medium text-muted-foreground/50 transition-colors",
+              "mx-2 my-2 flex h-12 items-center justify-center rounded-md border-2 border-dashed border-border/40 text-2xs font-medium text-muted-foreground/50 transition-colors",
               isOver && "border-primary/40 bg-primary/5 text-primary/70"
             )}
           >

@@ -171,7 +171,7 @@ export default function GeneralSettingsPage() {
                   }
                   onChange={(val) => setIcon(val)}
                 />
-                <div className="text-[10px]">
+                <div className="text-2xs">
                   <p className="font-semibold">Select Emoji / Graphic</p>
                   <p className="mt-0.5">
                     Helps identify this project at a glance.

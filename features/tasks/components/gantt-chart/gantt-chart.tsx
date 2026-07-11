@@ -747,7 +747,7 @@ export function GanttChart({
                   width: `${cell.width}px`,
                 }}
                 className={cn(
-                  "flex h-full items-center justify-center border-r border-border/30 text-[10px] font-bold text-muted-foreground select-none",
+                  "flex h-full items-center justify-center border-r border-border/30 text-2xs font-bold text-muted-foreground select-none",
                   cell.isWeekend && "bg-muted/40 text-muted-foreground/50"
                 )}
               >
@@ -800,7 +800,7 @@ export function GanttChart({
                 }}
                 className="z-20 bg-primary"
               >
-                <div className="absolute top-1 -left-5 rounded bg-primary px-1 text-[8px] font-extrabold text-primary-foreground shadow-xs select-none">
+                <div className="absolute top-1 -left-5 rounded bg-primary px-1 text-2xs font-extrabold text-primary-foreground shadow-xs select-none">
                   Today
                 </div>
               </div>
@@ -1051,7 +1051,7 @@ export function GanttChart({
                                   top: "9px",
                                 }}
                                 className={cn(
-                                  "relative overflow-hidden flex cursor-grab items-center rounded-md border border-primary bg-primary/20 px-2 text-[11px] font-bold text-primary-foreground shadow-2xs transition-shadow select-none group-hover:shadow-xs active:cursor-grabbing",
+                                  "relative overflow-hidden flex cursor-grab items-center rounded-md border border-primary bg-primary/20 px-2 text-2xs font-bold text-primary-foreground shadow-2xs transition-shadow select-none group-hover:shadow-xs active:cursor-grabbing",
                                   isDraggingThis &&
                                     "cursor-grabbing border-dashed opacity-80 shadow-md"
                                 )}
@@ -1100,7 +1100,7 @@ export function GanttChart({
                               {rowItem.task?.assignee && (
                                 <Avatar className="h-4 w-4 shrink-0">
                                   <AvatarImage src={rowItem.task.assignee.image || ""} alt={rowItem.task.assignee.name || "Assignee"} />
-                                  <AvatarFallback className="text-[8px] uppercase bg-background/50">
+                                  <AvatarFallback className="text-2xs uppercase bg-background/50">
                                     {rowItem.task.assignee.name?.substring(0, 2) || "U"}
                                   </AvatarFallback>
                                 </Avatar>
@@ -1131,7 +1131,7 @@ export function GanttChart({
                             <div className="border-b border-border/50 pb-1.5 text-sm font-bold">
                               {rowItem.title}
                             </div>
-                            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-2xs text-muted-foreground">
                               <span className="font-semibold text-foreground/80">
                                 Project:
                               </span>

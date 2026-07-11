@@ -257,7 +257,7 @@ function SafeAvatar({
   }
 
   const fontSize =
-    size > 20 ? "text-sm font-semibold" : "text-[8px] font-bold leading-none"
+    size > 20 ? "text-sm font-semibold" : "text-2xs font-bold leading-none"
   return (
     <span
       className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted leading-none text-foreground ${fontSize}`}
@@ -311,7 +311,7 @@ function MentionNodeView({ node }: NodeViewProps) {
     >
       <HoverCard>
         <HoverCardTrigger className="align-middle outline-none flex">
-          <span className="inline-flex max-w-37.5 cursor-pointer items-center gap-1 rounded border border-border bg-accent py-0.5 pr-1.5 pl-1 align-middle text-[11px] font-semibold text-accent-foreground select-none">
+          <span className="inline-flex max-w-37.5 cursor-pointer items-center gap-1 rounded border border-border bg-accent py-0.5 pr-1.5 pl-1 align-middle text-2xs font-semibold text-accent-foreground select-none">
             <SafeAvatar src={userAvatar} name={displayName} size={14} />
             <span className="max-w-27.5 truncate">{displayName}</span>
           </span>
@@ -1099,7 +1099,7 @@ export function RichTextEditor({
           />
         </div>
 
-        <div className="text-[10px] font-medium text-muted-foreground/80">
+        <div className="text-2xs font-medium text-muted-foreground/80">
           Type{" "}
           <kbd className="rounded border border-border bg-muted/80 px-1 py-0.5">
             @

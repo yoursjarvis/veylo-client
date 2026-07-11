@@ -55,7 +55,7 @@ export function ProjectTeam({
           <Button
             variant="outline"
             size="sm"
-            className="h-8 text-[10px] font-bold uppercase"
+            className="h-8 text-2xs font-bold uppercase"
           >
             <HugeiconsIcon icon={UserAdd01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
             Manage Members

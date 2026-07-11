@@ -407,7 +407,7 @@ function TaskCard({
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">
             {task.taskKey || task.id.substring(0, 8)}
           </span>
         </div>
@@ -422,7 +422,7 @@ function TaskCard({
                 <div
                   key={lbl.id}
                   className={cn(
-                    "flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                    "flex items-center rounded-full border px-2 py-0.5 text-2xs font-semibold",
                     !lbl.color && "bg-primary/10 border-primary/20 text-primary"
                   )}
                   style={lbl.color ? {
@@ -508,7 +508,7 @@ function TaskCard({
                       render={
                         <Avatar className="inline-block h-6 w-6 rounded-full ring-2 ring-card transition-transform hover:z-10 hover:scale-110 cursor-pointer">
                           <AvatarImage src={assignee.image || ""} />
-                          <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+                          <AvatarFallback className="bg-primary/10 text-2xs font-semibold text-primary">
                             {assignee.name
                               ? assignee.name.charAt(0).toUpperCase()
                               : "-"}
@@ -539,10 +539,10 @@ function TaskCard({
                               </p>
                             )}
                             <div className="flex items-center gap-1.5 mt-2">
-                              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-2xs font-medium text-emerald-600 dark:text-emerald-400">
                                 Active
                               </span>
-                              <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+                              <span className="text-2xs text-muted-foreground uppercase font-semibold tracking-wider">
                                 {member?.role || "Member"}
                               </span>
                             </div>
@@ -554,7 +554,7 @@ function TaskCard({
                 )
               })}
               {task.assignees.length > 3 && (
-                <div className="z-10 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground ring-2 ring-card transition-transform hover:z-20 hover:scale-110">
+                <div className="z-10 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-2xs font-semibold text-muted-foreground ring-2 ring-card transition-transform hover:z-20 hover:scale-110">
                   +{task.assignees.length - 3}
                 </div>
               )}
@@ -570,7 +570,7 @@ function TaskCard({
                       render={
                         <Avatar className="h-6 w-6 ring-2 ring-card transition-transform hover:scale-110 cursor-pointer">
                           <AvatarImage src={task.assignee.image || ""} />
-                          <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+                          <AvatarFallback className="bg-primary/10 text-2xs font-semibold text-primary">
                             {task.assignee.name
                               ? task.assignee.name.charAt(0).toUpperCase()
                               : "-"}
@@ -601,10 +601,10 @@ function TaskCard({
                               </p>
                             )}
                             <div className="flex items-center gap-1.5 mt-2">
-                              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-2xs font-medium text-emerald-600 dark:text-emerald-400">
                                 Active
                               </span>
-                              <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+                              <span className="text-2xs text-muted-foreground uppercase font-semibold tracking-wider">
                                 {member?.role || "Member"}
                               </span>
                             </div>
@@ -826,7 +826,7 @@ function BoardColumn({
             )}
             <span className="max-w-35 truncate text-left">{status.name}</span>
           </div>
-          <Badge variant="outline" className="flex items-center gap-1.5 px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+          <Badge variant="outline" className="flex items-center gap-1.5 px-1.5 py-0.5 text-2xs font-semibold text-muted-foreground">
             <span className="h-1 w-1 rounded-full bg-current" />
             {tasks.length}
           </Badge>
@@ -852,7 +852,7 @@ function BoardColumn({
             placeholder="What needs to be done?"
             value={quickAddTitle}
             onChange={(e) => setQuickAddTitle(e.target.value)}
-            className="h-9 border border-border/50 bg-background px-2 py-1 text-[13px] text-foreground placeholder-muted-foreground/60 shadow-none focus-visible:ring-primary/20 focus-visible:ring-1"
+            className="h-9 border border-border/50 bg-background px-2 py-1 text-xs text-foreground placeholder-muted-foreground/60 shadow-none focus-visible:ring-primary/20 focus-visible:ring-1"
           />
           <div className="mt-2.5 flex justify-end gap-2">
             <Button
@@ -873,7 +873,7 @@ function BoardColumn({
 
       <div className="flex-1 scrollbar-thin scrollbar-thumb-border/40 scrollbar-track-transparent space-y-3 overflow-y-auto pr-1.5 pb-3">
         {tasks.length === 0 ? (
-          <div className="flex h-28 items-center justify-center rounded-xl border-2 border-dashed border-border/50 bg-background/50 text-[13px] font-medium text-muted-foreground/50 transition-colors">
+          <div className="flex h-28 items-center justify-center rounded-xl border-2 border-dashed border-border/50 bg-background/50 text-xs font-medium text-muted-foreground/50 transition-colors">
             Drop tasks here
           </div>
         ) : (

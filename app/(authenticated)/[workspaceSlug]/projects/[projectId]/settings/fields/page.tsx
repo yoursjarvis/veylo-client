@@ -225,7 +225,7 @@ export default function CustomFieldsSettingsPage() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="text-[11px] text-destructive font-medium mt-1">
+                          <p className="text-2xs text-destructive font-medium mt-1">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -298,7 +298,7 @@ export default function CustomFieldsSettingsPage() {
                             <div className="space-y-1.5">
                               <label className="flex items-center justify-between font-semibold text-muted-foreground">
                                 <span>Dropdown Options (Comma-separated)</span>
-                                <span className="text-[9px] font-normal text-muted-foreground opacity-80">
+                                <span className="text-2xs font-normal text-muted-foreground opacity-80">
                                   e.g. Backlog, In Progress, Blocked
                                 </span>
                               </label>
@@ -313,7 +313,7 @@ export default function CustomFieldsSettingsPage() {
                                 aria-invalid={hasError}
                               />
                               {hasError && (
-                                <p className="text-[11px] text-destructive font-medium mt-1">
+                                <p className="text-2xs text-destructive font-medium mt-1">
                                   {fieldErrors.join(", ")}
                                 </p>
                               )}
