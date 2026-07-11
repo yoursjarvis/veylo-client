@@ -220,27 +220,30 @@ export function RoleAssignmentModal({
         <TooltipProvider>
           <div className="space-y-4 py-4">
             <div className="mb-2 flex items-center gap-3 px-1">
-              <Label className="flex-1">Role</Label>
-              <Label className="flex-1">Scope</Label>
-              <Label className="flex-1">Project/Department</Label>
+              <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Role</Label>
+              <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Scope</Label>
+              <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Project/Department</Label>
               <div className="w-[80px]"></div>
             </div>
 
-            {rows.map((row, index) => (
-              <AssignmentRowItem
-                key={row.id}
-                row={row}
-                isLast={index === rows.length - 1}
-                roles={roles || []}
-                projects={projects || []}
-                organizationId={organizationId}
-                updateRow={updateRow}
-                removeRow={removeRow}
-                addRow={addRow}
-              />
-            ))}
+            <div className="border border-border/50 rounded-md overflow-hidden">
+              {rows.map((row, index) => (
+                <AssignmentRowItem
+                  key={row.id}
+                  row={row}
+                  isLast={index === rows.length - 1}
+                  roles={roles || []}
+                  projects={projects || []}
+                  organizationId={organizationId}
+                  updateRow={updateRow}
+                  removeRow={removeRow}
+                  addRow={addRow}
+                />
+              ))}
+            </div>
           </div>
         </TooltipProvider>
+
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -282,7 +285,7 @@ function AssignmentRowItem({
   const [projectOpen, setProjectOpen] = useState(false)
 
   return (
-    <div className="flex w-full animate-in items-center gap-3 duration-200 fade-in zoom-in">
+    <div className="flex w-full animate-in items-center gap-3 py-2 border-b border-border/50 last:border-b-0 duration-200 fade-in zoom-in group">
       <div className="min-w-0 flex-1">
         <Popover open={roleOpen} onOpenChange={setRoleOpen}>
           <PopoverTrigger render={
@@ -290,7 +293,7 @@ function AssignmentRowItem({
               variant="outline"
               role="combobox"
               aria-expanded={roleOpen}
-              className="w-full justify-between font-normal"
+              className="w-full justify-between font-normal text-xs h-8 border-border/50 bg-background hover:bg-muted/50 transition-colors"
             >
               <span className="truncate">
                 {row.roleId
@@ -300,7 +303,7 @@ function AssignmentRowItem({
               </span>
               <HugeiconsIcon
                 icon={ArrowDown01Icon}
-                className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                className="ml-2 h-3 w-3 shrink-0 opacity-50"
               />
             </Button>
           } />
@@ -321,11 +324,12 @@ function AssignmentRowItem({
                         updateRow(row.id, { roleId: role.id })
                         setRoleOpen(false)
                       }}
+                      className="text-xs py-1.5"
                     >
                       <HugeiconsIcon
                         icon={Tick02Icon}
                         className={cn(
-                          "mr-2 h-4 w-4",
+                          "mr-2 h-3 w-3",
                           row.roleId === role.id ? "opacity-100" : "opacity-0"
                         )}
                       />
@@ -346,7 +350,7 @@ function AssignmentRowItem({
               variant="outline"
               role="combobox"
               aria-expanded={scopeOpen}
-              className="w-full justify-between font-normal"
+              className="w-full justify-between font-normal text-xs h-8 border-border/50 bg-background hover:bg-muted/50 transition-colors"
             >
               <span className="truncate">
                 {row.scopeType === "ORGANIZATION" && "Organization Wide"}
@@ -355,7 +359,7 @@ function AssignmentRowItem({
               </span>
               <HugeiconsIcon
                 icon={ArrowDown01Icon}
-                className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                className="ml-2 h-3 w-3 shrink-0 opacity-50"
               />
             </Button>
           } />
@@ -384,11 +388,12 @@ function AssignmentRowItem({
                         })
                         setScopeOpen(false)
                       }}
+                      className="text-xs py-1.5"
                     >
                       <HugeiconsIcon
                         icon={Tick02Icon}
                         className={cn(
-                          "mr-2 h-4 w-4",
+                          "mr-2 h-3 w-3",
                           row.scopeType === item.value
                             ? "opacity-100"
                             : "opacity-0"
@@ -412,7 +417,7 @@ function AssignmentRowItem({
                 variant="outline"
                 role="combobox"
                 aria-expanded={projectOpen}
-                className="w-full justify-between font-normal"
+                className="w-full justify-between font-normal text-xs h-8 border-border/50 bg-background hover:bg-muted/50 transition-colors"
               >
                 <span className="truncate">
                   {row.scopeId && projects?.length
@@ -423,7 +428,7 @@ function AssignmentRowItem({
                 </span>
                 <HugeiconsIcon
                   icon={ArrowDown01Icon}
-                  className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                  className="ml-2 h-3 w-3 shrink-0 opacity-50"
                 />
               </Button>
             } />
@@ -448,7 +453,7 @@ function AssignmentRowItem({
                         <HugeiconsIcon
                           icon={Tick02Icon}
                           className={cn(
-                            "mr-2 h-4 w-4",
+                            "mr-2 h-3 w-3",
                             row.scopeId === project.id
                               ? "opacity-100"
                               : "opacity-0"
@@ -474,7 +479,7 @@ function AssignmentRowItem({
               onClick={() => removeRow(row.id)}
               className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
-              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
+              <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" />
             </Button>
           } />
           <TooltipContent>
@@ -491,7 +496,7 @@ function AssignmentRowItem({
                 onClick={addRow}
                 className="shrink-0 text-primary hover:bg-primary/10 hover:text-primary"
               >
-                <HugeiconsIcon icon={PlusSignIcon} className="h-4 w-4" />
+                <HugeiconsIcon icon={PlusSignIcon} className="h-3 w-3" />
               </Button>
             } />
             <TooltipContent>

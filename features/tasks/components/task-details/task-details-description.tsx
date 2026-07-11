@@ -21,7 +21,7 @@ export function TaskDetailsDescription({
 }: TaskDetailsDescriptionProps) {
   return (
     <div className="space-y-3">
-      <label className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+      <label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
         <HugeiconsIcon icon={File02Icon} size={14} className="text-muted-foreground/70" />{" "}
         Description
       </label>

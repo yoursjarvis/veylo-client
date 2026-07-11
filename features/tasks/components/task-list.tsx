@@ -18,21 +18,6 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { format, isPast, isToday } from "date-fns"
-import {
-  ArrowDown,
-  ArrowUp,
-  Bug,
-  CalendarIcon,
-  CheckSquare,
-  ChevronDown,
-  ChevronRight,
-  ChevronsDown,
-  ChevronsUp,
-  Equal,
-  GripVertical,
-  Sparkles,
-  User,
-} from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import React, { useState } from "react"
 
@@ -60,6 +45,20 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import {
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  ArrowUp01Icon,
+  Bug01FreeIcons,
+  CalendarIcon,
+  CheckmarkSquare03Icon,
+  CircleArrowUp01Icon,
+  EqualSignIcon,
+  SparklesIcon,
+  UserIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { GripVertical } from "lucide-react"
 import { useUpdateTask, useUpdateTaskOrder } from "../hooks/use-tasks"
 
 interface Task {
@@ -94,7 +93,9 @@ interface TaskRowProps {
   dragHandleListeners?: SyntheticListenerMap
   projectId: string
   statuses: { id: string; name: string }[]
-  projectMembers: { user: { id: string; name?: string | null; image?: string | null } }[]
+  projectMembers: {
+    user: { id: string; name?: string | null; image?: string | null }
+  }[]
 }
 
 const gridCols =
@@ -103,12 +104,22 @@ const gridCols =
 const getTypeIcon = (type: string) => {
   switch (type.toLowerCase()) {
     case "bug":
-      return <Bug className="h-4 w-4 text-red-500" />
+      return (
+        <HugeiconsIcon
+          icon={Bug01FreeIcons}
+          className="h-4 w-4 text-destructive"
+        />
+      )
     case "feature":
     case "story":
-      return <Sparkles className="h-4 w-4 text-purple-500" />
+      return <HugeiconsIcon icon={SparklesIcon} className="h-4 w-4 text-info" />
     default:
-      return <CheckSquare className="h-4 w-4 text-blue-500" />
+      return (
+        <HugeiconsIcon
+          icon={CheckmarkSquare03Icon}
+          className="h-4 w-4 text-primary"
+        />
+      )
   }
 }
 
@@ -116,17 +127,44 @@ const getPriorityIcon = (prio: string) => {
   switch (prio.toLowerCase()) {
     case "urgent":
     case "highest":
-      return <ChevronsUp className="h-4 w-4 text-red-700" />
+      return (
+        <HugeiconsIcon
+          icon={CircleArrowUp01Icon}
+          className="h-4 w-4 text-destructive"
+        />
+      )
     case "high":
-      return <ArrowUp className="h-4 w-4 text-red-500" />
+      return (
+        <HugeiconsIcon
+          icon={ArrowUp01Icon}
+          className="h-4 w-4 text-destructive"
+        />
+      )
     case "medium":
-      return <Equal className="h-4 w-4 text-orange-500" />
+      return (
+        <HugeiconsIcon icon={EqualSignIcon} className="h-4 w-4 text-warning" />
+      )
     case "low":
-      return <ArrowDown className="h-4 w-4 text-blue-500" />
+      return (
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          className="h-4 w-4 text-primary"
+        />
+      )
     case "lowest":
-      return <ChevronsDown className="h-4 w-4 text-blue-300" />
+      return (
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          className="h-4 w-4 text-muted-foreground"
+        />
+      )
     default:
-      return <Equal className="h-4 w-4 text-muted-foreground" />
+      return (
+        <HugeiconsIcon
+          icon={EqualSignIcon}
+          className="h-4 w-4 text-muted-foreground"
+        />
+      )
   }
 }
 
@@ -150,7 +188,7 @@ function UserSelect({
         render={
           <button
             onClick={(e) => e.stopPropagation()}
-            className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
+            className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
           >
             {selectedUser ? (
               <>
@@ -165,7 +203,7 @@ function UserSelect({
             ) : (
               <>
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/30 bg-muted text-muted-foreground">
-                  <User className="h-3.5 w-3.5" />
+                  <HugeiconsIcon icon={UserIcon} className="h-4 w-4" />
                 </div>
                 <span className="truncate text-muted-foreground italic">
                   {placeholder}
@@ -195,7 +233,7 @@ function UserSelect({
                 className="py-1.5 text-xs"
               >
                 <div className="mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted">
-                  <User className="h-3.5 w-3.5" />
+                  <HugeiconsIcon icon={UserIcon} className="h-4 w-4" />
                 </div>
                 Unassigned
               </CommandItem>
@@ -243,7 +281,7 @@ export function DatePicker({
             className={cn(
               "flex w-full items-center justify-between overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-left text-xs transition-colors hover:border-border/80 hover:bg-muted focus:outline-none",
               value && isPast(new Date(value)) && !isToday(new Date(value))
-                ? "font-medium text-red-600 dark:text-red-400"
+                ? "font-medium text-destructive"
                 : "text-muted-foreground"
             )}
           >
@@ -254,7 +292,10 @@ export function DatePicker({
                 <span className="italic opacity-70">No date</span>
               )}
             </span>
-            <CalendarIcon className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+            <HugeiconsIcon
+              icon={CalendarIcon}
+              className="ml-1 h-4 w-4 shrink-0 opacity-50"
+            />
           </button>
         }
       />
@@ -297,7 +338,7 @@ export function StatusSelect({
         render={
           <button
             onClick={(e) => e.stopPropagation()}
-            className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
+            className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
           >
             {selectedStatus ? (
               <>
@@ -403,7 +444,7 @@ export function PrioritySelect({
         render={
           <button
             onClick={(e) => e.stopPropagation()}
-            className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
+            className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
           >
             {selectedPriority ? (
               <>
@@ -415,7 +456,7 @@ export function PrioritySelect({
             ) : (
               <>
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/30 bg-muted text-muted-foreground">
-                  <Equal className="h-3 w-3" />
+                  <HugeiconsIcon icon={EqualSignIcon} className="h-4 w-4" />
                 </div>
                 <span className="truncate text-muted-foreground italic">
                   {placeholder}
@@ -491,7 +532,7 @@ export function TaskRow({
     <div
       onClick={() => onSelectTask(task.id)}
       className={cn(
-        "group grid cursor-pointer items-center border-b border-border/60 transition-colors hover:bg-muted/50",
+        "group grid cursor-pointer items-center border-b border-border/50 transition-colors duration-200 hover:bg-muted/50",
         gridCols,
         isSelected ? "bg-primary/5" : "bg-card"
       )}
@@ -522,7 +563,7 @@ export function TaskRow({
         {getTypeIcon(task.type)}
       </div>
       <div
-        className="truncate px-3 py-2 text-xs font-medium text-muted-foreground"
+        className="truncate px-3 py-2 text-xs font-normal text-muted-foreground"
         title={taskKey}
       >
         {taskKey}
@@ -557,7 +598,7 @@ export function TaskRow({
               e.stopPropagation()
               setIsEditingTitle(true)
             }}
-            className="block cursor-text truncate text-sm font-medium text-foreground decoration-primary underline-offset-2 hover:underline"
+            className="block cursor-text truncate text-sm font-semibold text-foreground decoration-primary underline-offset-2 hover:underline"
           >
             {task.title}
           </span>
@@ -573,7 +614,11 @@ export function TaskRow({
       <div className="flex items-center truncate px-3 py-2">
         <PrioritySelect
           value={task.priority}
-          onChange={(val) => updateTaskMutation.mutate({ priority: val as "low" | "medium" | "high" | "urgent" })}
+          onChange={(val) =>
+            updateTaskMutation.mutate({
+              priority: val as "low" | "medium" | "high" | "urgent",
+            })
+          }
         />
       </div>
       <div className="flex items-center truncate px-3 py-2">
@@ -665,7 +710,9 @@ interface StatusSectionProps {
   onToggleSelect: (taskId: string, selected: boolean) => void
   projectId: string
   statuses: { id: string; name: string }[]
-  projectMembers: { user: { id: string; name?: string | null; image?: string | null } }[]
+  projectMembers: {
+    user: { id: string; name?: string | null; image?: string | null }
+  }[]
 }
 
 export function StatusSection({
@@ -697,15 +744,15 @@ export function StatusSection({
         ref={setNodeRef}
       >
         <div
-          className="group cursor-pointer border-b border-border/60 bg-muted/20 transition-colors hover:bg-muted/40"
+          className="group cursor-pointer border-b border-border/50 bg-muted/20 transition-colors hover:bg-muted/40"
           onClick={onToggle}
         >
           <div className="flex items-center gap-2 px-3 py-1.5">
             <div className="p-0.5 text-muted-foreground transition-colors group-hover:text-foreground">
               {isCollapsed ? (
-                <ChevronRight size={16} />
+                <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
               ) : (
-                <ChevronDown size={16} />
+                <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
               )}
             </div>
             <div className="flex h-full items-center gap-1.5">
@@ -747,15 +794,15 @@ export function StatusSection({
       ref={setNodeRef}
     >
       <div
-        className="group sticky top-9 z-10 cursor-pointer border-b border-border/60 bg-muted/30 shadow-[0_1px_0_0_hsl(var(--border))] backdrop-blur-md transition-colors hover:bg-muted/50"
+        className="group sticky top-9 z-10 cursor-pointer border-b border-border/50 bg-muted/30 shadow-[0_1px_0_0_hsl(var(--border))] backdrop-blur-md transition-colors hover:bg-muted/50"
         onClick={onToggle}
       >
         <div className="flex items-center gap-2 px-3 py-1.5">
           <div className="p-0.5 text-muted-foreground transition-colors group-hover:text-foreground">
             {isCollapsed ? (
-              <ChevronRight size={16} />
+              <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
             ) : (
-              <ChevronDown size={16} />
+              <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
             )}
           </div>
           <div className="flex h-full items-center gap-1.5">
@@ -814,7 +861,9 @@ interface TaskListProps {
   projectId: string
   tasks: Task[]
   statuses: { id: string; name: string }[]
-  projectMembers?: { user: { id: string; name?: string | null; image?: string | null } }[]
+  projectMembers?: {
+    user: { id: string; name?: string | null; image?: string | null }
+  }[]
   projectTemplate: string
   onSelectTask: (taskId: string) => void
   projectLabels?: { id: string; name: string; color?: string }[]

@@ -68,7 +68,7 @@ export function useAuthForm<
   TOnChange extends undefined | FormValidateOrFn<TFormData>,
 >(options: AuthFormOptions<TFormData, TOnChange>) {
   return useForm({
-    ...(options as unknown as Parameters<typeof useForm>[0]),
+    ...options,
     validatorAdapter: zodValidator(),
-  } as any)
+  } as Parameters<typeof useForm>[0])
 }

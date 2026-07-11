@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react"
 import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import React, { useState } from "react"
+import { motion } from "framer-motion"
 import { toast } from "sonner"
 
 import { IconPicker } from "@/components/shared/icon-picker"
@@ -14,10 +15,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card"
 import {
   Combobox,
@@ -260,7 +257,7 @@ export default function ProjectsPage() {
 
   if (isWorkspaceLoading || isProjectsLoading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] bg-background p-8">
+      <div className="min-h-[calc(100vh-4rem)]">
         <div className="mx-auto max-w-7xl">
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
@@ -295,7 +292,7 @@ export default function ProjectsPage() {
 
   if (!activeWorkspace) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] w-full flex-col items-center justify-center bg-background p-6">
+      <div className="flex h-[calc(100vh-4rem)] w-full flex-col items-center justify-center">
         <HugeiconsIcon
           icon={AlertDiamondIcon}
           className="mb-4 h-12 w-12 text-muted-foreground"
@@ -311,7 +308,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background p-8">
+    <div className="min-h-[calc(100vh-4rem)]">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="space-y-1">
@@ -336,8 +333,8 @@ export default function ProjectsPage() {
                   </Button>
                 }
               />
-              <DialogContent className="border border-border bg-card p-6 text-foreground shadow-lg sm:max-w-112.5">
-                <DialogHeader className="space-y-1.5 border-b border-border pb-4">
+              <DialogContent className="border border-border/50 bg-card p-6 text-foreground shadow-lg sm:max-w-112.5">
+                <DialogHeader className="space-y-1.5 border-b border-border/50 pb-4">
                   <DialogTitle className="text-lg font-bold tracking-tight text-foreground">
                     Create Project
                   </DialogTitle>
@@ -351,7 +348,7 @@ export default function ProjectsPage() {
                   <div className="grid gap-1.5">
                     <label
                       htmlFor="title"
-                      className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+                      className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
                     >
                       Title <span className="text-destructive">*</span>
                     </label>
@@ -368,7 +365,7 @@ export default function ProjectsPage() {
                   <div className="grid gap-1.5">
                     <label
                       htmlFor="projectKey"
-                      className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+                      className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
                     >
                       Project Key <span className="text-destructive">*</span>
                     </label>
@@ -383,7 +380,7 @@ export default function ProjectsPage() {
                       This key will be used to generate task IDs such as DEV-1,
                       DEV-2, and DEV-3.
                     </p>
-                    <div className="mt-1 flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 p-2.5 text-amber-600 dark:text-amber-400">
+                    <div className="mt-1 flex items-start gap-2 rounded-md border border-warning/20 bg-warning/10 p-2.5 text-warning">
                       <HugeiconsIcon
                         icon={AlertDiamondIcon}
                         className="mt-0.5 h-4 w-4 shrink-0"
@@ -405,7 +402,7 @@ export default function ProjectsPage() {
                   <div className="grid gap-1.5">
                     <label
                       htmlFor="desc"
-                      className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+                      className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
                     >
                       Description
                     </label>
@@ -420,7 +417,7 @@ export default function ProjectsPage() {
 
                   {/* Template Picker */}
                   <div className="grid gap-1.5">
-                    <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                       Project Template
                     </label>
                     <Combobox
@@ -434,7 +431,7 @@ export default function ProjectsPage() {
                         className="h-9 w-full border border-border bg-background text-xs"
                         showTrigger
                       />
-                      <ComboboxContent className="border border-border bg-popover">
+                      <ComboboxContent className="border border-border/50 bg-popover">
                         <ComboboxList>
                           {templates?.map((tpl) => (
                             <ComboboxItem key={tpl.id} value={tpl.slug}>
@@ -475,7 +472,7 @@ export default function ProjectsPage() {
                   <div className="grid gap-1.5">
                     <label
                       htmlFor="icon"
-                      className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+                      className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
                     >
                       Project Icon
                     </label>
@@ -494,7 +491,7 @@ export default function ProjectsPage() {
                     </div>
                   </div>
                 </div>
-                <DialogFooter className="border-t border-border pt-4">
+                <DialogFooter className="border-t border-border/50 pt-4">
                   <Button
                     variant="outline"
                     onClick={() => setIsCreateOpen(false)}
@@ -517,7 +514,7 @@ export default function ProjectsPage() {
                         template: selectedTemplate,
                       })
                     }
-                    className="h-9 text-xs"
+                    className="h-9 text-xs bg-primary text-primary-foreground"
                   >
                     {createProjectMutation.isPending && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -531,60 +528,62 @@ export default function ProjectsPage() {
         </div>
 
         {projects && projects.length === 0 ? (
-          <div className="flex min-h-100 flex-col items-center justify-center rounded-xl border border-dashed bg-card p-8 text-center shadow-sm">
-            <div className="mb-4 rounded-full bg-muted p-4">
-              <HugeiconsIcon
-                icon={DocumentValidationIcon}
-                className="h-8 w-8 text-muted-foreground"
-              />
-            </div>
-            <h3 className="text-lg font-bold">No Projects Found</h3>
-            <p className="mt-2 max-w-sm text-muted-foreground">
-              Get started by creating your very first project inside the active
-              workspace.
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <HugeiconsIcon
+              icon={DocumentValidationIcon}
+              className="mb-6 h-12 w-12 text-muted-foreground"
+            />
+            <h3 className="text-lg font-semibold text-foreground">No Projects Found</h3>
+            <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+              Get started by creating your first project in this workspace.
             </p>
             {isWorkspaceAdmin && (
-              <Button className="mt-4" onClick={() => setIsCreateOpen(true)}>
+              <Button
+                className="mt-6 font-semibold"
+                onClick={() => setIsCreateOpen(true)}
+              >
                 <HugeiconsIcon icon={PlusSignIcon} className="mr-2 h-4 w-4" />{" "}
                 Create Project
               </Button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {projects?.map((project) => (
               <Card
                 key={project.id}
                 onClick={() =>
                   router.push(`/${params.workspaceSlug}/projects/${project.id}`)
                 }
-                className="group relative flex cursor-pointer flex-col justify-between overflow-hidden transition-all duration-300 hover:border-foreground/35 hover:shadow-md"
+                className="group relative flex cursor-pointer flex-col p-5 overflow-hidden transition-all duration-300 hover:border-primary/40 hover:-translate-y-0.5"
               >
-                <CardHeader className="flex flex-row items-start gap-4 pb-4">
+                <div className="flex items-start gap-4">
                   {renderProjectIcon(project.icon, "h-12 w-12", "text-2xl")}
-                  <div className="space-y-1">
-                    <CardTitle className="line-clamp-1 transition-colors duration-200 group-hover:text-primary">
+                  <div className="flex-1 space-y-1">
+                    <h3 className="font-semibold text-foreground line-clamp-1 transition-colors duration-200 group-hover:text-primary">
                       {project.title}
-                    </CardTitle>
-                    <CardDescription className="line-clamp-2 min-h-10">
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 min-h-10">
                       {project.description || "No description provided."}
-                    </CardDescription>
+                    </p>
                   </div>
-                </CardHeader>
-                <CardFooter className="flex justify-between border-t bg-muted/30 px-6 py-3 text-xs text-muted-foreground">
-                  <span>
-                    Created:{" "}
-                    {new Date(project.createdAt).toLocaleDateString(undefined, {
-                      dateStyle: "medium",
-                    })}
+                </div>
+                <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                    {project.projectKey}
                   </span>
-                  <Badge variant="secondary" className="rounded-md px-2 py-0.5">
+                  <Badge variant="secondary" className="px-2 py-0.5">
                     {project._count?.members || 0} members
                   </Badge>
-                </CardFooter>
+                </div>
               </Card>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

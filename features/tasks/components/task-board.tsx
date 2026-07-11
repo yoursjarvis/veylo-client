@@ -39,6 +39,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { motion } from "framer-motion"
 import {
   Add01Icon,
   ArrowRight01Icon,
@@ -87,69 +88,38 @@ interface TaskBoardProps {
 }
 
 const getPriorityBadge = (prio: string) => {
-  const baseClasses =
-    "rounded-md px-2 py-1 text-xs font-medium leading-none capitalize flex items-center justify-center border-none"
-  switch (prio) {
-    case "urgent":
-      return (
-        <Badge
-          variant="outline"
-          className={cn(
-            baseClasses,
-            "bg-red-500/10 text-red-600 dark:text-red-400"
-          )}
-        >
-          Urgent
-        </Badge>
-      )
-    case "high":
-      return (
-        <Badge
-          variant="outline"
-          className={cn(
-            baseClasses,
-            "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-          )}
-        >
-          High
-        </Badge>
-      )
-    case "medium":
-      return (
-        <Badge
-          variant="outline"
-          className={cn(
-            baseClasses,
-            "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-          )}
-        >
-          Medium
-        </Badge>
-      )
-    default:
-      return (
-        <Badge
-          variant="outline"
-          className={cn(
-            baseClasses,
-            "bg-slate-500/10 text-slate-600 dark:text-slate-400"
-          )}
-        >
-          Low
-        </Badge>
-      )
-  }
+  const colors = {
+    urgent: "text-destructive border-destructive/20 bg-destructive/5",
+    high: "text-warning border-warning/20 bg-warning/5",
+    medium: "text-info border-info/20 bg-info/5",
+    low: "text-muted-foreground border-muted/20 bg-muted/5",
+  }[prio] || "text-muted-foreground border-muted/20 bg-muted/5"
+
+  const label = prio.charAt(0).toUpperCase() + prio.slice(1)
+
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border-border/50",
+        colors
+      )}
+    >
+      <span className={cn("h-1 w-1 rounded-full bg-current")} />
+      {label}
+    </Badge>
+  )
 }
 
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "bug":
-      return <HugeiconsIcon icon={Bug01Icon} className="h-4 w-4 text-red-500" />
+      return <HugeiconsIcon icon={Bug01Icon} className="h-4 w-4 text-destructive" />
     case "feature":
       return (
         <HugeiconsIcon
           icon={SparklesIcon}
-          className="h-4 w-4 text-violet-500"
+          className="h-4 w-4 text-primary"
         />
       )
     case "task":
@@ -157,7 +127,7 @@ const getTypeIcon = (type: string) => {
         <HugeiconsIcon
           icon={CheckmarkSquare03Icon}
           strokeWidth={2}
-          className="h-4 w-4 text-blue-500"
+          className="h-4 w-4 text-info"
         />
       )
     default:
@@ -196,7 +166,7 @@ function SubtaskItem({
 
   return (
     <div
-      className="group/subtask flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50"
+      className="group/subtask flex cursor-pointer items-center gap-3 rounded-md p-2 transition-all duration-200 border border-border/50 bg-background/50 hover:bg-muted/50 hover:border-border/80"
       onClick={(e) => {
         e.stopPropagation()
         onSelectTask?.(subtask.id)
@@ -205,6 +175,7 @@ function SubtaskItem({
       <button
         type="button"
         onClick={handleToggle}
+        aria-label={`Toggle completion for subtask ${subtask.title}`}
         className={cn(
           "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
           isCompleted
@@ -333,8 +304,8 @@ function TaskCard({
         }
       }}
       className={cn(
-        "group relative flex flex-col rounded-xl border border-border/50 bg-card p-4 shadow-sm transition-all duration-200",
-        "hover:-translate-y-1 hover:border-border hover:shadow-md",
+        "group relative flex flex-col rounded-md border border-border/50 bg-card p-4 transition-all duration-200",
+        "hover:-translate-y-1 hover:border-border",
         isDragging ? "opacity-0" : "opacity-100",
         !isEditing ? "cursor-pointer active:cursor-grabbing" : "cursor-default"
       )}
@@ -344,6 +315,7 @@ function TaskCard({
           variant="ghost"
           size="icon"
           onClick={handleEditClick}
+          aria-label={`Edit task ${task.title}`}
           className="absolute top-3 right-3 z-10 h-7 w-7 bg-background/80 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 hover:bg-muted"
         >
           <HugeiconsIcon
@@ -367,7 +339,7 @@ function TaskCard({
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium tracking-wider text-muted-foreground">
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
             {task.taskKey || task.id.substring(0, 8)}
           </span>
         </div>
@@ -376,6 +348,7 @@ function TaskCard({
           <button
             type="button"
             onClick={handleToggleComplete}
+            aria-label={`Toggle completion for task ${task.title}`}
             className={cn(
               "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
               isCompleted
@@ -540,7 +513,7 @@ function TaskCard({
         </div>
 
         {isSubtasksExpanded && task.subtasks && task.subtasks.length > 0 && (
-          <div className="mt-3 flex flex-col gap-1 rounded-xl bg-muted/30 p-2">
+          <div className="mt-3 flex flex-col gap-1 rounded-md bg-muted/30 p-2 border border-border/50">
             {task.subtasks.map((subtask) => (
               <SubtaskItem
                 key={subtask.id}
@@ -563,11 +536,13 @@ function SortableTaskCard({
   projectId,
   statuses,
   onSelectTask,
+  index,
 }: {
   task: Task
   projectId: string
   statuses: { id: string; name: string; color?: string }[]
   onSelectTask: (id: string) => void
+  index: number
 }) {
   const {
     attributes,
@@ -587,9 +562,12 @@ function SortableTaskCard({
   }
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
       style={style}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut", delay: index * 0.05 }}
       {...attributes}
       {...listeners}
       className={cn(
@@ -605,7 +583,7 @@ function SortableTaskCard({
         onSelectTask={onSelectTask}
         isDragging={isDragging}
       />
-    </div>
+    </motion.div>
   )
 }
 
@@ -643,13 +621,13 @@ function BoardColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex h-full max-h-[75vh] w-72 shrink-0 flex-col rounded-2xl border bg-secondary/20 p-3.5 shadow-sm backdrop-blur-md transition-colors duration-200 lg:w-80",
-        isOver ? "border-primary/40 bg-primary/5" : "border-border/60"
+        "flex h-full max-h-[75vh] w-72 shrink-0 flex-col rounded-2xl border bg-card/50 p-3.5 shadow-sm transition-colors duration-200 lg:w-80",
+        isOver ? "border-primary/40 bg-primary/5" : "border-border/50"
       )}
     >
       <div className="mt-0.5 mb-4 flex items-center justify-between px-1.5">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 text-sm font-semibold tracking-tight text-foreground/90">
+          <div className="flex items-center gap-1.5 text-sm font-semibold tracking-tight text-foreground">
             {status.color && (
               <div
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
@@ -658,7 +636,8 @@ function BoardColumn({
             )}
             <span className="max-w-35 truncate text-left">{status.name}</span>
           </div>
-          <Badge className="bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground hover:bg-muted">
+          <Badge variant="outline" className="flex items-center gap-1.5 px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+            <span className="h-1 w-1 rounded-full bg-current" />
             {tasks.length}
           </Badge>
         </div>
@@ -666,6 +645,7 @@ function BoardColumn({
           variant="ghost"
           size="icon"
           onClick={() => setQuickAddStatusId(status.id)}
+          aria-label={`Quick add task to ${status.name}`}
           className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <HugeiconsIcon icon={Add01Icon} size={16} />
@@ -675,14 +655,14 @@ function BoardColumn({
       {quickAddStatusId === status.id && (
         <form
           onSubmit={(e) => handleQuickAddSubmit(e, status.id)}
-          className="mb-3 rounded-xl border border-border/80 bg-card p-3 shadow-sm"
+          className="mb-3 rounded-xl border border-border/50 bg-card/50 p-3 shadow-sm"
         >
           <Input
             autoFocus
             placeholder="What needs to be done?"
             value={quickAddTitle}
             onChange={(e) => setQuickAddTitle(e.target.value)}
-            className="h-9 border-none bg-transparent px-1 py-1 text-[13px] text-foreground placeholder-muted-foreground/60 shadow-none focus-visible:ring-0"
+            className="h-9 border border-border/50 bg-background px-2 py-1 text-[13px] text-foreground placeholder-muted-foreground/60 shadow-none focus-visible:ring-primary/20 focus-visible:ring-1"
           />
           <div className="mt-2.5 flex justify-end gap-2">
             <Button
@@ -707,13 +687,14 @@ function BoardColumn({
             Drop tasks here
           </div>
         ) : (
-          tasks.map((task) => (
+          tasks.map((task, index) => (
             <SortableTaskCard
               key={task.id}
               task={task}
               projectId={projectId}
               statuses={statuses}
               onSelectTask={onSelectTask}
+              index={index}
             />
           ))
         )}
@@ -979,9 +960,9 @@ export function TaskBoard({
             </form>
           ) : (
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => setIsAddingStatus(true)}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border-dashed border-border/60 bg-secondary/10 text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-foreground"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-foreground"
             >
               <HugeiconsIcon icon={Add01Icon} size={18} />
               <span className="text-sm font-medium">Add Column</span>
@@ -991,7 +972,7 @@ export function TaskBoard({
       </div>
       <DragOverlay dropAnimation={dropAnimation}>
         {activeTask ? (
-          <div className="scale-105 rotate-3 cursor-grabbing shadow-2xl transition-transform">
+          <div className="scale-105 rotate-3 cursor-grabbing shadow-2xl transition-transform border-2 border-primary rounded-md">
             <TaskCard
               task={activeTask}
               projectId={projectId}

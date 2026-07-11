@@ -1,24 +1,24 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { useProject } from "../../layout"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { axiosInstance } from "@/lib/axios"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
-import { toast } from "sonner"
+import { IconPicker } from "@/components/shared/icon-picker"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card"
-import { IconPicker } from "@/components/shared/icon-picker"
-import { Sliders, Trash2, AlertTriangle, Save } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { axiosInstance } from "@/lib/axios"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { AlertTriangle, Save, Sliders, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { useProject } from "../../layout"
 
 export default function GeneralSettingsPage() {
   const { projectId, workspaceSlug, selectedProject, isWorkspaceAdmin } =
@@ -139,12 +139,14 @@ export default function GeneralSettingsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Project Key (Read-only)</label>
-              <Input 
-                value={selectedProject?.projectKey || ""} 
-                readOnly 
-                disabled 
-                className="bg-muted cursor-not-allowed font-mono uppercase" 
+              <label className="text-xs font-medium text-muted-foreground">
+                Project Key (Read-only)
+              </label>
+              <Input
+                value={selectedProject?.projectKey || ""}
+                readOnly
+                disabled
+                className="cursor-not-allowed bg-muted font-mono uppercase"
               />
             </div>
 
@@ -205,7 +207,7 @@ export default function GeneralSettingsPage() {
         {/* Danger Zone */}
         <Card className="shadow-md">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-rose-400">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-destructive">
               <AlertTriangle className="h-4.5 w-4.5" /> Danger Zone
             </CardTitle>
             <CardDescription className="text-xs">

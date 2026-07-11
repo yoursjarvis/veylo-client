@@ -1,4 +1,7 @@
-import type { SidebarNavGroup, SidebarNavItem } from "@/components/layout/app-shared"
+import type {
+  SidebarNavGroup,
+  SidebarNavItem,
+} from "@/components/layout/app-shared"
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,12 +19,21 @@ import {
 } from "@/components/ui/sidebar"
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 
-function NavGroupItem({ item, pathname }: { item: SidebarNavItem; pathname: string }) {
-  const isActive = !!(item.path === pathname || item.subItems?.some((sub: SidebarNavItem) => sub.path === pathname))
+function NavGroupItem({
+  item,
+  pathname,
+}: {
+  item: SidebarNavItem
+  pathname: string
+}) {
+  const isActive = !!(
+    item.path === pathname ||
+    item.subItems?.some((sub: SidebarNavItem) => sub.path === pathname)
+  )
   const [isOpen, setIsOpen] = useState<boolean>(isActive)
 
   useEffect(() => {
@@ -47,7 +59,7 @@ function NavGroupItem({ item, pathname }: { item: SidebarNavItem; pathname: stri
             <HugeiconsIcon
               icon={ArrowRight01Icon}
               strokeWidth={2}
-              className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+              className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
             />
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -88,7 +100,11 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 
   return (
     <SidebarGroup>
-      {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+      {label && (
+        <SidebarGroupLabel className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+          {label}
+        </SidebarGroupLabel>
+      )}
       <SidebarMenu>
         {items.map((item) => (
           <NavGroupItem key={item.title} item={item} pathname={pathname} />

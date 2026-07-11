@@ -11,7 +11,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 				<AppHeader />
 				<div
 					className={cn(
-						"flex flex-1 flex-col p-4 md:p-6",
+						"flex flex-1 flex-col p-4 sm:p-6 md:p-8",
 						"mx-auto w-full min-w-0"
 					)}
 				>

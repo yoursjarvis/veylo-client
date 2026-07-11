@@ -104,7 +104,7 @@ export function Pattern({
             size="icon"
             variant="outline"
             onClick={handleRemove}
-            className="absolute inset-e-0.5 top-0.5 z-10 size-6 rounded-full dark:bg-zinc-800 hover:dark:bg-zinc-700"
+            className="absolute inset-e-0.5 top-0.5 z-10 size-6 rounded-full dark:bg-muted hover:dark:bg-accent"
             aria-label="Remove avatar"
           >
             <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />

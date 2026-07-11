@@ -181,7 +181,7 @@ export default function VaultSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
         <div>
           <h3 className="flex items-center gap-2 text-lg font-bold">
             <Shield className="h-5 w-5" /> Credentials & Keys Vault
@@ -241,9 +241,9 @@ export default function VaultSettingsPage() {
           {vault?.services?.map((service) => (
             <Card
               key={service.id}
-              className="border-slate-850 overflow-hidden border shadow-lg"
+              className="border-border overflow-hidden border shadow-lg"
             >
-              <CardHeader className="border-slate-850 flex flex-row items-center justify-between border-b bg-slate-900/20 px-6 py-3.5">
+              <CardHeader className="border-border flex flex-row items-center justify-between border-b bg-muted/20 px-6 py-3.5">
                 <CardTitle className="text-xs font-bold tracking-wider uppercase">
                   {service.name}
                 </CardTitle>
@@ -261,7 +261,7 @@ export default function VaultSettingsPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-rose-500 hover:bg-rose-500/10 hover:text-rose-400"
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => {
                       if (
                         confirm(
@@ -285,21 +285,21 @@ export default function VaultSettingsPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-left text-xs">
                       <thead>
-                        <tr className="border-slate-850 border-b bg-slate-950/20 font-semibold">
+                        <tr className="border-border border-b bg-muted/20 font-semibold">
                           <th className="p-3.5 pl-6">Key / Name</th>
                           <th className="p-3.5">Secret Value</th>
                           <th className="p-3.5">Notes</th>
                           <th className="p-3.5 pr-6 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-slate-850 divide-y">
+                      <tbody className="divide-border divide-y">
                         {service.items.map((item) => {
                           const isRevealed = !!revealedItems[item.id]
                           const isCopied = copiedItemId === item.id
                           return (
                             <tr
                               key={item.id}
-                              className="transition-colors hover:bg-slate-900/10"
+                              className="transition-colors hover:bg-muted/10"
                             >
                               <td className="p-3.5 pl-6 font-mono text-[11px] font-semibold">
                                 {item.key}
@@ -339,7 +339,7 @@ export default function VaultSettingsPage() {
                                     }
                                   >
                                     {isCopied ? (
-                                      <Check className="text-emerald-450 h-3.5 w-3.5" />
+                                      <Check className="text-success h-3.5 w-3.5" />
                                     ) : (
                                       <Copy className="h-3.5 w-3.5" />
                                     )}
@@ -400,7 +400,7 @@ export default function VaultSettingsPage() {
               />
             </div>
           </div>
-          <DialogFooter className="border-slate-850 flex gap-2 border-t pt-4">
+          <DialogFooter className="border-border flex gap-2 border-t pt-4">
             <Button variant="ghost" onClick={() => setIsAddServiceOpen(false)}>
               Cancel
             </Button>

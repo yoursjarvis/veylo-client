@@ -35,7 +35,7 @@ export const FluidTabs: FC<FluidTabsProps> = ({
   }
 
   return (
-    <div className="relative flex items-center gap-1 rounded-full border-[1.6px] border-[#f5f1ebf4] bg-[#F5F1EB] px-1 py-1 transition-colors sm:gap-2 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="relative flex items-center gap-1 rounded-full border-[1.6px] border-border bg-muted/50 px-1 py-1 transition-colors sm:gap-2 dark:border-border dark:bg-muted">
       {tabs.map((tab) => {
         const isActive = active === tab.id
 
@@ -54,7 +54,7 @@ export const FluidTabs: FC<FluidTabsProps> = ({
                   damping: 25,
                   mass: 0.8,
                 }}
-                className="absolute inset-0 rounded-full border border-[#fefefe]/90 bg-linear-to-b from-[#fefefe] to-gray-50/80 shadow-xs dark:border-neutral-600/50 dark:from-neutral-700 dark:to-neutral-800/90"
+                className="absolute inset-0 rounded-full border border-border/50 bg-background shadow-xs dark:border-border/50 dark:bg-card"
               />
             )}
 
@@ -70,8 +70,8 @@ export const FluidTabs: FC<FluidTabsProps> = ({
               }}
               className={`relative z-10 flex items-center gap-1.5 transition-colors duration-200 sm:gap-3 ${
                 isActive
-                  ? "font-bold text-[#292926] dark:text-white"
-                  : "font-semibold text-[#585652] dark:text-neutral-500 group-hover:dark:text-neutral-300"
+                  ? "font-bold text-foreground"
+                  : "font-semibold text-muted-foreground group-hover:text-foreground transition-colors"
               }`}
             >
               <motion.div

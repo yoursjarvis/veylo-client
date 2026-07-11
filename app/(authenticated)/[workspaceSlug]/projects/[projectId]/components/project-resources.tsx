@@ -255,7 +255,7 @@ export function ProjectResources({ projectId }: ProjectResourcesProps) {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="mt-1 text-xs font-medium text-rose-500">
+                          <p className="mt-1 text-xs font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -299,7 +299,7 @@ export function ProjectResources({ projectId }: ProjectResourcesProps) {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="mt-1 text-[11px] font-medium text-rose-500">
+                          <p className="mt-1 text-[11px] font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}

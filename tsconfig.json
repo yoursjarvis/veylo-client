@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "ignoreDeprecations": "6.0"
+    
   },
   "include": [
     "next-env.d.ts",
@@ -31,5 +31,18 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    ".superpowers",
+    ".agents",
+    ".roo",
+    ".claude",
+    ".cursor",
+    ".codex",
+    ".trae",
+    ".windsurf",
+    ".qoder",
+    ".qwen"
+  ]
 }

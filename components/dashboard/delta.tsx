@@ -49,8 +49,8 @@ function Delta({
           className={cn(
             "gap-1 border-none tabular-nums [&_svg]:size-4 [&_svg]:shrink-0",
             value > 0
-              ? "bg-emerald-500/10 text-emerald-500"
-              : "bg-red-500/10 text-red-500",
+              ? "bg-success/10 text-success"
+              : "bg-destructive/10 text-destructive",
             className
           )}
           data-slot="delta"
@@ -62,8 +62,8 @@ function Delta({
           className={cn(
             "inline-flex items-center gap-1 text-muted-foreground tabular-nums",
             "[&_svg]:size-3 [&_svg]:shrink-0",
-            value > 0 ? "text-emerald-600 dark:text-emerald-400" : "",
-            value < 0 ? "text-rose-600 dark:text-rose-400" : "",
+            value > 0 ? "text-success" : "",
+            value < 0 ? "text-destructive" : "",
             className
           )}
           data-slot="delta"
@@ -86,8 +86,8 @@ function FilledShell({
       className={cn(
         "inline-flex size-3 shrink-0 items-center justify-center rounded-full",
         "[&_svg]:size-2! [&_svg]:shrink-0 [&_svg]:stroke-3! [&_svg]:text-background",
-        value > 0 && "bg-emerald-500",
-        value < 0 && "bg-red-500",
+        value > 0 && "bg-success",
+        value < 0 && "bg-destructive",
         (!value || value === 0) && "bg-muted-foreground"
       )}
       data-slot="delta-icon"

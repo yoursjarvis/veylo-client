@@ -373,6 +373,7 @@ export default function ProjectLayout({
     ...(isSoftware || isHybrid
       ? [{ name: "Epics", path: `${basePath}/epics` }]
       : []),
+    { name: "Workload", path: `${basePath}/workload` },
     { name: "Reports", path: `${basePath}/reports` },
     { name: "Files", path: `${basePath}/files` },
     ...(isWorkspaceAdmin

@@ -48,7 +48,7 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-bold flex items-center gap-2">
-          <SlackIcon className="h-5 w-5 text-[#4A154B]" /> Slack Integrations
+          <SlackIcon className="h-5 w-5 text-primary" /> Slack Integrations
         </h3>
         <p className="text-muted-foreground text-sm mt-0.5">
           Receive real-time notifications in your Slack channels when tasks are created, updated, or discussed.
@@ -126,8 +126,8 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                     className="flex items-center justify-between p-4 hover:bg-muted/15 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-8 w-8 rounded-lg bg-[#4A154B]/10 flex items-center justify-center flex-shrink-0">
-                        <SlackIcon className="h-4 w-4 text-[#4A154B]" />
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <SlackIcon className="h-4 w-4 text-primary" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-foreground truncate">

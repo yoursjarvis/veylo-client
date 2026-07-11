@@ -108,11 +108,11 @@ export function TaskReports({
   const donutConfig = {
     completed: {
       label: "Completed",
-      color: "var(--chart-1)",
+      color: "var(--color-chart-1)",
     },
     incomplete: {
       label: "Incomplete",
-      color: "var(--chart-2)",
+      color: "var(--color-chart-2)",
     },
   } satisfies ChartConfig
 
@@ -134,7 +134,7 @@ export function TaskReports({
   const barChartStatusConfig = {
     count: {
       label: "Tasks",
-      color: "var(--chart-1)",
+      color: "var(--color-chart-1)",
     },
   } satisfies ChartConfig
 
@@ -156,7 +156,7 @@ export function TaskReports({
   const assigneeBarConfig = barChartAssigneeData.reduce((acc, entry, idx) => {
     acc[entry.name] = {
       label: entry.name,
-      color: `var(--chart-${(idx % 5) + 1})`,
+      color: `var(--color-chart-${(idx % 5) + 1})`,
     }
     return acc
   }, {} as ChartConfig)
@@ -192,11 +192,11 @@ export function TaskReports({
   const timelineConfig = {
     Total: {
       label: "Total Tasks",
-      color: "var(--chart-2)",
+      color: "var(--color-chart-2)",
     },
     Completed: {
       label: "Completed Tasks",
-      color: "var(--chart-1)",
+      color: "var(--color-chart-1)",
     },
   } satisfies ChartConfig
 
@@ -225,7 +225,7 @@ export function TaskReports({
   const teamConfig = workloadData.reduce((acc, member, idx) => {
     acc[member.name] = {
       label: member.name,
-      color: `var(--chart-${(idx % 5) + 1})`,
+      color: `var(--color-chart-${(idx % 5) + 1})`,
     }
     return acc
   }, {} as ChartConfig)
@@ -259,11 +259,11 @@ export function TaskReports({
   const velocityConfig = {
     totalPlanned: {
       label: "Total Planned Points",
-      color: "var(--chart-2)",
+      color: "var(--color-chart-2)",
     },
     completed: {
       label: "Completed Points",
-      color: "var(--chart-1)",
+      color: "var(--color-chart-1)",
     },
   } satisfies ChartConfig
 
@@ -328,11 +328,11 @@ export function TaskReports({
   const burndownConfig = {
     remaining: {
       label: "Actual Remaining",
-      color: "var(--chart-1)",
+      color: "var(--color-chart-1)",
     },
     ideal: {
       label: "Ideal Remaining",
-      color: "var(--chart-2)",
+      color: "var(--color-chart-2)",
     },
   } satisfies ChartConfig
 

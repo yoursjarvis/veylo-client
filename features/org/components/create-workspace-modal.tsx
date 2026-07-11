@@ -80,7 +80,7 @@ export function CreateWorkspaceModal() {
 
   return (
     <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-112.5">
         <form
           onSubmit={(e) => {
             e.preventDefault()

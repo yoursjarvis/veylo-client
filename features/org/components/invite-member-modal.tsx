@@ -73,25 +73,26 @@ export function InviteMemberModal({
             with a link to join.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Email Address</Label>
             <Input
               id="email"
               type="email"
               placeholder="user@example.com"
+              className="bg-background border-border/50"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
+            <Label htmlFor="role" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Role</Label>
             <Combobox
               items={ROLES}
               value={role}
               onValueChange={(value) => setRole(value || "")}
             >
-              <ComboboxInput placeholder="Select a role" className="w-full" />
+              <ComboboxInput placeholder="Select a role" className="w-full bg-background border-border/50" />
 
               <ComboboxContent>
                 <ComboboxEmpty>No roles found.</ComboboxEmpty>
@@ -108,7 +109,7 @@ export function InviteMemberModal({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button onClick={handleInvite} disabled={inviteMutation.isPending}>

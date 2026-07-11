@@ -234,7 +234,7 @@ export function Dashboard() {
             </CardTitle>
             <HugeiconsIcon
               icon={TaskDaily02Icon}
-              className="h-6 w-6 text-blue-500"
+              className="h-6 w-6 text-info"
             />
           </CardHeader>
           <CardContent>
@@ -248,7 +248,7 @@ export function Dashboard() {
             </CardTitle>
             <HugeiconsIcon
               icon={ChartLineData01Icon}
-              className="h-6 w-6 text-emerald-500"
+              className="h-6 w-6 text-success"
             />
           </CardHeader>
           <CardContent>
@@ -268,7 +268,7 @@ export function Dashboard() {
             </CardTitle>
             <HugeiconsIcon
               icon={UserGroup03Icon}
-              className="h-6 w-6 text-orange-500"
+              className="h-6 w-6 text-warning"
             />
           </CardHeader>
           <CardContent>
@@ -319,14 +319,14 @@ export function Dashboard() {
                     dataKey="done"
                     name="Completed"
                     stackId="a"
-                    fill="var(--chart-1)"
+                    fill="var(--color-chart-1)"
                     radius={[0, 0, 0, 0]}
                   />
                   <Bar
                     dataKey="incomplete"
                     name="Incomplete"
                     stackId="a"
-                    fill="var(--chart-2)"
+                    fill="var(--color-chart-2)"
                     radius={[0, 4, 4, 0]}
                   />
                 </BarChart>
@@ -390,13 +390,13 @@ export function Dashboard() {
                             "bg-transparent text-muted-foreground"
                           if (count > 0 && count <= 2)
                             intensityClass =
-                              "bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold"
+                              "bg-info/20 text-info font-bold"
                           else if (count > 2 && count <= 5)
                             intensityClass =
-                              "bg-blue-500/50 text-blue-800 dark:text-blue-200 font-bold"
+                              "bg-info/50 text-info font-bold"
                           else if (count > 5)
                             intensityClass =
-                              "bg-red-500/80 text-white font-bold"
+                              "bg-destructive/80 text-destructive-foreground font-bold"
 
                           return (
                             <td key={p.id} className="px-4 py-2 text-center">
@@ -434,7 +434,7 @@ export function Dashboard() {
               Approve or reject tasks requesting stakeholder review.
             </p>
           </div>
-          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-bold text-amber-500">
+          <span className="rounded-full bg-warning/10 px-2 py-0.5 text-xs font-bold text-warning">
             {pendingApprovals.length} pending
           </span>
         </CardHeader>

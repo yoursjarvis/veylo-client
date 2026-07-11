@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 
 interface RolesTableProps {
@@ -26,6 +27,12 @@ interface RolesTableProps {
 export function RolesTable({ organizationId }: RolesTableProps) {
   const { data: roles, isLoading } = useOrganizationRoles(organizationId);
   const deleteRole = useDeleteRole(organizationId);
+  const { hasPermission } = usePermissions();
+  
+  const canCreateRole = hasPermission("role:create");
+  const canUpdateRole = hasPermission("role:update");
+  const canDeleteRole = hasPermission("role:delete");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   
@@ -50,14 +57,16 @@ export function RolesTable({ organizationId }: RolesTableProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">Organization Roles</h2>
-        <Button 
-          size="sm" 
-          className="gap-2" 
-          onClick={() => { setSelectedRole(null); setIsModalOpen(true); }}
-        >
-          <Plus className="w-4 h-4" />
-          Create Custom Role
-        </Button>
+        {canCreateRole && (
+          <Button 
+            size="sm" 
+            className="gap-2" 
+            onClick={() => { setSelectedRole(null); setIsModalOpen(true); }}
+          >
+            <Plus className="w-4 h-4" />
+            Create Custom Role
+          </Button>
+        )}
       </div>
 
       <Card className="border shadow-sm overflow-hidden">
@@ -91,19 +100,21 @@ export function RolesTable({ organizationId }: RolesTableProps) {
                   </TableCell>
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-all gap-1.5"
-                        onClick={() => {
-                          setSelectedRole(role.id);
-                          setIsModalOpen(true);
-                        }}
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        {role.name.toLowerCase() === "owner" ? "View" : "Edit"}
-                      </Button>
-                      {role.name.toLowerCase() !== "owner" && (
+                      {(role.name.toLowerCase() === "owner" || canUpdateRole) && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-all gap-1.5"
+                          onClick={() => {
+                            setSelectedRole(role.id);
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          {role.name.toLowerCase() === "owner" || !canUpdateRole ? "View" : "Edit"}
+                        </Button>
+                      )}
+                      {role.name.toLowerCase() !== "owner" && canDeleteRole && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -133,7 +144,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
       />
 
       <AlertDialog open={!!roleToDelete} onOpenChange={(open) => !open && setRoleToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-112.5">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />

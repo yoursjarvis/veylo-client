@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { axiosInstance } from "@/lib/axios"
 import { useTheme } from "next-themes"
-import EmojiPicker, { Theme } from "emoji-picker-react"
+import EmojiPicker, { Theme, SkinTones } from "emoji-picker-react"
 import { Editor, mergeAttributes, Range } from "@tiptap/core"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
 import Image from "@tiptap/extension-image"
@@ -446,6 +446,12 @@ export function RichTextEditor({
   const { resolvedTheme, theme } = useTheme()
   const isDarkMode = resolvedTheme === "dark" || theme === "dark"
   const [showEmojiPicker, setShowEmojiPicker] = React.useState(false)
+  const [skinTone, setSkinTone] = React.useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return window.localStorage.getItem("veylo-emoji-skintone") ?? "neutral"
+    }
+    return "neutral"
+  })
 
   const onEmojiClick = (emojiObject: { emoji: string }) => {
     editor?.chain().focus().insertContent(emojiObject.emoji).run()
@@ -518,7 +524,7 @@ export function RichTextEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-blue-500 underline cursor-pointer",
+          class: "text-primary underline cursor-pointer",
         },
       }),
       Image.configure({
@@ -1073,6 +1079,13 @@ export function RichTextEditor({
               <EmojiPicker
                 onEmojiClick={onEmojiClick}
                 theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
+                defaultSkinTone={skinTone as any}
+                onSkinToneChange={(newSkinTone) => {
+                  setSkinTone(newSkinTone)
+                  if (typeof window !== "undefined") {
+                    window.localStorage.setItem("veylo-emoji-skintone", newSkinTone)
+                  }
+                }}
               />
             </PopoverContent>
           </Popover>
@@ -1137,7 +1150,7 @@ export function RichTextRenderer({
       Link.configure({
         openOnClick: true,
         HTMLAttributes: {
-          class: "text-blue-500 underline cursor-pointer",
+          class: "text-primary underline cursor-pointer",
         },
       }),
       Image.configure({
