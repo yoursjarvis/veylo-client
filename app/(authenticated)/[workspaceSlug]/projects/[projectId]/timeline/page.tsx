@@ -12,6 +12,7 @@ export default function TimelinePage() {
       key={projectId}
       workspaceId={selectedProject?.workspaceId || ""}
       projectId={projectId}
+      selectedProject={selectedProject}
       onSelectTask={handleSelectTask}
     />
   );

@@ -12,6 +12,7 @@ export interface TabItem {
 
 interface FluidTabsProps {
   tabs?: TabItem[]
+  active?: string
   defaultActive?: string
   onChange?: (id: string) => void
 }
@@ -24,18 +25,22 @@ const DEFAULT_TABS: TabItem[] = [
 
 export const FluidTabs: FC<FluidTabsProps> = ({
   tabs = DEFAULT_TABS,
+  active: controlledActive,
   defaultActive = tabs[0]?.id,
   onChange,
 }) => {
-  const [active, setActive] = useState<string>(defaultActive)
+  const [internalActive, setInternalActive] = useState<string>(defaultActive)
+  const active = controlledActive !== undefined ? controlledActive : internalActive
 
   const handleChange = (id: string) => {
-    setActive(id)
+    if (controlledActive === undefined) {
+      setInternalActive(id)
+    }
     onChange?.(id)
   }
 
   return (
-    <div className="relative flex items-center gap-1 rounded-full border-[1.6px] border-border bg-muted/50 px-1 py-1 transition-colors sm:gap-2 dark:border-border dark:bg-muted">
+    <div className="relative flex items-center gap-0.5 rounded-lg border border-border bg-background p-1 transition-colors dark:bg-muted select-none">
       {tabs.map((tab) => {
         const isActive = active === tab.id
 
@@ -43,7 +48,7 @@ export const FluidTabs: FC<FluidTabsProps> = ({
           <button
             key={tab.id}
             onClick={() => handleChange(tab.id)}
-            className="group relative rounded-full px-3 py-2.5 outline-none sm:px-4 sm:py-3.5"
+            className="group relative rounded-md px-3 py-1 outline-none transition-all"
           >
             {isActive && (
               <motion.div
@@ -54,7 +59,7 @@ export const FluidTabs: FC<FluidTabsProps> = ({
                   damping: 25,
                   mass: 0.8,
                 }}
-                className="absolute inset-0 rounded-full border border-border/50 bg-background shadow-xs dark:border-border/50 dark:bg-card"
+                className="absolute inset-0 rounded-md bg-primary shadow-xs"
               />
             )}
 
@@ -68,23 +73,25 @@ export const FluidTabs: FC<FluidTabsProps> = ({
                   ? ["blur(0px)", "blur(4px)", "blur(0px)"]
                   : "blur(0px)",
               }}
-              className={`relative z-10 flex items-center gap-1.5 transition-colors duration-200 sm:gap-3 ${
+              className={`relative z-10 flex items-center gap-1.5 transition-colors duration-200 ${
                 isActive
-                  ? "font-bold text-foreground"
-                  : "font-semibold text-muted-foreground group-hover:text-foreground transition-colors"
+                  ? "font-bold text-primary-foreground animate-none"
+                  : "font-semibold text-muted-foreground group-hover:text-foreground"
               }`}
             >
-              <motion.div
-                animate={{ scale: isActive ? 1.03 : 1 }}
-                transition={{
-                  scale: { type: "spring", stiffness: 300, damping: 15 },
-                }}
-                className="flex shrink-0 items-center justify-center"
-              >
-                {tab.icon}
-              </motion.div>
+              {tab.icon && (
+                <motion.div
+                  animate={{ scale: isActive ? 1.03 : 1 }}
+                  transition={{
+                    scale: { type: "spring", stiffness: 300, damping: 15 },
+                  }}
+                  className="flex shrink-0 items-center justify-center animate-none"
+                >
+                  {tab.icon}
+                </motion.div>
+              )}
 
-              <span className="text-sm tracking-tight whitespace-nowrap sm:text-base">
+              <span className="text-[11px] tracking-tight whitespace-nowrap">
                 {tab.label}
               </span>
             </motion.div>
