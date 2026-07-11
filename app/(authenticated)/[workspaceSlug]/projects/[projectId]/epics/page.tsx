@@ -268,7 +268,7 @@ export default function EpicsPage() {
                           {epic.title}
                         </CardTitle>
                       </div>
-                      <p className="text-[10px]">ID: {epic.id.slice(0, 8)}</p>
+                      <p className="text-2xs">ID: {epic.id.slice(0, 8)}</p>
                     </div>
 
                     <div className="flex items-center gap-1">
@@ -299,7 +299,7 @@ export default function EpicsPage() {
 
                   <div className="mt-auto space-y-3">
                     {/* Dates */}
-                    <div className="flex items-center gap-2 text-[10px]">
+                    <div className="flex items-center gap-2 text-2xs">
                       <Calendar className="h-3.5 w-3.5" />
                       <span>
                         {epic.startDate
@@ -314,7 +314,7 @@ export default function EpicsPage() {
 
                     {/* Progress Bar */}
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] font-semibold">
+                      <div className="flex justify-between text-2xs font-semibold">
                         <span>Progress</span>
                         <span>
                           {doneTasksCount} / {totalTasksCount} tasks ({progress}
@@ -395,7 +395,7 @@ export default function EpicsPage() {
                         className="h-9 text-xs"
                       />
                       {hasError && (
-                        <p className="mt-1 text-[11px] font-medium text-destructive">
+                        <p className="mt-1 text-2xs font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -431,7 +431,7 @@ export default function EpicsPage() {
                         className="min-h-22.5 text-xs"
                       />
                       {hasError && (
-                        <p className="mt-1 text-[11px] font-medium text-destructive">
+                        <p className="mt-1 text-2xs font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -505,7 +505,7 @@ export default function EpicsPage() {
                           </PopoverContent>
                         </Popover>
                         {hasError && (
-                          <p className="mt-1 text-[11px] font-medium text-rose-500">
+                          <p className="mt-1 text-2xs font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -590,7 +590,7 @@ export default function EpicsPage() {
                           </PopoverContent>
                         </Popover>
                         {hasError && (
-                          <p className="mt-1 text-[11px] font-medium text-rose-500">
+                          <p className="mt-1 text-2xs font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}

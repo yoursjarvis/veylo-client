@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
 import type {
@@ -26,6 +26,122 @@ export function useProjectTasks(projectId: string, filters: Record<string, unkno
       return response.data.data;
     },
     enabled: !!projectId,
+  });
+}
+
+export function useProjectTasksInfinite(
+  projectId: string,
+  filters: Record<string, unknown> = {},
+  limit: number = 50
+) {
+  return useInfiniteQuery({
+    queryKey: ["tasks", "infinite", projectId, filters, limit],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await axiosInstance.get(`/projects/${projectId}/tasks`, {
+        params: {
+          ...filters,
+          page: pageParam,
+          limit,
+        },
+      });
+      const responseData = response.data;
+      if (responseData && responseData.data && responseData.meta) {
+        return {
+          data: responseData.data,
+          meta: responseData.meta,
+        };
+      }
+      const data = responseData.data || responseData;
+      return {
+        data: Array.isArray(data) ? data : [],
+        meta: {
+          page: pageParam as number,
+          totalPages: Array.isArray(data) && data.length < limit ? (pageParam as number) : (pageParam as number) + 1,
+        },
+      };
+    },
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.meta.page + 1;
+      return nextPage <= lastPage.meta.totalPages ? nextPage : undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!projectId,
+  });
+}
+
+export function useWorkspaceTasksInfinite(
+  workspaceId: string,
+  filters: Record<string, unknown> = {},
+  limit: number = 50
+) {
+  return useInfiniteQuery({
+    queryKey: ["tasks", "infinite", "workspace", workspaceId, filters, limit],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await axiosInstance.get(`/workspaces/${workspaceId}/tasks`, {
+        params: {
+          ...filters,
+          page: pageParam,
+          limit,
+        },
+      });
+      const responseData = response.data;
+      if (responseData && responseData.data && responseData.meta) {
+        return {
+          data: responseData.data,
+          meta: responseData.meta,
+        };
+      }
+      const data = responseData.data || responseData;
+      return {
+        data: Array.isArray(data) ? data : [],
+        meta: {
+          page: pageParam as number,
+          totalPages: Array.isArray(data) && data.length < limit ? (pageParam as number) : (pageParam as number) + 1,
+        },
+      };
+    },
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.meta.page + 1;
+      return nextPage <= lastPage.meta.totalPages ? nextPage : undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!workspaceId,
+  });
+}
+
+export async function prefetchNextProjectTasksPage(
+  queryClient: ReturnType<typeof useQueryClient>,
+  projectId: string,
+  filters: Record<string, unknown> = {},
+  nextPage: number,
+  limit: number = 50
+) {
+  await queryClient.prefetchQuery({
+    queryKey: ["tasks", "infinite", projectId, filters, limit],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/projects/${projectId}/tasks`, {
+        params: {
+          ...filters,
+          page: nextPage,
+          limit,
+        },
+      });
+      const responseData = response.data;
+      if (responseData && responseData.data && responseData.meta) {
+        return {
+          data: responseData.data,
+          meta: responseData.meta,
+        };
+      }
+      const data = responseData.data || responseData;
+      return {
+        data: Array.isArray(data) ? data : [],
+        meta: {
+          page: nextPage,
+          totalPages: Array.isArray(data) && data.length < limit ? nextPage : nextPage + 1,
+        },
+      };
+    },
   });
 }
 

@@ -158,7 +158,7 @@ function TriggerForm({
             })
           }
         >
-          <SelectTrigger className="w-full border-input bg-background">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Event Type">
               {(val: string) => {
                 const labels: Record<string, string> = {
@@ -196,7 +196,7 @@ function TriggerForm({
                 })
               }
             >
-              <SelectTrigger className="w-full border-input bg-background">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Any Status">
                   {(val: string) => {
                     if (!val || val === "any") return "Any Status"
@@ -229,7 +229,7 @@ function TriggerForm({
                 })
               }
             >
-              <SelectTrigger className="w-full border-input bg-background">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Any Status">
                   {(val: string) => {
                     if (!val || val === "any") return "Any Status"
@@ -297,7 +297,7 @@ function ActionForm({
     icon: (
       <Avatar className="h-5 w-5 shrink-0 border border-border">
         <AvatarImage src={m.user?.image || ""} />
-        <AvatarFallback className="bg-muted text-[8px] font-bold text-foreground">
+        <AvatarFallback className="bg-muted text-2xs font-bold text-foreground">
           {m.user?.name?.charAt(0).toUpperCase() || "?"}
         </AvatarFallback>
       </Avatar>
@@ -320,7 +320,7 @@ function ActionForm({
             })
           }
         >
-          <SelectTrigger className="w-full border-input bg-background">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Action Type">
               {(val: string) => {
                 const labels: Record<string, string> = {
@@ -399,7 +399,7 @@ function ActionForm({
               })
             }
           >
-            <SelectTrigger className="w-full border-input bg-background">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select Status">
                 {(val: string) => {
                   if (!val) return "Select Status"
@@ -483,7 +483,7 @@ function ConditionForm({
             })
           }
         >
-          <SelectTrigger className="w-full border-input bg-background">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Operator">
               {(val: string) => {
                 const labels: Record<string, string> = {

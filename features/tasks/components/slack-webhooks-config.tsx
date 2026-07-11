@@ -72,7 +72,7 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                   placeholder="https://hooks.slack.com/services/..."
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="bg-background border-border text-sm"
+                  className="text-sm"
                   required
                 />
               </div>
@@ -85,7 +85,7 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                   placeholder="#project-updates"
                   value={channel}
                   onChange={(e) => setChannel(e.target.value)}
-                  className="bg-background border-border text-sm"
+                  className="text-sm"
                 />
               </div>
               <Button
@@ -133,7 +133,7 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                         <p className="text-xs font-bold text-foreground truncate">
                           {webhook.channel || "Default Channel"}
                         </p>
-                        <p className="text-[10px] text-muted-foreground truncate max-w-md">
+                        <p className="text-2xs text-muted-foreground truncate max-w-md">
                           {webhook.url}
                         </p>
                       </div>

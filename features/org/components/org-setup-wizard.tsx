@@ -159,7 +159,7 @@ export function OrgSetupWizard() {
                  ) : (
                    <div className="flex flex-col items-center text-muted-foreground">
                       <HugeiconsIcon icon={Upload04Icon} size={24} className="mb-1" />
-                      <span className="text-[10px] font-medium uppercase tracking-wider">Upload Logo</span>
+                      <span className="text-2xs font-medium uppercase tracking-wider">Upload Logo</span>
                    </div>
                  )}
                  <input 

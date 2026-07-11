@@ -376,7 +376,7 @@ export default function ProjectsPage() {
                       onChange={handleProjectKeyChange}
                       className="h-9 rounded-lg border border-border bg-background text-xs uppercase"
                     />
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       This key will be used to generate task IDs such as DEV-1,
                       DEV-2, and DEV-3.
                     </p>
@@ -389,7 +389,7 @@ export default function ProjectsPage() {
                         <p className="text-xs font-semibold">
                           Project Key cannot be changed
                         </p>
-                        <p className="text-[10px] leading-relaxed opacity-90">
+                        <p className="text-2xs leading-relaxed opacity-90">
                           Once the project is created, its key becomes permanent
                           and cannot be edited later. Choose a short, meaningful
                           key carefully.
@@ -444,14 +444,14 @@ export default function ProjectsPage() {
                                     {tpl.name}
                                   </span>
                                   {tpl.description && (
-                                    <span className="line-clamp-1 max-w-50 truncate text-[10px] text-muted-foreground">
+                                    <span className="line-clamp-1 max-w-50 truncate text-2xs text-muted-foreground">
                                       {tpl.description}
                                     </span>
                                   )}
                                 </div>
                                 <Badge
                                   variant="outline"
-                                  className="ml-auto shrink-0 px-1 py-0 text-[8px] leading-none uppercase"
+                                  className="ml-auto shrink-0 px-1 py-0 text-2xs leading-none uppercase"
                                 >
                                   {tpl.category}
                                 </Badge>
@@ -574,7 +574,7 @@ export default function ProjectsPage() {
                   </div>
                 </div>
                 <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <span className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">
                     {project.projectKey}
                   </span>
                   <Badge variant="secondary" className="px-2 py-0.5">

@@ -209,12 +209,12 @@ export default function LabelsSettingsPage() {
                     >
                       <div className="flex items-center gap-3">
                         <span
-                          className="rounded-full px-2.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-sm"
+                          className="rounded-full px-2.5 py-0.5 text-2xs font-bold text-primary-foreground shadow-sm"
                           style={{ backgroundColor: lbl.color }}
                         >
                           {lbl.name}
                         </span>
-                        <span className="font-mono text-[10px] text-muted-foreground">
+                        <span className="font-mono text-2xs text-muted-foreground">
                           {lbl.color}
                         </span>
                       </div>
@@ -287,7 +287,7 @@ export default function LabelsSettingsPage() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="mt-1 text-[11px] font-medium text-destructive">
+                          <p className="mt-1 text-2xs font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -309,7 +309,7 @@ export default function LabelsSettingsPage() {
                             type="button"
                             onClick={() => field.handleChange(preset.hex)}
                             className={cn(
-                              "flex h-8 w-full items-center justify-center rounded-md border text-[9px] font-semibold text-primary-foreground transition-all hover:scale-105",
+                              "flex h-8 w-full items-center justify-center rounded-md border text-2xs font-semibold text-primary-foreground transition-all hover:scale-105",
                               field.state.value === preset.hex
                                 ? "scale-100 border-primary-foreground ring-2 ring-primary"
                                 : "border-transparent"

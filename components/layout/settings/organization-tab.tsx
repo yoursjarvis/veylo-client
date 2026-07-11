@@ -146,7 +146,7 @@ export function OrganizationTab() {
                     aria-invalid={hasError}
                   />
                   {hasError && (
-                    <p className="text-[11px] text-destructive font-medium mt-1">
+                    <p className="text-2xs text-destructive font-medium mt-1">
                       {fieldErrors.join(", ")}
                     </p>
                   )}
@@ -161,7 +161,6 @@ export function OrganizationTab() {
               id="orgSlug"
               value={activeOrg.slug || ""}
               disabled
-              className="bg-muted/50"
             />
             <p className="text-xs text-muted-foreground">
               The URL slug is used for your organization&apos;s custom domain. It cannot be changed here.

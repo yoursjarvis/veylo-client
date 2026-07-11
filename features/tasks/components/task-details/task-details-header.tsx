@@ -113,7 +113,7 @@ export function TaskDetailsHeader({
         />
         <div className="flex items-center gap-2 px-1.5 text-xs text-muted-foreground">
           <span>Task Key:</span>
-          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-foreground uppercase">
+          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-2xs font-semibold tracking-wider text-foreground uppercase">
             {task.taskKey || task.id.substring(0, 8)}
           </span>
         </div>

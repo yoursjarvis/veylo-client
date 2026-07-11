@@ -69,14 +69,14 @@ export function TaskDetailsSubtasks({
               <Button
                 type="button"
                 variant="outline"
-                className="h-7 text-[10px] font-semibold flex items-center gap-1.5"
+                className="h-7 text-2xs font-semibold flex items-center gap-1.5"
               />
             }>
               <HugeiconsIcon icon={Add01Icon} size={10} />
               Load Template
             </PopoverTrigger>
             <PopoverContent align="end" className="w-56 p-1.5">
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 border-b border-border/40 mb-1">
+              <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 border-b border-border/40 mb-1">
                 Apply Checklist Template
               </div>
               {templates.map((tpl: { id: string; name: string; description?: string }) => (
@@ -91,7 +91,7 @@ export function TaskDetailsSubtasks({
                 >
                   <span className="text-foreground">{tpl.name}</span>
                   {tpl.description && (
-                    <span className="text-[9px] text-muted-foreground line-clamp-1">{tpl.description}</span>
+                    <span className="text-2xs text-muted-foreground line-clamp-1">{tpl.description}</span>
                   )}
                 </button>
               ))}
@@ -153,7 +153,7 @@ export function TaskDetailsSubtasks({
                       {subtaskAssignee ? (
                         <Avatar className="h-5 w-5">
                           <AvatarImage src={subtaskAssignee.image || ""} />
-                          <AvatarFallback className="text-[9px]">
+                          <AvatarFallback className="text-2xs">
                             {subtaskAssignee.name?.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
@@ -189,7 +189,7 @@ export function TaskDetailsSubtasks({
                               >
                                 <Avatar className="mr-2 h-5 w-5">
                                   <AvatarImage src={member.user?.image || ""} />
-                                  <AvatarFallback className="text-[9px]">
+                                  <AvatarFallback className="text-2xs">
                                     {member.user?.name?.charAt(0).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
@@ -211,7 +211,7 @@ export function TaskDetailsSubtasks({
                     <button
                       type="button"
                       className={cn(
-                        "flex items-center gap-1 rounded border border-transparent px-1.5 py-0.5 text-[10px] font-medium transition-colors hover:border-border/50 hover:bg-muted",
+                        "flex items-center gap-1 rounded border border-transparent px-1.5 py-0.5 text-2xs font-medium transition-colors hover:border-border/50 hover:bg-muted",
                         subtask.dueDate ? "text-foreground" : "text-muted-foreground"
                       )}
                       title="Set due date"
@@ -255,7 +255,7 @@ export function TaskDetailsSubtasks({
           placeholder="Add a subtask..."
           value={newSubtaskTitle}
           onChange={(e) => setNewSubtaskTitle(e.target.value)}
-          className="h-8 flex-1 border border-border bg-background text-xs text-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+          className="h-8 flex-1 text-xs"
         />
         <Button
           type="submit"

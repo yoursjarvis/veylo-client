@@ -192,7 +192,7 @@ export function TaskDetailsSidebar({
       icon: (
         <Avatar className="h-5 w-5 border border-border">
           <AvatarImage src={m.user?.image || ""} />
-          <AvatarFallback className="bg-muted text-[8px] font-bold text-muted-foreground">
+          <AvatarFallback className="bg-muted text-2xs font-bold text-muted-foreground">
             {m.user?.name?.charAt(0).toUpperCase() || "-"}
           </AvatarFallback>
         </Avatar>
@@ -246,7 +246,7 @@ export function TaskDetailsSidebar({
         </h3>
         <div className="space-y-4">
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Status</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Status</span>
             <div className="pt-1">
               <ComboboxSelect
                 value={task.statusId}
@@ -259,7 +259,7 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Assignee</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Assignee</span>
             <div className="pt-1">
               {!task.assigneeId ? (
                 <span
@@ -295,7 +295,7 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Reporter</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Reporter</span>
             <div className="pt-1">
               <ComboboxSelect
                 value={task.reporterId || ""}
@@ -308,7 +308,7 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Type</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Type</span>
             <div className="pt-1">
               <ComboboxSelect
                 value={task.type}
@@ -321,7 +321,7 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Priority</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Priority</span>
             <div className="pt-1">
               <ComboboxSelect
                 value={task.priority}
@@ -334,7 +334,7 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Privacy</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Privacy</span>
             <div className="flex items-center gap-2 pt-1">
               <Checkbox
                 id="isPrivate"
@@ -362,7 +362,7 @@ export function TaskDetailsSidebar({
         <div className="space-y-4">
           {(projectTemplate === "scrum" || projectTemplate === "software-scrum" || (projectSprints && projectSprints.length > 0)) && (
             <div className="space-y-1.5 border-b border-border/50 pb-3">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sprint</span>
+              <span className="text-2xs uppercase tracking-wider text-muted-foreground">Sprint</span>
               <div className="pt-1">
                 <ComboboxSelect
                   value={task.sprintId || ""}
@@ -376,7 +376,7 @@ export function TaskDetailsSidebar({
           )}
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Estimate</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Estimate</span>
             <div className="pt-1">
               <Input
                 type="number"
@@ -394,7 +394,7 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Due Date</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Due Date</span>
             <div className="pt-1">
               <Popover>
                 <PopoverTrigger render={
@@ -431,12 +431,12 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Logged Time</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Logged Time</span>
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-foreground">{totalLoggedHours} hrs</span>
                 {task.estimate ? (
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-2xs text-muted-foreground">
                     of {task.estimate}h estimate ({Math.min(100, Math.round((totalLoggedHours / task.estimate) * 100))}% logged)
                   </span>
                 ) : null}
@@ -473,7 +473,7 @@ export function TaskDetailsSidebar({
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-6 px-2 text-[10px]"
+                        className="h-6 px-2 text-2xs"
                         onClick={submitTimer}
                       >
                         Log
@@ -483,7 +483,7 @@ export function TaskDetailsSidebar({
                       <Button
                         type="button"
                         variant="ghost"
-                        className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive"
+                        className="h-6 px-2 text-2xs text-muted-foreground hover:text-destructive"
                         onClick={resetTimer}
                       >
                         Clear
@@ -496,7 +496,7 @@ export function TaskDetailsSidebar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-7 w-full text-[11px] font-medium flex items-center justify-center gap-1 mt-1"
+                className="h-7 w-full text-2xs font-medium flex items-center justify-center gap-1 mt-1"
                 onClick={() => setIsLogWorkOpen(true)}
               >
                 <HugeiconsIcon icon={Add01Icon} size={11} />
@@ -580,7 +580,7 @@ export function TaskDetailsSidebar({
                         className="group [&>div:last-child]:hidden [&>div:last-child]:border-t-0 [&>div:last-child]:bg-transparent focus-within:[&>div:last-child]:flex"
                       />
                       {descError && (
-                        <p className="text-[11px] font-medium text-destructive">
+                        <p className="text-2xs font-medium text-destructive">
                           What did you do is required.
                         </p>
                       )}
@@ -619,7 +619,7 @@ export function TaskDetailsSidebar({
                     <Button
                       type="button"
                       variant="ghost"
-                      className="h-6 w-full text-[10px] text-muted-foreground hover:text-foreground font-medium flex items-center justify-center"
+                      className="h-6 w-full text-2xs text-muted-foreground hover:text-foreground font-medium flex items-center justify-center"
                     />
                   }>
                     Show History ({workLogs.length})
@@ -627,13 +627,13 @@ export function TaskDetailsSidebar({
                   <PopoverContent className="w-72 p-3 max-h-60 overflow-y-auto space-y-2" align="start">
                     <h4 className="font-bold text-xs border-b border-border pb-1">Work Log History</h4>
                     {workLogs.map((log: { id: string; hoursLogged: number; description?: string; loggedAt?: string; user?: { name?: string } }) => (
-                      <div key={log.id} className="text-[11px] flex justify-between gap-2 border-b border-border/30 pb-2 last:border-0 last:pb-0">
+                      <div key={log.id} className="text-2xs flex justify-between gap-2 border-b border-border/30 pb-2 last:border-0 last:pb-0">
                         <div className="space-y-0.5">
                           <div className="font-medium text-foreground">
                             {log.hoursLogged} hrs by <span className="font-semibold">{log.user?.name || "Member"}</span>
                           </div >
                           {log.description && <div className="text-muted-foreground">{log.description}</div>}
-                          <div className="text-[9px] text-muted-foreground/60">
+                          <div className="text-2xs text-muted-foreground/60">
                             {log.loggedAt ? format(new Date(log.loggedAt), "MMM d, yyyy h:mm a") : ""}
                           </div >
                         </div >
@@ -668,7 +668,7 @@ export function TaskDetailsSidebar({
         </h3>
         <div className="space-y-4">
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Epic</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Epic</span>
             <div className="pt-1">
               <ComboboxSelect
                 value={task.epicId || ""}
@@ -681,7 +681,7 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Milestone</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Milestone</span>
             <div className="pt-1">
               <ComboboxSelect
                 value={task.milestoneId || ""}
@@ -694,7 +694,7 @@ export function TaskDetailsSidebar({
           </div >
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Labels</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Labels</span>
             <div className="pt-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 {projectLabels
@@ -714,7 +714,7 @@ export function TaskDetailsSidebar({
                         onFieldChange("labelIds", nextIds)
                       }}
                       className={cn(
-                        "group relative flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all hover:opacity-85 focus-visible:ring-2 focus-visible:ring-primary/20",
+                        "group relative flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-2xs font-semibold transition-all hover:opacity-85 focus-visible:ring-2 focus-visible:ring-primary/20",
                         !lbl.color && "bg-primary/10 border-primary/20 text-primary"
                       )}
                       style={lbl.color ? {
@@ -735,13 +735,13 @@ export function TaskDetailsSidebar({
                   <PopoverTrigger render={
                     <button
                       type="button"
-                      className="flex items-center gap-1 rounded border border-dashed border-border bg-transparent px-2 py-0.5 text-[11px] text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+                      className="flex items-center gap-1 rounded border border-dashed border-border bg-transparent px-2 py-0.5 text-2xs text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                     />
                   }>
                       <HugeiconsIcon icon={Add01Icon} size={11} /> Add Label
                   </PopoverTrigger>
                   <PopoverContent className="w-48 p-1.5" align="start">
-                    <div className="mb-1 border-b border-border/50 px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase">
+                    <div className="mb-1 border-b border-border/50 px-2 py-1 text-2xs font-bold text-muted-foreground uppercase">
                       Toggle Labels
                     </div >
                     <div className="max-h-48 space-y-0.5 overflow-y-auto">
@@ -812,7 +812,7 @@ export function TaskDetailsSidebar({
                   return (
                     <div key={fieldDef.id} className="space-y-1.5 border-b border-border/50 pb-3">
                       <span
-                        className="text-[10px] uppercase tracking-wider text-muted-foreground"
+                        className="text-2xs uppercase tracking-wider text-muted-foreground"
                         title={fieldDef.name}
                       >
                         {fieldDef.name}

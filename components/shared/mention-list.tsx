@@ -99,7 +99,7 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
           >
             <Avatar className="h-5 w-5 shrink-0 border border-border">
               <AvatarImage src={item.user.image || ""} />
-              <AvatarFallback className="bg-muted text-[10px] text-foreground">
+              <AvatarFallback className="bg-muted text-2xs text-foreground">
                 {item.user.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

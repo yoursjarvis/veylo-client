@@ -248,13 +248,13 @@ const CommentNode = ({
             <span className="text-xs font-bold text-foreground">
               {comment.user?.name}
               {comment.isEdited && (
-                <span className="ml-1.5 text-[10px] font-normal text-muted-foreground italic">
+                <span className="ml-1.5 text-2xs font-normal text-muted-foreground italic">
                   (edited)
                 </span>
               )}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-medium text-muted-foreground">
+              <span className="text-2xs font-medium text-muted-foreground">
                 {format(new Date(comment.createdAt), "MMM d, h:mm a")}
               </span>
             </div>
@@ -279,7 +279,7 @@ const CommentNode = ({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2.5 text-[10px]"
+                  className="h-7 px-2.5 text-2xs"
                   onClick={() => {
                     setEditingCommentId(null)
                     setEditingContent("")
@@ -291,7 +291,7 @@ const CommentNode = ({
                   type="button"
                   variant="default"
                   size="sm"
-                  className="h-7 px-2.5 text-[10px]"
+                  className="h-7 px-2.5 text-2xs"
                   onClick={() => handleUpdateComment(comment.id)}
                 >
                   Save
@@ -315,7 +315,7 @@ const CommentNode = ({
                     setReplyingToCommentId(comment.id)
                     setReplyContent("")
                   }}
-                  className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-primary"
+                  className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-primary"
                 >
                   Reply
                 </button>
@@ -327,14 +327,14 @@ const CommentNode = ({
                         setEditingCommentId(comment.id)
                         setEditingContent(comment.content)
                       }}
-                      className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-primary"
+                      className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-primary"
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteCommentMutation.mutate(comment.id)}
-                      className="text-[10px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
+                      className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-destructive"
                     >
                       Delete
                     </button>
@@ -400,7 +400,7 @@ const CommentNode = ({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-7 px-2.5 text-[10px]"
+              className="h-7 px-2.5 text-2xs"
               onClick={() => setReplyingToCommentId(null)}
             >
               Cancel
@@ -409,7 +409,7 @@ const CommentNode = ({
               type="button"
               variant="default"
               size="sm"
-              className="h-7 px-2.5 text-[10px]"
+              className="h-7 px-2.5 text-2xs"
               onClick={() => handleAddReply(comment.id)}
             >
               Reply
@@ -423,7 +423,7 @@ const CommentNode = ({
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="flex items-center gap-1 text-[10px] font-bold text-primary transition-all hover:text-primary/80"
+            className="flex items-center gap-1 text-2xs font-bold text-primary transition-all hover:text-primary/80"
           >
             <HugeiconsIcon
               icon={Message01Icon}

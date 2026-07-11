@@ -120,7 +120,7 @@ export function ProfileTab() {
                       aria-invalid={hasError}
                     />
                     {hasError && (
-                      <p className="text-[11px] text-destructive font-medium mt-1">
+                      <p className="text-2xs text-destructive font-medium mt-1">
                         {fieldErrors.join(", ")}
                       </p>
                     )}
@@ -159,7 +159,7 @@ export function ProfileTab() {
                       aria-invalid={hasError}
                     />
                     {hasError && (
-                      <p className="text-[11px] text-destructive font-medium mt-1">
+                      <p className="text-2xs text-destructive font-medium mt-1">
                         {fieldErrors.join(", ")}
                       </p>
                     )}
@@ -175,7 +175,6 @@ export function ProfileTab() {
               id="email"
               value={user?.email || ""}
               disabled
-              className="bg-muted/50"
             />
             <p className="text-xs text-muted-foreground">
               Your email address is managed through your account settings.

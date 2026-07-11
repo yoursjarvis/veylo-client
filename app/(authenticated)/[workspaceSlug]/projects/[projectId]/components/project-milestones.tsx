@@ -137,7 +137,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
               setIsAddingMilestone(!isAddingMilestone)
               setMilestoneValidationErrors({})
             }}
-            className="h-8 text-[10px] font-bold uppercase"
+            className="h-8 text-2xs font-bold uppercase"
           >
             <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />
             Add Milestone
@@ -175,7 +175,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                     field.state.meta.isTouched && !!fieldErrors.length
                   return (
                     <div className="space-y-1">
-                      <Label className="text-[10px] font-bold text-muted-foreground uppercase">
+                      <Label className="text-2xs font-bold text-muted-foreground uppercase">
                         Milestone Title
                       </Label>
                       <Input
@@ -192,7 +192,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                         className="h-9 w-full rounded border border-border bg-background px-3 py-1.5 text-xs text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none"
                       />
                       {hasError && (
-                        <p className="mt-1 text-[11px] font-medium text-destructive">
+                        <p className="mt-1 text-2xs font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -226,7 +226,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                     field.state.meta.isTouched && !!fieldErrors.length
                   return (
                     <div className="flex flex-col justify-end space-y-1">
-                      <Label className="mb-1 text-[10px] font-bold text-muted-foreground uppercase">
+                      <Label className="mb-1 text-2xs font-bold text-muted-foreground uppercase">
                         Target Date
                       </Label>
                       <Popover>
@@ -270,7 +270,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                         </PopoverContent>
                       </Popover>
                       {hasError && (
-                        <p className="mt-1 text-[11px] font-medium text-destructive">
+                        <p className="mt-1 text-2xs font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -369,7 +369,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                       setIsAddingMilestone(!isAddingMilestone)
                       setMilestoneValidationErrors({})
                     }}
-                    className="h-8 text-[10px] font-bold uppercase"
+                    className="h-8 text-2xs font-bold uppercase"
                   >
                     <HugeiconsIcon
                       icon={Add01Icon}

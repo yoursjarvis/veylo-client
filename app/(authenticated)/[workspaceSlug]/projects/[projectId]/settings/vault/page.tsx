@@ -248,7 +248,7 @@ export default function VaultSettingsPage() {
               variant="outline-default"
               size="sm"
               onClick={() => setIsAddServiceOpen(true)}
-              className="h-8 text-[10px] font-bold uppercase"
+              className="h-8 text-2xs font-bold uppercase"
             >
               <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
               Add First Service
@@ -320,21 +320,21 @@ export default function VaultSettingsPage() {
                               key={item.id}
                               className="transition-colors hover:bg-muted/10"
                             >
-                              <td className="p-3.5 pl-6 font-mono text-[11px] font-semibold">
+                              <td className="p-3.5 pl-6 font-mono text-2xs font-semibold">
                                 {item.key}
                               </td>
-                              <td className="max-w-xs truncate p-3.5 font-mono text-[11px]">
+                              <td className="max-w-xs truncate p-3.5 font-mono text-2xs">
                                 {isRevealed ? (
                                   <span className="rounded border border-primary/20 bg-primary/10 px-1.5 py-0.5 break-all whitespace-normal text-primary">
                                     {item.value}
                                   </span>
                                 ) : (
-                                  <span className="font-sans text-[8px] font-black tracking-widest select-none">
+                                  <span className="font-sans text-2xs font-black tracking-widest select-none">
                                     ••••••••••••••••
                                   </span>
                                 )}
                               </td>
-                              <td className="max-w-xs truncate p-3.5 text-[11px] leading-normal whitespace-pre-wrap">
+                              <td className="max-w-xs truncate p-3.5 text-2xs leading-normal whitespace-pre-wrap">
                                 {item.note || "—"}
                               </td>
                               <td className="p-3.5 pr-6 text-right">

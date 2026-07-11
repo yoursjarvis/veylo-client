@@ -237,7 +237,7 @@ export function TaskDetailsDependencies({
                         </span>
                         <Badge
                           variant="secondary"
-                          className={`ml-auto h-5 shrink-0 border-0 px-1.5 text-[10px] font-semibold uppercase ${getStatusColor(linkedTask.statusId)}`}
+                          className={`ml-auto h-5 shrink-0 border-0 px-1.5 text-2xs font-semibold uppercase ${getStatusColor(linkedTask.statusId)}`}
                         >
                           {getStatusName(linkedTask.statusId)}
                         </Badge>
@@ -297,7 +297,7 @@ export function TaskDetailsDependencies({
                         </span>
                         <Badge
                           variant="secondary"
-                          className={`ml-auto h-5 shrink-0 border-0 px-1.5 text-[10px] font-semibold uppercase ${getStatusColor(linkedTask.statusId)}`}
+                          className={`ml-auto h-5 shrink-0 border-0 px-1.5 text-2xs font-semibold uppercase ${getStatusColor(linkedTask.statusId)}`}
                         >
                           {getStatusName(linkedTask.statusId)}
                         </Badge>

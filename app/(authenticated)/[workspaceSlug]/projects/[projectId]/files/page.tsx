@@ -219,7 +219,7 @@ export default function FilesPage() {
                         <span className="font-semibold">{file.name}</span>
                       </div>
                     </td>
-                    <td className="p-4 font-mono text-[10px]">
+                    <td className="p-4 font-mono text-2xs">
                       {file.mimeType}
                     </td>
                     <td className="p-4">

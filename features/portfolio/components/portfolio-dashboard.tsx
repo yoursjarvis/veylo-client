@@ -542,7 +542,7 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                                 <p className="truncate font-medium">
                                   {proj.title}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground uppercase">
+                                <p className="text-2xs text-muted-foreground uppercase">
                                   {proj.projectKey}
                                 </p>
                               </div>
@@ -872,7 +872,7 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                             <p className="text-sm leading-none font-semibold text-foreground">
                               {proj.title}
                             </p>
-                            <p className="mt-0.5 text-[10px] tracking-wide text-muted-foreground uppercase">
+                            <p className="mt-0.5 text-2xs tracking-wide text-muted-foreground uppercase">
                               {proj.projectKey}
                             </p>
                           </div>
@@ -993,7 +993,7 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                             >
                               <div className="flex gap-2">
                                 <div className="space-y-1">
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                                  <span className="text-2xs font-bold text-muted-foreground uppercase">
                                     Start Date
                                   </span>
                                   <Input
@@ -1012,7 +1012,7 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                                   />
                                 </div>
                                 <div className="space-y-1">
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                                  <span className="text-2xs font-bold text-muted-foreground uppercase">
                                     End Date
                                   </span>
                                   <Input
@@ -1071,7 +1071,7 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                                         alt={proj.owner.name}
                                       />
                                     ) : null}
-                                    <AvatarFallback className="bg-primary/5 text-[10px] font-bold text-primary">
+                                    <AvatarFallback className="bg-primary/5 text-2xs font-bold text-primary">
                                       {getInitials(proj.owner?.name)}
                                     </AvatarFallback>
                                   </Avatar>
@@ -1104,7 +1104,7 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                                   alt={proj.owner.name}
                                 />
                               ) : null}
-                              <AvatarFallback className="bg-primary/5 text-[10px] font-bold text-primary">
+                              <AvatarFallback className="bg-primary/5 text-2xs font-bold text-primary">
                                 {getInitials(proj.owner?.name)}
                               </AvatarFallback>
                             </Avatar>
@@ -1480,7 +1480,7 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                               {port.deletedAt && (
                                 <Badge
                                   variant="destructive"
-                                  className="h-5 px-1.5 py-0 text-[10px]"
+                                  className="h-5 px-1.5 py-0 text-2xs"
                                 >
                                   Archived
                                 </Badge>
@@ -1556,7 +1556,7 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                                   alt={port.owner.name}
                                 />
                               ) : null}
-                              <AvatarFallback className="bg-primary/5 text-[10px] font-bold text-primary">
+                              <AvatarFallback className="bg-primary/5 text-2xs font-bold text-primary">
                                 {getInitials(port.owner?.name)}
                               </AvatarFallback>
                             </Avatar>
@@ -1726,10 +1726,9 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                       placeholder="e.g. Q3 Strategic Roadmaps"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      className="border-input bg-background/50 focus-visible:ring-1 focus-visible:ring-primary"
                     />
                     {hasError && (
-                      <p className="mt-1 text-[11px] font-semibold text-rose-500">
+                      <p className="mt-1 text-2xs font-semibold text-destructive">
                         {String(field.state.meta.errors[0])}
                       </p>
                     )}
@@ -1841,10 +1840,9 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                       placeholder="e.g. Q3 Strategic Roadmaps"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      className="border-input bg-background/50 focus-visible:ring-1 focus-visible:ring-primary"
                     />
                     {hasError && (
-                      <p className="mt-1 text-[11px] font-semibold text-rose-500">
+                      <p className="mt-1 text-2xs font-semibold text-destructive">
                         {String(field.state.meta.errors[0])}
                       </p>
                     )}

@@ -86,7 +86,7 @@ export const SlashCommandList = forwardRef<SlashCommandListRef, SlashCommandList
             </div>
             <div className="min-w-0">
               <span className="text-xs font-medium block truncate text-foreground">{item.title}</span>
-              <span className="text-[10px] text-muted-foreground block truncate">{item.description}</span>
+              <span className="text-2xs text-muted-foreground block truncate">{item.description}</span>
             </div>
           </button>
         );

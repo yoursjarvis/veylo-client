@@ -276,7 +276,7 @@ function AutomationBranch({
 
                   {/* True Branch */}
                   <div className="mt-4 flex w-1/2 flex-col items-center px-4">
-                    <div className="mb-4 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-[10px] font-semibold text-success-foreground">
+                    <div className="mb-4 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-2xs font-semibold text-success-foreground">
                       IF TRUE
                     </div>
                     <AutomationBranch
@@ -300,7 +300,7 @@ function AutomationBranch({
 
                   {/* False Branch */}
                   <div className="mt-4 flex w-1/2 flex-col items-center px-4">
-                    <div className="mb-4 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1 text-[10px] font-semibold text-destructive-foreground">
+                    <div className="mb-4 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1 text-2xs font-semibold text-destructive-foreground">
                       IF FALSE
                     </div>
                     <AutomationBranch

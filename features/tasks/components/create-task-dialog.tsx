@@ -225,7 +225,7 @@ export function CreateTaskDialog({
         label: "Unassigned",
         icon: (
           <Avatar className="h-5 w-5">
-            <AvatarFallback className="text-[9px]">?</AvatarFallback>
+            <AvatarFallback className="text-2xs">?</AvatarFallback>
           </Avatar>
         ),
       },
@@ -235,7 +235,7 @@ export function CreateTaskDialog({
         icon: (
           <Avatar className="h-5 w-5">
             <AvatarImage src={m.user?.image || ""} />
-            <AvatarFallback className="text-[9px]">
+            <AvatarFallback className="text-2xs">
               {m.user?.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -558,7 +558,7 @@ export function CreateTaskDialog({
                         key={lbl.id}
                         type="button"
                         onClick={() => handleLabelToggle(lbl.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all hover:opacity-85 focus-visible:ring-2 focus-visible:ring-primary/20"
+                        className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-2xs font-semibold transition-all hover:opacity-85 focus-visible:ring-2 focus-visible:ring-primary/20"
                         style={{
                           backgroundColor: `${lbl.color}20`,
                           borderColor: `${lbl.color}40`,
@@ -579,7 +579,7 @@ export function CreateTaskDialog({
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-7 rounded-full border-dashed border-border px-3 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
+                              className="h-7 rounded-full border-dashed border-border px-3 text-2xs text-muted-foreground hover:bg-accent hover:text-foreground"
                             >
                               + Add Label
                             </Button>
@@ -589,7 +589,7 @@ export function CreateTaskDialog({
                           className="z-50 w-48 rounded-lg border border-border bg-popover p-1 shadow-lg"
                           align="start"
                         >
-                          <div className="px-2 py-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                          <div className="px-2 py-1.5 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
                             Select Label
                           </div>
                           <div className="max-h-48 space-y-0.5 overflow-y-auto">
@@ -613,7 +613,7 @@ export function CreateTaskDialog({
                     )}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-muted-foreground italic">
+                  <p className="text-2xs text-muted-foreground italic">
                     No labels created.{" "}
                     <Link
                       href={`/${workspaceSlug}/projects/${projectId}/settings/labels`}

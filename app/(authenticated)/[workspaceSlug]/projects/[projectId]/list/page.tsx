@@ -7,6 +7,7 @@ import {
   type FilterFieldConfig,
 } from "@/components/reui/filters"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TaskList } from "@/features/tasks/components/task-list"
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
@@ -168,12 +169,12 @@ export default function ListPage() {
               icon={Search01Icon}
               className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground/60"
             />
-            <input
+            <Input
               type="text"
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-border/60 bg-muted/40 py-1.5 pr-8 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 hover:bg-muted/65 focus:border-ring focus:bg-background focus:ring-1 focus:ring-ring focus:outline-hidden"
+              className="w-full pl-9 pr-8"
             />
             {searchQuery && (
               <button
@@ -208,7 +209,7 @@ export default function ListPage() {
                   />
                   <span>Filter</span>
                   {activeFilters.length > 0 && (
-                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
                       {activeFilters.length}
                     </span>
                   )}
@@ -221,7 +222,7 @@ export default function ListPage() {
         {/* Filter UX Pills & Clear All */}
         {activeFilters.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/40 bg-muted/20 px-1 py-1">
-            <span className="mr-1 pl-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+            <span className="mr-1 pl-2 text-2xs font-bold tracking-wider text-muted-foreground uppercase">
               Active Filters ({activeFilters.length}):
             </span>
             <FiltersContent

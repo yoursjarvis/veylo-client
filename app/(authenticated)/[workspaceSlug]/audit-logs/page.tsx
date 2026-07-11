@@ -680,7 +680,7 @@ export default function AuditLogsPage() {
                                   <div className="flex items-center gap-2 min-w-0">
                                     <Avatar className="h-6 w-6 shrink-0 border border-border">
                                       <AvatarImage src={log.user.image || ""} />
-                                      <AvatarFallback className="text-[10px] bg-muted font-bold text-foreground">
+                                      <AvatarFallback className="text-2xs bg-muted font-bold text-foreground">
                                         {log.user.name.charAt(0).toUpperCase()}
                                       </AvatarFallback>
                                     </Avatar>
@@ -688,14 +688,14 @@ export default function AuditLogsPage() {
                                       <span className="text-sm font-medium truncate text-foreground">
                                         {log.user.name}
                                       </span>
-                                      <span className="text-[11px] text-muted-foreground truncate">
+                                      <span className="text-2xs text-muted-foreground truncate">
                                         {log.user.email}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
                                 <div className="pr-2">
-                                  <Badge variant={getActionBadgeVariant(log.action)} className="text-[11px] px-2 py-0.5">
+                                  <Badge variant={getActionBadgeVariant(log.action)} className="text-2xs px-2 py-0.5">
                                     {log.action}
                                   </Badge>
                                 </div>
@@ -718,7 +718,7 @@ export default function AuditLogsPage() {
                                       <Globe className="h-3 w-3 shrink-0" />
                                       {log.ipAddress || "Unknown"}
                                     </span>
-                                    <span className="flex items-center gap-1 font-medium text-[10px]">
+                                    <span className="flex items-center gap-1 font-medium text-2xs">
                                       <Laptop className="h-3 w-3 shrink-0" />
                                       {formatBrowser(log.userAgent)}
                                     </span>

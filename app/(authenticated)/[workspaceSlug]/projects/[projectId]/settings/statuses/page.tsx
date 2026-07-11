@@ -189,7 +189,7 @@ function StatusRow({
         </div>
         <span className="text-xs font-semibold">{status.name}</span>
         {status.color && (
-          <span className="font-mono text-[10px] text-muted-foreground">
+          <span className="font-mono text-2xs text-muted-foreground">
             {status.color}
           </span>
         )}
@@ -454,7 +454,7 @@ export default function StatusesSettingsPage() {
                           aria-invalid={hasError}
                         />
                         {hasError && (
-                          <p className="mt-1 text-[11px] font-medium text-destructive">
+                          <p className="mt-1 text-2xs font-medium text-destructive">
                             {fieldErrors.join(", ")}
                           </p>
                         )}
@@ -500,7 +500,7 @@ export default function StatusesSettingsPage() {
                             type="button"
                             onClick={() => field.handleChange(preset.hex)}
                             className={cn(
-                              "flex h-8 w-full items-center justify-center rounded-md border text-[9px] font-semibold text-primary-foreground transition-all hover:scale-105",
+                              "flex h-8 w-full items-center justify-center rounded-md border text-2xs font-semibold text-primary-foreground transition-all hover:scale-105",
                               field.state.value === preset.hex
                                 ? "scale-100 border-primary-foreground ring-2 ring-primary"
                                 : "border-transparent"

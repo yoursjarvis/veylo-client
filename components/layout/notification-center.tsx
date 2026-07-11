@@ -155,7 +155,7 @@ export function NotificationCenter() {
           >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 animate-pulse items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 animate-pulse items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground">
                 {unreadCount}
               </span>
             )}
@@ -174,7 +174,7 @@ export function NotificationCenter() {
             <Button
               variant="ghost"
               size="xs"
-              className="flex h-auto items-center gap-1 p-0 text-[10px] text-primary hover:text-primary/80"
+              className="flex h-auto items-center gap-1 p-0 text-2xs text-primary hover:text-primary/80"
               onClick={() => markAllReadMutation.mutate()}
             >
               <CheckCheck className="h-3 w-3" />
@@ -189,7 +189,7 @@ export function NotificationCenter() {
               <p className="text-xs font-semibold text-foreground">
                 All caught up!
               </p>
-              <p className="mt-0.5 text-[10px] text-muted-foreground">
+              <p className="mt-0.5 text-2xs text-muted-foreground">
                 No notifications to display.
               </p>
             </div>
@@ -216,7 +216,7 @@ export function NotificationCenter() {
                         ).sender?.image || ""
                       }
                     />
-                    <AvatarFallback className="bg-muted text-[10px] font-semibold text-foreground">
+                    <AvatarFallback className="bg-muted text-2xs font-semibold text-foreground">
                       {(
                         n as NotificationType & {
                           sender?: {
@@ -234,16 +234,16 @@ export function NotificationCenter() {
                       <span className="truncate text-xs font-bold text-foreground">
                         {n.title}
                       </span>
-                      <span className="shrink-0 text-[9px] text-muted-foreground">
+                      <span className="shrink-0 text-2xs text-muted-foreground">
                         {formatDistanceToNow(new Date(n.createdAt), {
                           addSuffix: true,
                         })}
                       </span>
                     </div>
-                    <p className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
+                    <p className="line-clamp-2 text-2xs leading-relaxed text-muted-foreground">
                       {n.message}
                     </p>
-                    <div className="mt-1 flex items-center gap-1 text-[9px] text-muted-foreground">
+                    <div className="mt-1 flex items-center gap-1 text-2xs text-muted-foreground">
                       {getNotificationIcon(n.type)}
                       <span className="capitalize">
                         {n.type.replace("_", " ")}

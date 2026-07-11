@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { axiosInstance } from "@/lib/axios"
@@ -135,13 +136,13 @@ function CodeBlockComponent({
           <div className="absolute right-0 z-50 mt-1 flex max-h-56 w-44 flex-col rounded-md border border-border bg-background p-1.5 shadow-lg">
             {/* Search Input */}
             <div className="relative mb-1.5">
-              <input
+              <Input
                 type="text"
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search language..."
-                className="w-full rounded border border-border bg-muted/30 px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground/70 focus:bg-background focus:ring-1 focus:ring-primary focus:outline-none"
+                className="w-full h-7 px-2 text-xs"
               />
             </div>
 
@@ -256,7 +257,7 @@ function SafeAvatar({
   }
 
   const fontSize =
-    size > 20 ? "text-sm font-semibold" : "text-[8px] font-bold leading-none"
+    size > 20 ? "text-sm font-semibold" : "text-2xs font-bold leading-none"
   return (
     <span
       className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted leading-none text-foreground ${fontSize}`}
@@ -310,7 +311,7 @@ function MentionNodeView({ node }: NodeViewProps) {
     >
       <HoverCard>
         <HoverCardTrigger className="align-middle outline-none flex">
-          <span className="inline-flex max-w-37.5 cursor-pointer items-center gap-1 rounded border border-border bg-accent py-0.5 pr-1.5 pl-1 align-middle text-[11px] font-semibold text-accent-foreground select-none">
+          <span className="inline-flex max-w-37.5 cursor-pointer items-center gap-1 rounded border border-border bg-accent py-0.5 pr-1.5 pl-1 align-middle text-2xs font-semibold text-accent-foreground select-none">
             <SafeAvatar src={userAvatar} name={displayName} size={14} />
             <span className="max-w-27.5 truncate">{displayName}</span>
           </span>
@@ -1098,7 +1099,7 @@ export function RichTextEditor({
           />
         </div>
 
-        <div className="text-[10px] font-medium text-muted-foreground/80">
+        <div className="text-2xs font-medium text-muted-foreground/80">
           Type{" "}
           <kbd className="rounded border border-border bg-muted/80 px-1 py-0.5">
             @

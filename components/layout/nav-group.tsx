@@ -31,8 +31,8 @@ function NavGroupItem({
   pathname: string
 }) {
   const isActive = !!(
-    item.path === pathname ||
-    item.subItems?.some((sub: SidebarNavItem) => sub.path === pathname)
+    (item.path && pathname.startsWith(item.path)) ||
+    item.subItems?.some((sub: SidebarNavItem) => sub.path && pathname.startsWith(sub.path))
   )
   const [isOpen, setIsOpen] = useState<boolean>(isActive)
 
@@ -65,7 +65,7 @@ function NavGroupItem({
           <CollapsibleContent>
             <SidebarMenuSub>
               {item.subItems?.map((subItem: SidebarNavItem) => {
-                const isSubActive = subItem.path === pathname
+                const isSubActive = !!(subItem.path && pathname.startsWith(subItem.path))
 
                 return (
                   <SidebarMenuSubItem key={subItem.title}>

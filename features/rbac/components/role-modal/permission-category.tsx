@@ -73,7 +73,7 @@ export function PermissionCategory({
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground">
             {permissions.length} permissions
           </span>
           <div className="rounded-md p-1 transition-colors hover:bg-muted">

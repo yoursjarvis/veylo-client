@@ -344,7 +344,7 @@ export function TaskReports({
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div className="space-y-1">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <span className="block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                 Total Tasks
               </span>
               <span className="text-3xl font-extrabold text-foreground">
@@ -361,7 +361,7 @@ export function TaskReports({
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div className="space-y-1">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <span className="block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                 Completed Tasks
               </span>
               <span className="text-3xl font-extrabold text-foreground">
@@ -378,7 +378,7 @@ export function TaskReports({
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div className="space-y-1">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <span className="block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                 Incomplete Tasks
               </span>
               <span className="text-3xl font-extrabold text-foreground">
@@ -395,7 +395,7 @@ export function TaskReports({
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div className="space-y-1">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <span className="block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                 Overdue Tasks
               </span>
               <span className="text-3xl font-extrabold text-foreground">
@@ -412,7 +412,7 @@ export function TaskReports({
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div className="space-y-1">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <span className="block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                 Unassigned Tasks
               </span>
               <span className="text-3xl font-extrabold text-foreground">
@@ -484,7 +484,7 @@ export function TaskReports({
                     <span className="text-2xl font-black text-foreground">
                       {totalTasks}
                     </span>
-                    <span className="text-[9px] font-bold tracking-widest text-muted-foreground uppercase">
+                    <span className="text-2xs font-bold tracking-widest text-muted-foreground uppercase">
                       Tasks
                     </span>
                   </div>

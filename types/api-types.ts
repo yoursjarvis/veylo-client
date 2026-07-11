@@ -230,6 +230,7 @@ export interface TaskUpdateRequest {
   priority?: "low" | "medium" | "high" | "urgent";
   estimate?: number | null;
   dueDate?: string | null;
+  createdAt?: string;
   assigneeId?: string | null;
   reporterId?: string | null;
   position?: number;
