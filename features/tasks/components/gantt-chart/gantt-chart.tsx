@@ -1,19 +1,46 @@
 "use client"
 
 import {
+  ActionBar,
+  ActionBarClose,
+  ActionBarGroup,
+  ActionBarItem,
+  ActionBarSelection,
+  ActionBarSeparator,
+} from "@/components/ui/action-bar"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import {
   ArrowDown01Icon,
   ArrowUp01Icon,
   CalendarIcon,
+  Cancel01Icon,
   CheckmarkSquare03Icon,
   ChevronDownIcon,
   ChevronRightIcon,
   CircleArrowUp01Icon,
+  Copy01Icon,
+  Delete01Icon,
   EqualSignIcon,
   UserIcon,
 } from "@hugeicons/core-free-icons"
@@ -81,6 +108,9 @@ interface GanttChartProps {
   onToggleSelectTask: (id: string) => void
   onUpdateTask: (taskId: string, start: Date, end: Date) => void
   onSelectTask: (taskId: string) => void
+  onDeleteTasks: (taskIds: string[]) => void
+  onDuplicateTasks: (taskIds: string[]) => void
+  onClearSelection: () => void
   todayScrollCount: number
 }
 
@@ -93,11 +123,15 @@ export function GanttChart({
   onToggleSelectTask,
   onUpdateTask,
   onSelectTask,
+  onDeleteTasks,
+  onDuplicateTasks,
+  onClearSelection,
   todayScrollCount,
 }: GanttChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -892,11 +926,10 @@ export function GanttChart({
                         />
                       )
                     ) : (
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={isSelected}
-                        onChange={() => onToggleSelectTask(rowItem.id)}
-                        className="h-3.5 w-3.5 cursor-pointer rounded border-border text-primary focus:ring-primary"
+                        onCheckedChange={() => onToggleSelectTask(rowItem.id)}
+                        className="h-3.5 w-3.5 cursor-pointer"
                       />
                     )}
                   </div>
@@ -1098,6 +1131,75 @@ export function GanttChart({
           })}
         </div>
       </div>
+
+      {/* ── Selection Action Bar ── */}
+      <ActionBar
+        open={selectedTaskIds.length > 0}
+        onOpenChange={(open) => {
+          if (!open) onClearSelection()
+        }}
+      >
+        <ActionBarGroup>
+          <ActionBarSelection>
+            {selectedTaskIds.length} selected
+            <ActionBarClose>
+              <Tooltip>
+                <TooltipTrigger
+                  render={<HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />}
+                >
+                  <TooltipContent>Delete Selections</TooltipContent>
+                </TooltipTrigger>
+              </Tooltip>
+            </ActionBarClose>
+          </ActionBarSelection>
+          <ActionBarSeparator />
+          <ActionBarItem
+            variant={"outline-success"}
+            onSelect={() => onDuplicateTasks(selectedTaskIds)}
+          >
+            <HugeiconsIcon icon={Copy01Icon} className="h-4 w-4" />
+            Duplicate
+          </ActionBarItem>
+          <ActionBarItem
+            variant="destructive"
+            onSelect={() => setIsDeleteDialogOpen(true)}
+          >
+            <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+            Delete
+          </ActionBarItem>
+        </ActionBarGroup>
+      </ActionBar>
+
+      {/* ── Delete Confirmation Dialog ── */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {selectedTaskIds.length === 1 ? "task" : "tasks"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedTaskIds.length === 1
+                ? "This task will be moved to trash. You can restore it later."
+                : `These ${selectedTaskIds.length} tasks will be moved to trash. You can restore them later.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onDeleteTasks(selectedTaskIds)
+                setIsDeleteDialogOpen(false)
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -15,6 +15,7 @@ import {
   useProjectStatuses,
   useProjectSprints,
   useProjectMilestones,
+  useDeleteTask,
 } from "@/features/tasks/hooks/use-tasks"
 import { axiosInstance } from "@/lib/axios"
 import { TaskDependency } from "@/types/models"
@@ -243,21 +244,44 @@ export function ProjectTimeline({
     ? isSingleProjectTasksLoading
     : taskResults.some((r) => r.isLoading)
 
-  // 3. Combine tasks across all projects
+  // 3. Combine tasks across all projects, flattening subtasks into the list
   const allProjectsTasks = useMemo<TimelineTask[]>(() => {
+    // Helper to recursively flatten a task and its subtasks
+    const flattenTask = (
+      task: Record<string, unknown>,
+      projectId: string,
+      projectTitle: string
+    ): TimelineTask[] => {
+      const result: TimelineTask[] = []
+      const mapped: TimelineTask = {
+        ...(task as unknown as TimelineTask),
+        projectId,
+        projectTitle,
+      }
+      result.push(mapped)
+
+      // Flatten nested subtasks into the list
+      const subtasks = (task.subtasks || []) as Record<string, unknown>[]
+      subtasks.forEach((sub) => {
+        result.push(...flattenTask(sub, projectId, projectTitle))
+      })
+
+      return result
+    }
+
     if (projectId) {
       const project = projects.find(
         (p: { id: string; title: string; createdAt?: string }) =>
           p.id === projectId
       )
       const projectTitle = project?.title || ""
-      return (singleProjectTasks || []).map(
-        (t: Omit<TimelineTask, "projectId" | "projectTitle">) => ({
-          ...t,
-          projectId,
-          projectTitle,
-        })
-      ) as TimelineTask[]
+      const list: TimelineTask[] = []
+      ;(singleProjectTasks || []).forEach(
+        (t: Record<string, unknown>) => {
+          list.push(...flattenTask(t, projectId, projectTitle))
+        }
+      )
+      return list
     }
 
     const list: TimelineTask[] = []
@@ -266,18 +290,14 @@ export function ProjectTimeline({
         | {
             projectId: string
             projectTitle: string
-            tasks: Omit<TimelineTask, "projectTitle" | "projectId">[]
+            tasks: Record<string, unknown>[]
           }
         | undefined
       if (data) {
         const { projectId: pid, projectTitle, tasks } = data
         tasks?.forEach(
-          (t: Omit<TimelineTask, "projectTitle" | "projectId">) => {
-            list.push({
-              ...t,
-              projectId: pid,
-              projectTitle,
-            })
+          (t: Record<string, unknown>) => {
+            list.push(...flattenTask(t, pid, projectTitle))
           }
         )
       }
@@ -334,8 +354,25 @@ export function ProjectTimeline({
     toggleExpand,
     selectedTaskIds,
     toggleSelectTask,
+    clearSelection,
     getVisibleRows,
   } = useTimelineState()
+
+  const deleteTaskMutation = useDeleteTask(projectId || "")
+
+  const handleDeleteTasks = async (taskIds: string[]) => {
+    try {
+      await Promise.all(taskIds.map((id) => deleteTaskMutation.mutateAsync(id)))
+      clearSelection()
+    } catch (error) {
+      console.error("Failed to delete tasks:", error)
+    }
+  }
+
+  const handleDuplicateTasks = (taskIds: string[]) => {
+    toast.info("Bulk duplication is not implemented yet")
+    clearSelection()
+  }
 
   // Sync state layout with URL
   useEffect(() => {
@@ -471,6 +508,9 @@ export function ProjectTimeline({
           onToggleSelectTask={toggleSelectTask}
           onUpdateTask={handleUpdateTask}
           onSelectTask={onSelectTask}
+          onDeleteTasks={handleDeleteTasks}
+          onDuplicateTasks={handleDuplicateTasks}
+          onClearSelection={clearSelection}
           todayScrollCount={todayScrollCount}
         />
       </Card>

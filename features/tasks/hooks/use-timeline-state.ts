@@ -133,15 +133,68 @@ export function useTimelineState() {
     ): FlatRow[] => {
       const flatList: FlatRow[] = []
 
-      // Create standard groupings
-      if (groupType === "assignee") {
+      // Helper to recursively add a task and its subtasks
+      const addTaskWithSubtasks = (
+        task: TimelineTask,
+        allTasksInGroup: TimelineTask[],
+        childMap: Map<string, TimelineTask[]>,
+        baseDepth: number
+      ) => {
+        const children = childMap.get(task.id) || []
+        const hasChildren = children.length > 0
+        const isExpanded = !!expandedNodes[task.id]
+
+        flatList.push({
+          id: task.id,
+          title: task.title,
+          depth: baseDepth,
+          isVirtualGroup: false,
+          hasChildren,
+          isExpanded,
+          task,
+        })
+
+        if (hasChildren && isExpanded) {
+          children.forEach((child) =>
+            addTaskWithSubtasks(child, allTasksInGroup, childMap, baseDepth + 1)
+          )
+        }
+      }
+
+      // Helper to build parent-child map and get root tasks for a group
+      const buildTreeForGroup = (groupTasks: TimelineTask[], baseDepth: number) => {
+        // Build a set of task IDs within this group for fast lookup
+        const groupTaskIds = new Set(groupTasks.map((t) => t.id))
+        const childMap = new Map<string, TimelineTask[]>()
+        const rootTasks: TimelineTask[] = []
+
+        groupTasks.forEach((t) => {
+          // If task has a parent AND that parent is in this group, it's a child
+          if (t.parentTaskId && groupTaskIds.has(t.parentTaskId)) {
+            const children = childMap.get(t.parentTaskId) || []
+            children.push(t)
+            childMap.set(t.parentTaskId, children)
+          } else {
+            // Otherwise it's a root-level task in this group
+            rootTasks.push(t)
+          }
+        })
+
+        rootTasks.forEach((task) =>
+          addTaskWithSubtasks(task, groupTasks, childMap, baseDepth)
+        )
+      }
+
+      // Grouping logic based on groupType
+      const groupByField = (
+        getKey: (t: TimelineTask) => string,
+        getLabel: (t: TimelineTask) => string
+      ) => {
         const groups = new Map<string, { label: string; tasks: TimelineTask[] }>()
         tasks.forEach((t) => {
-          const assigneeName = t.assignee?.name || "Unassigned"
-          const assigneeId = t.assignee?.id || "unassigned"
-          const key = `assignee-${assigneeId}`
+          const key = getKey(t)
           if (!groups.has(key)) {
-            groups.set(key, { label: assigneeName, tasks: [] })
+            groups.set(key, { label: getLabel(t), tasks: [] })
           }
           groups.get(key)!.tasks.push(t)
         })
@@ -160,211 +213,41 @@ export function useTimelineState() {
           })
 
           if (isExpanded) {
-            group.tasks.forEach((t) => {
-              flatList.push({
-                id: t.id,
-                title: t.title,
-                depth: 1,
-                isVirtualGroup: false,
-                hasChildren: false,
-                isExpanded: false,
-                task: t,
-              })
-            })
+            buildTreeForGroup(group.tasks, 1)
           }
         })
+      }
+
+      if (groupType === "assignee") {
+        groupByField(
+          (t) => `assignee-${t.assignee?.id || "unassigned"}`,
+          (t) => t.assignee?.name || "Unassigned"
+        )
       } else if (groupType === "sprint") {
-        const groups = new Map<string, { label: string; tasks: TimelineTask[] }>()
-        tasks.forEach((t) => {
-          const sprintName = t.sprint?.name || "Backlog"
-          const sprintId = t.sprint?.id || "backlog"
-          const key = `sprint-${sprintId}`
-          if (!groups.has(key)) {
-            groups.set(key, { label: sprintName, tasks: [] })
-          }
-          groups.get(key)!.tasks.push(t)
-        })
-
-        groups.forEach((group, key) => {
-          const isExpanded = expandedNodes[key] !== false
-          flatList.push({
-            id: key,
-            title: group.label,
-            depth: 0,
-            isVirtualGroup: true,
-            hasChildren: group.tasks.length > 0,
-            isExpanded,
-            groupType,
-            groupValue: key,
-          })
-
-          if (isExpanded) {
-            group.tasks.forEach((t) => {
-              flatList.push({
-                id: t.id,
-                title: t.title,
-                depth: 1,
-                isVirtualGroup: false,
-                hasChildren: false,
-                isExpanded: false,
-                task: t,
-              })
-            })
-          }
-        })
+        groupByField(
+          (t) => `sprint-${t.sprint?.id || "backlog"}`,
+          (t) => t.sprint?.name || "Backlog"
+        )
       } else if (groupType === "milestone") {
-        const groups = new Map<string, { label: string; tasks: TimelineTask[] }>()
-        tasks.forEach((t) => {
-          const milestoneTitle = t.milestone?.title || "No Milestone"
-          const milestoneId = t.milestone?.id || "no-milestone"
-          const key = `milestone-${milestoneId}`
-          if (!groups.has(key)) {
-            groups.set(key, { label: milestoneTitle, tasks: [] })
-          }
-          groups.get(key)!.tasks.push(t)
-        })
-
-        groups.forEach((group, key) => {
-          const isExpanded = expandedNodes[key] !== false
-          flatList.push({
-            id: key,
-            title: group.label,
-            depth: 0,
-            isVirtualGroup: true,
-            hasChildren: group.tasks.length > 0,
-            isExpanded,
-            groupType,
-            groupValue: key,
-          })
-
-          if (isExpanded) {
-            group.tasks.forEach((t) => {
-              flatList.push({
-                id: t.id,
-                title: t.title,
-                depth: 1,
-                isVirtualGroup: false,
-                hasChildren: false,
-                isExpanded: false,
-                task: t,
-              })
-            })
-          }
-        })
+        groupByField(
+          (t) => `milestone-${t.milestone?.id || "no-milestone"}`,
+          (t) => t.milestone?.title || "No Milestone"
+        )
       } else if (groupType === "status") {
-        const groups = new Map<string, { label: string; tasks: TimelineTask[] }>()
-        tasks.forEach((t) => {
-          const statusName = t.status?.name || "Backlog"
-          const statusId = t.status?.id || t.status?.category || "backlog"
-          const key = `status-${statusId}`
-          if (!groups.has(key)) {
-            groups.set(key, { label: statusName, tasks: [] })
-          }
-          groups.get(key)!.tasks.push(t)
-        })
-
-        groups.forEach((group, key) => {
-          const isExpanded = expandedNodes[key] !== false
-          flatList.push({
-            id: key,
-            title: group.label,
-            depth: 0,
-            isVirtualGroup: true,
-            hasChildren: group.tasks.length > 0,
-            isExpanded,
-            groupType,
-            groupValue: key,
-          })
-
-          if (isExpanded) {
-            group.tasks.forEach((t) => {
-              flatList.push({
-                id: t.id,
-                title: t.title,
-                depth: 1,
-                isVirtualGroup: false,
-                hasChildren: false,
-                isExpanded: false,
-                task: t,
-              })
-            })
-          }
-        })
+        groupByField(
+          (t) => `status-${t.status?.id || t.status?.category || "backlog"}`,
+          (t) => t.status?.name || "Backlog"
+        )
       } else if (groupType === "priority") {
-        const groups = new Map<string, { label: string; tasks: TimelineTask[] }>()
-        tasks.forEach((t) => {
-          const priorityLabel = t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : "Medium"
-          const key = `priority-${t.priority || "medium"}`
-          if (!groups.has(key)) {
-            groups.set(key, { label: priorityLabel, tasks: [] })
-          }
-          groups.get(key)!.tasks.push(t)
-        })
-
-        groups.forEach((group, key) => {
-          const isExpanded = expandedNodes[key] !== false
-          flatList.push({
-            id: key,
-            title: group.label,
-            depth: 0,
-            isVirtualGroup: true,
-            hasChildren: group.tasks.length > 0,
-            isExpanded,
-            groupType,
-            groupValue: key,
-          })
-
-          if (isExpanded) {
-            group.tasks.forEach((t) => {
-              flatList.push({
-                id: t.id,
-                title: t.title,
-                depth: 1,
-                isVirtualGroup: false,
-                hasChildren: false,
-                isExpanded: false,
-                task: t,
-              })
-            })
-          }
-        })
+        groupByField(
+          (t) => `priority-${t.priority || "medium"}`,
+          (t) => t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : "Medium"
+        )
       } else if (groupType === "project") {
-        const groups = new Map<string, { label: string; tasks: TimelineTask[] }>()
-        tasks.forEach((t) => {
-          const key = `project-${t.projectId}`
-          if (!groups.has(key)) {
-            groups.set(key, { label: t.projectTitle || "Default Project", tasks: [] })
-          }
-          groups.get(key)!.tasks.push(t)
-        })
-
-        groups.forEach((group, key) => {
-          const isExpanded = expandedNodes[key] !== false
-          flatList.push({
-            id: key,
-            title: group.label,
-            depth: 0,
-            isVirtualGroup: true,
-            hasChildren: group.tasks.length > 0,
-            isExpanded,
-            groupType,
-            groupValue: key,
-          })
-
-          if (isExpanded) {
-            group.tasks.forEach((t) => {
-              flatList.push({
-                id: t.id,
-                title: t.title,
-                depth: 1,
-                isVirtualGroup: false,
-                hasChildren: false,
-                isExpanded: false,
-                task: t,
-              })
-            })
-          }
-        })
+        groupByField(
+          (t) => `project-${t.projectId}`,
+          (t) => t.projectTitle || "Default Project"
+        )
       }
 
       return flatList
