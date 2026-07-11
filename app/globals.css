@@ -93,66 +93,90 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.269 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  /* ── Surface hierarchy (deepest → most elevated) ──
+     Each surface step gets slightly lighter with a subtle purple tint (hue 269)
+     to create cohesive depth perception matching the primary palette.
+     background (0.145) → card (0.195) → popover/dialog (0.215) → muted (0.22) → accent (0.25) */
+  --background: oklch(0.145 0.008 269);
+  --foreground: oklch(0.96 0.005 269);
+  --card: oklch(0.195 0.012 269);
+  --card-foreground: oklch(0.96 0.005 269);
+  --popover: oklch(0.215 0.014 269);
+  --popover-foreground: oklch(0.96 0.005 269);
+
+  /* ── Brand colors (unchanged as requested) ── */
   --primary: oklch(0.748 0.129 269);
   --primary-foreground: oklch(0.216 0.006 56.043);
-  --secondary: oklch(96.1% 0.058 93.5);
-  --secondary-foreground: oklch(0.216 0.006 56.043);
-  --success-background: oklch(0.75 0.11 142.8);
-  --success-foreground: oklch(0.22 0.04 142.8);
+
+  /* ── Secondary: dark-mode adapted pastel (was still light-mode bright yellow) ── */
+  --secondary: oklch(0.30 0.04 93.5);
+  --secondary-foreground: oklch(0.92 0.04 93.5);
+
+  /* ── Status backgrounds: subtle tinted surfaces for dark mode ── */
+  --success-background: oklch(0.22 0.04 142.8);
+  --success-foreground: oklch(0.82 0.08 142.8);
   --warning-background: oklch(0.22 0.04 109.9);
   --warning-foreground: oklch(0.85 0.05 109.9);
   --info-background: oklch(0.22 0.04 250);
   --info-foreground: oklch(0.85 0.05 250);
-  --muted: oklch(0.22 0.02 269);
-  --muted-foreground: oklch(0.708 0.01 269);
-  --accent: oklch(0.25 0.03 269);
+
+  /* ── Muted & accent surfaces (subtle purple tint) ── */
+  --muted: oklch(0.22 0.018 269);
+  --muted-foreground: oklch(0.65 0.012 269);
+  --accent: oklch(0.25 0.025 269);
   --accent-foreground: oklch(0.978 0.035 94.5);
+
+  /* ── Destructive (unchanged as requested) ── */
   --destructive: oklch(0.73 0.14 25);
   --destructive-foreground: oklch(0.216 0.006 56.043);
-  --border: oklch(0.275 0 0);
-  --input: oklch(0.325 0 0);
-  --ring: oklch(0.556 0 0);
+
+  /* ── Borders & inputs: subtle purple tint for cohesion ── */
+  --border: oklch(0.28 0.012 269);
+  --input: oklch(0.24 0.014 269);
+  --ring: oklch(0.50 0.04 269);
+
+  /* ── Charts (unchanged) ── */
   --chart-1: oklch(0.73 0.14 25);
   --chart-2: oklch(0.75 0.12 250);
   --chart-3: oklch(0.75 0.11 142.8);
   --chart-4: oklch(0.78 0.12 109.9);
   --chart-5: oklch(0.748 0.129 269);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+
+  /* ── Sidebar: tinted to match surface hierarchy ── */
+  --sidebar: oklch(0.17 0.01 269);
+  --sidebar-foreground: oklch(0.96 0.005 269);
   --sidebar-primary: oklch(0.748 0.129 269);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.275 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --sidebar-primary-foreground: oklch(0.96 0.005 269);
+  --sidebar-accent: oklch(0.24 0.018 269);
+  --sidebar-accent-foreground: oklch(0.96 0.005 269);
+  --sidebar-border: oklch(0.26 0.012 269);
+  --sidebar-ring: oklch(0.45 0.03 269);
+
+  /* ── Typography & layout ── */
   --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Noto Serif, ui-serif, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
   --radius: 0.625rem;
+
+  /* ── Shadows: boosted opacity for dark mode visibility ── */
   --shadow-x: 0;
   --shadow-y: 1px;
-  --shadow-blur: 3px;
+  --shadow-blur: 4px;
   --shadow-spread: 0px;
-  --shadow-opacity: 0.1;
+  --shadow-opacity: 0.35;
   --shadow-color: oklch(0 0 0);
-  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.2);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   --shadow-sm:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    0 1px 3px 0px hsl(0 0% 0% / 0.3), 0 1px 2px -1px hsl(0 0% 0% / 0.25);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.3), 0 1px 2px -1px hsl(0 0% 0% / 0.25);
   --shadow-md:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    0 2px 6px 0px hsl(0 0% 0% / 0.35), 0 2px 4px -1px hsl(0 0% 0% / 0.3);
   --shadow-lg:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    0 4px 12px 0px hsl(0 0% 0% / 0.4), 0 4px 6px -2px hsl(0 0% 0% / 0.3);
   --shadow-xl:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
-  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    0 8px 24px 0px hsl(0 0% 0% / 0.45), 0 8px 10px -4px hsl(0 0% 0% / 0.35);
+  --shadow-2xl: 0 16px 48px 0px hsl(0 0% 0% / 0.5);
 
   --font-size-base: 16px;
   --success: oklch(0.75 0.11 142.8);

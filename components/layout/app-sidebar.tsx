@@ -94,7 +94,7 @@ export function AppSidebar() {
           {footerNavLinks.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
-                isActive={item.path === pathname}
+                isActive={!!(item.path && pathname.startsWith(item.path))}
                 size="sm"
                 render={<Link href={item.path || "#"} />}
               >

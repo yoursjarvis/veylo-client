@@ -36,7 +36,9 @@ export function AppHeader() {
     canReadRoles,
   })
 
-  const activeItem = navLinks.find((item) => item.path === pathname)
+  const activeItem = navLinks
+    .filter((item) => item.path && pathname.startsWith(item.path))
+    .sort((a, b) => (b.path?.length ?? 0) - (a.path?.length ?? 0))[0]
 
   const [commandOpen, setCommandOpen] = useState(false)
 
