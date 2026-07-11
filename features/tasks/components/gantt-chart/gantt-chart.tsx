@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   HoverCard,
   HoverCardContent,
@@ -129,6 +130,7 @@ export function GanttChart({
   todayScrollCount,
 }: GanttChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const isDraggingRef = useRef(false)
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -537,6 +539,9 @@ export function GanttChart({
 
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - dragAction.initialStartX
+      if (Math.abs(deltaX) > 3) {
+        isDraggingRef.current = true
+      }
       const deltaDays = Math.round(deltaX / pxPerDay)
 
       if (dragAction.type === "move") {
@@ -607,11 +612,21 @@ export function GanttChart({
           }
         }
 
-        onUpdateTask(dragAction.taskId, finalStart, finalEnd)
+        if (
+          isDraggingRef.current &&
+          (finalStart.getTime() !== taskStart.getTime() ||
+            finalEnd.getTime() !== taskEnd.getTime())
+        ) {
+          onUpdateTask(dragAction.taskId, finalStart, finalEnd)
+        }
       }
 
       setDragAction(null)
       setDragVisualFeedback(null)
+      
+      setTimeout(() => {
+        isDraggingRef.current = false
+      }, 50)
     }
 
     window.addEventListener("mousemove", handleMouseMove)
@@ -1012,6 +1027,17 @@ export function GanttChart({
                         width = dragVisualFeedback.tempWidth
                       }
 
+                      // Calculate Progress
+                      const todayDate = startOfDay(new Date())
+                      const totalTaskDays = differenceInDays(taskEnd, taskStart) || 1
+                      const passedDays = differenceInDays(todayDate, taskStart)
+                      let progress = 0
+                      if (passedDays >= totalTaskDays) {
+                        progress = 100
+                      } else if (passedDays > 0) {
+                        progress = (passedDays / totalTaskDays) * 100
+                      }
+
                       return (
                         <HoverCard key={rowItem.id}>
                           <HoverCardTrigger
@@ -1025,7 +1051,7 @@ export function GanttChart({
                                   top: "9px",
                                 }}
                                 className={cn(
-                                  "flex cursor-grab items-center rounded-md border border-primary bg-primary/20 px-2 text-[11px] font-bold text-primary-foreground shadow-2xs transition-shadow select-none group-hover:shadow-xs active:cursor-grabbing",
+                                  "relative overflow-hidden flex cursor-grab items-center rounded-md border border-primary bg-primary/20 px-2 text-[11px] font-bold text-primary-foreground shadow-2xs transition-shadow select-none group-hover:shadow-xs active:cursor-grabbing",
                                   isDraggingThis &&
                                     "cursor-grabbing border-dashed opacity-80 shadow-md"
                                 )}
@@ -1038,13 +1064,26 @@ export function GanttChart({
                                     taskEnd
                                   )
                                 }
-                                onClick={() => onSelectTask(rowItem.id)}
+                                onClick={(e) => {
+                                  if (isDraggingRef.current) {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    return
+                                  }
+                                  onSelectTask(rowItem.id)
+                                }}
                               />
                             }
                           >
+                            {/* Progress Fill Background */}
+                            <div
+                              className="absolute left-0 top-0 bottom-0 bg-primary/30"
+                              style={{ width: `${progress}%` }}
+                            />
+
                             {/* Left Resize Handle */}
                             <div
-                              className="absolute top-0 bottom-0 left-0 w-1.5 cursor-col-resize rounded-l hover:bg-primary/40"
+                              className="absolute top-0 bottom-0 left-0 w-1.5 z-20 cursor-col-resize rounded-l hover:bg-primary/40"
                               onMouseDown={(e) =>
                                 handleMouseDown(
                                   e,
@@ -1057,13 +1096,23 @@ export function GanttChart({
                             />
 
                             {/* Task Bar Label */}
-                            <span className="pointer-events-none w-full truncate text-foreground/80">
-                              {rowItem.title}
-                            </span>
+                            <div className="pointer-events-none relative z-10 flex w-full items-center gap-1.5 overflow-hidden">
+                              {rowItem.task?.assignee && (
+                                <Avatar className="h-4 w-4 shrink-0">
+                                  <AvatarImage src={rowItem.task.assignee.image || ""} alt={rowItem.task.assignee.name || "Assignee"} />
+                                  <AvatarFallback className="text-[8px] uppercase bg-background/50">
+                                    {rowItem.task.assignee.name?.substring(0, 2) || "U"}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                              <span className="truncate text-foreground/80">
+                                {rowItem.title}
+                              </span>
+                            </div>
 
                             {/* Right Resize Handle */}
                             <div
-                              className="absolute top-0 right-0 bottom-0 w-1.5 cursor-col-resize rounded-r hover:bg-primary/40"
+                              className="absolute top-0 right-0 bottom-0 w-1.5 z-20 cursor-col-resize rounded-r hover:bg-primary/40"
                               onMouseDown={(e) =>
                                 handleMouseDown(
                                   e,

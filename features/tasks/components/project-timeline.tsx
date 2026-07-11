@@ -25,6 +25,7 @@ import {
   CalendarIcon,
   UserIcon,
   CheckmarkSquare03Icon,
+  FilterHorizontalIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -37,7 +38,7 @@ import { addDays, format } from "date-fns"
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { useQueryState, parseAsString, parseAsJson } from "nuqs"
-import { Filters, Filter, FilterFieldConfig } from "@/components/reui/filters"
+import { Filters, Filter, FilterFieldConfig, FiltersContent } from "@/components/reui/filters"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -413,30 +414,49 @@ export function ProjectTimeline({
   return (
     <div className="space-y-4">
       {/* Controls Bar */}
-      <div className="flex flex-col justify-between gap-4 rounded-xl border border-border bg-card p-3 shadow-xs md:flex-row md:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="relative w-full max-w-xs shrink-0">
-            <HugeiconsIcon
-              icon={Search02Icon}
-              className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground"
-            />
-            <Input
-              placeholder="Search roadmap..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full border-border bg-background pl-9 text-xs placeholder:text-muted-foreground/60"
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col justify-between gap-4 rounded-xl border border-border bg-card p-3 shadow-xs md:flex-row md:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="relative w-full max-w-xs shrink-0">
+              <HugeiconsIcon
+                icon={Search02Icon}
+                className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground"
+              />
+              <Input
+                placeholder="Search roadmap..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 w-full border-border bg-background pl-9 text-xs placeholder:text-muted-foreground/60"
+              />
+            </div>
+            {/* Veylo Reusable Filters */}
+            <Filters
+              filters={activeFilters || []}
+              fields={filterFields}
+              onChange={(newFilters) => setActiveFilters(newFilters)}
+              size="sm"
+              trigger={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-2 border-border text-xs font-medium hover:bg-muted hover:text-foreground"
+                >
+                  <HugeiconsIcon
+                    icon={FilterHorizontalIcon}
+                    className="size-3.5 text-muted-foreground/80"
+                  />
+                  <span>Filter</span>
+                  {(activeFilters || []).length > 0 && (
+                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                      {(activeFilters || []).length}
+                    </span>
+                  )}
+                </Button>
+              }
             />
           </div>
-          {/* Veylo Reusable Filters */}
-          <Filters
-            filters={activeFilters || []}
-            fields={filterFields}
-            onChange={(newFilters) => setActiveFilters(newFilters)}
-            size="sm"
-          />
-        </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
           {/* Today Button */}
           <button
             onClick={handleToday}
@@ -493,6 +513,29 @@ export function ProjectTimeline({
             />
           </div>
         </div>
+      </div>
+
+      {/* Filter UX Pills & Clear All */}
+      {(activeFilters || []).length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/40 bg-muted/20 px-1 py-1">
+          <span className="mr-1 pl-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+            Active Filters ({(activeFilters || []).length}):
+          </span>
+          <FiltersContent
+            filters={activeFilters || []}
+            fields={filterFields}
+            onChange={(newFilters) => setActiveFilters(newFilters)}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveFilters([])}
+            className="h-7 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
       </div>
 
       {/* Custom Virtual Gantt Board */}
