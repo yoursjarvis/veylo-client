@@ -277,10 +277,12 @@ export default function ListPage() {
             >[0]["statuses"]
           }
           projectMembers={(selectedProject?.members || []).map(m => ({
+            role: m.role,
             user: {
               id: m.user?.id || "",
               name: m.user?.name || null,
               image: m.user?.image || null,
+              email: m.user?.email || null,
             }
           }))}
           projectTemplate={selectedProject?.template || "simple"}

@@ -7,17 +7,26 @@ import { Skeleton } from "@/components/ui/skeleton"
 // Status, StatusIndicator, StatusLabel are removed
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import { axiosInstance } from "@/lib/axios"
-import { getThumbUrl, cn } from "@/lib/utils"
+import { cn, getThumbUrl } from "@/lib/utils"
 import { Project, Task, TaskStatus } from "@/types/models"
-import { CheckmarkSquare02Icon } from "@hugeicons/core-free-icons"
+import { CheckmarkSquare02Icon, Tick01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { useQueries, useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 // format removed
-import { useMemo, useState } from "react"
 import { AuthResponse } from "@/features/auth/types"
+import { useMemo, useState } from "react"
 // imports removed
-import { StatusSelect, PrioritySelect, DatePicker } from "@/features/tasks/components/task-list"
 import { TaskDetailsDrawer } from "@/features/tasks/components/task-details-drawer"
+import {
+  DatePicker,
+  PrioritySelect,
+  StatusSelect,
+} from "@/features/tasks/components/task-list"
 
 import { UseMutationResult } from "@tanstack/react-query"
 
@@ -27,11 +36,16 @@ function MyTaskRow({
   projectStatuses,
   updateTaskMutation,
   onRowClick,
-  auth
+  auth,
 }: {
   task: Task & { projectName: string }
   projectStatuses: TaskStatus[]
-  updateTaskMutation: UseMutationResult<unknown, Error, { taskId: string; data: Partial<Task> }, unknown>
+  updateTaskMutation: UseMutationResult<
+    unknown,
+    Error,
+    { taskId: string; data: Partial<Task> },
+    unknown
+  >
   onRowClick: (taskId: string, projectId: string) => void
   auth: AuthResponse | undefined
 }) {
@@ -50,9 +64,16 @@ function MyTaskRow({
     if (!completedStatus) return
     if (isCompleted) {
       const first = projectStatuses[0]
-      if (first) updateTaskMutation.mutate({ taskId: task.id, data: { statusId: first.id } })
+      if (first)
+        updateTaskMutation.mutate({
+          taskId: task.id,
+          data: { statusId: first.id },
+        })
     } else {
-      updateTaskMutation.mutate({ taskId: task.id, data: { statusId: completedStatus.id } })
+      updateTaskMutation.mutate({
+        taskId: task.id,
+        data: { statusId: completedStatus.id },
+      })
     }
   }
 
@@ -61,32 +82,45 @@ function MyTaskRow({
       onClick={() => onRowClick(task.id, task.projectId)}
       className="group flex cursor-pointer flex-col items-start justify-between gap-4 border-border/50 p-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-md sm:flex-row sm:items-center"
     >
-      <div className="flex flex-1 items-center gap-4 min-w-0">
+      <div className="flex min-w-0 flex-1 items-center gap-4">
         <button
           onClick={handleToggle}
           className={cn(
-            "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-success/10 hover:border-success",
-            isCompleted ? "bg-success border-success text-success-foreground" : "bg-muted text-muted-foreground"
+            "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors hover:border-success hover:bg-success/10",
+            isCompleted
+              ? "border-success bg-success text-success-foreground"
+              : "bg-muted text-muted-foreground"
           )}
         >
           <HugeiconsIcon
-            icon={CheckmarkSquare02Icon}
-            className="h-3.5 w-3.5"
+            icon={Tick01Icon}
+            className="h-4 w-4"
+            strokeWidth={2}
           />
         </button>
-        <div className="flex flex-col min-w-0 flex-1">
-          <h4 className={cn("font-medium text-foreground truncate", isCompleted && "line-through opacity-70")}>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <h4
+            className={cn(
+              "truncate font-medium text-foreground",
+              isCompleted && "line-through opacity-70"
+            )}
+          >
             {task.title}
           </h4>
           <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="font-medium text-primary/80 truncate max-w-[120px]">
+            <span className="max-w-[120px] truncate font-medium text-primary/80">
               {task.projectName}
             </span>
             <span>•</span>
             <div className="w-[140px]" onClick={(e) => e.stopPropagation()}>
               <StatusSelect
                 value={task.statusId}
-                onChange={(val) => updateTaskMutation.mutate({ taskId: task.id, data: { statusId: val } })}
+                onChange={(val) =>
+                  updateTaskMutation.mutate({
+                    taskId: task.id,
+                    data: { statusId: val },
+                  })
+                }
                 statuses={projectStatuses}
               />
             </div>
@@ -94,18 +128,33 @@ function MyTaskRow({
             <div className="w-[120px]" onClick={(e) => e.stopPropagation()}>
               <PrioritySelect
                 value={task.priority}
-                onChange={(val) => updateTaskMutation.mutate({ taskId: task.id, data: { priority: val as "low" | "medium" | "high" | "urgent" } })}
+                onChange={(val) =>
+                  updateTaskMutation.mutate({
+                    taskId: task.id,
+                    data: {
+                      priority: val as "low" | "medium" | "high" | "urgent",
+                    },
+                  })
+                }
               />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex w-full items-center gap-6 sm:w-auto pl-10 sm:pl-0">
-        <div className="flex flex-col text-right w-[140px]" onClick={(e) => e.stopPropagation()}>
+      <div className="flex w-full items-center gap-6 pl-10 sm:w-auto sm:pl-0">
+        <div
+          className="flex w-[140px] flex-col text-right"
+          onClick={(e) => e.stopPropagation()}
+        >
           <DatePicker
             value={task.dueDate || null}
-            onChange={(val) => updateTaskMutation.mutate({ taskId: task.id, data: { dueDate: val ? new Date(val).toISOString() : null } })}
+            onChange={(val) =>
+              updateTaskMutation.mutate({
+                taskId: task.id,
+                data: { dueDate: val ? new Date(val).toISOString() : null },
+              })
+            }
           />
         </div>
 
@@ -126,34 +175,50 @@ function MyTaskRow({
 }
 
 // Global Wrapper for the Drawer to fetch necessary props
-function MyTasksTaskDrawer({ taskId, projectId, onClose }: { taskId: string, projectId: string, onClose: () => void }) {
+function MyTasksTaskDrawer({
+  taskId,
+  projectId,
+  onClose,
+}: {
+  taskId: string
+  projectId: string
+  onClose: () => void
+}) {
   const { data: project } = useQuery({
     queryKey: ["project", projectId],
-    queryFn: async () => (await axiosInstance.get(`/projects/${projectId}`)).data.data
+    queryFn: async () =>
+      (await axiosInstance.get(`/projects/${projectId}`)).data.data,
   })
   const { data: projectStatuses } = useQuery({
     queryKey: ["project-statuses", projectId],
-    queryFn: async () => (await axiosInstance.get(`/projects/${projectId}/statuses`)).data.data
+    queryFn: async () =>
+      (await axiosInstance.get(`/projects/${projectId}/statuses`)).data.data,
   })
   const { data: projectSprints } = useQuery({
     queryKey: ["project-sprints", projectId],
-    queryFn: async () => (await axiosInstance.get(`/projects/${projectId}/sprints`)).data.data
+    queryFn: async () =>
+      (await axiosInstance.get(`/projects/${projectId}/sprints`)).data.data,
   })
   const { data: projectEpics } = useQuery({
     queryKey: ["project-epics", projectId],
-    queryFn: async () => (await axiosInstance.get(`/projects/${projectId}/epics`)).data.data
+    queryFn: async () =>
+      (await axiosInstance.get(`/projects/${projectId}/epics`)).data.data,
   })
   const { data: projectMilestones } = useQuery({
     queryKey: ["project-milestones", projectId],
-    queryFn: async () => (await axiosInstance.get(`/projects/${projectId}/milestones`)).data.data
+    queryFn: async () =>
+      (await axiosInstance.get(`/projects/${projectId}/milestones`)).data.data,
   })
   const { data: projectLabels } = useQuery({
     queryKey: ["project-labels", projectId],
-    queryFn: async () => (await axiosInstance.get(`/projects/${projectId}/labels`)).data.data
+    queryFn: async () =>
+      (await axiosInstance.get(`/projects/${projectId}/labels`)).data.data,
   })
 
   if (!project || !projectStatuses) return null
-  const safeProjectStatuses = Array.isArray(projectStatuses) ? projectStatuses : (projectStatuses as { statuses?: TaskStatus[] }).statuses || []
+  const safeProjectStatuses = Array.isArray(projectStatuses)
+    ? projectStatuses
+    : (projectStatuses as { statuses?: TaskStatus[] }).statuses || []
 
   return (
     <TaskDetailsDrawer
@@ -170,7 +235,6 @@ function MyTasksTaskDrawer({ taskId, projectId, onClose }: { taskId: string, pro
     />
   )
 }
-
 
 export default function MyTasksPage() {
   const { activeWorkspace } = useWorkspaceContext()
@@ -224,16 +288,24 @@ export default function MyTasksPage() {
     })),
   })
 
-  const isTasksLoading = taskQueries.some((q) => q.isLoading) || statusQueries.some((q) => q.isLoading)
+  const isTasksLoading =
+    taskQueries.some((q) => q.isLoading) ||
+    statusQueries.some((q) => q.isLoading)
 
   // Global update task mutation
   const updateTaskMutation = useMutation({
-    mutationFn: async ({ taskId, data }: { taskId: string, data: Partial<Task> }) => {
+    mutationFn: async ({
+      taskId,
+      data,
+    }: {
+      taskId: string
+      data: Partial<Task>
+    }) => {
       return axiosInstance.patch(`/tasks/${taskId}`, data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
-    }
+    },
   })
 
   // 4. Filter to only tasks assigned to the current user
@@ -270,7 +342,7 @@ export default function MyTasksPage() {
 
   if (isProjectsLoading || isTasksLoading) {
     return (
-      <div className="flex flex-col space-y-6 p-6 w-full">
+      <div className="flex w-full flex-col space-y-6 p-6">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
           <div className="flex gap-2">
@@ -279,13 +351,16 @@ export default function MyTasksPage() {
           </div>
         </div>
         <div className="rounded-md border border-border">
-          <div className="border-b border-border p-4 flex gap-4">
+          <div className="flex gap-4 border-b border-border p-4">
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-full" />
           </div>
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+            <div
+              key={i}
+              className="flex gap-4 border-b border-border p-4 last:border-0"
+            >
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
@@ -332,8 +407,8 @@ export default function MyTasksPage() {
         <div className="grid gap-4">
           {myTasks.map((task) => {
             const projectStatuses =
-              statusQueries.find((q) => q.data?.projectId === task.projectId)?.data
-                ?.statuses || []
+              statusQueries.find((q) => q.data?.projectId === task.projectId)
+                ?.data?.statuses || []
 
             return (
               <MyTaskRow
@@ -362,4 +437,3 @@ export default function MyTasksPage() {
     </div>
   )
 }
-

@@ -1,5 +1,6 @@
 "use client"
 
+import { IconStack } from "@/components/reui/icon-stack"
 import { Button } from "@/components/ui/button"
 import { Calendar as ShadcnCalendar } from "@/components/ui/calendar"
 import {
@@ -9,6 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -120,18 +129,20 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
             Track critical check points and release markers on your roadmap.
           </CardDescription>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setIsAddingMilestone(!isAddingMilestone)
-            setMilestoneValidationErrors({})
-          }}
-          className="h-8 text-[10px] font-bold uppercase"
-        >
-          <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" /> Add
-          Milestone
-        </Button>
+        {(milestones || []).length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setIsAddingMilestone(!isAddingMilestone)
+              setMilestoneValidationErrors({})
+            }}
+            className="h-8 text-[10px] font-bold uppercase"
+          >
+            <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />
+            Add Milestone
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {isAddingMilestone && (
@@ -275,7 +286,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
               <Button
                 type="button"
                 size="sm"
-                variant="ghost"
+                variant="destructive"
                 onClick={() => setIsAddingMilestone(false)}
                 className="h-8 px-3 text-xs"
               >
@@ -331,18 +342,43 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
               )
             )}
             {(milestones || []).length === 0 && (
-              <div className="rounded-xl border border-dashed border-border bg-muted/10 py-8 text-center">
-                <HugeiconsIcon
-                  icon={Flag03Icon}
-                  className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
-                />
-                <p className="text-xs font-medium text-muted-foreground">
-                  No milestones set
-                </p>
-                <p className="mt-0.5 text-[10px] text-muted-foreground">
-                  Set milestones to mark key phases of your project.
-                </p>
-              </div>
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia>
+                    <IconStack
+                      aria-hidden="true"
+                      className="h-24 w-22 text-primary"
+                    >
+                      <HugeiconsIcon
+                        icon={Flag03Icon}
+                        className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                      />
+                    </IconStack>
+                  </EmptyMedia>
+                  <EmptyTitle>No milestones set</EmptyTitle>
+                  <EmptyDescription>
+                    Set milestones to mark key phases of your project.
+                  </EmptyDescription>
+                </EmptyHeader>
+
+                <EmptyContent className="flex-row justify-center gap-2">
+                  <Button
+                    variant="outline-default"
+                    size="sm"
+                    onClick={() => {
+                      setIsAddingMilestone(!isAddingMilestone)
+                      setMilestoneValidationErrors({})
+                    }}
+                    className="h-8 text-[10px] font-bold uppercase"
+                  >
+                    <HugeiconsIcon
+                      icon={Add01Icon}
+                      className="mr-1 h-3.5 w-3.5"
+                    />{" "}
+                    Add Milestone
+                  </Button>
+                </EmptyContent>
+              </Empty>
             )}
           </div>
         )}

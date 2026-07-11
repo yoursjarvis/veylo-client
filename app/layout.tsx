@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Metadata } from "next"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
+import NextTopLoader from "nextjs-toploader"
 import "./globals.css"
 
 // const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
@@ -72,6 +73,12 @@ export default function RootLayout({
       <body className="overflow-x-hidden antialiased">
         <ThemeProvider>
           <ThemeToggle />
+          <NextTopLoader
+            color="var(--primary)"
+            height={3}
+            showSpinner={false}
+            shadow="0 0 10px var(--primary),0 0 5px var(--primary)"
+          />
           <QueryProvider>
             <TooltipProvider>
               <NuqsAdapter>

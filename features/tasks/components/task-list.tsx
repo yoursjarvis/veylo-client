@@ -16,6 +16,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 import { cn } from "@/lib/utils"
 import { format, isPast, isToday } from "date-fns"
 import { AnimatePresence, motion } from "motion/react"
@@ -94,7 +99,8 @@ interface TaskRowProps {
   projectId: string
   statuses: { id: string; name: string }[]
   projectMembers: {
-    user: { id: string; name?: string | null; image?: string | null }
+    role?: string
+    user: { id: string; name?: string | null; image?: string | null; email?: string | null }
   }[]
 }
 
@@ -130,39 +136,48 @@ const getPriorityIcon = (prio: string) => {
       return (
         <HugeiconsIcon
           icon={CircleArrowUp01Icon}
-          className="h-4 w-4 text-destructive"
+          className="h-10 w-10 text-destructive"
+          strokeWidth={2.5}
         />
       )
     case "high":
       return (
         <HugeiconsIcon
           icon={ArrowUp01Icon}
-          className="h-4 w-4 text-destructive"
+          className="h-7 w-7 text-destructive"
+          strokeWidth={2.5}
         />
       )
     case "medium":
       return (
-        <HugeiconsIcon icon={EqualSignIcon} className="h-4 w-4 text-warning" />
+        <HugeiconsIcon
+          icon={EqualSignIcon}
+          className="h-7 w-7 text-warning"
+          strokeWidth={2}
+        />
       )
     case "low":
       return (
         <HugeiconsIcon
           icon={ArrowDown01Icon}
-          className="h-4 w-4 text-primary"
+          className="h-7 w-7 text-primary"
+          strokeWidth={2.5}
         />
       )
     case "lowest":
       return (
         <HugeiconsIcon
           icon={ArrowDown01Icon}
-          className="h-4 w-4 text-muted-foreground"
+          className="h-7 w-7 text-muted-foreground"
+          strokeWidth={2.5}
         />
       )
     default:
       return (
         <HugeiconsIcon
           icon={EqualSignIcon}
-          className="h-4 w-4 text-muted-foreground"
+          className="h-7 w-7 text-muted-foreground"
+          strokeWidth={2.5}
         />
       )
   }
@@ -176,43 +191,87 @@ function UserSelect({
 }: {
   value: string | null
   onChange: (userId: string | null) => void
-  users: { user: { id: string; name?: string | null; image?: string | null } }[]
+  users: {
+    role?: string
+    user: { id: string; name?: string | null; image?: string | null; email?: string | null }
+  }[]
   placeholder?: string
 }) {
   const [open, setOpen] = useState(false)
-  const selectedUser = users.find((u) => u.user.id === value)?.user
+  const selectedMember = users.find((u) => u.user.id === value)
+  const selectedUser = selectedMember?.user
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <button
+      <HoverCard>
+        <HoverCardTrigger
+          render={
+            <PopoverTrigger
+              render={
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
+                >
+                  {selectedUser ? (
+                    <>
+                      <Avatar className="h-7 w-7 shrink-0">
+                        <AvatarImage src={selectedUser.image || undefined} />
+                        <AvatarFallback className="text-[10px]">
+                          {selectedUser.name?.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate">{selectedUser.name}</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/30 bg-muted text-muted-foreground">
+                        <HugeiconsIcon icon={UserIcon} className="h-4 w-4" />
+                      </div>
+                      <span className="truncate text-muted-foreground italic">
+                        {placeholder}
+                      </span>
+                    </>
+                  )}
+                </button>
+              }
+            />
+          }
+        />
+        {selectedUser && (
+          <HoverCardContent
+            className="w-80 p-4 bg-popover border border-border/80 rounded-xl shadow-lg"
+            align="start"
             onClick={(e) => e.stopPropagation()}
-            className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
           >
-            {selectedUser ? (
-              <>
-                <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarImage src={selectedUser.image || undefined} />
-                  <AvatarFallback className="text-[10px]">
-                    {selectedUser.name?.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="truncate">{selectedUser.name}</span>
-              </>
-            ) : (
-              <>
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/30 bg-muted text-muted-foreground">
-                  <HugeiconsIcon icon={UserIcon} className="h-4 w-4" />
+            <div className="flex gap-4">
+              <Avatar className="h-12 w-12 border border-border/50 shrink-0">
+                <AvatarImage src={selectedUser.image || undefined} />
+                <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+                  {selectedUser.name?.substring(0, 2).toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-1 min-w-0">
+                <h4 className="font-semibold text-sm text-foreground truncate">
+                  {selectedUser.name}
+                </h4>
+                {selectedUser.email && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {selectedUser.email}
+                  </p>
+                )}
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                    Active
+                  </span>
+                  <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+                    {selectedMember?.role || "Member"}
+                  </span>
                 </div>
-                <span className="truncate text-muted-foreground italic">
-                  {placeholder}
-                </span>
-              </>
-            )}
-          </button>
-        }
-      />
+              </div>
+            </div>
+          </HoverCardContent>
+        )}
+      </HoverCard>
       <PopoverContent
         className="w-56 p-0"
         align="start"
@@ -311,7 +370,7 @@ export function DatePicker({
             onChange(date || null)
             setOpen(false)
           }}
-          initialFocus
+          autoFocus
         />
       </PopoverContent>
     </Popover>
@@ -456,7 +515,7 @@ export function PrioritySelect({
             ) : (
               <>
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/30 bg-muted text-muted-foreground">
-                  <HugeiconsIcon icon={EqualSignIcon} className="h-4 w-4" />
+                  <HugeiconsIcon icon={EqualSignIcon} className="h-10 w-10" />
                 </div>
                 <span className="truncate text-muted-foreground italic">
                   {placeholder}
@@ -711,7 +770,8 @@ interface StatusSectionProps {
   projectId: string
   statuses: { id: string; name: string }[]
   projectMembers: {
-    user: { id: string; name?: string | null; image?: string | null }
+    role?: string
+    user: { id: string; name?: string | null; image?: string | null; email?: string | null }
   }[]
 }
 
@@ -862,7 +922,8 @@ interface TaskListProps {
   tasks: Task[]
   statuses: { id: string; name: string }[]
   projectMembers?: {
-    user: { id: string; name?: string | null; image?: string | null }
+    role?: string
+    user: { id: string; name?: string | null; image?: string | null; email?: string | null }
   }[]
   projectTemplate: string
   onSelectTask: (taskId: string) => void

@@ -75,10 +75,15 @@ export default function BoardPage() {
         type: "select",
         options: [
           { value: "null", label: "Unassigned" },
-          ...(selectedProject?.members || []).map((m: { userId: string; user?: { name?: string | null; email?: string | null } }) => ({
-            value: m.userId,
-            label: m.user?.name || m.user?.email || "Unknown User",
-          })),
+          ...(selectedProject?.members || []).map(
+            (m: {
+              userId: string
+              user?: { name?: string | null; email?: string | null }
+            }) => ({
+              value: m.userId,
+              label: m.user?.name || m.user?.email || "Unknown User",
+            })
+          ),
         ],
       },
       {
@@ -123,15 +128,18 @@ export default function BoardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full space-y-6 p-6 w-full">
+      <div className="flex h-full w-full flex-col space-y-6 p-6">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-10 w-32" />
         </div>
         <div className="flex flex-1 gap-6 overflow-hidden">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex h-full min-w-[300px] flex-col rounded-lg bg-muted/30 p-4">
-              <Skeleton className="h-6 w-32 mb-4" />
+            <div
+              key={i}
+              className="flex h-full min-w-[300px] flex-col rounded-lg bg-muted/30 p-4"
+            >
+              <Skeleton className="mb-4 h-6 w-32" />
               <div className="space-y-3">
                 <Skeleton className="h-24 w-full rounded-md" />
                 <Skeleton className="h-24 w-full rounded-md" />
@@ -183,6 +191,7 @@ export default function BoardPage() {
         projectTemplate={selectedProject?.template || "simple"}
         projectMembers={selectedProject?.members || []}
         onSelectTask={handleSelectTask}
+        projectLabels={labels || []}
       />
     </div>
   )

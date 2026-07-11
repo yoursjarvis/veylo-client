@@ -3,7 +3,7 @@
 import { format } from "date-fns"
 import Image from "next/image"
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import type { ProjectMember, Sprint } from "@/types/models"
+import type { ProjectMember, Sprint, Label } from "@/types/models"
 import {
   useCreateStatus,
   useCreateTask,
@@ -16,6 +16,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 
 import {
   closestCorners,
@@ -42,14 +47,18 @@ import { CSS } from "@dnd-kit/utilities"
 import { motion } from "framer-motion"
 import {
   Add01Icon,
+  ArrowDown01Icon,
   ArrowRight01Icon,
+  ArrowUp01Icon,
   AttachmentSquareIcon,
   Bug01Icon,
   CheckIcon,
   CheckmarkSquare03Icon,
   ChevronDownIcon,
   Clock05Icon,
+  CircleArrowUp01Icon,
   Edit03Icon,
+  EqualSignIcon,
   Message01Icon,
   SparklesIcon,
 } from "@hugeicons/core-free-icons"
@@ -74,6 +83,7 @@ interface Task {
   subtaskCount?: number
   subtasks?: Task[]
   parentTaskId?: string | null
+  labels?: { labelId: string }[]
 }
 
 interface TaskBoardProps {
@@ -85,29 +95,73 @@ interface TaskBoardProps {
   projectTemplate: string
   activeSprintId?: string | null
   onSelectTask: (taskId: string) => void
+  projectLabels?: Label[]
+}
+
+const getPriorityIcon = (prio: string) => {
+  switch (prio.toLowerCase()) {
+    case "urgent":
+    case "highest":
+      return (
+        <HugeiconsIcon
+          icon={CircleArrowUp01Icon}
+          className="h-10 w-10 text-destructive"
+          strokeWidth={2.5}
+        />
+      )
+    case "high":
+      return (
+        <HugeiconsIcon
+          icon={ArrowUp01Icon}
+          className="h-7 w-7 text-destructive"
+          strokeWidth={2.5}
+        />
+      )
+    case "medium":
+      return (
+        <HugeiconsIcon
+          icon={EqualSignIcon}
+          className="h-7 w-7 text-warning"
+          strokeWidth={2}
+        />
+      )
+    case "low":
+      return (
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          className="h-7 w-7 text-primary"
+          strokeWidth={2.5}
+        />
+      )
+    case "lowest":
+      return (
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          className="h-7 w-7 text-muted-foreground"
+          strokeWidth={2.5}
+        />
+      )
+    default:
+      return (
+        <HugeiconsIcon
+          icon={EqualSignIcon}
+          className="h-7 w-7 text-muted-foreground"
+          strokeWidth={2.5}
+        />
+      )
+  }
 }
 
 const getPriorityBadge = (prio: string) => {
-  const colors = {
-    urgent: "text-destructive border-destructive/20 bg-destructive/5",
-    high: "text-warning border-warning/20 bg-warning/5",
-    medium: "text-info border-info/20 bg-info/5",
-    low: "text-muted-foreground border-muted/20 bg-muted/5",
-  }[prio] || "text-muted-foreground border-muted/20 bg-muted/5"
-
   const label = prio.charAt(0).toUpperCase() + prio.slice(1)
 
   return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border-border/50",
-        colors
-      )}
-    >
-      <span className={cn("h-1 w-1 rounded-full bg-current")} />
-      {label}
-    </Badge>
+    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+        {getPriorityIcon(prio)}
+      </div>
+      <span className="truncate capitalize">{label}</span>
+    </div>
   )
 }
 
@@ -225,12 +279,16 @@ function TaskCard({
   statuses,
   isDragging,
   onSelectTask,
+  projectLabels = [],
+  projectMembers = [],
 }: {
   task: Task
   projectId: string
   statuses: { id: string; name: string; color?: string }[]
   isDragging?: boolean
   onSelectTask?: (id: string) => void
+  projectLabels?: Label[]
+  projectMembers?: ProjectMember[]
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedTitle, setEditedTitle] = useState(task.title)
@@ -238,6 +296,15 @@ function TaskCard({
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const updateTaskMutation = useUpdateTask(projectId, task.id)
+
+  const getMemberDetails = (ass: { id?: string; name?: string }) => {
+    if (!ass) return null
+    return projectMembers.find(
+      (m) =>
+        (ass.id && m.userId === ass.id) ||
+        (ass.name && m.user?.name === ass.name)
+    )
+  }
 
   const completedStatus = statuses.find(
     (st) =>
@@ -344,6 +411,31 @@ function TaskCard({
           </span>
         </div>
 
+        {task.labels && task.labels.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {projectLabels
+              .filter((lbl) =>
+                task.labels!.some((tl) => tl.labelId === lbl.id)
+              )
+              .map((lbl) => (
+                <div
+                  key={lbl.id}
+                  className={cn(
+                    "flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                    !lbl.color && "bg-primary/10 border-primary/20 text-primary"
+                  )}
+                  style={lbl.color ? {
+                    backgroundColor: `${lbl.color}20`,
+                    borderColor: `${lbl.color}40`,
+                    color: lbl.color,
+                  } : undefined}
+                >
+                  {lbl.name}
+                </div>
+              ))}
+          </div>
+        )}
+
         <div className="flex items-start gap-2.5">
           <button
             type="button"
@@ -406,19 +498,60 @@ function TaskCard({
         <div className="ml-auto flex items-center">
           {task.assignees && task.assignees.length > 0 ? (
             <div className="flex -space-x-1.5 overflow-hidden p-1">
-              {task.assignees.slice(0, 3).map((assignee, idx) => (
-                <Avatar
-                  key={idx}
-                  className="inline-block h-6 w-6 rounded-full ring-2 ring-card transition-transform hover:z-10 hover:scale-110"
-                >
-                  <AvatarImage src={assignee.image || ""} />
-                  <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
-                    {assignee.name
-                      ? assignee.name.charAt(0).toUpperCase()
-                      : "-"}
-                  </AvatarFallback>
-                </Avatar>
-              ))}
+              {task.assignees.slice(0, 3).map((assignee, idx) => {
+                const member = getMemberDetails(assignee)
+                const user = member?.user || assignee
+                return (
+                  <HoverCard key={idx}>
+                    <HoverCardTrigger
+                      render={
+                        <Avatar className="inline-block h-6 w-6 rounded-full ring-2 ring-card transition-transform hover:z-10 hover:scale-110 cursor-pointer">
+                          <AvatarImage src={assignee.image || ""} />
+                          <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+                            {assignee.name
+                              ? assignee.name.charAt(0).toUpperCase()
+                              : "-"}
+                          </AvatarFallback>
+                        </Avatar>
+                      }
+                    />
+                    {user.name && (
+                      <HoverCardContent
+                        className="w-80 p-4 bg-popover border border-border/80 rounded-xl shadow-lg"
+                        align="end"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex gap-4">
+                          <Avatar className="h-12 w-12 border border-border/50 shrink-0">
+                            <AvatarImage src={user.image || undefined} />
+                            <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+                              {user.name?.substring(0, 2).toUpperCase() || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col gap-1 min-w-0">
+                            <h4 className="font-semibold text-sm text-foreground truncate">
+                              {user.name}
+                            </h4>
+                            {"email" in user && user.email && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {user.email}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-1.5 mt-2">
+                              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                Active
+                              </span>
+                              <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+                                {member?.role || "Member"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    )}
+                  </HoverCard>
+                )
+              })}
               {task.assignees.length > 3 && (
                 <div className="z-10 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground ring-2 ring-card transition-transform hover:z-20 hover:scale-110">
                   +{task.assignees.length - 3}
@@ -427,14 +560,60 @@ function TaskCard({
             </div>
           ) : task.assignee ? (
             <div className="p-1">
-              <Avatar className="h-6 w-6 ring-2 ring-card transition-transform hover:scale-110">
-                <AvatarImage src={task.assignee.image || ""} />
-                <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
-                  {task.assignee.name
-                    ? task.assignee.name.charAt(0).toUpperCase()
-                    : "-"}
-                </AvatarFallback>
-              </Avatar>
+              {(() => {
+                const member = getMemberDetails(task.assignee)
+                const user = member?.user || task.assignee
+                return (
+                  <HoverCard>
+                    <HoverCardTrigger
+                      render={
+                        <Avatar className="h-6 w-6 ring-2 ring-card transition-transform hover:scale-110 cursor-pointer">
+                          <AvatarImage src={task.assignee.image || ""} />
+                          <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+                            {task.assignee.name
+                              ? task.assignee.name.charAt(0).toUpperCase()
+                              : "-"}
+                          </AvatarFallback>
+                        </Avatar>
+                      }
+                    />
+                    {user.name && (
+                      <HoverCardContent
+                        className="w-80 p-4 bg-popover border border-border/80 rounded-xl shadow-lg"
+                        align="end"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex gap-4">
+                          <Avatar className="h-12 w-12 border border-border/50 shrink-0">
+                            <AvatarImage src={user.image || undefined} />
+                            <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+                              {user.name?.substring(0, 2).toUpperCase() || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col gap-1 min-w-0">
+                            <h4 className="font-semibold text-sm text-foreground truncate">
+                              {user.name}
+                            </h4>
+                            {"email" in user && user.email && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {user.email}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-1.5 mt-2">
+                              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                Active
+                              </span>
+                              <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+                                {member?.role || "Member"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    )}
+                  </HoverCard>
+                )
+              })()}
             </div>
           ) : null}
         </div>
@@ -537,12 +716,16 @@ function SortableTaskCard({
   statuses,
   onSelectTask,
   index,
+  projectLabels = [],
+  projectMembers = [],
 }: {
   task: Task
   projectId: string
   statuses: { id: string; name: string; color?: string }[]
   onSelectTask: (id: string) => void
   index: number
+  projectLabels?: Label[]
+  projectMembers?: ProjectMember[]
 }) {
   const {
     attributes,
@@ -581,6 +764,8 @@ function SortableTaskCard({
         projectId={projectId}
         statuses={statuses}
         onSelectTask={onSelectTask}
+        projectLabels={projectLabels}
+        projectMembers={projectMembers}
         isDragging={isDragging}
       />
     </motion.div>
@@ -598,6 +783,8 @@ interface BoardColumnProps {
   setQuickAddTitle: (title: string) => void
   handleQuickAddSubmit: (e: React.FormEvent, statusId: string) => void
   onSelectTask: (id: string) => void
+  projectLabels?: Label[]
+  projectMembers?: ProjectMember[]
 }
 
 function BoardColumn({
@@ -611,6 +798,8 @@ function BoardColumn({
   setQuickAddTitle,
   handleQuickAddSubmit,
   onSelectTask,
+  projectLabels = [],
+  projectMembers = [],
 }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: status.id,
@@ -695,6 +884,8 @@ function BoardColumn({
               statuses={statuses}
               onSelectTask={onSelectTask}
               index={index}
+              projectLabels={projectLabels}
+              projectMembers={projectMembers}
             />
           ))
         )}
@@ -710,6 +901,8 @@ export function TaskBoard({
   projectTemplate,
   activeSprintId,
   onSelectTask,
+  projectLabels = [],
+  projectMembers = [],
 }: TaskBoardProps) {
   const [prevTasks, setPrevTasks] = useState<Task[]>(initialTasks)
   const [boardTasks, setBoardTasks] = useState<Task[]>(() =>
@@ -928,6 +1121,8 @@ export function TaskBoard({
                 setQuickAddTitle={setQuickAddTitle}
                 handleQuickAddSubmit={handleQuickAddSubmit}
                 onSelectTask={onSelectTask}
+                projectLabels={projectLabels}
+                projectMembers={projectMembers}
               />
             </SortableContext>
           )
@@ -977,6 +1172,8 @@ export function TaskBoard({
               task={activeTask}
               projectId={projectId}
               statuses={statuses}
+              projectLabels={projectLabels}
+              projectMembers={projectMembers}
             />
           </div>
         ) : null}

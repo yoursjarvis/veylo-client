@@ -1,14 +1,8 @@
 "use client"
 
-import React, { useState } from "react"
-import { useProject } from "../../layout"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { axiosInstance } from "@/lib/axios"
-import { toast } from "sonner"
+import { IconStack } from "@/components/reui/icon-stack"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -17,17 +11,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
-  Shield,
-  Plus,
-  Trash,
-  Eye,
-  EyeOff,
-  Copy,
-  Check,
-  Lock,
-} from "lucide-react"
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Textarea } from "@/components/ui/textarea"
+import { axiosInstance } from "@/lib/axios"
+import { Add01Icon, LockIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Check, Copy, Eye, EyeOff, Plus, Shield, Trash } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
+import { useProject } from "../../layout"
 
 interface VaultItem {
   id: string
@@ -197,53 +199,70 @@ export default function VaultSettingsPage() {
       </div>
 
       {isVaultLoading ? (
-        <div className="flex flex-col space-y-6 p-6 w-full">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-32" />
+        <div className="flex w-full flex-col space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-48" />
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-32" />
+            </div>
           </div>
-        </div>
-        <div className="rounded-md border border-border">
-          <div className="border-b border-border p-4 flex gap-4">
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-          </div>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+          <div className="rounded-md border border-border">
+            <div className="flex gap-4 border-b border-border p-4">
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
             </div>
-          ))}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex gap-4 border-b border-border p-4 last:border-0"
+              >
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
       ) : vault?.services && vault.services.length === 0 ? (
-        <div className="flex min-h-[300px] flex-col items-center justify-center rounded-xl border border-dashed p-6 text-center">
-          <Lock className="mb-3 h-10 w-10" />
-          <h4 className="text-sm font-bold">Vault Empty</h4>
-          <p className="mt-1 max-w-xs text-xs leading-relaxed">
-            Securely store credentials for chatgpt, aws, stripe, github, or
-            other tools.
-          </p>
-          <Button
-            onClick={() => setIsAddServiceOpen(true)}
-            variant="secondary"
-            className="mt-4 h-8 text-xs font-semibold"
-          >
-            Add First Service
-          </Button>
-        </div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia>
+              <IconStack aria-hidden="true" className="h-24 w-22 text-primary">
+                <HugeiconsIcon
+                  icon={LockIcon}
+                  className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                />
+              </IconStack>
+            </EmptyMedia>
+            <EmptyTitle>Vault Empty</EmptyTitle>
+            <EmptyDescription>
+              Securely store credentials for chatgpt, aws, stripe, github, or
+              other tools.
+            </EmptyDescription>
+          </EmptyHeader>
+
+          <EmptyContent className="flex-row justify-center gap-2">
+            <Button
+              variant="outline-default"
+              size="sm"
+              onClick={() => setIsAddServiceOpen(true)}
+              className="h-8 text-[10px] font-bold uppercase"
+            >
+              <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
+              Add First Service
+            </Button>
+          </EmptyContent>
+        </Empty>
       ) : (
         <div className="grid max-w-4xl grid-cols-1 gap-6">
           {vault?.services?.map((service) => (
             <Card
               key={service.id}
-              className="border-border overflow-hidden border shadow-lg"
+              className="overflow-hidden border border-border shadow-lg"
             >
-              <CardHeader className="border-border flex flex-row items-center justify-between border-b bg-muted/20 px-6 py-3.5">
+              <CardHeader className="flex flex-row items-center justify-between border-b border-border bg-muted/20 px-6 py-3.5">
                 <CardTitle className="text-xs font-bold tracking-wider uppercase">
                   {service.name}
                 </CardTitle>
@@ -285,14 +304,14 @@ export default function VaultSettingsPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-left text-xs">
                       <thead>
-                        <tr className="border-border border-b bg-muted/20 font-semibold">
+                        <tr className="border-b border-border bg-muted/20 font-semibold">
                           <th className="p-3.5 pl-6">Key / Name</th>
                           <th className="p-3.5">Secret Value</th>
                           <th className="p-3.5">Notes</th>
                           <th className="p-3.5 pr-6 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-border divide-y">
+                      <tbody className="divide-y divide-border">
                         {service.items.map((item) => {
                           const isRevealed = !!revealedItems[item.id]
                           const isCopied = copiedItemId === item.id
@@ -339,7 +358,7 @@ export default function VaultSettingsPage() {
                                     }
                                   >
                                     {isCopied ? (
-                                      <Check className="text-success h-3.5 w-3.5" />
+                                      <Check className="h-3.5 w-3.5 text-success" />
                                     ) : (
                                       <Copy className="h-3.5 w-3.5" />
                                     )}
@@ -400,7 +419,7 @@ export default function VaultSettingsPage() {
               />
             </div>
           </div>
-          <DialogFooter className="border-border flex gap-2 border-t pt-4">
+          <DialogFooter className="flex gap-2 border-t border-border pt-4">
             <Button variant="ghost" onClick={() => setIsAddServiceOpen(false)}>
               Cancel
             </Button>
