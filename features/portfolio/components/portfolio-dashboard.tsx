@@ -1726,10 +1726,9 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                       placeholder="e.g. Q3 Strategic Roadmaps"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      className="border-input bg-background/50 focus-visible:ring-1 focus-visible:ring-primary"
                     />
                     {hasError && (
-                      <p className="mt-1 text-[11px] font-semibold text-rose-500">
+                      <p className="mt-1 text-[11px] font-semibold text-destructive">
                         {String(field.state.meta.errors[0])}
                       </p>
                     )}
@@ -1841,10 +1840,9 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                       placeholder="e.g. Q3 Strategic Roadmaps"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      className="border-input bg-background/50 focus-visible:ring-1 focus-visible:ring-primary"
                     />
                     {hasError && (
-                      <p className="mt-1 text-[11px] font-semibold text-rose-500">
+                      <p className="mt-1 text-[11px] font-semibold text-destructive">
                         {String(field.state.meta.errors[0])}
                       </p>
                     )}

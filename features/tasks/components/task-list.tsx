@@ -3,6 +3,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+
 import {
   Command,
   CommandEmpty,
@@ -629,7 +631,7 @@ export function TaskRow({
       </div>
       <div className="flex items-center overflow-hidden px-3 py-2">
         {isEditingTitle ? (
-          <input
+          <Input
             type="text"
             value={titleValue}
             onChange={(e) => setTitleValue(e.target.value)}
@@ -647,7 +649,7 @@ export function TaskRow({
                 }
               }
             }}
-            className="w-full rounded border border-ring bg-background px-2 py-0.5 text-sm"
+            className="w-full h-8 px-2 py-0.5 text-sm"
             autoFocus
             onClick={(e) => e.stopPropagation()}
           />

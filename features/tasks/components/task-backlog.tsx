@@ -15,6 +15,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -600,23 +607,27 @@ export function TaskBacklog({
                 <Label className="text-xs font-semibold text-foreground">
                   Move uncompleted tasks to:
                 </Label>
-                <select
-                  value={completeDestSprintId}
-                  onChange={(e) => setCompleteDestSprintId(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background p-2 text-xs text-foreground focus:border-primary focus:outline-none"
+                <Select
+                  value={completeDestSprintId || "backlog"}
+                  onValueChange={(val) => setCompleteDestSprintId(val === "backlog" ? "" : val ?? "")}
                 >
-                  <option value="">Product Backlog (Unscheduled)</option>
-                  {sprints
-                    .filter(
-                      (s) =>
-                        s.status === "planned" && s.id !== completingSprint.id
-                    )
-                    .map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} (Planned)
-                      </option>
-                    ))}
-                </select>
+                  <SelectTrigger className="w-full text-xs h-8">
+                    <SelectValue placeholder="Product Backlog (Unscheduled)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="backlog">Product Backlog (Unscheduled)</SelectItem>
+                    {sprints
+                      .filter(
+                        (s) =>
+                          s.status === "planned" && s.id !== completingSprint.id
+                      )
+                      .map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} (Planned)
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter className="pt-4">

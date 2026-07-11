@@ -175,7 +175,6 @@ export function ProfileTab() {
               id="email"
               value={user?.email || ""}
               disabled
-              className="bg-muted/50"
             />
             <p className="text-xs text-muted-foreground">
               Your email address is managed through your account settings.

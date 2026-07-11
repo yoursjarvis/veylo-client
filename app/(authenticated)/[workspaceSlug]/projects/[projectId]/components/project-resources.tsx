@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Add01Icon,
   Delete02Icon,
@@ -177,10 +178,10 @@ export function ProjectResources({ projectId }: ProjectResourcesProps) {
           </div>
 
           {isEditingBrief ? (
-            <textarea
+            <Textarea
               value={projectBrief}
               onChange={(e) => setProjectBrief(e.target.value)}
-              className="min-h-30 w-full resize-y rounded-md border border-border bg-background p-3 text-xs font-normal text-foreground focus:border-primary focus:outline-none"
+              className="min-h-30 w-full resize-y"
             />
           ) : (
             <p className="font-sans text-sm leading-relaxed font-normal whitespace-pre-wrap text-muted-foreground">

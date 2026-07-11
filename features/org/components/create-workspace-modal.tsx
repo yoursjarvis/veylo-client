@@ -144,7 +144,7 @@ export function CreateWorkspaceModal() {
                         aria-invalid={hasError}
                       />
                       {hasError && (
-                        <p className="text-[11px] text-rose-500 font-medium mt-1">
+                        <p className="text-[11px] text-destructive font-medium mt-1">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -184,7 +184,7 @@ export function CreateWorkspaceModal() {
                         aria-invalid={hasError}
                       />
                       {hasError && (
-                        <p className="text-[11px] text-rose-500 font-medium mt-1">
+                        <p className="text-[11px] text-destructive font-medium mt-1">
                           {fieldErrors.join(", ")}
                         </p>
                       )}

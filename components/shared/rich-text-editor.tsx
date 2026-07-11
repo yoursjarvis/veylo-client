@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { axiosInstance } from "@/lib/axios"
@@ -135,13 +136,13 @@ function CodeBlockComponent({
           <div className="absolute right-0 z-50 mt-1 flex max-h-56 w-44 flex-col rounded-md border border-border bg-background p-1.5 shadow-lg">
             {/* Search Input */}
             <div className="relative mb-1.5">
-              <input
+              <Input
                 type="text"
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search language..."
-                className="w-full rounded border border-border bg-muted/30 px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground/70 focus:bg-background focus:ring-1 focus:ring-primary focus:outline-none"
+                className="w-full h-7 px-2 text-xs"
               />
             </div>
 

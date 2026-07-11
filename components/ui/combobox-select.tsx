@@ -97,7 +97,7 @@ export function ComboboxSelect({
       <div className="relative w-full">
         <ComboboxInput
           className={cn(
-            "flex h-9 w-full items-center rounded-lg border border-border bg-background text-xs text-foreground transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20",
+            "h-9 w-full text-xs",
             !isSearchable && "cursor-pointer",
             className
           )}
@@ -111,13 +111,13 @@ export function ComboboxSelect({
           )}
         </ComboboxInput>
       </div>
-      <ComboboxContent className="z-50 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-popover shadow-md">
+      <ComboboxContent>
         <ComboboxList className="p-1">
           {filteredOptions.map((opt) => (
             <ComboboxItem
               key={opt.value}
               value={{ value: opt.value, label: opt.label }}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-xs hover:bg-accent hover:text-accent-foreground"
+              className="text-xs"
             >
               {opt.icon && <span className="shrink-0">{opt.icon}</span>}
               <span className="truncate">{opt.label}</span>

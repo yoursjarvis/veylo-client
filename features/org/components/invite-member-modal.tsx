@@ -80,7 +80,6 @@ export function InviteMemberModal({
               id="email"
               type="email"
               placeholder="user@example.com"
-              className="bg-background border-border/50"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -92,7 +91,7 @@ export function InviteMemberModal({
               value={role}
               onValueChange={(value) => setRole(value || "")}
             >
-              <ComboboxInput placeholder="Select a role" className="w-full bg-background border-border/50" />
+              <ComboboxInput placeholder="Select a role" className="w-full" />
 
               <ComboboxContent>
                 <ComboboxEmpty>No roles found.</ComboboxEmpty>

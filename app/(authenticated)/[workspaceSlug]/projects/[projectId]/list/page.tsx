@@ -7,6 +7,7 @@ import {
   type FilterFieldConfig,
 } from "@/components/reui/filters"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TaskList } from "@/features/tasks/components/task-list"
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
@@ -168,12 +169,12 @@ export default function ListPage() {
               icon={Search01Icon}
               className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground/60"
             />
-            <input
+            <Input
               type="text"
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-border/60 bg-muted/40 py-1.5 pr-8 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 hover:bg-muted/65 focus:border-ring focus:bg-background focus:ring-1 focus:ring-ring focus:outline-hidden"
+              className="w-full pl-9 pr-8"
             />
             {searchQuery && (
               <button

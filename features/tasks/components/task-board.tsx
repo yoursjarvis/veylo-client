@@ -15,6 +15,7 @@ import { Badge } from "@/components/reui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import {
   HoverCard,
@@ -453,7 +454,7 @@ function TaskCard({
 
           {isEditing ? (
             <div onClick={(e) => e.stopPropagation()} className="flex-1">
-              <textarea
+              <Textarea
                 ref={inputRef}
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}

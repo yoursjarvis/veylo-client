@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { usePermissions as useCatalogPermissions, useOrganizationRoles, useCreateRole, useUpdateRolePermissions } from "../hooks/use-rbac";
 import { usePermissions as useUserPermissions } from "@/hooks/use-permissions";
 import { PermissionMatrix } from "./permission-matrix";
@@ -122,12 +123,10 @@ export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: Ro
                     </p>
                   </div>
                   <div className="flex items-center">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       id="bypassPermissions"
                       checked={bypassPermissions}
-                      onChange={(e) => setBypassPermissions(e.target.checked)}
-                      className="w-5 h-5 accent-primary"
+                      onCheckedChange={(checked) => setBypassPermissions(!!checked)}
                     />
                   </div>
                 </div>

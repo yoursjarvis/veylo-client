@@ -158,7 +158,7 @@ function TriggerForm({
             })
           }
         >
-          <SelectTrigger className="w-full border-input bg-background">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Event Type">
               {(val: string) => {
                 const labels: Record<string, string> = {
@@ -196,7 +196,7 @@ function TriggerForm({
                 })
               }
             >
-              <SelectTrigger className="w-full border-input bg-background">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Any Status">
                   {(val: string) => {
                     if (!val || val === "any") return "Any Status"
@@ -229,7 +229,7 @@ function TriggerForm({
                 })
               }
             >
-              <SelectTrigger className="w-full border-input bg-background">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Any Status">
                   {(val: string) => {
                     if (!val || val === "any") return "Any Status"
@@ -320,7 +320,7 @@ function ActionForm({
             })
           }
         >
-          <SelectTrigger className="w-full border-input bg-background">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Action Type">
               {(val: string) => {
                 const labels: Record<string, string> = {
@@ -399,7 +399,7 @@ function ActionForm({
               })
             }
           >
-            <SelectTrigger className="w-full border-input bg-background">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select Status">
                 {(val: string) => {
                   if (!val) return "Select Status"
@@ -483,7 +483,7 @@ function ConditionForm({
             })
           }
         >
-          <SelectTrigger className="w-full border-input bg-background">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Operator">
               {(val: string) => {
                 const labels: Record<string, string> = {

@@ -11,6 +11,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { Media } from "@/types/models"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -277,10 +278,10 @@ export function AttachmentItem({
                       onSubmit={handleAddAnnotation}
                       className="bg-card border border-border p-2 rounded shadow-2xl w-48 text-xs flex flex-col gap-1.5"
                     >
-                      <input
+                      <Input
                         type="text"
                         placeholder="Add feedback..."
-                        className="border border-border rounded px-1.5 py-1 text-xs text-foreground bg-background"
+                        className="h-7 px-1.5 text-xs"
                         value={annotationInput}
                         onChange={(e) => setAnnotationInput(e.target.value)}
                         autoFocus

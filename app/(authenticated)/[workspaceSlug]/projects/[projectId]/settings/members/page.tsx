@@ -8,6 +8,7 @@ import { axiosInstance } from "@/lib/axios"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
@@ -261,11 +262,9 @@ export default function ProjectMembersPage() {
                         </p>
                       </div>
                     </div>
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={isChecked}
-                      className="h-4 w-4 rounded border-input bg-background text-primary accent-primary focus:ring-ring"
-                      onChange={() => {
+                      onCheckedChange={() => {
                         if (isChecked) {
                           setSelectedMembers((prev) =>
                             prev.filter((id) => id !== wMember.userId)

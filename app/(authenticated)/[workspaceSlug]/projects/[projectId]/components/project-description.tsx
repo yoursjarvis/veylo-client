@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { axiosInstance } from "@/lib/axios"
 import {
@@ -82,11 +83,11 @@ export function ProjectDescription({
       </CardHeader>
       <CardContent>
         {isEditingDesc ? (
-          <textarea
+          <Textarea
             value={descriptionValue}
             onChange={(e) => setDescriptionValue(e.target.value)}
             placeholder="Describe your project goals, scope, and timeline..."
-            className="min-h-25 w-full resize-y rounded-md border border-border bg-background p-3 text-xs text-foreground focus:border-primary focus:outline-none"
+            className="min-h-25 w-full resize-y"
           />
         ) : (
           <p className="text-sm leading-relaxed font-normal whitespace-pre-wrap text-foreground">

@@ -218,7 +218,6 @@ export function EditMemberModal({
                         onChange={(e) => setFirstName(e.target.value)}
                         placeholder="First Name"
                         disabled={!canUpdate}
-                        className="transition-all focus-visible:ring-1"
                       />
                     </div>
                     <div className="space-y-2.5">
@@ -228,7 +227,6 @@ export function EditMemberModal({
                         onChange={(e) => setLastName(e.target.value)}
                         placeholder="Last Name"
                         disabled={!canUpdate}
-                        className="transition-all focus-visible:ring-1"
                       />
                     </div>
                   </div>
@@ -240,7 +238,6 @@ export function EditMemberModal({
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Email"
                       disabled={!canUpdate}
-                      className="transition-all focus-visible:ring-1"
                     />
                   </div>
 
@@ -289,7 +286,6 @@ export function EditMemberModal({
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minimum 8 characters"
                       required
-                      className="transition-all focus-visible:ring-1"
                     />
                   </div>
                   <div className="space-y-2.5">
@@ -302,7 +298,6 @@ export function EditMemberModal({
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm new password"
                       required
-                      className="transition-all focus-visible:ring-1"
                     />
                   </div>
                 </div>

@@ -255,7 +255,7 @@ export function TaskDetailsSubtasks({
           placeholder="Add a subtask..."
           value={newSubtaskTitle}
           onChange={(e) => setNewSubtaskTitle(e.target.value)}
-          className="h-8 flex-1 border border-border bg-background text-xs text-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+          className="h-8 flex-1 text-xs"
         />
         <Button
           type="submit"
