@@ -34,6 +34,9 @@ export interface CommandPaletteProps {
   emptyMessage?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  query?: string;
+  onQueryChange?: (query: string) => void;
+  shouldFilter?: boolean;
 }
 
 function fuzzyMatch(needle: string, hay: string) {
@@ -64,6 +67,9 @@ export function CommandPalette({
   emptyMessage = "No results found.",
   open: controlledOpen,
   onOpenChange,
+  query: controlledQuery,
+  onQueryChange,
+  shouldFilter = true,
 }: CommandPaletteProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const controlled = controlledOpen !== undefined;
@@ -76,17 +82,22 @@ export function CommandPalette({
     [controlled, onOpenChange],
   );
 
-  const [query, setQuery] = useState("");
+  const [internalQuery, setInternalQuery] = useState("");
+  const isQueryControlled = controlledQuery !== undefined;
+  const query = isQueryControlled ? controlledQuery : internalQuery;
+
   const [active, setActive] = useState(0);
   // Portal target only exists client-side; render nothing during SSR/hydration.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const uid = useId();
   const reduce = useReducedMotion();
+  
   const updateQuery = useCallback((value: string) => {
-    setQuery(value);
+    if (!isQueryControlled) setInternalQuery(value);
+    onQueryChange?.(value);
     setActive(0);
-  }, []);
+  }, [isQueryControlled, onQueryChange]);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -127,12 +138,12 @@ export function CommandPalette({
   }, [open]);
 
   const filtered = useMemo(() => {
-    if (!query) return items;
+    if (!query || !shouldFilter) return items;
     return items.filter((it) => {
       const haystacks = [it.label, it.group ?? "", ...(it.keywords ?? [])];
       return haystacks.some((h) => fuzzyMatch(query, h));
     });
-  }, [items, query]);
+  }, [items, query, shouldFilter]);
 
   // Reserve the icon column only when at least one item brings an icon, so
   // icon-less lists don't render a dead gap before every label.

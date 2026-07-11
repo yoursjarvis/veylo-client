@@ -95,7 +95,7 @@ export function MultiSearchableSelect({
           </span>
         </PopoverTrigger>
         <PopoverContent
-          className="z-50 w-[var(--anchor-width)] min-w-36 border border-border bg-card p-0"
+          className="z-50 w-(--anchor-width) min-w-36 border border-border bg-card p-0"
           align="start"
         >
           <Command>

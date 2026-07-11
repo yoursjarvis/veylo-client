@@ -1,11 +1,13 @@
-"use client";
+"use client"
 /* eslint-disable react-hooks/set-state-in-effect */
+import { EASE_OUT } from "@/lib/ease"
+import { cn } from "@/lib/utils"
 import {
   AnimatePresence,
   motion,
   useReducedMotion,
   type Variants,
-} from "motion/react";
+} from "motion/react"
 import {
   useCallback,
   useEffect,
@@ -13,45 +15,43 @@ import {
   useRef,
   useState,
   type ReactNode,
-} from "react";
-import { EASE_OUT } from "@/lib/ease";
-import { cn } from "@/lib/utils";
+} from "react"
 
 export type ExpandableTabsItem = {
-  id: string;
+  id: string
   /** String label — shown inside the active tab and used as the button's accessible name. */
-  label: string;
-  icon: ReactNode;
+  label: string
+  icon: ReactNode
   /** Panel shown above the bar when this tab is active. */
-  content: ReactNode;
-};
-
-export type ExpandableTabsClassNames = {
-  root?: string;
-  panel?: string;
-  bar?: string;
-  tab?: string;
-  activeTab?: string;
-  icon?: string;
-  label?: string;
-  pill?: string;
-};
-
-export interface ExpandableTabsProps {
-  items: ExpandableTabsItem[];
-  /** Active tab id, or null/undefined for the closed (bar-only) state. */
-  value?: string | null;
-  defaultValue?: string | null;
-  onValueChange?: (id: string | null) => void;
-  className?: string;
-  classNames?: ExpandableTabsClassNames;
+  content: ReactNode
 }
 
-type Size = { width: number; height: number };
+export type ExpandableTabsClassNames = {
+  root?: string
+  panel?: string
+  bar?: string
+  tab?: string
+  activeTab?: string
+  icon?: string
+  label?: string
+  pill?: string
+}
+
+export interface ExpandableTabsProps {
+  items: ExpandableTabsItem[]
+  /** Active tab id, or null/undefined for the closed (bar-only) state. */
+  value?: string | null
+  defaultValue?: string | null
+  onValueChange?: (id: string | null) => void
+  className?: string
+  classNames?: ExpandableTabsClassNames
+}
+
+type Size = { width: number; height: number }
 
 // DynamicIsland-style real width/height motion, tuned tighter here so the tab
 // bar feels controlled instead of elastic.
-const SHELL_SPRING = { type: "spring", duration: 0.58, bounce: 0.06 } as const;
+const SHELL_SPRING = { type: "spring", duration: 0.58, bounce: 0.06 } as const
 
 // Position-only tab layout motion keeps switching loose without stretching
 // icons or letting the label linger.
@@ -59,22 +59,22 @@ const TAB_CHANGE_SPRING = {
   type: "spring",
   duration: 0.46,
   bounce: 0.04,
-} as const;
-const LABEL_OPEN = { type: "spring", duration: 0.38, bounce: 0.03 } as const;
-const LABEL_CLOSE = { duration: 0.16, ease: EASE_OUT } as const;
+} as const
+const LABEL_OPEN = { type: "spring", duration: 0.38, bounce: 0.03 } as const
+const LABEL_CLOSE = { duration: 0.16, ease: EASE_OUT } as const
 
 // Fixed bar height keeps the content panel's bottom reserve static so the open
 // height is right on the first frame. p-2 (16) + h-9 button (36).
-const BAR_H = 52;
-const TAB_W = 32;
-const BAR_X = 16;
-const BAR_GAP = 4;
-const ROOT_BORDER = 2;
-const ICON_W = 16;
-const ACTIVE_LEFT_PAD = 10;
-const ACTIVE_RIGHT_PAD = 16;
-const LABEL_GAP = 7;
-const PANEL_DOCK_GAP = 4;
+const BAR_H = 52
+const TAB_W = 32
+const BAR_X = 16
+const BAR_GAP = 4
+const ROOT_BORDER = 2
+const ICON_W = 16
+const ACTIVE_LEFT_PAD = 10
+const ACTIVE_RIGHT_PAD = 16
+const LABEL_GAP = 7
+const PANEL_DOCK_GAP = 4
 
 // Content is clipped above the dock so rows never pass through the icon bar.
 // It enters from slightly above instead of from the dock line.
@@ -88,7 +88,7 @@ const CONTENT_VARIANTS: Variants = {
     filter: "blur(4px)",
     transition: { duration: 0.08, ease: EASE_OUT },
   },
-};
+}
 
 const REDUCED_CONTENT_VARIANTS: Variants = {
   enter: { opacity: 0, filter: "blur(0px)" },
@@ -98,99 +98,99 @@ const REDUCED_CONTENT_VARIANTS: Variants = {
     filter: "blur(0px)",
     transition: { duration: 0.08, ease: EASE_OUT },
   },
-};
+}
 
-const CONTENT_SPRING = { type: "spring", duration: 0.46, bounce: 0.08 } as const;
+const CONTENT_SPRING = { type: "spring", duration: 0.46, bounce: 0.08 } as const
 
 function sameSize(a: Size | null | undefined, b: Size | null | undefined) {
-  return a?.width === b?.width && a?.height === b?.height;
+  return a?.width === b?.width && a?.height === b?.height
 }
 
 function sameWidths(a: Record<string, number>, b: Record<string, number>) {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
 
   if (aKeys.length !== bKeys.length) {
-    return false;
+    return false
   }
 
-  return aKeys.every((key) => a[key] === b[key]);
+  return aKeys.every((key) => a[key] === b[key])
 }
 
 function useContentSize() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [size, setSize] = useState<Size | null>(null);
+  const ref = useRef<HTMLDivElement | null>(null)
+  const [size, setSize] = useState<Size | null>(null)
 
   const measure = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    const next = { width: el.offsetWidth, height: el.offsetHeight };
-    setSize((current) => (sameSize(current, next) ? current : next));
-  }, []);
+    const el = ref.current
+    if (!el) return
+    const next = { width: el.offsetWidth, height: el.offsetHeight }
+    setSize((current) => (sameSize(current, next) ? current : next))
+  }, [])
 
   useLayoutEffect(() => {
-    measure();
-  }, [measure]);
+    measure()
+  }, [measure])
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [measure]);
+    const el = ref.current
+    if (!el || typeof ResizeObserver === "undefined") return
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [measure])
 
-  return [ref, size] as const;
+  return [ref, size] as const
 }
 
 function useLabelWidths(items: ExpandableTabsItem[]) {
-  const refs = useRef<Record<string, HTMLSpanElement | null>>({});
-  const [widths, setWidths] = useState<Record<string, number>>({});
+  const refs = useRef<Record<string, HTMLSpanElement | null>>({})
+  const [widths, setWidths] = useState<Record<string, number>>({})
 
   const setLabelMeasureRef = useCallback(
     (id: string) => (node: HTMLSpanElement | null) => {
-      refs.current[id] = node;
+      refs.current[id] = node
     },
-    [],
-  );
+    []
+  )
 
   const measure = useCallback(() => {
-    const next: Record<string, number> = {};
+    const next: Record<string, number> = {}
 
     for (const item of items) {
-      const node = refs.current[item.id];
+      const node = refs.current[item.id]
 
       if (node) {
-        next[item.id] = Math.ceil(node.offsetWidth);
+        next[item.id] = Math.ceil(node.offsetWidth)
       }
     }
 
-    setWidths((current) => (sameWidths(current, next) ? current : next));
-  }, [items]);
+    setWidths((current) => (sameWidths(current, next) ? current : next))
+  }, [items])
 
   useLayoutEffect(() => {
-    measure();
-  }, [measure]);
+    measure()
+  }, [measure])
 
   useEffect(() => {
     if (typeof ResizeObserver === "undefined") {
-      return;
+      return
     }
 
-    const observer = new ResizeObserver(measure);
+    const observer = new ResizeObserver(measure)
 
     for (const item of items) {
-      const node = refs.current[item.id];
+      const node = refs.current[item.id]
 
       if (node) {
-        observer.observe(node);
+        observer.observe(node)
       }
     }
 
-    return () => observer.disconnect();
-  }, [items, measure]);
+    return () => observer.disconnect()
+  }, [items, measure])
 
-  return { setLabelMeasureRef, widths };
+  return { setLabelMeasureRef, widths }
 }
 
 export function ExpandableTabs({
@@ -201,41 +201,41 @@ export function ExpandableTabs({
   className,
   classNames,
 }: ExpandableTabsProps) {
-  const reduce = useReducedMotion();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [sizerRef, size] = useContentSize();
-  const { setLabelMeasureRef, widths: labelWidths } = useLabelWidths(items);
+  const reduce = useReducedMotion()
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [sizerRef, size] = useContentSize()
+  const { setLabelMeasureRef, widths: labelWidths } = useLabelWidths(items)
 
-  const controlled = value !== undefined;
-  const [internal, setInternal] = useState<string | null>(defaultValue);
-  const activeId = controlled ? value : internal;
-  const active = items.find((item) => item.id === activeId) ?? null;
-  const visualActiveId = active?.id ?? null;
+  const controlled = value !== undefined
+  const [internal, setInternal] = useState<string | null>(defaultValue)
+  const activeId = controlled ? value : internal
+  const active = items.find((item) => item.id === activeId) ?? null
+  const visualActiveId = active?.id ?? null
 
   const setActive = useCallback(
     (next: string | null) => {
-      if (!controlled) setInternal(next);
-      onValueChange?.(next);
+      if (!controlled) setInternal(next)
+      onValueChange?.(next)
     },
-    [controlled, onValueChange],
-  );
+    [controlled, onValueChange]
+  )
 
   // Outside click / Escape closes — it behaves like an open menu.
   useEffect(() => {
-    if (!visualActiveId) return;
+    if (!visualActiveId) return
     const onPointer = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setActive(null);
-    };
+      if (!rootRef.current?.contains(e.target as Node)) setActive(null)
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setActive(null);
-    };
-    document.addEventListener("pointerdown", onPointer);
-    document.addEventListener("keydown", onKey);
+      if (e.key === "Escape") setActive(null)
+    }
+    document.addEventListener("pointerdown", onPointer)
+    document.addEventListener("keydown", onKey)
     return () => {
-      document.removeEventListener("pointerdown", onPointer);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [setActive, visualActiveId]);
+      document.removeEventListener("pointerdown", onPointer)
+      document.removeEventListener("keydown", onKey)
+    }
+  }, [setActive, visualActiveId])
 
   const closedSize = {
     width:
@@ -244,14 +244,14 @@ export function ExpandableTabs({
       BAR_X +
       ROOT_BORDER,
     height: BAR_H + ROOT_BORDER,
-  };
+  }
   const openSize = size
     ? {
         width: Math.max(size.width + ROOT_BORDER, closedSize.width),
         height: Math.max(size.height + ROOT_BORDER, closedSize.height),
       }
-    : closedSize;
-  const targetSize = active ? openSize : closedSize;
+    : closedSize
+  const targetSize = active ? openSize : closedSize
 
   const getActiveTabWidth = useCallback(
     (item: ExpandableTabsItem) =>
@@ -261,10 +261,10 @@ export function ExpandableTabs({
           ICON_W +
           LABEL_GAP +
           (labelWidths[item.id] ?? 0) +
-          ACTIVE_RIGHT_PAD,
+          ACTIVE_RIGHT_PAD
       ),
-    [labelWidths],
-  );
+    [labelWidths]
+  )
 
   return (
     <>
@@ -281,15 +281,15 @@ export function ExpandableTabs({
         className={cn(
           "relative overflow-hidden rounded-[26px] border border-border bg-card",
           className,
-          classNames?.root,
+          classNames?.root
         )}
       >
         <div
           ref={sizerRef}
           aria-hidden
           className={cn(
-            "pointer-events-none invisible absolute left-0 top-0 grid w-max px-2 pt-2",
-            classNames?.panel,
+            "pointer-events-none invisible absolute top-0 left-0 grid w-max px-2 pt-2",
+            classNames?.panel
           )}
           style={{ paddingBottom: BAR_H + PANEL_DOCK_GAP }}
         >
@@ -302,8 +302,8 @@ export function ExpandableTabs({
 
         <div
           className={cn(
-            "absolute left-0 right-0 top-0 z-10 overflow-hidden px-2 pt-2",
-            classNames?.panel,
+            "absolute top-0 right-0 left-0 z-10 overflow-hidden px-2 pt-2",
+            classNames?.panel
           )}
           style={{ bottom: BAR_H + PANEL_DOCK_GAP }}
         >
@@ -336,14 +336,14 @@ export function ExpandableTabs({
           aria-orientation="horizontal"
           className={cn(
             "absolute bottom-0 left-0 z-20 flex w-full items-center justify-between gap-1 p-2",
-            classNames?.bar,
+            classNames?.bar
           )}
           style={{ height: BAR_H }}
         >
           {items.map((item) => {
-            const isActive = item.id === visualActiveId;
-            const activeTabWidth = getActiveTabWidth(item);
-            const labelWidth = labelWidths[item.id] ?? 0;
+            const isActive = item.id === visualActiveId
+            const activeTabWidth = getActiveTabWidth(item)
+            const labelWidth = labelWidths[item.id] ?? 0
 
             return (
               <motion.button
@@ -361,26 +361,26 @@ export function ExpandableTabs({
                 className={cn(
                   "relative isolate flex h-9 min-w-8 shrink-0 items-center justify-center overflow-hidden rounded-[18px] px-2 text-sm font-medium outline-none",
                   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                  active && isActive && "min-w-0 justify-start pl-2.5 pr-4",
+                  active && isActive && "min-w-0 justify-start pr-4 pl-2.5",
                   isActive
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground",
                   classNames?.tab,
-                  isActive && classNames?.activeTab,
+                  isActive && classNames?.activeTab
                 )}
               >
                 {isActive ? (
                   <span
                     className={cn(
                       "absolute inset-0 -z-10 rounded-[18px] bg-foreground/10",
-                      classNames?.pill,
+                      classNames?.pill
                     )}
                   />
                 ) : null}
                 <span
                   className={cn(
                     "grid shrink-0 place-items-center",
-                    classNames?.icon,
+                    classNames?.icon
                   )}
                 >
                   {item.icon}
@@ -412,25 +412,25 @@ export function ExpandableTabs({
                   }
                   className={cn(
                     "inline-block overflow-hidden whitespace-nowrap",
-                    classNames?.label,
+                    classNames?.label
                   )}
                 >
                   {item.label}
                 </motion.span>
               </motion.button>
-            );
+            )
           })}
         </div>
       </motion.div>
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-0 -z-10 flex opacity-0"
+        className="pointer-events-none fixed top-0 left-0 -z-10 flex opacity-0"
       >
         {items.map((item) => (
           <span
             className={cn(
-              "whitespace-nowrap text-sm font-medium leading-none",
-              classNames?.label,
+              "text-sm leading-none font-medium whitespace-nowrap",
+              classNames?.label
             )}
             key={item.id}
             ref={setLabelMeasureRef(item.id)}
@@ -440,5 +440,5 @@ export function ExpandableTabs({
         ))}
       </div>
     </>
-  );
+  )
 }
