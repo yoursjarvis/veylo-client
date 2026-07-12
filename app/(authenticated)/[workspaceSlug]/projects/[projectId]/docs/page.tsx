@@ -61,6 +61,15 @@ export default function DocsPage() {
     }
   }, [docs, activeDocId, setActiveDocId])
 
+  // Reset preview version and panels when active document changes (React 19 pattern during render)
+  const [prevActiveDocId, setPrevActiveDocId] = useState<string | null>(null)
+  if (activeDocId !== prevActiveDocId) {
+    setPrevActiveDocId(activeDocId)
+    setPreviewVersion(null)
+    setIsVersionsOpen(false)
+    setIsCommentsOpen(false)
+  }
+
   // Get active doc details
   const activeDoc = docs.find((d) => d.id === activeDocId)
 
@@ -180,6 +189,7 @@ export default function DocsPage() {
                   onClick={() => {
                     setIsCommentsOpen(!isCommentsOpen)
                     setIsVersionsOpen(false)
+                    setPreviewVersion(null)
                   }}
                   className="h-8 w-8 rounded-lg text-muted-foreground"
                 >
@@ -190,8 +200,12 @@ export default function DocsPage() {
                   size="icon"
                   variant={isVersionsOpen ? "secondary" : "ghost"}
                   onClick={() => {
-                    setIsVersionsOpen(!isVersionsOpen)
+                    const nextVal = !isVersionsOpen
+                    setIsVersionsOpen(nextVal)
                     setIsCommentsOpen(false)
+                    if (!nextVal) {
+                      setPreviewVersion(null)
+                    }
                   }}
                   className="h-8 w-8 rounded-lg text-muted-foreground"
                 >
@@ -230,6 +244,7 @@ export default function DocsPage() {
                 docId={activeDoc.id}
                 userId={user.id}
                 userName={user.name}
+                userEmail={user.email}
                 userAvatar={user.image || null}
                 previewVersion={previewVersion}
               />

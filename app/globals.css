@@ -1,3 +1,6 @@
+@import '../styles/_variables.scss';
+@import '../styles/_keyframe-animations.scss';
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -397,6 +400,34 @@
   border-radius: 0.25rem;
   font-weight: 600;
   font-size: 0.9em;
+}
+
+/* TipTap Collaboration Carets styling */
+.ProseMirror .collaboration-carets__caret {
+  border-left: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+.ProseMirror .collaboration-carets__label {
+  border-radius: 3px 3px 3px 0;
+  color: #ffffff;
+  background-color: currentColor;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  left: -1px;
+  line-height: normal;
+  padding: 0.1rem 0.3rem;
+  position: absolute;
+  top: -1.4em;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 30;
 }
 
 /* Syntax Highlighting for Code Blocks */

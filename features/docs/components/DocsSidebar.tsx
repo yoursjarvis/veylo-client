@@ -1,24 +1,11 @@
 "use client"
 
-import React, { useState } from "react"
-import { useDocs, ProjectDoc } from "../hooks/useDocs"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Search01Icon,
-  PlusSignIcon,
-  StarIcon,
-  FolderOpenIcon,
-  FolderIcon,
-  File02Icon,
-  Settings02Icon,
-  Delete02FreeIcons,
-  CopyIcon,
-  Share01Icon,
-  ArrowRight01Icon,
-} from "@hugeicons/core-free-icons"
-import { ChevronDown, ChevronRight, MoreVertical, Pin, Trash2 } from "lucide-react"
+  Tree,
+  TreeItem,
+  TreeItemLabel,
+} from "@/components/reui/tree"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +13,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { hotkeysCoreFeature, selectionFeature, syncDataLoaderFeature } from "@headless-tree/core"
+import { useTree } from "@headless-tree/react"
+import {
+  ArrowRight01Icon,
+  CopyIcon,
+  Delete02FreeIcons,
+  FolderOpenIcon,
+  PlusSignIcon,
+  Search01Icon,
+  StarIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { MoreVertical } from "lucide-react"
+import React, { useState } from "react"
+import { ProjectDoc, useDocs } from "../hooks/useDocs"
 
 interface DocsSidebarProps {
   projectId: string
@@ -55,27 +58,111 @@ export function DocsSidebar({
   const { data: favorites = [] } = useFavoritesQuery()
   const { data: recents = [] } = useRecentDocsQuery()
 
-  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({
-    // Root documents are usually expanded by default
-  })
+  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({})
   const [searchQuery, setSearchQuery] = useState("")
-
-  const toggleExpand = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setExpandedNodes((prev) => ({ ...prev, [id]: !prev[id] }))
-  }
 
   // Filter out deleted docs
   const activeDocs = docs.filter((d) => !d.deleted && !d.archived)
 
-  // Reconstruct tree hierarchy
-  const buildTree = (parentId: string | null): ProjectDoc[] => {
-    return activeDocs
-      .filter((d) => d.parentId === parentId)
-      .sort((a, b) => a.order - b.order)
+  const rootDocs = activeDocs.filter((d) => d.parentId === null)
+
+  // Map of document ID to the document item
+  const docMap: Record<string, ProjectDoc & { children?: string[] }> = {}
+  activeDocs.forEach((doc) => {
+    docMap[doc.id] = { ...doc, children: [] }
+  })
+
+  // Populate children arrays
+  activeDocs.forEach((doc) => {
+    if (doc.parentId && docMap[doc.parentId]) {
+      const parent = docMap[doc.parentId]
+      if (parent) {
+        parent.children = parent.children || []
+        parent.children.push(doc.id)
+      }
+    }
+  })
+
+  // Sort children by order
+  Object.values(docMap).forEach((doc) => {
+    if (doc.children) {
+      doc.children.sort((a, b) => (docMap[a]?.order || 0) - (docMap[b]?.order || 0))
+    }
+  })
+
+  // Virtual root document
+  const rootChildrenIds = activeDocs
+    .filter((d) => d.parentId === null)
+    .sort((a, b) => a.order - b.order)
+    .map((d) => d.id)
+
+  const virtualRoot = {
+    id: "root",
+    title: "Root",
+    children: rootChildrenIds,
   }
 
-  const rootDocs = buildTree(null)
+  // Convert expandedNodes record to array for headless-tree
+  const expandedItems = Object.keys(expandedNodes).filter((key) => expandedNodes[key])
+  const setExpandedItems = (updaterOrValue: string[] | ((old: string[]) => string[])) => {
+    const value = typeof updaterOrValue === "function" ? updaterOrValue(expandedItems) : updaterOrValue
+    const nextRecord: Record<string, boolean> = {}
+    value.forEach((item) => {
+      nextRecord[item] = true
+    })
+    setExpandedNodes(nextRecord)
+  }
+
+  const tree = useTree<unknown>({
+    rootItemId: "root",
+    getItemName: (item) => {
+      const data = item.getItemData() as { title?: string } | undefined
+      return data?.title || "Untitled"
+    },
+    isItemFolder: (item) => {
+      const data = item.getItemData() as { children?: unknown[] } | undefined
+      return (data?.children?.length ?? 0) > 0
+    },
+    dataLoader: {
+      getItem: (itemId) => itemId === "root" ? virtualRoot : docMap[itemId],
+      getChildren: (itemId) => itemId === "root" ? rootChildrenIds : (docMap[itemId]?.children ?? []),
+    },
+    features: [syncDataLoaderFeature, hotkeysCoreFeature, selectionFeature],
+    initialState: {
+      selectedItems: activeDocId ? [activeDocId] : [],
+      expandedItems,
+    },
+    setSelectedItems: (updaterOrValue: string[] | ((old: string[]) => string[])) => {
+      const currentSelected = activeDocId ? [activeDocId] : []
+      const value = typeof updaterOrValue === "function" ? updaterOrValue(currentSelected) : updaterOrValue
+      if (value.length > 0) {
+        const activeId = value[0]
+        if (activeId !== "root") {
+          onSelectDoc(activeId)
+        }
+      } else {
+        onSelectDoc(null)
+      }
+    },
+    setExpandedItems,
+  })
+
+  // Synchronize selection changes from outside the tree component
+  React.useEffect(() => {
+    const currentSelected = tree.getState().selectedItems || []
+    const desired = activeDocId ? [activeDocId] : []
+    if (JSON.stringify(currentSelected) !== JSON.stringify(desired)) {
+      tree.setSelectedItems(desired)
+    }
+  }, [activeDocId, tree])
+
+  // Synchronize expanded items changes from outside the tree component
+  React.useEffect(() => {
+    const currentExpanded = tree.getState().expandedItems || []
+    if (JSON.stringify(currentExpanded) !== JSON.stringify(expandedItems)) {
+      tree.getConfig().setExpandedItems?.(expandedItems)
+    }
+  }, [expandedItems, tree])
 
   // Handle Search filtering
   const filteredDocs = searchQuery
@@ -112,116 +199,6 @@ export function DocsSidebar({
       id: doc.id,
       data: { parentId: newParentId },
     })
-  }
-
-  // Recursive Tree Node Renderer
-  const renderTreeNode = (doc: ProjectDoc, depth = 0) => {
-    const children = buildTree(doc.id)
-    const hasChildren = children.length > 0
-    const isExpanded = !!expandedNodes[doc.id]
-    const isActive = activeDocId === doc.id
-    const isFav = doc.favorites?.[0]?.isFavorite ?? false
-
-    return (
-      <div key={doc.id} className="select-none">
-        {/* Node Label Row */}
-        <div
-          onClick={() => onSelectDoc(doc.id)}
-          style={{ paddingLeft: `${depth * 12 + 8}px` }}
-          className={`group flex h-8 cursor-pointer items-center justify-between rounded-lg px-2 text-sm transition-all hover:bg-muted/80 ${
-            isActive ? "bg-primary/10 text-primary font-medium" : "text-foreground/80"
-          }`}
-        >
-          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            {/* Expand / Collapse Icon */}
-            <div
-              onClick={(e) => toggleExpand(doc.id, e)}
-              className="flex h-5 w-5 items-center justify-center rounded-sm hover:bg-muted text-muted-foreground"
-            >
-              {hasChildren ? (
-                isExpanded ? (
-                  <ChevronDown className="h-3.5 w-3.5" />
-                ) : (
-                  <ChevronRight className="h-3.5 w-3.5" />
-                )
-              ) : (
-                <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/35" />
-              )}
-            </div>
-
-            {/* Document Icon / Emoji */}
-            <span className="text-base shrink-0">
-              {doc.emoji || (hasChildren ? "📁" : "📄")}
-            </span>
-
-            {/* Title */}
-            <span className="truncate pr-1">{doc.title || "Untitled"}</span>
-          </div>
-
-          {/* Action Triggers */}
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={(e) => handleToggleFavorite(doc, e)}
-              className={`flex h-6 w-6 items-center justify-center rounded-sm hover:bg-muted ${
-                isFav ? "text-amber-500" : "text-muted-foreground"
-              }`}
-            >
-              <HugeiconsIcon icon={StarIcon} className="h-3.5 w-3.5" />
-            </button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className="flex h-6 w-6 items-center justify-center rounded-sm hover:bg-muted text-muted-foreground"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreVertical className="h-3.5 w-3.5" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => onCreateDoc(doc.id)}>
-                  <HugeiconsIcon icon={PlusSignIcon} className="mr-2 h-4 w-4" /> Add Nested Page
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => handleDuplicate(doc.id, e)}>
-                  <HugeiconsIcon icon={CopyIcon} className="mr-2 h-4 w-4" /> Duplicate
-                </DropdownMenuItem>
-                {/* Move node dialog trigger can be implemented or simple actions */}
-                {doc.parentId && (
-                  <DropdownMenuItem onClick={() => handleMoveDoc(doc, null)}>
-                    <HugeiconsIcon icon={ArrowRight01Icon} className="mr-2 h-4 w-4" /> Move to Root
-                  </DropdownMenuItem>
-                )}
-                {rootDocs.length > 0 && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex w-full items-center px-2 py-1.5 text-sm outline-none hover:bg-muted rounded-sm">
-                      <HugeiconsIcon icon={FolderOpenIcon} className="mr-2 h-4 w-4" /> Move under...
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      {activeDocs
-                        .filter((d) => d.id !== doc.id && d.parentId !== doc.id)
-                        .map((target) => (
-                          <DropdownMenuItem key={target.id} onClick={() => handleMoveDoc(doc, target.id)}>
-                            {target.title}
-                          </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={(e) => handleDelete(doc.id, e)} className="text-destructive focus:text-destructive">
-                  <HugeiconsIcon icon={Delete02FreeIcons} className="mr-2 h-4 w-4" /> Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Child Nodes */}
-        {hasChildren && isExpanded && (
-          <div className="mt-0.5">
-            {children.map((child) => renderTreeNode(child, depth + 1))}
-          </div>
-        )}
-      </div>
-    )
   }
 
   return (
@@ -333,9 +310,86 @@ export function DocsSidebar({
             <div className="space-y-1">
               <span className="px-2 text-2xs font-bold uppercase tracking-wider text-muted-foreground">Pages</span>
               {rootDocs.length > 0 ? (
-                <div className="space-y-0.5">
-                  {rootDocs.map((doc) => renderTreeNode(doc, 0))}
-                </div>
+                <Tree
+                  className="relative space-y-0.5"
+                  indent={16}
+                  tree={tree}
+                >
+                  {tree.getItems().map((item) => {
+                    const doc = item.getItemData() as ProjectDoc
+                    if (!doc || item.getId() === "root") return null
+                    const isFav = doc.favorites?.[0]?.isFavorite ?? false
+
+                    return (
+                      <TreeItem
+                        key={item.getId()}
+                        item={item}
+                        render={<div className="group flex h-8 cursor-pointer items-center justify-between rounded-lg px-2 text-sm text-foreground/80 hover:bg-muted/80 data-[selected=true]:bg-primary/10 data-[selected=true]:text-primary data-[selected=true]:font-medium transition-all" />}
+                      >
+                        <TreeItemLabel className="bg-transparent hover:bg-transparent flex-1 min-w-0 py-0 px-0">
+                          <span className="text-base shrink-0">
+                            {doc.emoji || (item.isFolder() ? "📁" : "📄")}
+                          </span>
+                          <span className="truncate pr-1">{doc.title || "Untitled"}</span>
+                        </TreeItemLabel>
+
+                        {/* Action Triggers */}
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => handleToggleFavorite(doc, e)}
+                            className={`flex h-6 w-6 items-center justify-center rounded-sm hover:bg-muted ${
+                              isFav ? "text-amber-500" : "text-muted-foreground"
+                            }`}
+                          >
+                            <HugeiconsIcon icon={StarIcon} className="h-3.5 w-3.5" />
+                          </button>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              className="flex h-6 w-6 items-center justify-center rounded-sm hover:bg-muted text-muted-foreground"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-3.5 w-3.5" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem onClick={() => onCreateDoc(doc.id)}>
+                                <HugeiconsIcon icon={PlusSignIcon} className="mr-2 h-4 w-4" /> Add Nested Page
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => handleDuplicate(doc.id, e)}>
+                                <HugeiconsIcon icon={CopyIcon} className="mr-2 h-4 w-4" /> Duplicate
+                              </DropdownMenuItem>
+                              {doc.parentId && (
+                                <DropdownMenuItem onClick={() => handleMoveDoc(doc, null)}>
+                                  <HugeiconsIcon icon={ArrowRight01Icon} className="mr-2 h-4 w-4" /> Move to Root
+                                </DropdownMenuItem>
+                              )}
+                              {rootDocs.length > 0 && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger className="flex w-full items-center px-2 py-1.5 text-sm outline-none hover:bg-muted rounded-sm">
+                                    <HugeiconsIcon icon={FolderOpenIcon} className="mr-2 h-4 w-4" /> Move under...
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    {activeDocs
+                                      .filter((d) => d.id !== doc.id && d.parentId !== doc.id)
+                                      .map((target) => (
+                                        <DropdownMenuItem key={target.id} onClick={() => handleMoveDoc(doc, target.id)}>
+                                          {target.title}
+                                        </DropdownMenuItem>
+                                      ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={(e) => handleDelete(doc.id, e)} className="text-destructive focus:text-destructive">
+                                <HugeiconsIcon icon={Delete02FreeIcons} className="mr-2 h-4 w-4" /> Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TreeItem>
+                    )
+                  })}
+                </Tree>
               ) : (
                 <div className="py-6 text-center text-xs text-muted-foreground">
                   No pages yet. Create one!

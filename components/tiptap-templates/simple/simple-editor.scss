@@ -1,0 +1,148 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+body {
+  --tt-toolbar-height: 44px;
+  --tt-theme-text: var(--tt-gray-light-900);
+
+  .dark & {
+    --tt-theme-text: var(--tt-gray-dark-900);
+  }
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: var(--tt-theme-text);
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  padding: 0;
+  overscroll-behavior-y: none;
+}
+
+html,
+body {
+  overscroll-behavior-x: none;
+}
+
+html,
+body,
+#root,
+#app {
+  height: 100%;
+  background-color: var(--tt-bg-color);
+}
+
+::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tt-scrollbar-color) transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--tt-scrollbar-color);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tiptap.ProseMirror {
+  font-family: "DM Sans", sans-serif;
+}
+
+.simple-editor-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+}
+
+.simple-editor-content {
+  max-width: 648px;
+  width: 100%;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.simple-editor-content .tiptap.ProseMirror.simple-editor {
+  flex: 1;
+  padding: 3rem 3rem 30vh;
+}
+
+@media screen and (max-width: 480px) {
+  .simple-editor-content .tiptap.ProseMirror.simple-editor {
+    padding: 1rem 1.5rem 30vh;
+  }
+}
+
+/* Premium Table Styling for Tiptap */
+.tiptap.ProseMirror {
+  table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 1.5rem 0;
+    overflow: hidden;
+
+    td,
+    th {
+      min-width: 1em;
+      border: 1px solid var(--tt-border-color, #e2e8f0);
+      padding: 8px 12px;
+      vertical-align: top;
+      box-sizing: border-box;
+      position: relative;
+
+      .dark & {
+        border-color: var(--tt-border-color-dark, #334155);
+      }
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      font-weight: 600;
+      text-align: left;
+      background-color: rgba(0, 0, 0, 0.02);
+
+      .dark & {
+        background-color: rgba(255, 255, 255, 0.02);
+      }
+    }
+
+    .selectedCell:after {
+      background: rgba(59, 130, 246, 0.15); /* Tailwind blue-500/15 */
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 2;
+    }
+
+    .column-resize-handle {
+      background-color: #3b82f6; /* Tailwind blue-500 */
+      bottom: -2px;
+      position: absolute;
+      right: -2px;
+      pointer-events: none;
+      top: 0;
+      width: 4px;
+      z-index: 20;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}

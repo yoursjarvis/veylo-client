@@ -1,15 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
-import { useDocs } from "../hooks/useDocs"
-import { useQuery } from "@tanstack/react-query"
-import { axiosInstance } from "@/lib/axios"
-import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Share01Icon,
-  UserAdd01Icon,
-  Delete02FreeIcons,
-} from "@hugeicons/core-free-icons"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -18,8 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Select,
   SelectContent,
@@ -28,6 +18,16 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { usePermissions } from "@/hooks/use-permissions"
+import { axiosInstance } from "@/lib/axios"
+import {
+  Delete02FreeIcons,
+  Share01Icon,
+  UserAdd01Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { useDocs } from "../hooks/useDocs"
 
 interface DocsShareProps {
   projectId: string
