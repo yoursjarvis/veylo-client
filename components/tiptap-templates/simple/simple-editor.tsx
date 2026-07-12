@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react"
 
 // --- Tiptap Core Extensions ---
@@ -233,14 +233,16 @@ export function SimpleEditor() {
 
   const rect = useCursorVisibility({
     editor,
-    overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
+    overlayHeight: 44,
   })
 
-  useEffect(() => {
+  const [prevIsMobile, setPrevIsMobile] = useState(isMobile)
+  if (isMobile !== prevIsMobile) {
+    setPrevIsMobile(isMobile)
     if (!isMobile && mobileView !== "main") {
       setMobileView("main")
     }
-  }, [isMobile, mobileView])
+  }
 
   return (
     <div className="simple-editor-wrapper">

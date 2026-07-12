@@ -1,31 +1,37 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import { useQueryState } from "nuqs"
-import { useProject } from "../layout"
-import { authClient } from "@/lib/auth-client"
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
-import { useDocs, DocVersion, ProjectDoc } from "@/features/docs/hooks/useDocs"
-import { DocsSidebar } from "@/features/docs/components/DocsSidebar"
-import { DocsEditor } from "@/features/docs/components/DocsEditor"
-import { DocsVersions } from "@/features/docs/components/DocsVersions"
 import { DocsComments } from "@/features/docs/components/DocsComments"
+import { DocsEditor } from "@/features/docs/components/DocsEditor"
 import { DocsShare } from "@/features/docs/components/DocsShare"
+import { DocsSidebar } from "@/features/docs/components/DocsSidebar"
+import { DocsVersions } from "@/features/docs/components/DocsVersions"
+import { DocVersion, ProjectDoc, useDocs } from "@/features/docs/hooks/useDocs"
+import { useQueryState } from "nuqs"
+import React, { useEffect, useState } from "react"
+import { useProject } from "../layout"
 
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  MessageSquare,
-  Clock,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  Comment01Icon,
+  CopyPlusIcon,
+  Delete02Icon,
+  StarIcon,
+  TransactionHistoryIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
   ChevronRight,
-  FolderIcon,
-  Trash2,
-  Copy,
-  Pin,
-  Star,
-  Loader2,
+  Clock,
   FileText,
+  FolderIcon,
+  Loader2,
 } from "lucide-react"
 
 export default function DocsPage() {
@@ -55,7 +61,9 @@ export default function DocsPage() {
   // Auto-select first document on load if none selected
   useEffect(() => {
     if (!activeDocId && docs.length > 0) {
-      const defaultDoc = docs.find((d) => !d.parentId && !d.deleted && !d.archived)
+      const defaultDoc = docs.find(
+        (d) => !d.parentId && !d.deleted && !d.archived
+      )
       if (defaultDoc) {
         setActiveDocId(defaultDoc.id)
       }
@@ -81,8 +89,14 @@ export default function DocsPage() {
     let current: ProjectDoc | undefined = docs.find((d) => d.id === activeDocId)
     while (current) {
       const activeCurrent = current
-      trail.unshift({ id: activeCurrent.id, title: activeCurrent.title, emoji: activeCurrent.emoji })
-      current = activeCurrent.parentId ? docs.find((d) => d.id === activeCurrent.parentId) : undefined
+      trail.unshift({
+        id: activeCurrent.id,
+        title: activeCurrent.title,
+        emoji: activeCurrent.emoji,
+      })
+      current = activeCurrent.parentId
+        ? docs.find((d) => d.id === activeCurrent.parentId)
+        : undefined
     }
     return trail
   }
@@ -122,9 +136,9 @@ export default function DocsPage() {
   if (isDocsLoading || isAuthLoading || !user) {
     return (
       <div className="flex h-[calc(100vh-8rem)] w-full gap-4 p-6">
-        <Skeleton className="w-64 h-full shrink-0 rounded-xl" />
-        <div className="flex-1 flex flex-col gap-6">
-          <div className="flex justify-between items-center">
+        <Skeleton className="h-full w-64 shrink-0 rounded-xl" />
+        <div className="flex flex-1 flex-col gap-6">
+          <div className="flex items-center justify-between">
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-10 w-32" />
           </div>
@@ -137,7 +151,7 @@ export default function DocsPage() {
   const isFavorite = activeDoc?.favorites?.[0]?.isFavorite ?? false
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] w-full overflow-hidden border border-border/40 rounded-xl bg-background/50 backdrop-blur-md">
+    <div className="flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-xl border border-border/40 bg-background/50 backdrop-blur-md">
       {/* Sidebar Tree Navigation */}
       <DocsSidebar
         projectId={projectId}
@@ -147,24 +161,28 @@ export default function DocsPage() {
       />
 
       {/* Editor & Content Canvas Container */}
-      <div className="flex flex-col flex-1 min-w-0 h-full">
+      <div className="flex h-full min-w-0 flex-1 flex-col">
         {activeDocId && activeDoc ? (
           <>
             {/* Header toolbar for this doc */}
-            <div className="flex h-12 items-center justify-between border-b border-border bg-card/20 px-6 shrink-0 select-none">
+            <div className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-card/20 px-6 select-none">
               {/* Breadcrumbs */}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+              <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
                 <FolderIcon className="h-3.5 w-3.5" />
                 {breadcrumbs.map((crumb, idx) => (
                   <React.Fragment key={crumb.id}>
-                    {idx > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/40 shrink-0" />}
+                    {idx > 0 && (
+                      <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                    )}
                     <button
                       onClick={() => setActiveDocId(crumb.id)}
-                      className={`hover:text-foreground font-semibold truncate shrink-0 max-w-[120px] ${
+                      className={`max-w-30 shrink-0 truncate font-semibold hover:text-foreground ${
                         idx === breadcrumbs.length - 1 ? "text-foreground" : ""
                       }`}
                     >
-                      {crumb.emoji && <span className="mr-1">{crumb.emoji}</span>}
+                      {crumb.emoji && (
+                        <span className="mr-1">{crumb.emoji}</span>
+                      )}
                       {crumb.title || "Untitled"}
                     </button>
                   </React.Fragment>
@@ -173,72 +191,142 @@ export default function DocsPage() {
 
               {/* Action buttons (Favorite, Comments, History, Share) */}
               <div className="flex items-center gap-1.5">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleToggleFavorite}
-                  className={`h-8 w-8 rounded-lg ${
-                    isFavorite ? "text-amber-500 hover:text-amber-600" : "text-muted-foreground"
-                  }`}
-                >
-                  <Star className={`h-4 w-4 ${isFavorite ? "fill-amber-500" : ""}`} />
-                </Button>
-
-                <Button
-                  size="icon"
-                  variant={isCommentsOpen ? "secondary" : "ghost"}
-                  onClick={() => {
-                    setIsCommentsOpen(!isCommentsOpen)
-                    setIsVersionsOpen(false)
-                    setPreviewVersion(null)
-                  }}
-                  className="h-8 w-8 rounded-lg text-muted-foreground"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                </Button>
-
-                <Button
-                  size="icon"
-                  variant={isVersionsOpen ? "secondary" : "ghost"}
-                  onClick={() => {
-                    const nextVal = !isVersionsOpen
-                    setIsVersionsOpen(nextVal)
-                    setIsCommentsOpen(false)
-                    if (!nextVal) {
-                      setPreviewVersion(null)
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={handleToggleFavorite}
+                        className={`h-9 w-9 rounded-lg ${
+                          isFavorite
+                            ? "text-amber-500 hover:text-amber-600"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        <HugeiconsIcon
+                          icon={StarIcon}
+                          className={isFavorite ? "fill-amber-500" : ""}
+                          size={26}
+                          strokeWidth={2}
+                        />
+                      </Button>
                     }
-                  }}
-                  className="h-8 w-8 rounded-lg text-muted-foreground"
-                >
-                  <Clock className="h-4 w-4" />
-                </Button>
+                  />
+                  <TooltipContent side="top">
+                    {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+                  </TooltipContent>
+                </Tooltip>
 
-                <DocsShare projectId={projectId} docId={activeDoc.id} docTitle={activeDoc.title} />
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        size="icon"
+                        variant={isCommentsOpen ? "secondary" : "ghost"}
+                        onClick={() => {
+                          setIsCommentsOpen(!isCommentsOpen)
+                          setIsVersionsOpen(false)
+                          setPreviewVersion(null)
+                        }}
+                        className="h-9 w-9 rounded-lg text-muted-foreground"
+                      >
+                        <HugeiconsIcon
+                          icon={Comment01Icon}
+                          size={26}
+                          strokeWidth={2}
+                        />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="top">
+                    {isCommentsOpen ? "Hide Comments" : "Show Comments"}
+                  </TooltipContent>
+                </Tooltip>
 
-                <div className="h-4 w-px bg-border mx-1" />
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        size="icon"
+                        variant={isVersionsOpen ? "secondary" : "ghost"}
+                        onClick={() => {
+                          const nextVal = !isVersionsOpen
+                          setIsVersionsOpen(nextVal)
+                          setIsCommentsOpen(false)
+                          if (!nextVal) {
+                            setPreviewVersion(null)
+                          }
+                        }}
+                        className="h-9 w-9 rounded-lg text-muted-foreground"
+                      >
+                        <HugeiconsIcon
+                          icon={TransactionHistoryIcon}
+                          size={26}
+                          strokeWidth={2}
+                        />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="top">
+                    {isVersionsOpen
+                      ? "Hide Version History"
+                      : "Version History"}
+                  </TooltipContent>
+                </Tooltip>
 
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleDuplicate}
-                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+                <DocsShare
+                  projectId={projectId}
+                  docId={activeDoc.id}
+                  docTitle={activeDoc.title}
+                />
 
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleDelete}
-                  className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="mx-1 h-4 w-px bg-border" />
+
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={handleDuplicate}
+                        className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground"
+                      >
+                        <HugeiconsIcon
+                          icon={CopyPlusIcon}
+                          size={26}
+                          strokeWidth={2}
+                        />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="top">Duplicate Doc</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={handleDelete}
+                        className="h-9 w-9 rounded-lg text-destructive hover:bg-destructive/10"
+                      >
+                        <HugeiconsIcon
+                          icon={Delete02Icon}
+                          size={26}
+                          strokeWidth={2}
+                        />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="top">Delete Doc</TooltipContent>
+                </Tooltip>
               </div>
             </div>
 
             {/* Collaborative Editor Panel */}
-            <div className="flex flex-1 min-h-0 min-w-0">
+            <div className="flex min-h-0 min-w-0 flex-1">
               <DocsEditor
                 key={activeDoc.id}
                 projectId={projectId}
@@ -269,25 +357,35 @@ export default function DocsPage() {
                   projectId={projectId}
                   docId={activeDoc.id}
                   userId={String(user.id)}
-                  isWorkspaceAdmin={user.role === "owner" || user.role === "admin"}
+                  isWorkspaceAdmin={
+                    user.role === "owner" || user.role === "admin"
+                  }
                 />
               )}
             </div>
           </>
         ) : (
           /* Empty Page state */
-          <div className="flex flex-col items-center justify-center flex-1 gap-4 p-8 bg-card/10 select-none">
-            <div className="rounded-2xl border border-dashed border-border/80 p-8 flex flex-col items-center max-w-sm text-center gap-4">
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-card/10 p-8 select-none">
+            <div className="flex max-w-sm flex-col items-center gap-4 rounded-2xl border border-dashed border-border/80 p-8 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <FileText className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-foreground">Select a Document</h4>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  Choose a page from the sidebar hierarchy to start collaborating in real-time, or create a brand new page.
+                <h4 className="text-sm font-bold text-foreground">
+                  Select a Document
+                </h4>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Choose a page from the sidebar hierarchy to start
+                  collaborating in real-time, or create a brand new page.
                 </p>
               </div>
-              <Button onClick={() => handleCreateDoc(null)} disabled={isCreatingDoc} size="sm" className="h-9 font-semibold">
+              <Button
+                onClick={() => handleCreateDoc(null)}
+                disabled={isCreatingDoc}
+                size="sm"
+                className="h-9 font-semibold"
+              >
                 {isCreatingDoc ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

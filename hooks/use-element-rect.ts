@@ -105,7 +105,6 @@ export function useElementRect({
 
   useEffect(() => {
     if (!enabled || !isClientSide()) {
-      setRect(initialRect)
       return
     }
 

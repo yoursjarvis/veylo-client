@@ -183,11 +183,11 @@ export function useMenuNavigation<T>({
     orientation,
   ])
 
-  useEffect(() => {
-    if (query) {
-      setSelectedIndex(autoSelectFirstItem ? 0 : -1)
-    }
-  }, [query, autoSelectFirstItem])
+  const [prevQuery, setPrevQuery] = useState(query)
+  if (query !== prevQuery) {
+    setPrevQuery(query)
+    setSelectedIndex(autoSelectFirstItem ? 0 : -1)
+  }
 
   return {
     selectedIndex: items.length ? selectedIndex : undefined,

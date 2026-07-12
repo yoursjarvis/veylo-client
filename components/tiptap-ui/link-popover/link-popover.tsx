@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useCallback, useEffect, useState } from "react"
+import { forwardRef, useCallback, useState } from "react"
 import type { Editor } from "@tiptap/react"
 
 // --- Hooks ---
@@ -265,11 +265,13 @@ export const LinkPopover = forwardRef<HTMLButtonElement, LinkPopoverProps>(
       [onClick, isOpen]
     )
 
-    useEffect(() => {
+    const [prevIsActive, setPrevIsActive] = useState(isActive)
+    if (isActive !== prevIsActive) {
+      setPrevIsActive(isActive)
       if (autoOpenOnLinkActive && isActive) {
         setIsOpen(true)
       }
-    }, [autoOpenOnLinkActive, isActive])
+    }
 
     if (!isVisible) {
       return null

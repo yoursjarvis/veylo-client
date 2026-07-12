@@ -8,16 +8,13 @@ import { DecorIcon } from "@/components/shared/decor-icon"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { Navigation03Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { usePathname } from "next/navigation"
 
+import { CommandCenter } from "@/components/layout/command-center"
 import { NotificationCenter } from "@/components/layout/notification-center"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { usePermissions } from "@/hooks/use-permissions"
-import { CommandCenter } from "@/components/layout/command-center"
 import { useState } from "react"
-import { Search } from "lucide-react"
 
 export function AppHeader() {
   const pathname = usePathname()
@@ -50,7 +47,7 @@ export function AppHeader() {
       )}
     >
       <DecorIcon className="hidden md:block" position="bottom-left" />
-      
+
       {/* Left */}
       <div className="flex flex-1 items-center gap-3">
         <CustomSidebarTrigger />
@@ -70,7 +67,7 @@ export function AppHeader() {
         >
           <span className="hidden lg:inline-flex">Search...</span>
           <span className="inline-flex lg:hidden">Search...</span>
-          <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-2xs font-medium opacity-100 sm:flex">
+          <kbd className="pointer-events-none absolute top-[0.3rem] right-[0.3rem] hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-2xs font-medium opacity-100 select-none sm:flex">
             <span className="text-xs">⌘</span>K
           </kbd>
         </Button>

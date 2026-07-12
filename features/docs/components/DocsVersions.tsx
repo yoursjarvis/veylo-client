@@ -4,7 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns"
-import { Clock, RotateCcw } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Clock01Icon, RotateLeft01Icon } from "@hugeicons/core-free-icons"
 import { DocVersion, useDocs } from "../hooks/useDocs"
 
 const resolveAvatarUrl = (avatarUrl: string | null | undefined): string | undefined => {
@@ -49,7 +50,7 @@ export function DocsVersions({
     <div className="flex h-full w-72 flex-col border-l border-border bg-card/40 shrink-0 select-none">
       <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-primary" />
+          <HugeiconsIcon icon={Clock01Icon} size={14} strokeWidth={2} className="text-primary" />
           <span className="text-sm font-semibold tracking-tight text-foreground/90">Version History</span>
         </div>
         {selectedVersionId && (
@@ -64,7 +65,7 @@ export function DocsVersions({
         )}
       </div>
 
-      <ScrollArea className="flex-1 p-3">
+      <ScrollArea className="flex-1 min-h-0 p-3">
         {isLoading ? (
           <div className="space-y-3 p-1">
             {[1, 2, 3].map((i) => (
@@ -121,7 +122,7 @@ export function DocsVersions({
                       }}
                       className="h-6 gap-1 px-2 text-[10px] rounded-md font-semibold"
                     >
-                      <RotateCcw className="h-3 w-3" /> Restore
+                      <HugeiconsIcon icon={RotateLeft01Icon} size={14} strokeWidth={2} /> Restore
                     </Button>
                   </div>
                 </div>

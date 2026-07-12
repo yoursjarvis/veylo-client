@@ -8,6 +8,9 @@ export async function getSessionToken() {
     cookieStore.get("better-auth.session_token")?.value ||
     cookieStore.get("__Secure-better-auth.session_token")?.value ||
     null
-  console.log("[SERVER ACTION] Found session token:", token ? `${token.substring(0, 10)}...` : "null")
+  console.log(
+    "[SERVER ACTION] Found session token:",
+    token ? `${token.substring(0, 10)}...` : "null"
+  )
   return token
 }

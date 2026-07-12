@@ -11,6 +11,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -21,7 +26,7 @@ import { usePermissions } from "@/hooks/use-permissions"
 import { axiosInstance } from "@/lib/axios"
 import {
   Delete02FreeIcons,
-  Share01Icon,
+  SentIcon,
   UserAdd01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -29,13 +34,20 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { useDocs } from "../hooks/useDocs"
 
-const resolveAvatarUrl = (avatarUrl: string | null | undefined): string | undefined => {
+const resolveAvatarUrl = (
+  avatarUrl: string | null | undefined
+): string | undefined => {
   if (!avatarUrl) return undefined
-  if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://") || avatarUrl.startsWith("blob:")) {
+  if (
+    avatarUrl.startsWith("http://") ||
+    avatarUrl.startsWith("https://") ||
+    avatarUrl.startsWith("blob:")
+  ) {
     return avatarUrl
   }
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
     const origin = new URL(apiUrl).origin
     const relativePath = avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`
     return `${origin}${relativePath}`
@@ -68,11 +80,8 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
   const { hasPermission } = usePermissions()
   const canManagePerms = hasPermission("project-doc:manage-permissions")
 
-  const {
-    useDocPermissionsQuery,
-    updatePermission,
-    deletePermission,
-  } = useDocs(projectId)
+  const { useDocPermissionsQuery, updatePermission, deletePermission } =
+    useDocs(projectId)
 
   const { data: docPermissions = [], isLoading: isPermsLoading } =
     useDocPermissionsQuery(docId)
@@ -122,9 +131,24 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger className="inline-flex items-center justify-center rounded-lg text-xs font-semibold h-8 gap-2 border border-input bg-transparent px-3 hover:bg-accent hover:text-accent-foreground transition-colors">
-        <HugeiconsIcon icon={Share01Icon} className="h-4 w-4" /> Share
-      </DialogTrigger>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DialogTrigger
+              render={
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground"
+                >
+                  <HugeiconsIcon icon={SentIcon} size={26} strokeWidth={2} />
+                </Button>
+              }
+            />
+          }
+        />
+        <TooltipContent side="top">Share Document</TooltipContent>
+      </Tooltip>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Share Document</DialogTitle>
@@ -137,7 +161,10 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
           <div className="space-y-4 py-4">
             {/* Add Collaborator section */}
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Select value={selectedUserId} onValueChange={(val) => setSelectedUserId(val || "")}>
+              <Select
+                value={selectedUserId}
+                onValueChange={(val) => setSelectedUserId(val || "")}
+              >
                 <SelectTrigger className="flex-1 text-xs">
                   <SelectValue placeholder="Select team member" />
                 </SelectTrigger>
@@ -166,7 +193,10 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
               </Select>
 
               <div className="flex gap-2">
-                <Select value={selectedRole} onValueChange={(val) => setSelectedRole(val || "view")}>
+                <Select
+                  value={selectedRole}
+                  onValueChange={(val) => setSelectedRole(val || "view")}
+                >
                   <SelectTrigger className="w-28 text-xs">
                     <SelectValue />
                   </SelectTrigger>
@@ -183,19 +213,24 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
                   size="sm"
                   className="px-3"
                 >
-                  <HugeiconsIcon icon={UserAdd01Icon} className="h-4 w-4 mr-1" /> Add
+                  <HugeiconsIcon
+                    icon={UserAdd01Icon}
+                    className="mr-1"
+                    size={16}
+                  />{" "}
+                  Add
                 </Button>
               </div>
             </div>
 
             {/* Current Permissions list */}
             <div className="space-y-2">
-              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                 Collaborators with Access
               </span>
-              <div className="max-h-60 overflow-y-auto space-y-3 pr-1">
+              <div className="max-h-60 space-y-3 overflow-y-auto pr-1">
                 {docPermissions.length === 0 ? (
-                  <div className="text-center py-6 text-xs text-muted-foreground">
+                  <div className="py-6 text-center text-xs text-muted-foreground">
                     Only workspace/project administrators have access.
                   </div>
                 ) : (
@@ -204,17 +239,19 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
                       key={perm.id}
                       className="flex items-center justify-between gap-3 rounded-lg border border-border/50 p-2.5"
                     >
-                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex min-w-0 items-center gap-2">
                         <Avatar className="h-7 w-7">
                           {resolveAvatarUrl(perm.user.image) && (
-                            <AvatarImage src={resolveAvatarUrl(perm.user.image)} />
+                            <AvatarImage
+                              src={resolveAvatarUrl(perm.user.image)}
+                            />
                           )}
                           <AvatarFallback className="text-xs">
                             {perm.user.name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold truncate">
+                          <p className="truncate text-xs font-semibold">
                             {perm.user.name}
                           </p>
                         </div>
@@ -223,7 +260,9 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
                       <div className="flex items-center gap-2">
                         <Select
                           value={perm.permission}
-                          onValueChange={(val) => handleUpdateRole(perm.userId, val || "view")}
+                          onValueChange={(val) =>
+                            handleUpdateRole(perm.userId, val || "view")
+                          }
                         >
                           <SelectTrigger className="h-7 w-28 text-2xs">
                             <SelectValue />
@@ -241,7 +280,7 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
                           onClick={() => handleRemoveCollaborator(perm.userId)}
                           className="h-7 w-7 text-destructive hover:bg-destructive/10"
                         >
-                          <HugeiconsIcon icon={Delete02FreeIcons} className="h-4 w-4" />
+                          <HugeiconsIcon icon={Delete02FreeIcons} size={16} />
                         </Button>
                       </div>
                     </div>
