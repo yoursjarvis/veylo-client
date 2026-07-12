@@ -196,6 +196,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
     const results: CommandItem[] = []
 
     if (searchResults?.workspaces) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       searchResults.workspaces.forEach((w: any) => {
         results.push({
           id: `workspace-${w.id}`,
@@ -208,6 +209,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
     }
 
     if (searchResults?.projects) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       searchResults.projects.forEach((p: any) => {
         results.push({
           id: `project-${p.id}`,
@@ -224,6 +226,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
     }
 
     if (searchResults?.tasks) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       searchResults.tasks.forEach((t: any) => {
         results.push({
           id: `task-${t.id}`,

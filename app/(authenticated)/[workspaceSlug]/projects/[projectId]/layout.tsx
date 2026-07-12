@@ -325,10 +325,10 @@ export default function ProjectLayout({
 
   if (isWorkspaceLoading || isProjectDetailLoading) {
     return (
-      <div className="flex flex-col space-y-4 p-6 w-full">
-        <Skeleton className="h-12 w-[250px]" />
-        <Skeleton className="h-8 w-[150px]" />
-        <div className="space-y-4 mt-8">
+      <div className="flex w-full flex-col space-y-4 p-6">
+        <Skeleton className="h-12 w-62.5" />
+        <Skeleton className="h-8 w-37.5" />
+        <div className="mt-8 space-y-4">
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
@@ -376,6 +376,7 @@ export default function ProjectLayout({
     { name: "Workload", path: `${basePath}/workload` },
     { name: "Reports", path: `${basePath}/reports` },
     { name: "Files", path: `${basePath}/files` },
+    { name: "Docs", path: `${basePath}/docs` },
     ...(isWorkspaceAdmin
       ? [{ name: "Settings", path: `${basePath}/settings/general` }]
       : []),
