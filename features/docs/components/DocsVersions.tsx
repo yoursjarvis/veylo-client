@@ -1,18 +1,26 @@
 "use client"
 
-import React from "react"
-import { useDocs, DocVersion } from "../hooks/useDocs"
-import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Settings02Icon,
-  PlusSignIcon,
-  CopyIcon,
-} from "@hugeicons/core-free-icons"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns"
-import { RotateCcw, Clock } from "lucide-react"
+import { Clock, RotateCcw } from "lucide-react"
+import { DocVersion, useDocs } from "../hooks/useDocs"
+
+const resolveAvatarUrl = (avatarUrl: string | null | undefined): string | undefined => {
+  if (!avatarUrl) return undefined
+  if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://") || avatarUrl.startsWith("blob:")) {
+    return avatarUrl
+  }
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
+    const origin = new URL(apiUrl).origin
+    const relativePath = avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`
+    return `${origin}${relativePath}`
+  } catch (error) {
+    return avatarUrl
+  }
+}
 
 interface DocsVersionsProps {
   projectId: string
@@ -93,7 +101,9 @@ export function DocsVersions({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 min-w-0">
                       <Avatar className="h-6 w-6 shrink-0">
-                        <AvatarImage src={ver.creator.image || ""} />
+                        {resolveAvatarUrl(ver.creator.image) && (
+                          <AvatarImage src={resolveAvatarUrl(ver.creator.image)} />
+                        )}
                         <AvatarFallback className="text-[10px]">
                           {ver.creator.name.charAt(0)}
                         </AvatarFallback>

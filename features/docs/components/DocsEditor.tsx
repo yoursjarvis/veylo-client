@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { axiosInstance } from "@/lib/axios"
+import { ProjectMember } from "@/types/models"
 import { Editor, Range } from "@tiptap/core"
 import { Collaboration } from "@tiptap/extension-collaboration"
 import CollaborationCaret from "@tiptap/extension-collaboration-caret"
@@ -61,7 +62,7 @@ import {
 import { WebsocketProvider } from "y-websocket"
 import * as Y from "yjs"
 import { getSessionToken } from "../actions"
-import { DocVersion, useDocs } from "../hooks/useDocs"
+import { DocVersion, ProjectDoc, useDocs } from "../hooks/useDocs"
 
 // --- Tiptap Core Extensions from Simple Editor ---
 import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension"
@@ -182,6 +183,21 @@ const getCroppedImg = async (
   })
 }
 
+const resolveAvatarUrl = (avatarUrl: string | null | undefined): string | undefined => {
+  if (!avatarUrl) return undefined
+  if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://") || avatarUrl.startsWith("blob:")) {
+    return avatarUrl
+  }
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
+    const origin = new URL(apiUrl).origin
+    const relativePath = avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`
+    return `${origin}${relativePath}`
+  } catch {
+    return avatarUrl
+  }
+}
+
 interface DocsEditorProps {
   projectId: string
   docId: string
@@ -191,6 +207,7 @@ interface DocsEditorProps {
   userAvatar: string | null
   readOnly?: boolean
   previewVersion: DocVersion | null
+  members?: ProjectMember[]
 }
 
 const MainToolbarContent = ({
@@ -320,6 +337,7 @@ export function DocsEditor({
   userAvatar,
   readOnly = false,
   previewVersion = null,
+  members,
 }: DocsEditorProps) {
   const { useDocDetailsQuery, updateDoc } = useDocs(projectId)
   const { data: doc, isLoading } = useDocDetailsQuery(docId)
@@ -458,6 +476,11 @@ export function DocsEditor({
   const userColor = colors[Math.abs(userId.split("-").join("").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0)) % colors.length]
 
   // Setup dynamic WebSocket connection for Yjs
+  const userInfoRef = useRef({ userName, userEmail, userAvatar, userColor })
+  useEffect(() => {
+    userInfoRef.current = { userName, userEmail, userAvatar, userColor }
+  }, [userName, userEmail, userAvatar, userColor])
+
   useEffect(() => {
     if (!docId || previewVersion) {
       return
@@ -490,10 +513,11 @@ export function DocsEditor({
       wsProvider = providerInstance
 
       providerInstance.awareness.setLocalStateField("user", {
-        name: userName,
-        email: userEmail,
-        avatar: userAvatar,
-        color: userColor,
+        id: userId,
+        name: userInfoRef.current.userName,
+        email: userInfoRef.current.userEmail,
+        avatar: resolveAvatarUrl(userInfoRef.current.userAvatar),
+        color: userInfoRef.current.userColor,
       })
 
       const handleSync = (isSynced: boolean) => {
@@ -522,7 +546,20 @@ export function DocsEditor({
       }
       ydocument.destroy()
     }
-  }, [docId, userName, userEmail, userAvatar, userColor, previewVersion])
+  }, [docId, previewVersion, userId])
+
+  // Update local awareness user state when user info changes
+  useEffect(() => {
+    if (!provider) return
+
+    provider.awareness.setLocalStateField("user", {
+      id: userId,
+      name: userName,
+      email: userEmail,
+      avatar: resolveAvatarUrl(userAvatar),
+      color: userColor,
+    })
+  }, [provider, userId, userName, userEmail, userAvatar, userColor])
 
 
 
@@ -638,7 +675,7 @@ export function DocsEditor({
         </div>
 
         {/* Live Collaborators Bubbles */}
-        <CollaboratorsHeaderAvatars provider={provider} userName={userName} userEmail={userEmail} />
+        <CollaboratorsHeaderAvatars provider={provider} userEmail={userEmail} members={members} />
       </div>
 
       {/* Formatting Toolbar */}
@@ -682,7 +719,7 @@ export function DocsEditor({
                 className="w-full h-full"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-r from-muted/50 to-muted/80 flex items-center justify-center text-xs text-muted-foreground/50">
+              <div className="w-full h-full bg-linear-to-r from-muted/50 to-muted/80 flex items-center justify-center text-xs text-muted-foreground/50">
                 No Cover Image
               </div>
             )}
@@ -795,7 +832,7 @@ export function DocsEditor({
             className="relative border border-border/30 rounded-xl bg-card/35 shadow-xs overflow-hidden"
           >
             {(!previewVersion && !isSynced && !isOfflineMode) ? (
-              <div className="p-8 space-y-4 min-h-[400px]">
+              <div className="p-8 space-y-4 min-h-100">
                 <Skeleton className="h-4 w-full rounded-md" />
                 <Skeleton className="h-4 w-5/6 rounded-md" />
                 <Skeleton className="h-4 w-3/4 rounded-md" />
@@ -889,6 +926,7 @@ export function DocsEditor({
 }
 
 interface CollaboratorUser {
+  id?: string
   name: string
   email: string
   avatar: string | null
@@ -914,12 +952,43 @@ interface CollaboratorState {
 
 interface CollaboratorsHeaderAvatarsProps {
   provider: WebsocketProvider | null
-  userName: string
   userEmail: string
+  members?: ProjectMember[]
 }
 
-export function CollaboratorsHeaderAvatars({ provider, userName, userEmail }: CollaboratorsHeaderAvatarsProps) {
+export function CollaboratorsHeaderAvatars({
+  provider,
+  userEmail,
+  members,
+}: CollaboratorsHeaderAvatarsProps) {
   const [collaborators, setCollaborators] = useState<Record<string, CollaboratorState>>({})
+
+  // Helper to resolve/find collaborator avatar URL
+  const getCollaboratorAvatar = (collabUser: CollaboratorUser): string | undefined => {
+    console.log("getCollaboratorAvatar called for user:", collabUser.name, "with collabUser:", collabUser);
+    console.log("available members:", members);
+    if (members && members.length > 0) {
+      if (collabUser.id) {
+        const member = members.find((m) => String(m.userId) === String(collabUser.id))
+        console.log("found member by ID:", member);
+        if (member?.user?.image) {
+          const res = resolveAvatarUrl(member.user.image)
+          console.log("resolved avatar URL from member ID:", res);
+          return res
+        }
+      }
+      const member = members.find((m) => m.user?.email === collabUser.email)
+      console.log("found member by email:", member);
+      if (member?.user?.image) {
+        const res = resolveAvatarUrl(member.user.image)
+        console.log("resolved avatar URL from member email:", res);
+        return res
+      }
+    }
+    const res = resolveAvatarUrl(collabUser.avatar)
+    console.log("resolved fallback avatar URL:", res);
+    return res
+  }
 
   // Reset collaborators state during render when provider changes/becomes null (React 19 derived state pattern)
   const [prevProvider, setPrevProvider] = useState<WebsocketProvider | null>(null)
@@ -961,48 +1030,51 @@ export function CollaboratorsHeaderAvatars({ provider, userName, userEmail }: Co
 
   return (
     <div className="flex items-center -space-x-1.5">
-      {Object.entries(collaborators).map(([clientId, collab]) => (
-        <HoverCard key={clientId}>
-          <HoverCardTrigger
-            style={{ borderColor: collab.user.color }}
-            className="cursor-pointer rounded-full border-2 hover:z-25 transition-all shrink-0 bg-background overflow-hidden p-0 outline-hidden"
-          >
-            <Avatar size="sm">
-              <AvatarImage src={collab.user.avatar || ""} />
-              <AvatarFallback className="text-[10px] font-bold">
-                {collab.user.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-60 p-4" align="end" sideOffset={8}>
-            <div className="flex items-center gap-3">
-              <Avatar size="lg" className="border-2" style={{ borderColor: collab.user.color }}>
-                <AvatarImage src={collab.user.avatar || ""} />
-                <AvatarFallback className="text-sm font-bold">
+      {Object.entries(collaborators).map(([clientId, collab]) => {
+        const avatarUrl = getCollaboratorAvatar(collab.user)
+        return (
+          <HoverCard key={clientId}>
+            <HoverCardTrigger
+              style={{ borderColor: collab.user.color }}
+              className="cursor-pointer rounded-full border-2 hover:z-25 transition-all shrink-0 bg-background overflow-hidden p-0 outline-hidden"
+            >
+              <Avatar size="sm">
+                {avatarUrl && <AvatarImage src={avatarUrl} />}
+                <AvatarFallback className="text-[10px] font-bold">
                   {collab.user.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col gap-0.5 min-w-0">
-                <p className="text-xs font-semibold text-foreground leading-none truncate">
-                  {collab.user.name}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
-                  {collab.user.email}
-                </p>
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <span
-                    className="h-2 w-2 rounded-full animate-pulse"
-                    style={{ backgroundColor: collab.user.color }}
-                  />
-                  <span className="text-[10px] text-muted-foreground font-medium">
-                    {collab.user.email === userEmail ? "You (Editing)" : "Active now"}
-                  </span>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-60 p-4" align="end" sideOffset={8}>
+              <div className="flex items-center gap-3">
+                <Avatar size="lg" className="border-2" style={{ borderColor: collab.user.color }}>
+                  {avatarUrl && <AvatarImage src={avatarUrl} />}
+                  <AvatarFallback className="text-sm font-bold">
+                    {collab.user.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <p className="text-xs font-semibold text-foreground leading-none truncate">
+                    {collab.user.name}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                    {collab.user.email}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <span
+                      className="h-2 w-2 rounded-full animate-pulse"
+                      style={{ backgroundColor: collab.user.color }}
+                    />
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      {collab.user.email === userEmail ? "You (Editing)" : "Active now"}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      ))}
+            </HoverCardContent>
+          </HoverCard>
+        )
+      })}
     </div>
   )
 }
@@ -1109,7 +1181,7 @@ interface DocsEditorCanvasProps {
   userName: string
   userColor: string
   readOnly: boolean
-  doc: any
+  doc: ProjectDoc | null
   isSynced: boolean
   isOfflineMode: boolean
   setEditor: (editor: Editor | null) => void
@@ -1118,7 +1190,7 @@ interface DocsEditorCanvasProps {
     onProgress?: (event: { progress: number }) => void,
     abortSignal?: AbortSignal
   ) => Promise<string>
-  updateDoc: (params: { id: string; data: any }) => Promise<any>
+  updateDoc: (params: { id: string; data: Partial<ProjectDoc> }) => Promise<ProjectDoc>
   docId: string
 }
 
@@ -1400,7 +1472,7 @@ function DocsEditorCanvas({
           const file = imageItem.getAsFile()
           if (file) {
             event.preventDefault()
-            const editor = (view.dom as any).editor as Editor
+            const editor = (view.dom as unknown as { editor?: Editor }).editor
 
             uploadImage(file).then((url) => {
               if (url && editor && !editor.isDestroyed) {
@@ -1424,7 +1496,7 @@ function DocsEditorCanvas({
 
         if (imageFile) {
           event.preventDefault()
-          const editor = (view.dom as any).editor as Editor
+          const editor = (view.dom as unknown as { editor?: Editor }).editor
 
           uploadImage(imageFile).then((url) => {
             if (url && editor && !editor.isDestroyed) {

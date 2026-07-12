@@ -1,13 +1,28 @@
 "use client"
 
-import React, { useState } from "react"
-import { useDocs, DocComment } from "../hooks/useDocs"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns"
-import { MessageSquare, Check, RotateCcw, Send, Trash2 } from "lucide-react"
+import { Check, MessageSquare, RotateCcw, Send, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { DocComment, useDocs } from "../hooks/useDocs"
+
+const resolveAvatarUrl = (avatarUrl: string | null | undefined): string | undefined => {
+  if (!avatarUrl) return undefined
+  if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://") || avatarUrl.startsWith("blob:")) {
+    return avatarUrl
+  }
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
+    const origin = new URL(apiUrl).origin
+    const relativePath = avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`
+    return `${origin}${relativePath}`
+  } catch (error) {
+    return avatarUrl
+  }
+}
 
 interface DocsCommentsProps {
   projectId: string
@@ -88,7 +103,9 @@ export function DocsComments({
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <Avatar className="h-6 w-6 shrink-0">
-                            <AvatarImage src={comment.user.image || ""} />
+                            {resolveAvatarUrl(comment.user.image) && (
+                              <AvatarImage src={resolveAvatarUrl(comment.user.image)} />
+                            )}
                             <AvatarFallback className="text-[10px]">
                               {comment.user.name.charAt(0)}
                             </AvatarFallback>

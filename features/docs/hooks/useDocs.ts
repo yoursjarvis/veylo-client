@@ -1,5 +1,7 @@
 import { axiosInstance } from "@/lib/axios"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import type { JSONContent } from "@tiptap/core"
+import type { AxiosError } from "axios"
 import { toast } from "sonner"
 
 export interface UserSummary {
@@ -17,7 +19,7 @@ export interface ProjectDoc {
   emoji: string | null
   icon: string | null
   coverImage: string | null
-  content: any
+  content: JSONContent | null
   plainText: string | null
   order: number
   createdBy: string
@@ -46,7 +48,7 @@ export interface DocComment {
 export interface DocVersion {
   id: string
   docId: string
-  content: any
+  content: JSONContent
   createdBy: string
   version: number
   createdAt: string
@@ -69,7 +71,7 @@ export interface DocActivity {
   userId: string
   createdAt: string
   user: UserSummary
-  metadata?: any
+  metadata?: Record<string, unknown> | null
 }
 
 export const useDocs = (projectId: string) => {
@@ -174,7 +176,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["recent-docs", projectId] })
       toast.success(`Document "${newDoc.title}" created`)
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to create document")
     },
   })
@@ -190,7 +192,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["favorite-docs", projectId] })
       queryClient.invalidateQueries({ queryKey: ["doc-details", updatedDoc.id] })
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to update document")
     },
   })
@@ -206,7 +208,7 @@ export const useDocs = (projectId: string) => {
       queryClient.removeQueries({ queryKey: ["doc-details", id] })
       toast.success("Document deleted")
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to delete document")
     },
   })
@@ -220,7 +222,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["project-docs", projectId] })
       toast.success("Document restored")
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to restore document")
     },
   })
@@ -234,7 +236,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["project-docs", projectId] })
       toast.success(`Duplicated to "${newDoc.title}"`)
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to duplicate document")
     },
   })
@@ -249,7 +251,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["favorite-docs", projectId] })
       queryClient.invalidateQueries({ queryKey: ["doc-details", id] })
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to update favorite status")
     },
   })
@@ -264,7 +266,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["doc-comments", docId] })
       queryClient.invalidateQueries({ queryKey: ["doc-activities", docId] })
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to post comment")
     },
   })
@@ -278,20 +280,20 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["doc-comments", comment.docId] })
       queryClient.invalidateQueries({ queryKey: ["doc-activities", comment.docId] })
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to update comment")
     },
   })
 
   const deleteCommentMutation = useMutation({
-    mutationFn: async ({ commentId, docId }: { commentId: string; docId: string }) => {
+    mutationFn: async ({ commentId }: { commentId: string; docId: string }) => {
       await axiosInstance.delete(`/comments/${commentId}`)
     },
     onSuccess: (_, { docId }) => {
       queryClient.invalidateQueries({ queryKey: ["doc-comments", docId] })
       queryClient.invalidateQueries({ queryKey: ["doc-activities", docId] })
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to delete comment")
     },
   })
@@ -307,7 +309,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["doc-details", docId] })
       toast.success("Permissions updated")
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to update permissions")
     },
   })
@@ -321,7 +323,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["doc-details", docId] })
       toast.success("Permission removed")
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to remove permission")
     },
   })
@@ -339,7 +341,7 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["doc-activities", doc.id] })
       toast.success("Document version restored")
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to restore version")
     },
   })

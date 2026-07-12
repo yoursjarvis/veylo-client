@@ -29,6 +29,21 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { useDocs } from "../hooks/useDocs"
 
+const resolveAvatarUrl = (avatarUrl: string | null | undefined): string | undefined => {
+  if (!avatarUrl) return undefined
+  if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://") || avatarUrl.startsWith("blob:")) {
+    return avatarUrl
+  }
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
+    const origin = new URL(apiUrl).origin
+    const relativePath = avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`
+    return `${origin}${relativePath}`
+  } catch (error) {
+    return avatarUrl
+  }
+}
+
 interface DocsShareProps {
   projectId: string
   docId: string
@@ -131,7 +146,9 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
                     <SelectItem key={m.userId} value={m.userId}>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-5 w-5">
-                          <AvatarImage src={m.user.image || ""} />
+                          {resolveAvatarUrl(m.user.image) && (
+                            <AvatarImage src={resolveAvatarUrl(m.user.image)} />
+                          )}
                           <AvatarFallback className="text-[10px]">
                             {m.user.name.charAt(0)}
                           </AvatarFallback>
@@ -189,7 +206,9 @@ export function DocsShare({ projectId, docId, docTitle }: DocsShareProps) {
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <Avatar className="h-7 w-7">
-                          <AvatarImage src={perm.user.image || ""} />
+                          {resolveAvatarUrl(perm.user.image) && (
+                            <AvatarImage src={resolveAvatarUrl(perm.user.image)} />
+                          )}
                           <AvatarFallback className="text-xs">
                             {perm.user.name.charAt(0)}
                           </AvatarFallback>

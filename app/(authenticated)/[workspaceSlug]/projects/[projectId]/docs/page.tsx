@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import { useQueryState } from "nuqs"
 import { useProject } from "../layout"
 import { authClient } from "@/lib/auth-client"
+import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import { useDocs, DocVersion, ProjectDoc } from "@/features/docs/hooks/useDocs"
 import { DocsSidebar } from "@/features/docs/components/DocsSidebar"
 import { DocsEditor } from "@/features/docs/components/DocsEditor"
@@ -28,9 +29,9 @@ import {
 } from "lucide-react"
 
 export default function DocsPage() {
-  const { projectId } = useProject()
-  const { data: session } = authClient.useSession()
-  const user = session?.user
+  const { projectId, selectedProject } = useProject()
+  const { data: auth, isLoading: isAuthLoading } = useCurrentUser()
+  const user = auth?.user
 
   // Use nuqs to manage active doc ID in URL query parameters (for deep linking)
   const [activeDocId, setActiveDocId] = useQueryState("docId")
@@ -118,7 +119,7 @@ export default function DocsPage() {
     }
   }
 
-  if (isDocsLoading || !user) {
+  if (isDocsLoading || isAuthLoading || !user) {
     return (
       <div className="flex h-[calc(100vh-8rem)] w-full gap-4 p-6">
         <Skeleton className="w-64 h-full shrink-0 rounded-xl" />
@@ -242,11 +243,12 @@ export default function DocsPage() {
                 key={activeDoc.id}
                 projectId={projectId}
                 docId={activeDoc.id}
-                userId={user.id}
-                userName={user.name}
+                userId={String(user.id)}
+                userName={user.name || ""}
                 userEmail={user.email}
                 userAvatar={user.image || null}
                 previewVersion={previewVersion}
+                members={selectedProject?.members || []}
               />
 
               {/* Version History Slider Overlay */}
@@ -266,7 +268,7 @@ export default function DocsPage() {
                   key={activeDoc.id}
                   projectId={projectId}
                   docId={activeDoc.id}
-                  userId={user.id}
+                  userId={String(user.id)}
                   isWorkspaceAdmin={user.role === "owner" || user.role === "admin"}
                 />
               )}
