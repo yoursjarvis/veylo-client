@@ -226,7 +226,7 @@ export function DocsSidebar({
   }
 
   return (
-    <div className="flex h-full w-64 shrink-0 flex-col border-r border-border bg-card/40 select-none">
+    <div className="flex h-full w-full flex-col select-none">
       {/* Search Header */}
       <div className="shrink-0 space-y-3 border-b border-border p-4">
         <div className="flex items-center justify-between">

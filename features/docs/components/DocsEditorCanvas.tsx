@@ -1,6 +1,7 @@
 "use client"
 
-import { Editor, Range } from "@tiptap/core"
+import { Button } from "@/components/ui/button"
+import { Editor, Mark, mergeAttributes, Range } from "@tiptap/core"
 import { Collaboration } from "@tiptap/extension-collaboration"
 import CollaborationCaret from "@tiptap/extension-collaboration-caret"
 import { Highlight } from "@tiptap/extension-highlight"
@@ -11,6 +12,7 @@ import { Table } from "@tiptap/extension-table"
 import { TableCell } from "@tiptap/extension-table-cell"
 import { TableHeader } from "@tiptap/extension-table-header"
 import { TableRow } from "@tiptap/extension-table-row"
+import { Transaction } from "@tiptap/pm/state"
 import {
   EditorContent,
   EditorContext,
@@ -19,10 +21,33 @@ import {
 } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import StarterKit from "@tiptap/starter-kit"
-import React, { useEffect, useRef } from "react"
+import { useQueryState } from "nuqs"
+import React, { useEffect, useRef, useState } from "react"
 import tippy, { Instance as TippyInstance } from "tippy.js"
 import { WebsocketProvider } from "y-websocket"
 import * as Y from "yjs"
+import { MentionInput } from "./MentionInput"
+
+declare global {
+  interface Window {
+    activeCommentRange?: { from: number; to: number }
+    activeTiptapEditor?: Editor | null
+  }
+}
+
+const setActiveCommentRange = (
+  val: { from: number; to: number } | undefined
+) => {
+  if (typeof window !== "undefined") {
+    window.activeCommentRange = val
+  }
+}
+
+const setActiveTiptapEditor = (val: Editor | undefined | null) => {
+  if (typeof window !== "undefined") {
+    window.activeTiptapEditor = val
+  }
+}
 
 import { SlashCommand } from "@/components/shared/rich-text-editor"
 import {
@@ -38,6 +63,7 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
   CodeIcon,
+  Comment01Icon,
   Delete02Icon,
   Heading01Icon,
   Heading02Icon,
@@ -95,13 +121,55 @@ import { Selection } from "@tiptap/extensions"
 
 // --- Lib and Utils ---
 import { MAX_FILE_SIZE } from "@/lib/tiptap-utils"
-import { DocVersion, ProjectDoc } from "../hooks/useDocs"
+import { DocVersion, ProjectDoc, useDocs } from "../hooks/useDocs"
 import { resolveAvatarUrl } from "./DocsEditorUtils"
+
+const CommentMark = Mark.create({
+  name: "comment",
+
+  inclusive: false,
+
+  addAttributes() {
+    return {
+      commentId: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-comment-id"),
+        renderHTML: (attributes) => {
+          if (!attributes.commentId) {
+            return {}
+          }
+          return { "data-comment-id": attributes.commentId }
+        },
+      },
+    }
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "span[data-comment-id]",
+      },
+    ]
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "span",
+      mergeAttributes(HTMLAttributes, {
+        class:
+          "bg-amber-500/20 border-b-2 border-amber-500 cursor-pointer dark:bg-amber-500/30",
+        "data-comment": "true",
+      }),
+      0,
+    ]
+  },
+})
 
 // --- Sub-components ---
 import { CollaboratorsPresenceOverlay } from "./CollaboratorsPresenceOverlay"
 
 interface DocsEditorCanvasProps {
+  projectId: string
   yDoc: Y.Doc | null
   provider: WebsocketProvider | null
   previewVersion: DocVersion | null
@@ -124,6 +192,7 @@ interface DocsEditorCanvasProps {
 }
 
 export function DocsEditorCanvas({
+  projectId,
   yDoc,
   provider,
   previewVersion,
@@ -142,6 +211,59 @@ export function DocsEditorCanvas({
   docId,
 }: DocsEditorCanvasProps) {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const { createComment } = useDocs(projectId)
+  const [, setCommentId] = useQueryState("commentId")
+
+  const [isCommentMenuOpen, setIsCommentMenuOpen] = useState(false)
+  const [draftText, setDraftText] = useState("")
+
+  const handleAddInlineComment = () => {
+    if (editor) {
+      const { from, to } = editor.state.selection
+      setActiveCommentRange({ from, to })
+      setDraftText("")
+      setIsCommentMenuOpen(true)
+    }
+  }
+
+  const handlePostCommentMenu = async () => {
+    if (!draftText.trim()) return
+    try {
+      const newComment = await createComment({
+        docId,
+        content: draftText.trim(),
+      })
+
+      const range = window.activeCommentRange
+      if (editor && range) {
+        editor.commands.command(
+          ({
+            tr,
+            dispatch,
+          }: {
+            tr: Transaction
+            dispatch: ((tr: Transaction) => void) | undefined
+          }) => {
+            if (dispatch) {
+              tr.addMark(
+                range.from,
+                range.to,
+                editor.schema.marks.comment.create({ commentId: newComment.id })
+              )
+            }
+            return true
+          }
+        )
+      }
+
+      setCommentId(newComment.id)
+      setActiveCommentRange(undefined)
+      setDraftText("")
+      setIsCommentMenuOpen(false)
+    } catch (err) {
+      console.error("Failed to add comment from popover:", err)
+    }
+  }
 
   const editor = useEditor(
     {
@@ -165,6 +287,7 @@ export function DocsEditorCanvas({
         Superscript,
         Subscript,
         Selection,
+        CommentMark,
         ImageUploadNode.configure({
           accept: "image/*",
           maxSize: MAX_FILE_SIZE,
@@ -399,7 +522,7 @@ export function DocsEditorCanvas({
           autocapitalize: "off",
           "aria-label": "Main content area, start typing to enter text.",
           class:
-            "simple-editor prose prose-sm dark:prose-invert focus:outline-none max-w-none min-h-[400px] px-8 py-6",
+            "simple-editor prose prose-sm dark:prose-invert focus:outline-none max-w-none min-h-[400px] px-4 py-6",
         },
         handlePaste: (view, event) => {
           const items = Array.from(event.clipboardData?.items || [])
@@ -456,6 +579,18 @@ export function DocsEditorCanvas({
           }
           return false
         },
+        handleClick: (view, pos) => {
+          const commentMark = view.state.doc
+            .resolve(pos)
+            .marks()
+            .find((m) => m.type.name === "comment")
+          if (commentMark?.attrs?.commentId) {
+            setCommentId(commentMark.attrs.commentId)
+          } else {
+            setCommentId(null)
+          }
+          return false
+        },
       },
       onSelectionUpdate: ({ editor }) => {
         if (!provider) return
@@ -482,10 +617,28 @@ export function DocsEditorCanvas({
 
   useEffect(() => {
     setEditor(editor)
+    if (editor) {
+      setActiveTiptapEditor(editor)
+    }
     return () => {
       setEditor(null)
+      setActiveTiptapEditor(undefined)
     }
   }, [editor, setEditor])
+
+  useEffect(() => {
+    if (editor) {
+      const handleSelectionUpdate = () => {
+        if (editor.state.selection.empty) {
+          setIsCommentMenuOpen(false)
+        }
+      }
+      editor.on("selectionUpdate", handleSelectionUpdate)
+      return () => {
+        editor.off("selectionUpdate", handleSelectionUpdate)
+      }
+    }
+  }, [editor])
 
   useEffect(() => {
     if (!editor || editor.isDestroyed || !doc || !doc.content) return
@@ -632,6 +785,68 @@ export function DocsEditorCanvas({
             <HugeiconsIcon icon={Delete02Icon} size={16} strokeWidth={2} />
           </TiptapButton>
         </div>
+      </BubbleMenu>
+
+      <BubbleMenu
+        editor={editor}
+        shouldShow={({ editor }: { editor: Editor }) => {
+          return (
+            !editor.state.selection.empty &&
+            editor.isEditable &&
+            !editor.isActive("table")
+          )
+        }}
+      >
+        {!isCommentMenuOpen ? (
+          <div className="flex items-center gap-0.5 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md">
+            <TiptapButton
+              type="button"
+              onClick={handleAddInlineComment}
+              tooltip="Add Comment"
+              variant="ghost"
+              className="h-8 gap-1.5 px-2 text-xs font-semibold"
+            >
+              <HugeiconsIcon icon={Comment01Icon} size={14} strokeWidth={2} />
+              <span>Comment</span>
+            </TiptapButton>
+          </div>
+        ) : (
+          <div className="flex w-72 flex-col gap-2 rounded-xl border border-border bg-popover p-2.5 text-popover-foreground shadow-xl ring-1 ring-border/20">
+            <div className="text-xs font-bold text-foreground">Add Comment</div>
+            <MentionInput
+              projectId={projectId}
+              autoFocus
+              placeholder="Type your comment..."
+              value={draftText}
+              onChange={setDraftText}
+              className="flex h-8 w-full rounded-md border border-input bg-background/50 px-3 py-1 text-xs shadow-xs transition-colors file:border-0 file:bg-transparent file:text-xs file:font-medium placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  handlePostCommentMenu()
+                }
+              }}
+            />
+            <div className="flex justify-end gap-1.5 pt-1">
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={() => setIsCommentMenuOpen(false)}
+                className="h-6 px-2 text-2xs font-semibold text-muted-foreground"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="xs"
+                onClick={handlePostCommentMenu}
+                disabled={!draftText.trim()}
+                className="h-6 px-2.5 text-2xs font-semibold"
+              >
+                Comment
+              </Button>
+            </div>
+          </div>
+        )}
       </BubbleMenu>
 
       <div className="simple-editor-content">

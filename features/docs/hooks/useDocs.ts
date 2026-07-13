@@ -34,15 +34,28 @@ export interface ProjectDoc {
   permissions?: { userId: string; permission: string }[]
 }
 
+export interface DocCommentReaction {
+  id: string
+  commentId: string
+  userId: string
+  emoji: string
+  createdAt: string
+  user: { id: string; name: string }
+}
+
 export interface DocComment {
   id: string
   docId: string
   userId: string
+  parentId: string | null
   content: string
   resolved: boolean
+  isEdited: boolean
   createdAt: string
   updatedAt: string
   user: UserSummary
+  reactions: DocCommentReaction[]
+  replies: DocComment[]
 }
 
 export interface DocVersion {
@@ -258,8 +271,8 @@ export const useDocs = (projectId: string) => {
 
   // Comments mutations
   const createCommentMutation = useMutation({
-    mutationFn: async ({ docId, content }: { docId: string; content: string }) => {
-      const response = await axiosInstance.post(`/docs/${docId}/comments`, { content })
+    mutationFn: async ({ docId, content, parentId }: { docId: string; content: string; parentId?: string | null }) => {
+      const response = await axiosInstance.post(`/docs/${docId}/comments`, { content, parentId })
       return response.data.data
     },
     onSuccess: (_, { docId }) => {
@@ -268,6 +281,19 @@ export const useDocs = (projectId: string) => {
     },
     onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to post comment")
+    },
+  })
+
+  const toggleCommentReactionMutation = useMutation({
+    mutationFn: async ({ commentId, emoji, docId }: { commentId: string; emoji: string; docId: string }) => {
+      const response = await axiosInstance.post(`/comments/${commentId}/reaction`, { emoji })
+      return response.data.data
+    },
+    onSuccess: (_, { docId }) => {
+      queryClient.invalidateQueries({ queryKey: ["doc-comments", docId] })
+    },
+    onError: (err: AxiosError<{ message?: string }>) => {
+      toast.error(err.response?.data?.message || "Failed to toggle reaction")
     },
   })
 
@@ -365,6 +391,8 @@ export const useDocs = (projectId: string) => {
     duplicateDoc: duplicateDocMutation.mutateAsync,
     toggleFavorite: toggleFavoriteMutation.mutateAsync,
     createComment: createCommentMutation.mutateAsync,
+    isCreatingComment: createCommentMutation.isPending,
+    toggleReaction: toggleCommentReactionMutation.mutateAsync,
     updateComment: updateCommentMutation.mutateAsync,
     deleteComment: deleteCommentMutation.mutateAsync,
     updatePermission: updatePermissionMutation.mutateAsync,

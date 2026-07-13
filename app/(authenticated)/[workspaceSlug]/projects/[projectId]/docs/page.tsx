@@ -1,7 +1,6 @@
 "use client"
 
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
-import { DocsComments } from "@/features/docs/components/DocsComments"
 import { DocsEditor } from "@/features/docs/components/DocsEditor"
 import { DocsShare } from "@/features/docs/components/DocsShare"
 import { DocsSidebar } from "@/features/docs/components/DocsSidebar"
@@ -24,6 +23,7 @@ import {
   Delete02Icon,
   StarIcon,
   TransactionHistoryIcon,
+  SidebarLeft01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -41,6 +41,7 @@ export default function DocsPage() {
 
   // Use nuqs to manage active doc ID in URL query parameters (for deep linking)
   const [activeDocId, setActiveDocId] = useQueryState("docId")
+  const [commentId, setCommentId] = useQueryState("commentId")
 
   const {
     useProjectDocsQuery,
@@ -57,6 +58,7 @@ export default function DocsPage() {
   const [isVersionsOpen, setIsVersionsOpen] = useState(false)
   const [isCommentsOpen, setIsCommentsOpen] = useState(false)
   const [previewVersion, setPreviewVersion] = useState<DocVersion | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // Auto-select first document on load if none selected
   useEffect(() => {
@@ -70,6 +72,16 @@ export default function DocsPage() {
     }
   }, [docs, activeDocId, setActiveDocId])
 
+  // Auto-open comments panel if a comment is highlighted (React 19 pattern during render)
+  const [prevCommentId, setPrevCommentId] = useState<string | null>(null)
+  if (commentId !== prevCommentId) {
+    setPrevCommentId(commentId)
+    if (activeDocId && commentId) {
+      setIsCommentsOpen(true)
+      setIsVersionsOpen(false)
+    }
+  }
+
   // Reset preview version and panels when active document changes (React 19 pattern during render)
   const [prevActiveDocId, setPrevActiveDocId] = useState<string | null>(null)
   if (activeDocId !== prevActiveDocId) {
@@ -77,6 +89,7 @@ export default function DocsPage() {
     setPreviewVersion(null)
     setIsVersionsOpen(false)
     setIsCommentsOpen(false)
+    setCommentId(null)
   }
 
   // Get active doc details
@@ -153,12 +166,16 @@ export default function DocsPage() {
   return (
     <div className="flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-xl border border-border/40 bg-background/50 backdrop-blur-md">
       {/* Sidebar Tree Navigation */}
-      <DocsSidebar
-        projectId={projectId}
-        activeDocId={activeDocId}
-        onSelectDoc={setActiveDocId}
-        onCreateDoc={handleCreateDoc}
-      />
+      <div className={`transition-all duration-300 flex h-full shrink-0 flex-col border-r border-border bg-card/40 ${
+        isSidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
+      }`}>
+        <DocsSidebar
+          projectId={projectId}
+          activeDocId={activeDocId}
+          onSelectDoc={setActiveDocId}
+          onCreateDoc={handleCreateDoc}
+        />
+      </div>
 
       {/* Editor & Content Canvas Container */}
       <div className="flex h-full min-w-0 flex-1 flex-col">
@@ -168,7 +185,24 @@ export default function DocsPage() {
             <div className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-card/20 px-6 select-none">
               {/* Breadcrumbs */}
               <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-                <FolderIcon className="h-3.5 w-3.5" />
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className="h-8 w-8 rounded-lg text-muted-foreground mr-1 shrink-0"
+                      >
+                        <HugeiconsIcon icon={SidebarLeft01Icon} size={18} strokeWidth={2} />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="bottom">
+                    {isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+                  </TooltipContent>
+                </Tooltip>
+                <FolderIcon className="h-3.5 w-3.5 shrink-0" />
                 {breadcrumbs.map((crumb, idx) => (
                   <React.Fragment key={crumb.id}>
                     {idx > 0 && (
@@ -225,9 +259,13 @@ export default function DocsPage() {
                         size="icon"
                         variant={isCommentsOpen ? "secondary" : "ghost"}
                         onClick={() => {
-                          setIsCommentsOpen(!isCommentsOpen)
+                          const nextVal = !isCommentsOpen
+                          setIsCommentsOpen(nextVal)
                           setIsVersionsOpen(false)
                           setPreviewVersion(null)
+                          if (!nextVal) {
+                            setCommentId(null)
+                          }
                         }}
                         className="h-9 w-9 rounded-lg text-muted-foreground"
                       >
@@ -337,6 +375,7 @@ export default function DocsPage() {
                 userAvatar={user.image || null}
                 previewVersion={previewVersion}
                 members={selectedProject?.members || []}
+                isCommentsOpen={isCommentsOpen}
               />
 
               {/* Version History Slider Overlay */}
@@ -347,19 +386,6 @@ export default function DocsPage() {
                   docId={activeDoc.id}
                   selectedVersionId={previewVersion?.id || null}
                   onSelectVersion={setPreviewVersion}
-                />
-              )}
-
-              {/* Comments sidebar */}
-              {isCommentsOpen && (
-                <DocsComments
-                  key={activeDoc.id}
-                  projectId={projectId}
-                  docId={activeDoc.id}
-                  userId={String(user.id)}
-                  isWorkspaceAdmin={
-                    user.role === "owner" || user.role === "admin"
-                  }
                 />
               )}
             </div>

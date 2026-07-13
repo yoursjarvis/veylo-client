@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { CollaboratorsHeaderAvatars } from "./CollaboratorsHeaderAvatars"
 import { DocsEditorCanvas } from "./DocsEditorCanvas"
 import { MainToolbarContent, MobileToolbarContent } from "./DocsEditorToolbar"
+import { DocsComments } from "./DocsComments"
 
 // --- Utilities & Actions ---
 import { axiosInstance } from "@/lib/axios"
@@ -72,6 +73,7 @@ interface DocsEditorProps {
   readOnly?: boolean
   previewVersion: DocVersion | null
   members?: ProjectMember[]
+  isCommentsOpen: boolean
 }
 
 export function DocsEditor({
@@ -84,6 +86,7 @@ export function DocsEditor({
   readOnly = false,
   previewVersion = null,
   members,
+  isCommentsOpen,
 }: DocsEditorProps) {
   const { useDocDetailsQuery, updateDoc } = useDocs(projectId)
   const { data: doc, isLoading } = useDocDetailsQuery(docId)
@@ -511,8 +514,11 @@ export function DocsEditor({
           )}
 
         {/* Editor Content Area (Scrollable) */}
-        <div className="flex-1 overflow-y-auto px-10 py-6">
-          <div className="mx-auto max-w-4xl space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className={`mx-auto transition-all duration-300 flex gap-8 items-start justify-center ${
+            isCommentsOpen ? "max-w-7xl" : "max-w-4xl"
+          }`}>
+            <div className="flex-1 min-w-0 space-y-4 max-w-4xl">
             {/* Cover Image Picker */}
             <div className="group/cover relative h-48 overflow-hidden rounded-xl border border-border/40 bg-muted">
               {doc.coverImage ? (
@@ -660,6 +666,7 @@ export function DocsEditor({
                 </div>
               ) : (
                 <DocsEditorCanvas
+                  projectId={projectId}
                   yDoc={yDoc}
                   provider={provider}
                   previewVersion={previewVersion}
@@ -680,8 +687,25 @@ export function DocsEditor({
               )}
             </div>
           </div>
+
+          {/* Comments side column */}
+          {isCommentsOpen && (
+            <div className="w-80 shrink-0 relative self-stretch">
+              <DocsComments
+                projectId={projectId}
+                docId={docId}
+                userId={userId}
+                isWorkspaceAdmin={members?.some(
+                  (m) =>
+                    m.userId === userId &&
+                    (m.role === "owner" || m.role === "admin")
+                ) || false}
+              />
+            </div>
+          )}
         </div>
       </div>
+    </div>
 
       {/* Cropper Dialog */}
       <Dialog
