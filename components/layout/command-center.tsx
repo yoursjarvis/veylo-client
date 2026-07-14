@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useDebounce } from "use-debounce"
 
 export function CommandCenter({
@@ -61,19 +61,21 @@ export function CommandCenter({
     return []
   })
 
-  const saveToHistory = (itemTitle: string) => {
-    const newHistory = [
-      itemTitle,
-      ...history.filter((h) => h !== itemTitle),
-    ].slice(0, 3)
-    setHistory(newHistory)
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(
-        "veylo-search-history",
-        JSON.stringify(newHistory)
-      )
-    }
-  }
+  const saveToHistory = useCallback((itemTitle: string) => {
+    setHistory((prevHistory) => {
+      const newHistory = [
+        itemTitle,
+        ...prevHistory.filter((h) => h !== itemTitle),
+      ].slice(0, 3)
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          "veylo-search-history",
+          JSON.stringify(newHistory)
+        )
+      }
+      return newHistory
+    })
+  }, [])
 
   // Listen for Ctrl+K
   useEffect(() => {
@@ -291,9 +293,7 @@ export function CommandCenter({
     return results
   }, [
     debouncedQuery,
-    searchResults.workspaces,
-    searchResults.projects,
-    searchResults.tasks,
+    searchResults,
     saveToHistory,
     history,
     canCreateTask,

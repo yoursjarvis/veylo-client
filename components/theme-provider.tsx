@@ -1,7 +1,10 @@
 "use client"
 
+import {
+  ThemeProvider as NextThemesProvider,
+  useTheme as useNextTheme,
+} from "next-themes"
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
 
 type Theme = "light" | "dark" | "system"
 
@@ -17,6 +20,22 @@ const ThemeContext = React.createContext<ThemeContextValue | undefined>(
 )
 
 const STORAGE_KEY = "veylo-theme"
+
+// React 19 warns about the inline script next-themes injects to prevent
+// flash-of-wrong-theme. It's a known false positive (works fine during SSR).
+// Tracking: https://github.com/pacocoursey/next-themes/issues/385
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  const originalError = console.error
+  console.error = (...args: unknown[]) => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes("Encountered a script tag")
+    ) {
+      return
+    }
+    originalError.apply(console, args)
+  }
+}
 
 function ThemeProviderWrapper({ children }: { children: React.ReactNode }) {
   const { theme, setTheme, resolvedTheme } = useNextTheme()
@@ -36,11 +55,7 @@ function ThemeProviderWrapper({ children }: { children: React.ReactNode }) {
     [theme, setTheme, resolvedTheme, toggleTheme]
   )
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  )
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
