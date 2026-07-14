@@ -31,6 +31,17 @@ import {
 import { useParams, useRouter } from "next/navigation"
 import React from "react"
 
+import { IconStack } from "@/components/reui/icon-stack"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { NotificationOff01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+
 export function NotificationCenter() {
   const router = useRouter()
   const params = useParams()
@@ -186,12 +197,25 @@ export function NotificationCenter() {
           {notifications.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center p-4 text-center">
               <Bell className="mb-2 h-8 w-8 text-muted-foreground opacity-50" />
-              <p className="text-xs font-semibold text-foreground">
-                All caught up!
-              </p>
-              <p className="mt-0.5 text-2xs text-muted-foreground">
-                No notifications to display.
-              </p>
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia>
+                    <IconStack
+                      aria-hidden="true"
+                      className="h-24 w-22 text-primary"
+                    >
+                      <HugeiconsIcon
+                        icon={NotificationOff01Icon}
+                        className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                      />
+                    </IconStack>
+                  </EmptyMedia>
+                  <EmptyTitle>All caught up!</EmptyTitle>
+                  <EmptyDescription>
+                    When you get notifications, they&apos;ll show up here.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             </div>
           ) : (
             <div className="divide-y divide-border">

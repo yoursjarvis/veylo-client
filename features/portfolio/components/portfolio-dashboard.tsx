@@ -7,11 +7,11 @@ import {
   Briefcase02Icon,
   CalendarIcon,
   Cancel01Icon,
+  ChartAverageIcon,
   ChartBarLineIcon,
   CheckmarkSquare02Icon,
   Delete02Icon,
   Edit02Icon,
-  FolderIcon,
   Loading03Icon,
   MoreHorizontalCircle01Icon,
   SearchIcon,
@@ -20,9 +20,9 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
+import { useParams, useRouter } from "next/navigation"
 import { parseAsBoolean, parseAsString, useQueryState } from "nuqs"
-import React, { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
+import React, { useState } from "react"
 import { toast } from "sonner"
 
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
@@ -91,6 +91,15 @@ import {
   YAxis,
 } from "recharts"
 
+import { IconStack } from "@/components/reui/icon-stack"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+
 import {
   useCreatePortfolio,
   useDeletePortfolio,
@@ -122,7 +131,9 @@ interface PortfolioDashboardProps {
   portfolioId?: string
 }
 
-export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}) {
+export function PortfolioDashboard({
+  portfolioId,
+}: PortfolioDashboardProps = {}) {
   const { activeWorkspace } = useWorkspaceContext()
   const { hasPermission } = usePermissions()
   const router = useRouter()
@@ -172,7 +183,9 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addProjectOpen, setAddProjectOpen] = useState(false)
   // Track which portfolio is being edited in the dialog (separate from the detail view)
-  const [editingPortfolioId, setEditingPortfolioId] = useState<string | null>(null)
+  const [editingPortfolioId, setEditingPortfolioId] = useState<string | null>(
+    null
+  )
 
   const handleSelectPortfolio = (id: string) => {
     if (workspaceSlug) {
@@ -204,8 +217,9 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
     usePortfolioDetails(activePortfolioId || "")
 
   // Fetch the portfolio being edited in the dialog (separate from detail view)
-  const { data: editingPortfolioDetails } =
-    usePortfolioDetails(editingPortfolioId || "")
+  const { data: editingPortfolioDetails } = usePortfolioDetails(
+    editingPortfolioId || ""
+  )
 
   // Fetch workspace members for project assignment
   const { data: members = [] } = useQuery<WorkspaceMember[]>({
@@ -290,7 +304,10 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
   React.useEffect(() => {
     if (editingPortfolioDetails) {
       editForm.setFieldValue("name", editingPortfolioDetails.name || "")
-      editForm.setFieldValue("description", editingPortfolioDetails.description || "")
+      editForm.setFieldValue(
+        "description",
+        editingPortfolioDetails.description || ""
+      )
       editForm.setFieldValue(
         "projectIds",
         editingPortfolioDetails.projects.map((p) => p.id) || []
@@ -1303,33 +1320,35 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
                 workspace projects in a single place.
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Filter:</span>
-                <Select
-                  value={showTrashed ? "trashed" : "active"}
-                  onValueChange={(val) => setShowTrashed(val === "trashed")}
-                >
-                  <SelectTrigger className="h-9 w-32 border-input bg-card shadow-sm">
-                    <SelectValue placeholder="Show active" />
-                  </SelectTrigger>
-                  <SelectContent className="border border-border bg-card">
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="trashed">Archived</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {filteredPortfolios.length !== 0 && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Filter:</span>
+                  <Select
+                    value={showTrashed ? "trashed" : "active"}
+                    onValueChange={(val) => setShowTrashed(val === "trashed")}
+                  >
+                    <SelectTrigger className="h-9 w-32 border-input bg-card shadow-sm">
+                      <SelectValue placeholder="Show active" />
+                    </SelectTrigger>
+                    <SelectContent className="border border-border bg-card">
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="trashed">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {hasPermission("portfolio:create") && !showTrashed && (
-                <Button
-                  onClick={() => setCreateDialogOpen(true)}
-                  className="flex h-9 items-center gap-1.5 font-semibold"
-                >
-                  <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" />
-                  New Portfolio
-                </Button>
-              )}
-            </div>
+                {hasPermission("portfolio:create") && !showTrashed && (
+                  <Button
+                    onClick={() => setCreateDialogOpen(true)}
+                    className="flex h-9 items-center gap-1.5 font-semibold"
+                  >
+                    <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" />
+                    New Portfolio
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Search bar */}
@@ -1401,18 +1420,44 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
               </Table>
             </div>
           ) : filteredPortfolios.length === 0 ? (
-            <div className="flex h-56 flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card p-6 text-center">
-              <HugeiconsIcon
-                icon={FolderIcon}
-                className="mb-3 h-10 w-10 text-muted-foreground"
-              />
-              <h3 className="text-lg font-semibold">No Portfolios Found</h3>
-              <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                {showTrashed
-                  ? "There are no archived/deleted portfolios in this workspace."
-                  : "Create a portfolio to organize, monitor, and report on related projects."}
-              </p>
-            </div>
+            <Card className="flex flex-col items-center justify-center border-dashed p-12 text-center shadow-none">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia>
+                    <IconStack
+                      aria-hidden="true"
+                      className="h-24 w-22 text-primary"
+                    >
+                      <HugeiconsIcon
+                        icon={ChartAverageIcon}
+                        className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                      />
+                    </IconStack>
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    {showTrashed
+                      ? "No archived portfolios"
+                      : "Ready to organize your projects?"}
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    {showTrashed
+                      ? "There are no archived/deleted portfolios in this workspace."
+                      : "Portfolios help you monitor status, progress, owner, and timeline across multiple workspace projects in a single place."}
+                  </EmptyDescription>
+                </EmptyHeader>
+                {!showTrashed && hasPermission("portfolio:create") && (
+                  <EmptyDescription>
+                    <Button onClick={() => setCreateDialogOpen(true)}>
+                      <HugeiconsIcon
+                        icon={Add01Icon}
+                        className="mr-2 h-4 w-4"
+                      />
+                      Create Your First Portfolio
+                    </Button>
+                  </EmptyDescription>
+                )}
+              </Empty>
+            </Card>
           ) : (
             <div className="overflow-hidden rounded-lg border border-border/80 bg-card shadow-sm">
               <Table>
@@ -1804,7 +1849,13 @@ export function PortfolioDashboard({ portfolioId }: PortfolioDashboardProps = {}
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) setEditingPortfolioId(null) }}>
+      <Dialog
+        open={editDialogOpen}
+        onOpenChange={(open) => {
+          setEditDialogOpen(open)
+          if (!open) setEditingPortfolioId(null)
+        }}
+      >
         <DialogContent className="max-w-md border border-border bg-card">
           <DialogHeader>
             <DialogTitle>Edit Portfolio Settings</DialogTitle>

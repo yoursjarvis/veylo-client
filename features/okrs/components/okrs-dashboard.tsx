@@ -4,44 +4,45 @@ import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { SearchableSelect } from "@/components/ui/searchable-select"
-import { useProjectEpics } from "@/features/tasks/hooks/use-tasks"
-import { axiosInstance } from "@/lib/axios"
-import { Epic, Project } from "@/types/models"
-import {
-  ArrowRight01Icon,
-  Briefcase02Icon,
-  Target02Icon,
-  Layers01Icon,
-} from "@hugeicons/core-free-icons"
-import Image from "next/image"
-import { getThumbUrl } from "@/lib/utils"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { useQuery } from "@tanstack/react-query"
-import React, { useState } from "react"
-import { useForm, useStore } from "@tanstack/react-form"
-import { z } from "zod"
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import {
-  useWorkspaceObjectives,
-  useCreateObjective,
-  useUpdateObjective,
-  useDeleteObjective,
-  useRestoreObjective,
-  useForceDeleteObjective,
-  Objective,
-} from "../hooks/use-okrs"
-import { usePermissions } from "@/hooks/use-permissions"
-import { Edit, Trash2, RotateCcw, MoreHorizontal } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+import { Progress } from "@/components/ui/progress"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Switch } from "@/components/ui/switch"
+import { useProjectEpics } from "@/features/tasks/hooks/use-tasks"
+import { usePermissions } from "@/hooks/use-permissions"
+import { axiosInstance } from "@/lib/axios"
+import { getThumbUrl } from "@/lib/utils"
+import { Epic, Project } from "@/types/models"
+import {
+  ArrowRight01Icon,
+  Briefcase02Icon,
+  Layers01Icon,
+  Target02Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useForm, useStore } from "@tanstack/react-form"
+import { useQuery } from "@tanstack/react-query"
+import { Edit, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react"
+import Image from "next/image"
+import React, { useState } from "react"
+import { z } from "zod"
+import {
+  Objective,
+  useCreateObjective,
+  useDeleteObjective,
+  useForceDeleteObjective,
+  useRestoreObjective,
+  useUpdateObjective,
+  useWorkspaceObjectives,
+} from "../hooks/use-okrs"
 
+import { IconStack } from "@/components/reui/icon-stack"
 import {
   Dialog,
   DialogContent,
@@ -49,22 +50,27 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
-
-
-
-
 
 const objectiveSchema = z.object({
   title: z.string().min(1, "Objective title is required"),
   description: z.string().optional(),
   krTitle: z.string().min(1, "Key Result title is required"),
   krTarget: z.string().min(1, "Target is required"),
-  projectId: z.string().nullable().refine((val) => val !== null && val !== "", {
-    message: "Project is required",
-  }),
+  projectId: z
+    .string()
+    .nullable()
+    .refine((val) => val !== null && val !== "", {
+      message: "Project is required",
+    }),
   epicId: z.string().nullable().optional(),
 })
 
@@ -103,19 +109,20 @@ export function OkrsDashboard() {
   const [userExpandedObj, setUserExpandedObj] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editingObjective, setEditingObjective] = useState<Objective | null>(null)
+  const [editingObjective, setEditingObjective] = useState<Objective | null>(
+    null
+  )
 
   const expandedObj = userExpandedObj ?? (okrs.length > 0 ? okrs[0].id : null)
 
   const renderProjectIcon = (icon?: string | null) => {
-    const baseClasses = "flex items-center justify-center rounded bg-secondary/80 border border-border/40 shrink-0"
+    const baseClasses =
+      "flex items-center justify-center rounded bg-secondary/80 border border-border/40 shrink-0"
     const sizeClass = "h-5 w-5"
     const textClass = "text-2xs"
     if (!icon) {
       return (
-        <span className={`${baseClasses} ${sizeClass} ${textClass}`}>
-          📁
-        </span>
+        <span className={`${baseClasses} ${sizeClass} ${textClass}`}>📁</span>
       )
     }
     if (
@@ -127,7 +134,9 @@ export function OkrsDashboard() {
         ? icon
         : getThumbUrl(icon) || icon
       return (
-        <div className={`${baseClasses} ${sizeClass} relative overflow-hidden bg-background`}>
+        <div
+          className={`${baseClasses} ${sizeClass} relative overflow-hidden bg-background`}
+        >
           <Image
             src={imageUrl}
             onError={(e) => {
@@ -185,7 +194,10 @@ export function OkrsDashboard() {
   })
 
   // Watch projectId to fetch epics
-  const selectedProjectId = useStore(form.store, (state) => state.values.projectId)
+  const selectedProjectId = useStore(
+    form.store,
+    (state) => state.values.projectId
+  )
 
   const { data: epics = [] } = useProjectEpics(selectedProjectId ?? "")
 
@@ -199,8 +211,6 @@ export function OkrsDashboard() {
       })
       .map((e: Epic) => ({ value: e.id, label: e.title }))
   }, [epics])
-
-
 
   const editForm = useForm({
     defaultValues: {
@@ -231,7 +241,10 @@ export function OkrsDashboard() {
   })
 
   // Watch projectId to fetch epics for editForm
-  const selectedEditProjectId = useStore(editForm.store, (state) => state.values.projectId)
+  const selectedEditProjectId = useStore(
+    editForm.store,
+    (state) => state.values.projectId
+  )
 
   const { data: editEpics = [] } = useProjectEpics(selectedEditProjectId ?? "")
 
@@ -251,8 +264,14 @@ export function OkrsDashboard() {
     if (editingObjective && isEditDialogOpen) {
       editForm.setFieldValue("title", editingObjective.title)
       editForm.setFieldValue("description", editingObjective.description)
-      editForm.setFieldValue("krTitle", editingObjective.keyResults[0]?.title || "")
-      editForm.setFieldValue("krTarget", editingObjective.keyResults[0]?.target || "")
+      editForm.setFieldValue(
+        "krTitle",
+        editingObjective.keyResults[0]?.title || ""
+      )
+      editForm.setFieldValue(
+        "krTarget",
+        editingObjective.keyResults[0]?.target || ""
+      )
       editForm.setFieldValue("projectId", editingObjective.projectId)
       editForm.setFieldValue("epicId", editingObjective.epicId || null)
     }
@@ -280,7 +299,7 @@ export function OkrsDashboard() {
             <div className="flex items-center gap-2">
               <label
                 htmlFor="with-trashed-switch"
-                className="text-sm font-medium text-muted-foreground cursor-pointer"
+                className="cursor-pointer text-sm font-medium text-muted-foreground"
               >
                 Include Trashed
               </label>
@@ -291,392 +310,496 @@ export function OkrsDashboard() {
               />
             </div>
           )}
-          {canCreate && (
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger
-            render={
-              <Button>
-                <HugeiconsIcon icon={Target02Icon} className="mr-2 h-4 w-4" />
-                New Objective
-              </Button>
-            }
-          />
-          <DialogContent className="sm:max-w-125">
-            <DialogHeader>
-              <DialogTitle>Create New Objective</DialogTitle>
-              <DialogDescription>
-                Define a high-level goal for your organization.
-              </DialogDescription>
-            </DialogHeader>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                form.handleSubmit()
-              }}
-              className="space-y-4"
-            >
-              <div className="grid gap-4 py-4">
-                 <form.Field
-                  name="title"
-                  validators={{
-                    onChange: ({ value }) => {
-                      const res = objectiveSchema.shape.title.safeParse(value)
-                      return res.success ? undefined : res.error.errors[0].message
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                      <FieldLabel htmlFor={field.name}>Objective Title</FieldLabel>
-                      <Input
-                        id={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="e.g. Expand into Enterprise Market"
-                        aria-invalid={field.state.meta.errors.length > 0}
-                      />
-                      <FieldError errors={field.state.meta.errors.map((err) => ({ message: String(err) }))} />
-                    </Field>
-                  )}
-                </form.Field>
-
-                <form.Field name="description">
-                  {(field) => (
-                    <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                      <FieldLabel htmlFor={field.name}>Description</FieldLabel>
-                      <Input
-                        id={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="Short summary of this objective"
-                      />
-                    </Field>
-                  )}
-                </form.Field>
-
-                <div className="mt-2 border-t pt-4">
-                  <h4 className="mb-3 text-sm font-medium text-muted-foreground">
-                    Initial Key Result
-                  </h4>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-2">
-                      <form.Field
-                        name="krTitle"
-                        validators={{
-                          onChange: ({ value }) => {
-                            const res = objectiveSchema.shape.krTitle.safeParse(value)
-                            return res.success ? undefined : res.error.errors[0].message
-                          },
-                        }}
-                      >
-                        {(field) => (
-                          <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                            <FieldLabel htmlFor={field.name} className="text-xs">
-                              KR Title
-                            </FieldLabel>
-                            <Input
-                              id={field.name}
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) => field.handleChange(e.target.value)}
-                              placeholder="e.g. Increase MAU by 20%"
-                              aria-invalid={field.state.meta.errors.length > 0}
-                            />
-                            <FieldError errors={field.state.meta.errors.map((err) => ({ message: String(err) }))} />
-                          </Field>
-                        )}
-                      </form.Field>
-                    </div>
-                    <div className="col-span-1">
-                      <form.Field
-                        name="krTarget"
-                        validators={{
-                          onChange: ({ value }) => {
-                            const res = objectiveSchema.shape.krTarget.safeParse(value)
-                            return res.success ? undefined : res.error.errors[0].message
-                          },
-                        }}
-                      >
-                        {(field) => (
-                          <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                            <FieldLabel htmlFor={field.name} className="text-xs">
-                              Target
-                            </FieldLabel>
-                            <Input
-                              id={field.name}
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) => field.handleChange(e.target.value)}
-                              placeholder="e.g. 20%"
-                              aria-invalid={field.state.meta.errors.length > 0}
-                            />
-                            <FieldError errors={field.state.meta.errors.map((err) => ({ message: String(err) }))} />
-                          </Field>
-                        )}
-                      </form.Field>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-2 space-y-4 border-t pt-4">
-                  <h4 className="text-sm font-medium text-muted-foreground">
-                    Link Project & Epic
-                  </h4>
-                  <form.Field
-                    name="projectId"
-                    validators={{
-                      onChange: ({ value }) => {
-                        const res = objectiveSchema.shape.projectId.safeParse(value)
-                        return res.success ? undefined : res.error.errors[0].message
-                      },
-                    }}
-                  >
-                    {(field) => (
-                      <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                        <FieldLabel>Project</FieldLabel>
-                        <SearchableSelect
-                          value={field.state.value}
-                          onValueChange={(val) => {
-                            field.handleChange(val)
-                            form.setFieldValue("epicId", null)
-                          }}
-                          options={projectOptions}
-                          placeholder="Select a project"
-                          ariaInvalid={field.state.meta.errors.length > 0}
-                        />
-                        <FieldError errors={field.state.meta.errors.map((err) => ({ message: String(err) }))} />
-                      </Field>
-                    )}
-                  </form.Field>
-
-                  {selectedProjectId && (
-                    <form.Field name="epicId">
-                      {(field) => (
-                        <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                          <FieldLabel>Epic (Optional)</FieldLabel>
-                          <SearchableSelect
-                            value={field.state.value}
-                            onValueChange={(val) => field.handleChange(val)}
-                            options={epicOptions}
-                            placeholder="Select an epic"
-                            clearable
-                            ariaInvalid={field.state.meta.errors.length > 0}
-                          />
-                        </Field>
-                      )}
-                    </form.Field>
-                  )}
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                >
-                  {([canSubmit, isSubmitting]) => (
-                    <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                      {isSubmitting ? "Creating..." : "Create Objective"}
-                    </Button>
-                  )}
-                </form.Subscribe>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-        )}
+          {okrs.length !== 0 && canCreate && (
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <HugeiconsIcon icon={Target02Icon} className="mr-2 h-4 w-4" />
+              New Objective
+            </Button>
+          )}
         </div>
       </div>
 
       <div className="grid gap-6">
-        {okrs.map((obj) => (
-          <Card key={obj.id} className="overflow-hidden">
-            <div
-              className="cursor-pointer p-6 transition-colors hover:bg-muted/50"
-              onClick={() =>
-                setUserExpandedObj(expandedObj === obj.id ? "" : obj.id)
-              }
-            >
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <h3 className="text-xl font-semibold flex items-center gap-2">
-                    {obj.title}
-                    {obj.deletedAt && (
-                      <Badge variant="destructive" className="text-2xs px-1.5 py-0 leading-normal">
-                        Deleted
-                      </Badge>
-                    )}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {obj.description}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Progress
-                      value={obj.progress}
-                      className="h-2 w-25 md:w-37.5"
+        {okrs.length === 0 ? (
+          <Card className="flex flex-col items-center justify-center border-dashed p-12 text-center shadow-none">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia>
+                  <IconStack
+                    aria-hidden="true"
+                    className="h-24 w-22 text-primary"
+                  >
+                    <HugeiconsIcon
+                      icon={Target02Icon}
+                      className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
                     />
-                    <span className="w-10 text-right text-sm font-medium">
-                      {obj.progress}%
-                    </span>
+                  </IconStack>
+                </EmptyMedia>
+                <EmptyTitle>Ready to set your first objective?</EmptyTitle>
+                <EmptyDescription>
+                  Objectives help your team stay focused on the outcomes that
+                  matter. Create your first objective, define key results, and
+                  link related projects to track progress in one place.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyDescription>
+                {canCreate && (
+                  <Button onClick={() => setIsDialogOpen(true)}>
+                    <HugeiconsIcon
+                      icon={Target02Icon}
+                      className="mr-2 h-4 w-4"
+                    />
+                    Create Your first Objective
+                  </Button>
+                )}
+              </EmptyDescription>
+            </Empty>
+          </Card>
+        ) : (
+          okrs.map((obj) => (
+            <Card key={obj.id} className="overflow-hidden">
+              <div
+                className="cursor-pointer p-6 transition-colors hover:bg-muted/50"
+                onClick={() =>
+                  setUserExpandedObj(expandedObj === obj.id ? "" : obj.id)
+                }
+              >
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="flex items-center gap-2 text-xl font-semibold">
+                      {obj.title}
+                      {obj.deletedAt && (
+                        <Badge
+                          variant="destructive"
+                          className="px-1.5 py-0 text-2xs leading-normal"
+                        >
+                          Deleted
+                        </Badge>
+                      )}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {obj.description}
+                    </p>
                   </div>
-
-                  {(canUpdate || canDelete || canRestore || canForceDelete) && (
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={(props) => (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              {...props}
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          )}
-                        />
-                        <DropdownMenuContent align="end" className="w-40 bg-popover text-popover-foreground">
-                          {!obj.deletedAt && canUpdate && (
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setEditingObjective(obj)
-                                setIsEditDialogOpen(true)
-                              }}
-                              className="gap-2"
-                            >
-                              <Edit className="h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                          )}
-                          {!obj.deletedAt && canDelete && (
-                            <DropdownMenuItem
-                              onClick={() => {
-                                deleteObjectiveMutation.mutate(obj.id)
-                              }}
-                              className="gap-2"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          )}
-                          {obj.deletedAt && canRestore && (
-                            <DropdownMenuItem
-                              onClick={() => {
-                                restoreObjectiveMutation.mutate(obj.id)
-                              }}
-                              className="gap-2"
-                            >
-                              <RotateCcw className="h-4 w-4" />
-                              Restore
-                            </DropdownMenuItem>
-                          )}
-                          {obj.deletedAt && canForceDelete && (
-                            <DropdownMenuItem
-                              onClick={() => {
-                                if (
-                                  confirm(
-                                    "Are you sure you want to permanently delete this objective?"
-                                  )
-                                ) {
-                                  forceDeleteObjectiveMutation.mutate(obj.id)
-                                }
-                              }}
-                              className="gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20"
-                              variant="destructive"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                              Force Delete
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Progress
+                        value={obj.progress}
+                        className="h-2 w-25 md:w-37.5"
+                      />
+                      <span className="w-10 text-right text-sm font-medium">
+                        {obj.progress}%
+                      </span>
                     </div>
-                  )}
 
-                  <HugeiconsIcon
-                    icon={ArrowRight01Icon}
-                    className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
-                      expandedObj === obj.id ? "rotate-90" : ""
-                    }`}
-                  />
+                    {(canUpdate ||
+                      canDelete ||
+                      canRestore ||
+                      canForceDelete) && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            render={(props) => (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                {...props}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            )}
+                          />
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-40 bg-popover text-popover-foreground"
+                          >
+                            {!obj.deletedAt && canUpdate && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setEditingObjective(obj)
+                                  setIsEditDialogOpen(true)
+                                }}
+                                className="gap-2"
+                              >
+                                <Edit className="h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                            )}
+                            {!obj.deletedAt && canDelete && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  deleteObjectiveMutation.mutate(obj.id)
+                                }}
+                                className="gap-2"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
+                            {obj.deletedAt && canRestore && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  restoreObjectiveMutation.mutate(obj.id)
+                                }}
+                                className="gap-2"
+                              >
+                                <RotateCcw className="h-4 w-4" />
+                                Restore
+                              </DropdownMenuItem>
+                            )}
+                            {obj.deletedAt && canForceDelete && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  if (
+                                    confirm(
+                                      "Are you sure you want to permanently delete this objective?"
+                                    )
+                                  ) {
+                                    forceDeleteObjectiveMutation.mutate(obj.id)
+                                  }
+                                }}
+                                className="gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20"
+                                variant="destructive"
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                                Force Delete
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    )}
+
+                    <HugeiconsIcon
+                      icon={ArrowRight01Icon}
+                      className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
+                        expandedObj === obj.id ? "rotate-90" : ""
+                      }`}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {expandedObj === obj.id && (
-              <CardContent className="border-t bg-muted/30 p-6">
-                <div className="grid gap-8 md:grid-cols-2">
-                  <div className="space-y-4">
-                    <h4 className="flex items-center font-medium">
-                      <HugeiconsIcon
-                        icon={Target02Icon}
-                        className="mr-2 h-4 w-4 text-primary"
-                      />
-                      Key Results
-                    </h4>
+              {expandedObj === obj.id && (
+                <CardContent className="border-t bg-muted/30 p-6">
+                  <div className="grid gap-8 md:grid-cols-2">
                     <div className="space-y-4">
-                      {obj.keyResults.map((kr) => (
-                        <div key={kr.id} className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium">{kr.title}</span>
-                            <span className="text-muted-foreground">
-                              Target: {kr.target}
-                            </span>
+                      <h4 className="flex items-center font-medium">
+                        <HugeiconsIcon
+                          icon={Target02Icon}
+                          className="mr-2 h-4 w-4 text-primary"
+                        />
+                        Key Results
+                      </h4>
+                      <div className="space-y-4">
+                        {obj.keyResults.map((kr) => (
+                          <div key={kr.id} className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="font-medium">{kr.title}</span>
+                              <span className="text-muted-foreground">
+                                Target: {kr.target}
+                              </span>
+                            </div>
+                            <Progress value={kr.progress} className="h-2" />
                           </div>
-                          <Progress value={kr.progress} className="h-2" />
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="flex items-center font-medium">
+                        <HugeiconsIcon
+                          icon={Briefcase02Icon}
+                          className="mr-2 h-4 w-4 text-primary"
+                        />
+                        Linked Projects & Epics
+                      </h4>
+                      <div className="space-y-4">
+                        {obj.linkedProjects.map((item, i) => (
+                          <div key={i} className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="flex items-center gap-2 font-medium">
+                                {item.type === "project" ? (
+                                  renderProjectIcon(item.icon)
+                                ) : (
+                                  <HugeiconsIcon
+                                    icon={Layers01Icon}
+                                    className="h-5 w-5 text-muted-foreground"
+                                  />
+                                )}
+                                <span>{item.title}</span>
+                              </span>
+                              <Badge
+                                variant="secondary"
+                                className="px-2 py-0 text-2xs"
+                              >
+                                {item.type}
+                              </Badge>
+                            </div>
+                            <div className="h-2 bg-transparent" />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                </CardContent>
+              )}
+            </Card>
+          ))
+        )}
+      </div>
 
-                  <div className="space-y-4">
-                    <h4 className="flex items-center font-medium">
-                      <HugeiconsIcon
-                        icon={Briefcase02Icon}
-                        className="mr-2 h-4 w-4 text-primary"
-                      />
-                      Linked Projects & Epics
-                    </h4>
-                    <div className="space-y-4">
-                      {obj.linkedProjects.map((item, i) => (
-                        <div key={i} className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium flex items-center gap-2">
-                              {item.type === "project" ? (
-                                renderProjectIcon(item.icon)
-                              ) : (
-                                <HugeiconsIcon
-                                  icon={Layers01Icon}
-                                  className="h-5 w-5 text-muted-foreground"
-                                />
-                              )}
-                              <span>{item.title}</span>
-                            </span>
-                            <Badge variant="secondary" className="text-2xs px-2 py-0">
-                              {item.type}
-                            </Badge>
-                          </div>
-                          <div className="h-2 bg-transparent" />
-                        </div>
-                      ))}
-                    </div>
+      {/* Create Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-125">
+          <DialogHeader>
+            <DialogTitle>Create New Objective</DialogTitle>
+            <DialogDescription>
+              Define a high-level goal for your organization.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              form.handleSubmit()
+            }}
+            className="space-y-4"
+          >
+            <div className="grid gap-4 py-4">
+              <form.Field
+                name="title"
+                validators={{
+                  onChange: ({ value }) => {
+                    const res = objectiveSchema.shape.title.safeParse(value)
+                    return res.success ? undefined : res.error.errors[0].message
+                  },
+                }}
+              >
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.errors.length > 0 ? "true" : undefined
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>
+                      Objective Title
+                    </FieldLabel>
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="e.g. Expand into Enterprise Market"
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                    <FieldError
+                      errors={field.state.meta.errors.map((err) => ({
+                        message: String(err),
+                      }))}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="description">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.errors.length > 0 ? "true" : undefined
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>Description</FieldLabel>
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="Short summary of this objective"
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <div className="mt-2 border-t pt-4">
+                <h4 className="mb-3 text-sm font-medium text-muted-foreground">
+                  Initial Key Result
+                </h4>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="col-span-2">
+                    <form.Field
+                      name="krTitle"
+                      validators={{
+                        onChange: ({ value }) => {
+                          const res =
+                            objectiveSchema.shape.krTitle.safeParse(value)
+                          return res.success
+                            ? undefined
+                            : res.error.errors[0].message
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <Field
+                          data-invalid={
+                            field.state.meta.errors.length > 0
+                              ? "true"
+                              : undefined
+                          }
+                        >
+                          <FieldLabel htmlFor={field.name} className="text-xs">
+                            KR Title
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder="e.g. Increase MAU by 20%"
+                            aria-invalid={field.state.meta.errors.length > 0}
+                          />
+                          <FieldError
+                            errors={field.state.meta.errors.map((err) => ({
+                              message: String(err),
+                            }))}
+                          />
+                        </Field>
+                      )}
+                    </form.Field>
+                  </div>
+                  <div className="col-span-1">
+                    <form.Field
+                      name="krTarget"
+                      validators={{
+                        onChange: ({ value }) => {
+                          const res =
+                            objectiveSchema.shape.krTarget.safeParse(value)
+                          return res.success
+                            ? undefined
+                            : res.error.errors[0].message
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <Field
+                          data-invalid={
+                            field.state.meta.errors.length > 0
+                              ? "true"
+                              : undefined
+                          }
+                        >
+                          <FieldLabel htmlFor={field.name} className="text-xs">
+                            Target
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder="e.g. 20%"
+                            aria-invalid={field.state.meta.errors.length > 0}
+                          />
+                          <FieldError
+                            errors={field.state.meta.errors.map((err) => ({
+                              message: String(err),
+                            }))}
+                          />
+                        </Field>
+                      )}
+                    </form.Field>
                   </div>
                 </div>
-              </CardContent>
-            )}
-          </Card>
-        ))}
-      </div>
+              </div>
+
+              <div className="mt-2 space-y-4 border-t pt-4">
+                <h4 className="text-sm font-medium text-muted-foreground">
+                  Link Project & Epic
+                </h4>
+                <form.Field
+                  name="projectId"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const res =
+                        objectiveSchema.shape.projectId.safeParse(value)
+                      return res.success
+                        ? undefined
+                        : res.error.errors[0].message
+                    },
+                  }}
+                >
+                  {(field) => (
+                    <Field
+                      data-invalid={
+                        field.state.meta.errors.length > 0 ? "true" : undefined
+                      }
+                    >
+                      <FieldLabel>Project</FieldLabel>
+                      <SearchableSelect
+                        value={field.state.value}
+                        onValueChange={(val) => {
+                          field.handleChange(val)
+                          form.setFieldValue("epicId", null)
+                        }}
+                        options={projectOptions}
+                        placeholder="Select a project"
+                        ariaInvalid={field.state.meta.errors.length > 0}
+                      />
+                      <FieldError
+                        errors={field.state.meta.errors.map((err) => ({
+                          message: String(err),
+                        }))}
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+
+                {selectedProjectId && (
+                  <form.Field name="epicId">
+                    {(field) => (
+                      <Field
+                        data-invalid={
+                          field.state.meta.errors.length > 0
+                            ? "true"
+                            : undefined
+                        }
+                      >
+                        <FieldLabel>Epic (Optional)</FieldLabel>
+                        <SearchableSelect
+                          value={field.state.value}
+                          onValueChange={(val) => field.handleChange(val)}
+                          options={epicOptions}
+                          placeholder="Select an epic"
+                          clearable
+                          ariaInvalid={field.state.meta.errors.length > 0}
+                        />
+                      </Field>
+                    )}
+                  </form.Field>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting]}
+              >
+                {([canSubmit, isSubmitting]) => (
+                  <Button type="submit" disabled={!canSubmit || isSubmitting}>
+                    {isSubmitting ? "Creating..." : "Create Objective"}
+                  </Button>
+                )}
+              </form.Subscribe>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       {canUpdate && editingObjective && (
@@ -702,13 +825,21 @@ export function OkrsDashboard() {
                   validators={{
                     onChange: ({ value }) => {
                       const res = objectiveSchema.shape.title.safeParse(value)
-                      return res.success ? undefined : res.error.errors[0].message
+                      return res.success
+                        ? undefined
+                        : res.error.errors[0].message
                     },
                   }}
                 >
                   {(field) => (
-                    <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                      <FieldLabel htmlFor={field.name}>Objective Title</FieldLabel>
+                    <Field
+                      data-invalid={
+                        field.state.meta.errors.length > 0 ? "true" : undefined
+                      }
+                    >
+                      <FieldLabel htmlFor={field.name}>
+                        Objective Title
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         value={field.state.value}
@@ -717,14 +848,22 @@ export function OkrsDashboard() {
                         placeholder="e.g. Expand into Enterprise Market"
                         aria-invalid={field.state.meta.errors.length > 0}
                       />
-                      <FieldError errors={field.state.meta.errors.map((err) => ({ message: String(err) }))} />
+                      <FieldError
+                        errors={field.state.meta.errors.map((err) => ({
+                          message: String(err),
+                        }))}
+                      />
                     </Field>
                   )}
                 </editForm.Field>
 
                 <editForm.Field name="description">
                   {(field) => (
-                    <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
+                    <Field
+                      data-invalid={
+                        field.state.meta.errors.length > 0 ? "true" : undefined
+                      }
+                    >
                       <FieldLabel htmlFor={field.name}>Description</FieldLabel>
                       <Input
                         id={field.name}
@@ -747,25 +886,43 @@ export function OkrsDashboard() {
                         name="krTitle"
                         validators={{
                           onChange: ({ value }) => {
-                            const res = objectiveSchema.shape.krTitle.safeParse(value)
-                            return res.success ? undefined : res.error.errors[0].message
+                            const res =
+                              objectiveSchema.shape.krTitle.safeParse(value)
+                            return res.success
+                              ? undefined
+                              : res.error.errors[0].message
                           },
                         }}
                       >
                         {(field) => (
-                          <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                            <FieldLabel htmlFor={field.name} className="text-xs">
+                          <Field
+                            data-invalid={
+                              field.state.meta.errors.length > 0
+                                ? "true"
+                                : undefined
+                            }
+                          >
+                            <FieldLabel
+                              htmlFor={field.name}
+                              className="text-xs"
+                            >
                               KR Title
                             </FieldLabel>
                             <Input
                               id={field.name}
                               value={field.state.value}
                               onBlur={field.handleBlur}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               placeholder="e.g. Increase MAU by 20%"
                               aria-invalid={field.state.meta.errors.length > 0}
                             />
-                            <FieldError errors={field.state.meta.errors.map((err) => ({ message: String(err) }))} />
+                            <FieldError
+                              errors={field.state.meta.errors.map((err) => ({
+                                message: String(err),
+                              }))}
+                            />
                           </Field>
                         )}
                       </editForm.Field>
@@ -775,25 +932,43 @@ export function OkrsDashboard() {
                         name="krTarget"
                         validators={{
                           onChange: ({ value }) => {
-                            const res = objectiveSchema.shape.krTarget.safeParse(value)
-                            return res.success ? undefined : res.error.errors[0].message
+                            const res =
+                              objectiveSchema.shape.krTarget.safeParse(value)
+                            return res.success
+                              ? undefined
+                              : res.error.errors[0].message
                           },
                         }}
                       >
                         {(field) => (
-                          <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
-                            <FieldLabel htmlFor={field.name} className="text-xs">
+                          <Field
+                            data-invalid={
+                              field.state.meta.errors.length > 0
+                                ? "true"
+                                : undefined
+                            }
+                          >
+                            <FieldLabel
+                              htmlFor={field.name}
+                              className="text-xs"
+                            >
                               Target
                             </FieldLabel>
                             <Input
                               id={field.name}
                               value={field.state.value}
                               onBlur={field.handleBlur}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               placeholder="e.g. 20%"
                               aria-invalid={field.state.meta.errors.length > 0}
                             />
-                            <FieldError errors={field.state.meta.errors.map((err) => ({ message: String(err) }))} />
+                            <FieldError
+                              errors={field.state.meta.errors.map((err) => ({
+                                message: String(err),
+                              }))}
+                            />
                           </Field>
                         )}
                       </editForm.Field>
@@ -809,13 +984,22 @@ export function OkrsDashboard() {
                     name="projectId"
                     validators={{
                       onChange: ({ value }) => {
-                        const res = objectiveSchema.shape.projectId.safeParse(value)
-                        return res.success ? undefined : res.error.errors[0].message
+                        const res =
+                          objectiveSchema.shape.projectId.safeParse(value)
+                        return res.success
+                          ? undefined
+                          : res.error.errors[0].message
                       },
                     }}
                   >
                     {(field) => (
-                      <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
+                      <Field
+                        data-invalid={
+                          field.state.meta.errors.length > 0
+                            ? "true"
+                            : undefined
+                        }
+                      >
                         <FieldLabel>Project</FieldLabel>
                         <SearchableSelect
                           value={field.state.value}
@@ -827,7 +1011,11 @@ export function OkrsDashboard() {
                           placeholder="Select a project"
                           ariaInvalid={field.state.meta.errors.length > 0}
                         />
-                        <FieldError errors={field.state.meta.errors.map((err) => ({ message: String(err) }))} />
+                        <FieldError
+                          errors={field.state.meta.errors.map((err) => ({
+                            message: String(err),
+                          }))}
+                        />
                       </Field>
                     )}
                   </editForm.Field>
@@ -835,7 +1023,13 @@ export function OkrsDashboard() {
                   {selectedEditProjectId && (
                     <editForm.Field name="epicId">
                       {(field) => (
-                        <Field data-invalid={field.state.meta.errors.length > 0 ? "true" : undefined}>
+                        <Field
+                          data-invalid={
+                            field.state.meta.errors.length > 0
+                              ? "true"
+                              : undefined
+                          }
+                        >
                           <FieldLabel>Epic (Optional)</FieldLabel>
                           <SearchableSelect
                             value={field.state.value}
