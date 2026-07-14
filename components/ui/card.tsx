@@ -5,14 +5,32 @@ import { cn } from "@/lib/utils"
 function Card({
   className,
   size = "default",
+  stacked = false,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  stacked?: boolean
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-stacked={stacked}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground border border-border/50 transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl border border-border/50 bg-card py-(--card-spacing) text-sm text-card-foreground transition-all duration-200 [--card-spacing:--spacing(4)] hover:-translate-y-0.5 hover:border-primary/40 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        stacked
+          ? [
+              "bg-muted/50 hover:translate-y-0 hover:border-border/50",
+              "px-(--card-stacked-padding) py-(--card-stacked-padding) [--card-stacked-padding:--spacing(1.5)]",
+              "gap-0 *:has-[+[data-slot=card]]:rounded-b-none",
+              "*:has-[+[data-slot=card]]:before:hidden",
+              "*:[[data-slot=card]+[data-slot=card]]:rounded-t-none",
+              "*:[[data-slot=card]+[data-slot=card]]:border-t-0",
+            ]
+          : [
+              "data-[size=sm]:*:[[data-slot=card]+[data-slot=card]]:mt-0.5",
+              "data-[size=default]:*:[[data-slot=card]+[data-slot=card]]:mt-1",
+            ],
         className
       )}
       {...props}
@@ -94,10 +112,10 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
 
 export {
   Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
   CardAction,
-  CardDescription,
   CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 }

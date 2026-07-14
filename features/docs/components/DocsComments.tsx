@@ -2,23 +2,33 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Card } from "@/components/ui/card"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Delete02Icon,
   RotateLeft01Icon,
-  Tick02Icon,
   SmilePlusIcon,
+  Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Mark, Node } from "@tiptap/pm/model"
+import { Transaction } from "@tiptap/pm/state"
 import { formatDistanceToNow } from "date-fns"
-import { useState, useEffect, useRef, useMemo } from "react"
-import { useQueryState } from "nuqs"
-import { DocComment, DocCommentReaction, useDocs } from "../hooks/useDocs"
 import EmojiPicker, { Theme } from "emoji-picker-react"
 import { useTheme } from "next-themes"
+import { useQueryState } from "nuqs"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { DocComment, DocCommentReaction, useDocs } from "../hooks/useDocs"
 import { MentionInput } from "./MentionInput"
-import { Node, Mark } from "@tiptap/pm/model"
-import { Transaction } from "@tiptap/pm/state"
 
 declare global {
   interface Window {
@@ -41,9 +51,7 @@ const resolveAvatarUrl = (
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
     const origin = new URL(apiUrl).origin
-    const relativePath = avatarUrl.startsWith("/")
-      ? avatarUrl
-      : `/${avatarUrl}`
+    const relativePath = avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`
     return `${origin}${relativePath}`
   } catch {
     return avatarUrl
@@ -195,7 +203,8 @@ export function DocsComments({
       let foundRange: { from: number; to: number } | null = null
       editor.state.doc.descendants((node: Node, pos: number) => {
         const commentMark = node.marks.find(
-          (m: Mark) => m.type.name === "comment" && m.attrs.commentId === comment.id
+          (m: Mark) =>
+            m.type.name === "comment" && m.attrs.commentId === comment.id
         )
         if (commentMark) {
           if (!foundRange) {
@@ -224,14 +233,11 @@ export function DocsComments({
       editor.commands.command(({ tr }: { tr: Transaction }) => {
         tr.doc.descendants((node: Node, pos: number) => {
           const commentMark = node.marks.find(
-            (m: Mark) => m.type.name === "comment" && m.attrs.commentId === comment.id
+            (m: Mark) =>
+              m.type.name === "comment" && m.attrs.commentId === comment.id
           )
           if (commentMark) {
-            tr.removeMark(
-              pos,
-              pos + node.nodeSize,
-              editor.schema.marks.comment
-            )
+            tr.removeMark(pos, pos + node.nodeSize, editor.schema.marks.comment)
           }
           return true
         })
@@ -365,8 +371,7 @@ export function DocsComments({
         const isActive = comment.id === commentId
 
         return (
-          <div
-            key={comment.id}
+          <Card
             id={`comment-${comment.id}`}
             style={{
               position: "absolute",
@@ -375,14 +380,19 @@ export function DocsComments({
               right: 0,
               transition: "top 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
-            className={`group flex flex-col gap-2 rounded-xl border p-3 shadow-xs transition-all hover:shadow-md cursor-pointer ${
+            key={comment.id}
+            size="sm"
+            className={`group flex cursor-pointer flex-col transition-all ${
               isActive
-                ? "border-primary bg-primary/5 ring-1 ring-primary/30 z-10"
-                : "border-border/50 bg-card/50 hover:bg-card"
+                ? "z-10 border-primary bg-primary/5 ring-1 ring-primary/30"
+                : "border-border/50"
             }`}
             onClick={(e) => {
               if (
                 (e.target as HTMLElement).closest("button") ||
+                (e.target as HTMLElement).closest(
+                  "[data-slot='hover-card-trigger']"
+                ) ||
                 (e.target as HTMLElement).closest("input") ||
                 (e.target as HTMLElement).closest("textarea")
               ) {
@@ -390,298 +400,426 @@ export function DocsComments({
               }
               handleCommentCardClick(comment)
             }}
+            stacked
           >
-            {/* Header info */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex min-w-0 items-center gap-2">
-                <Avatar className="h-6 w-6 shrink-0">
-                  {resolveAvatarUrl(comment.user.image) && (
-                    <AvatarImage src={resolveAvatarUrl(comment.user.image)} />
-                  )}
-                  <AvatarFallback className="text-[10px]">
-                    {comment.user.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="truncate text-xs font-semibold text-foreground/80 flex items-center gap-1">
-                  {comment.user.name}
-                  {comment.isEdited && (
-                    <span className="text-[9px] font-normal text-muted-foreground/60">(edited)</span>
-                  )}
+            <Card className="flex flex-col gap-2 p-3 border border-border/50 bg-card hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-200">
+              {/* Header info */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Avatar className="h-6 w-6 shrink-0">
+                    {resolveAvatarUrl(comment.user.image) && (
+                      <AvatarImage src={resolveAvatarUrl(comment.user.image)} />
+                    )}
+                    <AvatarFallback className="text-[10px]">
+                      {comment.user.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="flex items-center gap-1 truncate text-xs font-semibold text-foreground/80">
+                    {comment.user.name}
+                    {comment.isEdited && (
+                      <span className="text-[9px] font-normal text-muted-foreground/60">
+                        (edited)
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground/80">
+                  {formatDistanceToNow(new Date(comment.createdAt), {
+                    addSuffix: true,
+                  })}
                 </span>
               </div>
-              <span className="text-[10px] text-muted-foreground/80">
-                {formatDistanceToNow(new Date(comment.createdAt), {
-                  addSuffix: true,
-                })}
-              </span>
-            </div>
 
-            {/* Comment content or Edit input */}
-            {editingCommentId === comment.id ? (
-              <div className="flex flex-col gap-1.5 pl-1" onClick={(e) => e.stopPropagation()}>
-                <MentionInput
-                  projectId={projectId}
-                  placeholder="Edit comment..."
-                  value={editingContent}
-                  onChange={setEditingContent}
-                  className="flex h-7 w-full rounded-md border border-input bg-background/50 px-2 py-1 text-2xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSaveEdit(comment.id)
-                    }
-                  }}
-                />
-                <div className="flex gap-1 justify-end">
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    onClick={handleCancelEdit}
-                    className="h-6 px-1.5 text-3xs font-semibold"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="xs"
-                    onClick={() => handleSaveEdit(comment.id)}
-                    disabled={!editingContent.trim()}
-                    className="h-6 px-2.5 text-3xs font-semibold"
-                  >
-                    Save
-                  </Button>
+              {/* Comment content or Edit input */}
+              {editingCommentId === comment.id ? (
+                <div
+                  className="flex flex-col gap-1.5 pl-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MentionInput
+                    projectId={projectId}
+                    placeholder="Edit comment..."
+                    value={editingContent}
+                    onChange={setEditingContent}
+                    className="flex h-7 w-full rounded-md border border-input bg-background/50 px-2 py-1 text-2xs shadow-xs focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSaveEdit(comment.id)
+                      }
+                    }}
+                  />
+                  <div className="flex justify-end gap-1">
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={handleCancelEdit}
+                      className="text-3xs h-6 px-1.5 font-semibold"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="xs"
+                      onClick={() => handleSaveEdit(comment.id)}
+                      disabled={!editingContent.trim()}
+                      className="text-3xs h-6 px-2.5 font-semibold"
+                    >
+                      Save
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <p className="text-xs leading-relaxed whitespace-pre-wrap text-foreground/90 pl-1">
-                {comment.content}
-              </p>
-            )}
+              ) : (
+                <p className="pl-1 text-xs leading-relaxed whitespace-pre-wrap text-foreground/90">
+                  {comment.content}
+                </p>
+              )}
 
-            {/* Reactions Display */}
-            {!editingCommentId && comment.reactions && comment.reactions.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1 mt-1 pl-1">
-                {getGroupedReactions(comment.reactions).map((group) => (
-                  <button
-                    key={group.emoji}
-                    type="button"
-                    onClick={() => handleToggleReaction(comment.id, group.emoji)}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[10px] font-medium transition-colors ${
-                      group.userReacted
-                        ? "border-primary bg-primary/10 text-primary-foreground"
-                        : "border-border/60 bg-muted/20 hover:bg-muted text-foreground/80"
-                    }`}
-                  >
-                    <span>{group.emoji}</span>
-                    <span>{group.count}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+              {/* Reactions Display */}
+              {!editingCommentId &&
+                comment.reactions &&
+                comment.reactions.length > 0 && (
+                  <div className="mt-1 flex flex-wrap items-center gap-1 pl-1">
+                    {getGroupedReactions(comment.reactions).map((group) => (
+                      <HoverCard key={group.emoji}>
+                        <HoverCardTrigger
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleReaction(comment.id, group.emoji)
+                          }}
+                          className={`flex cursor-pointer items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
+                            group.userReacted
+                              ? "border-primary/30 bg-primary/10 text-primary"
+                              : "border-border/60 bg-muted/20 text-foreground/80 hover:bg-muted"
+                          }`}
+                        >
+                          <span>{group.emoji}</span>
+                          <span>{group.count}</span>
+                        </HoverCardTrigger>
+                        <HoverCardContent
+                          side="top"
+                          align="center"
+                          className="z-50 w-auto min-w-50 border-border bg-popover shadow-md"
+                        >
+                          <div className="space-y-3 p-3">
+                            <p className="text-xs text-muted-foreground">
+                              Reacted with {group.emoji}
+                            </p>
+                            <div className="h-px bg-border/50" />
+                            <div className="space-y-2">
+                              {comment.reactions
+                                .filter((r) => r.emoji === group.emoji)
+                                .map((reaction) => (
+                                  <div
+                                    key={reaction.id}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <Avatar className="h-6 w-6">
+                                      {reaction.user?.image &&
+                                        resolveAvatarUrl(reaction.user.image) && (
+                                          <AvatarImage
+                                            src={resolveAvatarUrl(
+                                              reaction.user.image
+                                            )}
+                                          />
+                                        )}
+                                      <AvatarFallback className="bg-muted text-[10px] font-bold text-foreground">
+                                        {reaction.user?.name
+                                          ?.charAt(0)
+                                          .toUpperCase() || "U"}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-xs font-medium text-foreground">
+                                      {reaction.user?.name || "Unknown"}
+                                    </span>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    ))}
+                  </div>
+                )}
 
-            {/* Thread Replies List */}
-            {comment.replies && comment.replies.length > 0 && (
-              <div className="mt-2 pl-3 border-l-2 border-border/40 space-y-2">
-                {comment.replies.map((reply) => (
-                  <div key={reply.id} className="group/reply flex flex-col gap-1 text-[11px]">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <Avatar className="h-4.5 w-4.5 shrink-0">
-                          {resolveAvatarUrl(reply.user.image) && (
-                            <AvatarImage src={resolveAvatarUrl(reply.user.image)} />
-                          )}
-                          <AvatarFallback className="text-[8px]">
-                            {reply.user.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="font-semibold text-foreground/80 truncate flex items-center gap-1">
-                          {reply.user.name}
-                          {reply.isEdited && (
-                            <span className="text-[8px] font-normal text-muted-foreground/60">(edited)</span>
-                          )}
+              {/* Thread Replies List */}
+              {comment.replies && comment.replies.length > 0 && (
+                <div className="mt-2 space-y-2 border-l-2 border-border/40 pl-3">
+                  {comment.replies.map((reply) => (
+                    <div
+                      key={reply.id}
+                      className="group/reply flex flex-col gap-1 text-[11px]"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <Avatar className="h-4.5 w-4.5 shrink-0">
+                            {resolveAvatarUrl(reply.user.image) && (
+                              <AvatarImage
+                                src={resolveAvatarUrl(reply.user.image)}
+                              />
+                            )}
+                            <AvatarFallback className="text-[8px]">
+                              {reply.user.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="flex items-center gap-1 truncate font-semibold text-foreground/80">
+                            {reply.user.name}
+                            {reply.isEdited && (
+                              <span className="text-[8px] font-normal text-muted-foreground/60">
+                                (edited)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <span className="text-[9px] text-muted-foreground/80">
+                          {formatDistanceToNow(new Date(reply.createdAt), {
+                            addSuffix: true,
+                          })}
                         </span>
                       </div>
-                      <span className="text-[9px] text-muted-foreground/80">
-                        {formatDistanceToNow(new Date(reply.createdAt), {
-                          addSuffix: true,
-                        })}
-                      </span>
-                    </div>
 
-                    {/* Reply content or Edit input */}
-                    {editingCommentId === reply.id ? (
-                      <div className="pl-6 mt-1 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
-                        <MentionInput
-                          projectId={projectId}
-                          placeholder="Edit reply..."
-                          value={editingContent}
-                          onChange={setEditingContent}
-                          className="flex h-7 w-full rounded-md border border-input bg-background/50 px-2 py-1 text-2xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault()
-                              handleSaveEdit(reply.id)
-                            }
-                          }}
-                        />
-                        <div className="flex gap-1 justify-end">
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            onClick={handleCancelEdit}
-                            className="h-6 px-1.5 text-3xs font-semibold"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            size="xs"
-                            onClick={() => handleSaveEdit(reply.id)}
-                            disabled={!editingContent.trim()}
-                            className="h-6 px-2.5 text-3xs font-semibold"
-                          >
-                            Save
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="whitespace-pre-wrap text-foreground/90 leading-normal pl-6">
-                          {reply.content}
-                        </p>
-
-                        {/* Reply reactions */}
-                        {reply.reactions && reply.reactions.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1 pl-6 mt-0.5">
-                            {getGroupedReactions(reply.reactions).map((group) => (
-                              <button
-                                key={group.emoji}
-                                type="button"
-                                onClick={() => handleToggleReaction(reply.id, group.emoji)}
-                                className={`flex items-center gap-0.5 px-1 py-0.2 rounded-full border text-[9px] font-medium transition-colors ${
-                                  group.userReacted
-                                    ? "border-primary bg-primary/10 text-primary-foreground"
-                                    : "border-border/50 bg-card hover:bg-muted text-muted-foreground"
-                                }`}
-                              >
-                                <span>{group.emoji}</span>
-                                <span>{group.count}</span>
-                              </button>
-                            ))}
+                      {/* Reply content or Edit input */}
+                      {editingCommentId === reply.id ? (
+                        <div
+                          className="mt-1 flex flex-col gap-1.5 pl-6"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MentionInput
+                            projectId={projectId}
+                            placeholder="Edit reply..."
+                            value={editingContent}
+                            onChange={setEditingContent}
+                            className="flex h-7 w-full rounded-md border border-input bg-background/50 px-2 py-1 text-2xs shadow-xs focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault()
+                                handleSaveEdit(reply.id)
+                              }
+                            }}
+                          />
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              onClick={handleCancelEdit}
+                              className="text-3xs h-6 px-1.5 font-semibold"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="xs"
+                              onClick={() => handleSaveEdit(reply.id)}
+                              disabled={!editingContent.trim()}
+                              className="text-3xs h-6 px-2.5 font-semibold"
+                            >
+                              Save
+                            </Button>
                           </div>
-                        )}
-
-                        {/* Hover Actions for Reply */}
-                        <div className="flex items-center gap-2 pl-6 mt-0.5 opacity-0 group-hover/reply:opacity-100 transition-opacity">
-                          {reply.userId === userId && (
-                            <button
-                              type="button"
-                              onClick={() => handleStartEdit(reply)}
-                              className="text-[9px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
-                            >
-                              Edit
-                            </button>
-                          )}
-                          {(reply.userId === userId || isWorkspaceAdmin) && (
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteComment(reply)}
-                              className="text-[9px] font-semibold text-destructive hover:underline cursor-pointer"
-                            >
-                              Delete
-                            </button>
-                          )}
                         </div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                      ) : (
+                        <>
+                          <p className="pl-6 leading-normal whitespace-pre-wrap text-foreground/90">
+                            {reply.content}
+                          </p>
 
-            {/* Action Bar (Resolve, Reactions popover, Edit, Delete) */}
-            <div className="flex items-center justify-between gap-1.5 pt-1.5 mt-1 border-t border-border/20 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="flex items-center gap-1">
-                {/* Resolve button */}
-                <Button
-                  size="xs"
-                  variant="ghost"
-                  onClick={() => handleToggleResolve(comment)}
-                  className="h-6 gap-1 px-1.5 text-2xs font-semibold text-success hover:bg-success/10"
-                >
-                  <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} size={13} />
-                  Resolve
-                </Button>
+                          {/* Reply reactions */}
+                          {reply.reactions && reply.reactions.length > 0 && (
+                            <div className="mt-0.5 flex flex-wrap items-center gap-1 pl-6">
+                              {getGroupedReactions(reply.reactions).map(
+                                (group) => (
+                                  <HoverCard key={group.emoji}>
+                                    <HoverCardTrigger
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleToggleReaction(
+                                          reply.id,
+                                          group.emoji
+                                        )
+                                      }}
+                                      className={`py-0.2 flex cursor-pointer items-center gap-0.5 rounded-full border px-1 text-[9px] font-medium transition-colors ${
+                                        group.userReacted
+                                          ? "border-primary/30 bg-primary/10 text-primary"
+                                          : "border-border/50 bg-card text-muted-foreground hover:bg-muted"
+                                      }`}
+                                    >
+                                      <span>{group.emoji}</span>
+                                      <span>{group.count}</span>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent
+                                      side="top"
+                                      align="center"
+                                      className="z-50 w-auto min-w-50 border-border bg-popover shadow-md"
+                                    >
+                                      <div className="space-y-3 p-3">
+                                        <p className="text-xs text-muted-foreground">
+                                          Reacted with {group.emoji}
+                                        </p>
+                                        <div className="h-px bg-border/50" />
+                                        <div className="space-y-2">
+                                          {reply.reactions
+                                            .filter(
+                                              (r) => r.emoji === group.emoji
+                                            )
+                                            .map((reaction) => (
+                                              <div
+                                                key={reaction.id}
+                                                className="flex items-center gap-2"
+                                              >
+                                                <Avatar className="h-6 w-6">
+                                                  {reaction.user?.image &&
+                                                    resolveAvatarUrl(
+                                                      reaction.user.image
+                                                    ) && (
+                                                      <AvatarImage
+                                                        src={resolveAvatarUrl(
+                                                          reaction.user.image
+                                                        )}
+                                                      />
+                                                    )}
+                                                  <AvatarFallback className="bg-muted text-[10px] font-bold text-foreground">
+                                                    {reaction.user?.name
+                                                      ?.charAt(0)
+                                                      .toUpperCase() || "U"}
+                                                  </AvatarFallback>
+                                                </Avatar>
+                                                <span className="text-xs font-medium text-foreground">
+                                                  {reaction.user?.name ||
+                                                    "Unknown"}
+                                                </span>
+                                              </div>
+                                            ))}
+                                        </div>
+                                      </div>
+                                    </HoverCardContent>
+                                  </HoverCard>
+                                )
+                              )}
+                            </div>
+                          )}
 
-                {/* Emoji Picker Popover */}
-                <Popover>
-                  <PopoverTrigger className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
-                    <HugeiconsIcon icon={SmilePlusIcon} strokeWidth={2} size={13} />
-                  </PopoverTrigger>
-                  <PopoverContent
-                    side="top"
-                    align="start"
-                    className="w-auto border-none bg-transparent p-0 shadow-none z-50"
-                  >
-                    <EmojiPicker
-                      onEmojiClick={(e) => handleToggleReaction(comment.id, e.emoji)}
-                      theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+                          {/* Hover Actions for Reply */}
+                          <div className="mt-0.5 flex items-center gap-2 pl-6 opacity-0 transition-opacity group-hover/reply:opacity-100">
+                            {reply.userId === userId && (
+                              <button
+                                type="button"
+                                onClick={() => handleStartEdit(reply)}
+                                className="cursor-pointer text-[9px] font-semibold text-muted-foreground hover:text-foreground"
+                              >
+                                Edit
+                              </button>
+                            )}
+                            {(reply.userId === userId || isWorkspaceAdmin) && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteComment(reply)}
+                                className="cursor-pointer text-[9px] font-semibold text-destructive hover:underline"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-              {/* Edit / Delete action triggers */}
-              <div className="flex items-center gap-1">
-                {comment.userId === userId && !editingCommentId && (
+              {/* Action Bar (Resolve, Reactions popover, Edit, Delete) */}
+              <div className="mt-1 flex items-center justify-between gap-1.5 border-t border-border/20 pt-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex items-center gap-1">
+                  {/* Resolve button */}
                   <Button
                     size="xs"
                     variant="ghost"
-                    onClick={() => handleStartEdit(comment)}
-                    className="h-6 px-1.5 text-2xs font-semibold text-muted-foreground hover:bg-muted"
+                    onClick={() => handleToggleResolve(comment)}
+                    className="h-6 gap-1 px-1.5 text-2xs font-semibold text-success hover:bg-success/10"
                   >
-                    Edit
+                    <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} size={13} />
+                    Resolve
                   </Button>
-                )}
-                {(comment.userId === userId || isWorkspaceAdmin) && (
+
+                  {/* Emoji Picker Popover */}
+                  <Popover>
+                    <PopoverTrigger className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+                      <HugeiconsIcon
+                        icon={SmilePlusIcon}
+                        strokeWidth={2}
+                        size={13}
+                      />
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="top"
+                      align="start"
+                      className="z-50 w-auto border-none bg-transparent p-0 shadow-none"
+                    >
+                      <EmojiPicker
+                        onEmojiClick={(e) =>
+                          handleToggleReaction(comment.id, e.emoji)
+                        }
+                        theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* Edit / Delete action triggers */}
+                <div className="flex items-center gap-1">
+                  {comment.userId === userId && !editingCommentId && (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => handleStartEdit(comment)}
+                      className="h-6 px-1.5 text-2xs font-semibold text-muted-foreground hover:bg-muted"
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {(comment.userId === userId || isWorkspaceAdmin) && (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => handleDeleteComment(comment)}
+                      className="h-6 gap-1 px-1.5 text-2xs font-semibold text-destructive hover:bg-destructive/10"
+                    >
+                      <HugeiconsIcon
+                        icon={Delete02Icon}
+                        strokeWidth={2}
+                        size={13}
+                      />
+                      Delete
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Thread Reply Input Form */}
+              {isActive && !editingCommentId && (
+                <div className="mt-2.5 flex gap-1.5 border-t border-border/30 pt-2.5">
+                  <MentionInput
+                    projectId={projectId}
+                    placeholder="Reply to this thread..."
+                    value={replyText}
+                    onChange={setReplyText}
+                    className="flex h-7 w-full rounded-md border border-input bg-background/50 px-2 py-1 text-2xs shadow-xs placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault()
+                        handlePostReply(comment.id)
+                      }
+                    }}
+                  />
                   <Button
                     size="xs"
-                    variant="ghost"
-                    onClick={() => handleDeleteComment(comment)}
-                    className="h-6 gap-1 px-1.5 text-2xs font-semibold text-destructive hover:bg-destructive/10"
+                    onClick={() => handlePostReply(comment.id)}
+                    disabled={!replyText.trim()}
+                    className="h-7 shrink-0 px-2.5 text-2xs font-semibold"
                   >
-                    <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} size={13} />
-                    Delete
+                    Reply
                   </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Thread Reply Input Form */}
-            {isActive && !editingCommentId && (
-              <div className="mt-2.5 pt-2.5 border-t border-border/30 flex gap-1.5">
-                <MentionInput
-                  projectId={projectId}
-                  placeholder="Reply to this thread..."
-                  value={replyText}
-                  onChange={setReplyText}
-                  className="flex h-7 w-full rounded-md border border-input bg-background/50 px-2 py-1 text-2xs shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handlePostReply(comment.id)
-                    }
-                  }}
-                />
-                <Button
-                  size="xs"
-                  onClick={() => handlePostReply(comment.id)}
-                  disabled={!replyText.trim()}
-                  className="h-7 text-2xs font-semibold px-2.5 shrink-0"
-                >
-                  Reply
-                </Button>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </Card>
+          </Card>
         )
       })}
 
@@ -694,15 +832,16 @@ export function DocsComments({
             left: 0,
             right: 0,
           }}
-          className="space-y-2 opacity-50 hover:opacity-100 transition-opacity duration-200"
+          className="space-y-2 opacity-50 transition-opacity duration-200 hover:opacity-100"
         >
           <div className="text-2xs font-bold tracking-wider text-muted-foreground uppercase">
             Resolved ({resolvedComments.length})
           </div>
           {resolvedComments.map((comment) => (
-            <div
+            <Card
               key={comment.id}
-              className="group flex flex-col gap-2 rounded-xl border border-border/30 bg-muted/20 p-2.5"
+              size="sm"
+              className="group flex flex-col gap-2 border border-border/30 bg-muted/20 p-2.5 hover:translate-y-0"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-xs font-medium text-muted-foreground line-through">
@@ -727,7 +866,7 @@ export function DocsComments({
                   Reopen
                 </Button>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

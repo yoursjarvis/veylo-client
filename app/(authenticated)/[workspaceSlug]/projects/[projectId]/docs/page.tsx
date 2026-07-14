@@ -21,9 +21,9 @@ import {
   Comment01Icon,
   CopyPlusIcon,
   Delete02Icon,
+  SidebarLeft01Icon,
   StarIcon,
   TransactionHistoryIcon,
-  SidebarLeft01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -166,9 +166,11 @@ export default function DocsPage() {
   return (
     <div className="flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-xl border border-border/40 bg-background/50 backdrop-blur-md">
       {/* Sidebar Tree Navigation */}
-      <div className={`transition-all duration-300 flex h-full shrink-0 flex-col border-r border-border bg-card/40 ${
-        isSidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
-      }`}>
+      <div
+        className={`flex h-full shrink-0 flex-col border-r border-border bg-card/40 transition-all duration-300 ${
+          isSidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
+        }`}
+      >
         <DocsSidebar
           projectId={projectId}
           activeDocId={activeDocId}
@@ -192,13 +194,17 @@ export default function DocsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="h-8 w-8 rounded-lg text-muted-foreground mr-1 shrink-0"
+                        className="mr-1 h-8 w-8 shrink-0 rounded-lg text-muted-foreground"
                       >
-                        <HugeiconsIcon icon={SidebarLeft01Icon} size={18} strokeWidth={2} />
+                        <HugeiconsIcon
+                          icon={SidebarLeft01Icon}
+                          size={18}
+                          strokeWidth={2}
+                        />
                       </Button>
                     }
                   />
-                  <TooltipContent side="bottom">
+                  <TooltipContent side="right">
                     {isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
                   </TooltipContent>
                 </Tooltip>

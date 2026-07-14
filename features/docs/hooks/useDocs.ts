@@ -40,7 +40,7 @@ export interface DocCommentReaction {
   userId: string
   emoji: string
   createdAt: string
-  user: { id: string; name: string }
+  user: { id: string; name: string; image?: string | null }
 }
 
 export interface DocComment {
