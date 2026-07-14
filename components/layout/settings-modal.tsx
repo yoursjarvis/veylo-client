@@ -27,10 +27,10 @@ import { useLogout } from "@/features/auth/hooks/use-auth"
 import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import { AppearanceTab } from "./settings/appearance-tab"
+import { NotificationsTab } from "./settings/notifications-tab"
 import { OrganizationTab } from "./settings/organization-tab"
 import { ProfileTab } from "./settings/profile-tab"
 import { SecurityTab } from "./settings/security-tab"
-import { NotificationsTab } from "./settings/notifications-tab"
 
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useRouter } from "next/navigation"
@@ -40,13 +40,14 @@ import { toast } from "sonner"
 import {
   Building03Icon,
   Logout01Icon,
+  Notification01Icon,
   PaintBoardIcon,
   Shield01Icon,
   UserIcon,
-  Notification01Icon,
 } from "@hugeicons/core-free-icons"
 
-type Tab = "profile" | "security" | "appearance" | "organization" | "notifications"
+type Tab =
+  "profile" | "security" | "appearance" | "organization" | "notifications"
 
 interface SettingsModalProps {
   open: boolean

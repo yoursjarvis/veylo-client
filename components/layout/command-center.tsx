@@ -1,17 +1,39 @@
 "use client"
 
-import { CommandPalette, CommandItem } from "@/components/motion/command-palette"
+import {
+  CommandItem,
+  CommandPalette,
+} from "@/components/motion/command-palette"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { usePermissions } from "@/hooks/use-permissions"
 import { axiosInstance } from "@/lib/axios"
-import { useRouter } from "next/navigation"
-import { useEffect, useState, useMemo } from "react"
-import { Search, Plus, Folder, Briefcase, CheckSquare, Monitor, Moon, Sun, Home, Target, Clock, Activity } from "lucide-react"
-import { useTheme } from "next-themes"
-import { useDebounce } from "use-debounce"
 import { useQuery } from "@tanstack/react-query"
+import {
+  Activity,
+  Briefcase,
+  CheckSquare,
+  Clock,
+  Folder,
+  Home,
+  Monitor,
+  Moon,
+  Plus,
+  Search,
+  Sun,
+  Target,
+} from "lucide-react"
+import { useTheme } from "next-themes"
+import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { useDebounce } from "use-debounce"
 
-export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenChange?: (o: boolean) => void }) {
+export function CommandCenter({
+  open,
+  onOpenChange,
+}: {
+  open?: boolean
+  onOpenChange?: (o: boolean) => void
+}) {
   const router = useRouter()
   const { activeWorkspace } = useWorkspaceContext()
   const { hasPermission } = usePermissions()
@@ -19,7 +41,8 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
 
   const isControlled = open !== undefined
   const isOpen = isControlled ? open : internalOpen
-  const setIsOpen = isControlled && onOpenChange ? onOpenChange : setInternalOpen
+  const setIsOpen =
+    isControlled && onOpenChange ? onOpenChange : setInternalOpen
   const { setTheme } = useTheme()
 
   const [query, setQuery] = useState("")
@@ -28,7 +51,9 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
   const [history, setHistory] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
       try {
-        return JSON.parse(window.localStorage.getItem("veylo-search-history") || "[]")
+        return JSON.parse(
+          window.localStorage.getItem("veylo-search-history") || "[]"
+        )
       } catch (e) {
         return []
       }
@@ -37,10 +62,16 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
   })
 
   const saveToHistory = (itemTitle: string) => {
-    const newHistory = [itemTitle, ...history.filter(h => h !== itemTitle)].slice(0, 3)
+    const newHistory = [
+      itemTitle,
+      ...history.filter((h) => h !== itemTitle),
+    ].slice(0, 3)
     setHistory(newHistory)
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("veylo-search-history", JSON.stringify(newHistory))
+      window.localStorage.setItem(
+        "veylo-search-history",
+        JSON.stringify(newHistory)
+      )
     }
   }
 
@@ -54,7 +85,9 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
     queryKey: ["global-search", activeWorkspace?.slug, debouncedQuery],
     queryFn: async () => {
       if (!debouncedQuery) return { workspaces: [], projects: [], tasks: [] }
-      const res = await axiosInstance.get(`/search?q=${encodeURIComponent(debouncedQuery)}`)
+      const res = await axiosInstance.get(
+        `/search?q=${encodeURIComponent(debouncedQuery)}`
+      )
       return res.data.data
     },
     enabled: !!debouncedQuery && isOpen,
@@ -66,10 +99,11 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
 
   const items = useMemo(() => {
     // Wrap original onSelect to save history
-    const wrapOnSelect = (title: string, originalOnSelect: () => void) => () => {
-      saveToHistory(title)
-      originalOnSelect()
-    }
+    const wrapOnSelect =
+      (title: string, originalOnSelect: () => void) => () => {
+        saveToHistory(title)
+        originalOnSelect()
+      }
 
     if (!debouncedQuery) {
       const defaultActions: CommandItem[] = []
@@ -81,7 +115,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
           label: hItem,
           group: "Recent Searches",
           icon: Search,
-          onSelect: () => setQuery(hItem) // Selecting history populates the search query
+          onSelect: () => setQuery(hItem), // Selecting history populates the search query
         })
       })
 
@@ -93,7 +127,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
           icon: CheckSquare,
           onSelect: wrapOnSelect("Create Task", () => {
             window.dispatchEvent(new CustomEvent("open-create-task-global"))
-          })
+          }),
         })
       }
 
@@ -107,7 +141,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
             if (activeWorkspace) {
               router.push(`/${activeWorkspace.slug}/projects`)
             }
-          })
+          }),
         })
       }
 
@@ -119,7 +153,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
           icon: Plus,
           onSelect: wrapOnSelect("Create Workspace", () => {
             router.push(`/onboarding`)
-          })
+          }),
         })
       }
 
@@ -129,42 +163,54 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
           label: "Go to Dashboard",
           group: "Navigation",
           icon: Home,
-          onSelect: wrapOnSelect("Dashboard", () => router.push(`/${activeWorkspace.slug}/dashboard`))
+          onSelect: wrapOnSelect("Dashboard", () =>
+            router.push(`/${activeWorkspace.slug}/dashboard`)
+          ),
         })
         defaultActions.push({
           id: "nav-projects",
           label: "Go to Projects",
           group: "Navigation",
           icon: Briefcase,
-          onSelect: wrapOnSelect("Projects", () => router.push(`/${activeWorkspace.slug}/projects`))
+          onSelect: wrapOnSelect("Projects", () =>
+            router.push(`/${activeWorkspace.slug}/projects`)
+          ),
         })
         defaultActions.push({
           id: "nav-tasks",
           label: "Go to My Tasks",
           group: "Navigation",
           icon: CheckSquare,
-          onSelect: wrapOnSelect("My Tasks", () => router.push(`/${activeWorkspace.slug}/tasks`))
+          onSelect: wrapOnSelect("My Tasks", () =>
+            router.push(`/${activeWorkspace.slug}/tasks`)
+          ),
         })
         defaultActions.push({
           id: "nav-okrs",
           label: "Go to Goals & OKRs",
           group: "Navigation",
           icon: Target,
-          onSelect: wrapOnSelect("Goals & OKRs", () => router.push(`/${activeWorkspace.slug}/okrs`))
+          onSelect: wrapOnSelect("Goals & OKRs", () =>
+            router.push(`/${activeWorkspace.slug}/okrs`)
+          ),
         })
         defaultActions.push({
           id: "nav-timesheets",
           label: "Go to Timesheets",
           group: "Navigation",
           icon: Clock,
-          onSelect: wrapOnSelect("Timesheets", () => router.push(`/${activeWorkspace.slug}/timesheets`))
+          onSelect: wrapOnSelect("Timesheets", () =>
+            router.push(`/${activeWorkspace.slug}/timesheets`)
+          ),
         })
         defaultActions.push({
           id: "nav-portfolio",
           label: "Go to Portfolio",
           group: "Navigation",
           icon: Activity,
-          onSelect: wrapOnSelect("Portfolio", () => router.push(`/${activeWorkspace.slug}/portfolio`))
+          onSelect: wrapOnSelect("Portfolio", () =>
+            router.push(`/${activeWorkspace.slug}/portfolio`)
+          ),
         })
       }
 
@@ -173,21 +219,21 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
         label: "Switch to Light Theme",
         group: "Preferences",
         icon: Sun,
-        onSelect: () => setTheme("light")
+        onSelect: () => setTheme("light"),
       })
       defaultActions.push({
         id: "theme-dark",
         label: "Switch to Dark Theme",
         group: "Preferences",
         icon: Moon,
-        onSelect: () => setTheme("dark")
+        onSelect: () => setTheme("dark"),
       })
       defaultActions.push({
         id: "theme-system",
         label: "Switch to System Theme",
         group: "Preferences",
         icon: Monitor,
-        onSelect: () => setTheme("system")
+        onSelect: () => setTheme("system"),
       })
 
       return defaultActions
@@ -203,7 +249,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
           label: w.name,
           group: "Workspaces",
           icon: Folder,
-          onSelect: wrapOnSelect(w.name, () => router.push(`/${w.slug}`))
+          onSelect: wrapOnSelect(w.name, () => router.push(`/${w.slug}`)),
         })
       })
     }
@@ -220,7 +266,7 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
           onSelect: wrapOnSelect(p.title, () => {
             const wsSlug = p.workspace?.slug || activeWorkspace?.slug
             router.push(`/${wsSlug}/projects/${p.id}`)
-          })
+          }),
         })
       })
     }
@@ -237,18 +283,31 @@ export function CommandCenter({ open, onOpenChange }: { open?: boolean, onOpenCh
           onSelect: wrapOnSelect(t.title, () => {
             const wsSlug = t.project?.workspace?.slug || activeWorkspace?.slug
             router.push(`/${wsSlug}/tasks/${t.id}`)
-          })
+          }),
         })
       })
     }
 
     return results
-  }, [debouncedQuery, searchResults, canCreateProject, canCreateTask, canCreateWorkspace, activeWorkspace, router, setTheme, history])
+  }, [
+    debouncedQuery,
+    searchResults.workspaces,
+    searchResults.projects,
+    searchResults.tasks,
+    saveToHistory,
+    history,
+    canCreateTask,
+    canCreateProject,
+    canCreateWorkspace,
+    activeWorkspace,
+    router,
+    setTheme,
+  ])
 
-  // We have to intercept CommandPalette's built-in search so it acts as API search. 
+  // We have to intercept CommandPalette's built-in search so it acts as API search.
   // Wait, CommandPalette internally filters `items` by `fuzzyMatch`.
   // If we pass our items, CommandPalette will fuzzy match them again. That's fine.
-  // But how to get CommandPalette's input query out to trigger useQuery? 
+  // But how to get CommandPalette's input query out to trigger useQuery?
   // CommandPalette has an uncontrolled internal `query` state.
   // Actually, CommandPalette does NOT export `onSearch` prop.
   // Let me check if CommandPalette accepts `query` / `onQueryChange`.
