@@ -16,21 +16,21 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.550 0.180 269); /* Yields #4F46E5, contrast ratio 4.82:1 against white */
-  --primary-foreground: oklch(0.216 0.006 56.043);
+  --primary-foreground: oklch(1 0 0); /* WCAG AA A11y Compliant (White text) */
   --secondary: oklch(96.1% 0.058 93.5);
   --secondary-foreground: oklch(0.216 0.006 56.043);
   --success-background: oklch(76.8% 0.094 145.5);
-  --success-foreground: oklch(0.216 0.006 56.043);
-  --warning-background: oklch(95.0% 0.110 95.0); /* Yields #FEF3C7, contrast ratio 1.15:1 (use with borders) */
-  --warning-foreground: oklch(0.216 0.006 56.043);
+  --success-foreground: oklch(0.12 0.006 56.043);
+  --warning-background: oklch(95.0% 0.110 95.0);
+  --warning-foreground: oklch(0.12 0.006 56.043);
   --info-background: oklch(97% 0.05 250);
-  --info-foreground: oklch(0.216 0.006 56.043);
+  --info-foreground: oklch(0.12 0.006 56.043);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.520 0.200 25); /* Yields #DC2626, contrast ratio 5.01:1 against white */
-  --destructive-foreground: oklch(0.216 0.006 56.043);
+  --destructive: oklch(0.520 0.200 25); /* Yields #DC2626 */
+  --destructive-foreground: oklch(1 0 0); /* WCAG AA A11y Compliant (White text) */
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -47,7 +47,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Noto Serif, ui-serif, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
   --radius: 0.625rem;
@@ -88,11 +87,11 @@
   --text-9xl: 8rem;
   --font-size-base: 14px;
 
-  --success: oklch(63.3% 0.117 142.8);
-  --success-foreground: oklch(0.216 0.006 56.043);
-  --info: oklch(0.75 0.12 250);
-  --info-foreground: oklch(0.216 0.006 56.043);
-  --warning: oklch(0.78 0.12 109.9);
+  --success: oklch(0.42 0.12 142.8); /* WCAG AA compliant dark green */
+  --success-foreground: oklch(1 0 0);
+  --info: oklch(0.45 0.14 250); /* WCAG AA compliant dark blue */
+  --info-foreground: oklch(1 0 0);
+  --warning: oklch(0.48 0.12 85); /* WCAG AA compliant dark gold/brown */
   --warning-foreground: oklch(0.216 0.006 56.043);
   --invert: oklch(0.216 0.006 56.043);
   --invert-foreground: oklch(0.978 0.035 94.5);
@@ -112,7 +111,7 @@
 
   /* ── Brand colors (unchanged as requested) ── */
   --primary: oklch(0.748 0.129 269);
-  --primary-foreground: oklch(0.216 0.006 56.043);
+  --primary-foreground: oklch(0.12 0.006 56.043); /* Slightly darkened for better contrast */
 
   /* ── Secondary: dark-mode adapted pastel (was still light-mode bright yellow) ── */
   --secondary: oklch(0.240 0.015 269); /* Yields #1C1D26, a muted dark box in dark mode */
@@ -134,7 +133,7 @@
 
   /* ── Destructive (unchanged as requested) ── */
   --destructive: oklch(0.73 0.14 25);
-  --destructive-foreground: oklch(0.216 0.006 56.043);
+  --destructive-foreground: oklch(0.12 0.006 56.043); /* Slightly darkened for contrast */
 
   /* ── Borders & inputs: subtle purple tint for cohesion ── */
   --border: oklch(0.28 0.012 269);
@@ -159,7 +158,7 @@
   --sidebar-ring: oklch(0.45 0.03 269);
 
   /* ── Typography & layout ── */
-  --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
+  /* --font-sans inherited from next/font (Poppins) */
   --font-serif: Noto Serif, ui-serif, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
   --radius: 0.625rem;
@@ -186,12 +185,12 @@
   --shadow-2xl: 0 16px 48px 0px hsl(0 0% 0% / 0.5);
 
   --font-size-base: 14px;
-  --success: oklch(0.75 0.11 142.8);
-  --success-foreground: oklch(0.216 0.006 56.043);
-  --info: oklch(0.75 0.12 250);
-  --info-foreground: oklch(0.216 0.006 56.043);
-  --warning: oklch(0.78 0.12 109.9);
-  --warning-foreground: oklch(0.216 0.006 56.043);
+  --success: oklch(0.82 0.09 142.8); /* Light green for dark mode contrast */
+  --success-foreground: oklch(0.12 0.006 56.043);
+  --info: oklch(0.82 0.08 250); /* Light blue for dark mode contrast */
+  --info-foreground: oklch(0.12 0.006 56.043);
+  --warning: oklch(0.85 0.08 109.9); /* Light yellow for dark mode contrast */
+  --warning-foreground: oklch(0.12 0.006 56.043);
   --invert: oklch(0.978 0.035 94.5);
   --invert-foreground: oklch(0.216 0.006 56.043);
 }
