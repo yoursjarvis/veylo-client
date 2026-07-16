@@ -177,29 +177,28 @@ export default function LabelsSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {!labels || labels.length === 0 ? (
-                // <div className="py-6 text-center text-xs text-muted-foreground italic">
-                //   No labels defined for this project.
-                // </div>
-                <Empty>
-                  <EmptyHeader>
-                    <EmptyMedia>
-                      <IconStack
-                        aria-hidden="true"
-                        className="h-24 w-22 text-primary"
-                      >
-                        <HugeiconsIcon
-                          icon={LabelIcon}
-                          className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
-                        />
-                      </IconStack>
-                    </EmptyMedia>
-                    <EmptyTitle>No Label</EmptyTitle>
-                    <EmptyDescription>
-                      No labels defined for this project. Create your first
-                      label.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
+                <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia>
+                        <IconStack
+                          aria-hidden="true"
+                          className="h-24 w-22 text-primary"
+                        >
+                          <HugeiconsIcon
+                            icon={LabelIcon}
+                            className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                          />
+                        </IconStack>
+                      </EmptyMedia>
+                      <EmptyTitle>No Label</EmptyTitle>
+                      <EmptyDescription>
+                        No labels defined for this project. Create your first
+                        label.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </Card>
               ) : (
                 <div className="space-y-3">
                   {labels.map((lbl: Label) => (

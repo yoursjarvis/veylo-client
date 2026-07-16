@@ -9,7 +9,11 @@ import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import { axiosInstance } from "@/lib/axios"
 import { cn, getThumbUrl } from "@/lib/utils"
 import { Project, Task, TaskStatus } from "@/types/models"
-import { CheckmarkSquare02Icon, Tick01Icon } from "@hugeicons/core-free-icons"
+import {
+  CheckmarkSquare02Icon,
+  Tick01Icon,
+  WorkAlertIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   useMutation,
@@ -28,6 +32,15 @@ import {
   StatusSelect,
 } from "@/features/tasks/components/task-list"
 
+import { IconStack } from "@/components/reui/icon-stack"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { UseMutationResult } from "@tanstack/react-query"
 
 // Reusable Task Row with inline edits
@@ -389,19 +402,28 @@ export default function MyTasksPage() {
 
       {myTasks.length === 0 ? (
         <Card className="flex flex-col items-center justify-center border-dashed p-12 text-center shadow-none">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <HugeiconsIcon
-              icon={CheckmarkSquare02Icon}
-              className="text-muted-foreground"
-            />
-          </div>
-          <h3 className="mt-4 text-lg font-semibold">
-            You&apos;re all caught up!
-          </h3>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            You don&apos;t have any tasks assigned to you right now. Enjoy your
-            free time or check out the project boards to pick up new work.
-          </p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <IconStack
+                  aria-hidden="true"
+                  className="h-24 w-22 text-primary"
+                >
+                  <HugeiconsIcon
+                    icon={WorkAlertIcon}
+                    className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                  />
+                </IconStack>
+              </EmptyMedia>
+              <EmptyTitle>You&apos;re all caught up!</EmptyTitle>
+              <EmptyDescription>
+                You don&apos;t have any tasks assigned to you right now. Enjoy
+                your free time or check out the project boards to pick up new
+                work.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent className="flex-row justify-center gap-2"></EmptyContent>
+          </Empty>
         </Card>
       ) : (
         <div className="grid gap-4">

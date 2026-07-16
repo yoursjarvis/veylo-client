@@ -41,6 +41,7 @@ export interface User {
   lastName: string
   emailVerified: boolean
   image?: string
+  role?: string | null
   createdAt: string
   updatedAt: string
   twoFactorEnabled?: boolean

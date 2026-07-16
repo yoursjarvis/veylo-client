@@ -1,5 +1,4 @@
-"use client";
-import Image from "next/image"
+"use client"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import {
   DropdownMenu,
@@ -25,6 +24,7 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 

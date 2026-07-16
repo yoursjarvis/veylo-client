@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { axiosInstance } from "@/lib/axios"
-import { Project, Task } from "@/types/models"
 import type { TaskUpdateRequest } from "@/types/api-types"
+import { Project, Task } from "@/types/models"
 import {
   Briefcase01Icon,
   ChartLineData01Icon,
+  SignatureIcon,
   TaskDaily02Icon,
+  TeamWorkIcon,
   UserGroup03Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -31,6 +33,15 @@ import {
   YAxis,
 } from "recharts"
 import { toast } from "sonner"
+
+import { IconStack } from "@/components/reui/icon-stack"
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+
 import { useWorkspaceContext } from "../providers/workspace-provider"
 
 export function Dashboard() {
@@ -164,13 +175,12 @@ export function Dashboard() {
       const statusName = t.status?.name.toLowerCase() || ""
       const customFieldApproval =
         t.customFields && typeof t.customFields === "object"
-          ? (t.customFields as Record<string, unknown>)["Approval Status"] === "Pending"
+          ? (t.customFields as Record<string, unknown>)["Approval Status"] ===
+            "Pending"
           : false
       return statusName.includes("approval") || customFieldApproval
     })
   }, [allTasks])
-
-
 
   if (isProjectsLoading || isTasksLoading) {
     return (
@@ -180,7 +190,10 @@ export function Dashboard() {
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-xl border bg-card text-card-foreground shadow">
+            <div
+              key={i}
+              className="rounded-xl border bg-card text-card-foreground shadow"
+            >
               <div className="flex flex-row items-center justify-between p-6 pb-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-6 w-6 rounded-full" />
@@ -192,11 +205,11 @@ export function Dashboard() {
           ))}
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <div className="col-span-4 rounded-xl border bg-card text-card-foreground shadow p-6">
-             <Skeleton className="h-[300px] w-full" />
+          <div className="col-span-4 rounded-xl border bg-card p-6 text-card-foreground shadow">
+            <Skeleton className="h-[300px] w-full" />
           </div>
-          <div className="col-span-3 rounded-xl border bg-card text-card-foreground shadow p-6">
-             <Skeleton className="h-[300px] w-full" />
+          <div className="col-span-3 rounded-xl border bg-card p-6 text-card-foreground shadow">
+            <Skeleton className="h-[300px] w-full" />
           </div>
         </div>
       </div>
@@ -389,11 +402,9 @@ export function Dashboard() {
                           let intensityClass =
                             "bg-transparent text-muted-foreground"
                           if (count > 0 && count <= 2)
-                            intensityClass =
-                              "bg-info/20 text-info font-bold"
+                            intensityClass = "bg-info/20 text-info font-bold"
                           else if (count > 2 && count <= 5)
-                            intensityClass =
-                              "bg-info/50 text-info font-bold"
+                            intensityClass = "bg-info/50 text-info font-bold"
                           else if (count > 5)
                             intensityClass =
                               "bg-destructive/80 text-destructive-foreground font-bold"
@@ -418,7 +429,24 @@ export function Dashboard() {
               </table>
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                No tasks assigned to any team member.
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia>
+                      <IconStack
+                        aria-hidden="true"
+                        className="h-24 w-22 text-primary"
+                      >
+                        <HugeiconsIcon
+                          icon={TeamWorkIcon}
+                          className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                        />
+                      </IconStack>
+                    </EmptyMedia>
+                    <EmptyTitle>
+                      No tasks assigned to any team member!
+                    </EmptyTitle>
+                  </EmptyHeader>
+                </Empty>
               </div>
             )}
           </CardContent>
@@ -444,7 +472,9 @@ export function Dashboard() {
               {pendingApprovals.map((task) => {
                 const invoiceAmount =
                   task.customFields && typeof task.customFields === "object"
-                    ? (task.customFields as Record<string, unknown>)["Invoice Amount"]
+                    ? (task.customFields as Record<string, unknown>)[
+                        "Invoice Amount"
+                      ]
                     : null
                 return (
                   <div
@@ -478,7 +508,10 @@ export function Dashboard() {
                             task.customFields &&
                             typeof task.customFields === "object"
                               ? {
-                                  ...(task.customFields as Record<string, unknown>),
+                                  ...(task.customFields as Record<
+                                    string,
+                                    unknown
+                                  >),
                                   "Approval Status": "Rejected",
                                 }
                               : { "Approval Status": "Rejected" }
@@ -499,7 +532,10 @@ export function Dashboard() {
                             task.customFields &&
                             typeof task.customFields === "object"
                               ? {
-                                  ...(task.customFields as Record<string, unknown>),
+                                  ...(task.customFields as Record<
+                                    string,
+                                    unknown
+                                  >),
                                   "Approval Status": "Approved",
                                 }
                               : { "Approval Status": "Approved" }
@@ -519,7 +555,22 @@ export function Dashboard() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-muted-foreground italic">
-              All caught up! No pending approvals.
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia>
+                    <IconStack
+                      aria-hidden="true"
+                      className="h-24 w-22 text-primary"
+                    >
+                      <HugeiconsIcon
+                        icon={SignatureIcon}
+                        className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                      />
+                    </IconStack>
+                  </EmptyMedia>
+                  <EmptyTitle>All caught up! No pending approvals.</EmptyTitle>
+                </EmptyHeader>
+              </Empty>
             </div>
           )}
         </CardContent>

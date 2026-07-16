@@ -16,20 +16,33 @@ import {
 } from "@/features/tasks/hooks/use-tasks"
 import type { Notification as NotificationType } from "@/types/models"
 import { formatDistanceToNow } from "date-fns"
-import {
-  AlertCircle,
-  Bell,
-  CheckCheck,
-  FileText,
-  FolderPlus,
-  MessageSquare,
-  RefreshCw,
-  ThumbsUp,
-  UserMinus,
-  UserPlus,
-} from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import React from "react"
+
+import { IconStack } from "@/components/reui/icon-stack"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import {
+  AlertDiamondIcon,
+  AtIcon,
+  File02Icon,
+  Message01Icon,
+  MessageCircleReplyIcon,
+  NoteRemoveIcon,
+  Notification01Icon,
+  NotificationOff01Icon,
+  Refresh04Icon,
+  TeamWorkIcon,
+  ThumbsUpIcon,
+  TickDouble01Icon,
+  UserAdd01Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 export function NotificationCenter() {
   const router = useRouter()
@@ -121,25 +134,61 @@ export function NotificationCenter() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "mention":
-        return <MessageSquare className="h-4 w-4 text-primary" />
+        return <HugeiconsIcon icon={AtIcon} className="h-4 w-4 text-primary" />
       case "assignment":
-        return <UserPlus className="h-4 w-4 text-info" />
+        return (
+          <HugeiconsIcon icon={UserAdd01Icon} className="h-4 w-4 text-info" />
+        )
       case "status_change":
-        return <RefreshCw className="h-4 w-4 text-success" />
+        return (
+          <HugeiconsIcon
+            icon={Refresh04Icon}
+            className="h-4 w-4 text-success"
+          />
+        )
       case "comment":
-        return <MessageSquare className="h-4 w-4 text-muted-foreground" />
+        return (
+          <HugeiconsIcon
+            icon={Message01Icon}
+            className="h-4 w-4 text-muted-foreground"
+          />
+        )
       case "dependency":
-        return <AlertCircle className="h-4 w-4 text-warning" />
+        return (
+          <HugeiconsIcon
+            icon={AlertDiamondIcon}
+            className="h-4 w-4 text-warning"
+          />
+        )
       case "project_added":
-        return <FolderPlus className="h-4 w-4 text-success" />
+        return (
+          <HugeiconsIcon icon={TeamWorkIcon} className="h-4 w-4 text-success" />
+        )
       case "reply":
-        return <MessageSquare className="h-4 w-4 text-primary" />
+        return (
+          <HugeiconsIcon
+            icon={MessageCircleReplyIcon}
+            className="h-4 w-4 text-primary"
+          />
+        )
       case "reaction":
-        return <ThumbsUp className="h-4 w-4 text-warning" />
+        return (
+          <HugeiconsIcon icon={ThumbsUpIcon} className="h-4 w-4 text-warning" />
+        )
       case "assignment_removed":
-        return <UserMinus className="h-4 w-4 text-destructive" />
+        return (
+          <HugeiconsIcon
+            icon={NoteRemoveIcon}
+            className="h-4 w-4 text-destructive"
+          />
+        )
       default:
-        return <FileText className="h-4 w-4 text-muted-foreground" />
+        return (
+          <HugeiconsIcon
+            icon={File02Icon}
+            className="h-4 w-4 text-muted-foreground"
+          />
+        )
     }
   }
 
@@ -153,7 +202,7 @@ export function NotificationCenter() {
             variant="outline"
             className="relative border-border bg-background text-foreground hover:bg-muted"
           >
-            <Bell className="h-4 w-4" />
+            <HugeiconsIcon icon={Notification01Icon} className="h-4 w-4" />
             {unreadCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 animate-pulse items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground">
                 {unreadCount}
@@ -177,7 +226,7 @@ export function NotificationCenter() {
               className="flex h-auto items-center gap-1 p-0 text-2xs text-primary hover:text-primary/80"
               onClick={() => markAllReadMutation.mutate()}
             >
-              <CheckCheck className="h-3 w-3" />
+              <HugeiconsIcon icon={TickDouble01Icon} className="h-3 w-3" />
               Mark all as read
             </Button>
           )}
@@ -185,13 +234,25 @@ export function NotificationCenter() {
         <ScrollArea className="h-72">
           {notifications.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center p-4 text-center">
-              <Bell className="mb-2 h-8 w-8 text-muted-foreground opacity-50" />
-              <p className="text-xs font-semibold text-foreground">
-                All caught up!
-              </p>
-              <p className="mt-0.5 text-2xs text-muted-foreground">
-                No notifications to display.
-              </p>
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia>
+                    <IconStack
+                      aria-hidden="true"
+                      className="h-24 w-22 text-primary"
+                    >
+                      <HugeiconsIcon
+                        icon={NotificationOff01Icon}
+                        className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                      />
+                    </IconStack>
+                  </EmptyMedia>
+                  <EmptyTitle>All caught up!</EmptyTitle>
+                  <EmptyDescription>
+                    When you get notifications, they&apos;ll show up here.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             </div>
           ) : (
             <div className="divide-y divide-border">

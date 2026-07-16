@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { UserAdd01Icon, UserGroupIcon } from "@hugeicons/core-free-icons"
+import { AddTeam02Icon, UserGroupIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
 
@@ -52,12 +52,8 @@ export function ProjectTeam({
           </CardDescription>
         </div>
         <Link href={`/${workspaceSlug}/projects/${projectId}/settings/members`}>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-2xs font-bold uppercase"
-          >
-            <HugeiconsIcon icon={UserAdd01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
+          <Button variant="outline-default" size="sm">
+            <HugeiconsIcon icon={AddTeam02Icon} className="mr-1 h-3.5 w-3.5" />{" "}
             Manage Members
           </Button>
         </Link>

@@ -391,7 +391,7 @@ const CustomMention = Mention.extend({
 })
 
 // Custom slash command extension
-const SlashCommand = Extension.create<{ suggestion: Omit<SuggestionOptions, 'editor'> }>({
+export const SlashCommand = Extension.create<{ suggestion: Omit<SuggestionOptions, 'editor'> }>({
   name: "slashCommand",
   addOptions() {
     return {
@@ -1080,6 +1080,7 @@ export function RichTextEditor({
               <EmojiPicker
                 onEmojiClick={onEmojiClick}
                 theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 defaultSkinTone={skinTone as any}
                 onSkinToneChange={(newSkinTone) => {
                   setSkinTone(newSkinTone)
