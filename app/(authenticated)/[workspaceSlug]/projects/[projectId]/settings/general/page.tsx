@@ -12,8 +12,12 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Field, FieldError } from "@/components/ui/field"
 import { axiosInstance } from "@/lib/axios"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useForm } from "@tanstack/react-form"
+import { zodValidator } from "@tanstack/zod-form-adapter"
+import { z } from "zod"
 import { Delete01Icon, SaveIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AlertTriangle, Sliders } from "lucide-react"
@@ -22,6 +26,11 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
 
+const projectSettingsSchema = z.object({
+  title: z.string().min(2, "Project name must be at least 2 characters"),
+  description: z.string().optional(),
+})
+
 export default function GeneralSettingsPage() {
   const { projectId, workspaceSlug, selectedProject, isWorkspaceAdmin } =
     useProject()
@@ -29,18 +38,31 @@ export default function GeneralSettingsPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
   const [icon, setIcon] = useState<string | File | null>(null)
+
+  const form = useForm({
+    defaultValues: {
+      title: selectedProject?.title || "",
+      description: selectedProject?.description || "",
+    },
+    validatorAdapter: zodValidator(),
+    onSubmit: async ({ value }: { value: { title: string; description: string } }) => {
+      updateProjectMutation.mutate({
+        title: value.title,
+        description: value.description,
+        icon,
+      })
+    },
+  } as Parameters<typeof useForm>[0])
 
   useEffect(() => {
     if (selectedProject) {
+      form.setFieldValue("title", selectedProject.title || "")
+      form.setFieldValue("description", selectedProject.description || "")
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing layout context project state
-      setTitle(selectedProject.title || "")
-      setDescription(selectedProject.description || "")
       setIcon(selectedProject.icon || null)
     }
-  }, [selectedProject])
+  }, [selectedProject, form])
 
   const uploadProjectIcon = async (projId: string, file: File) => {
     const formData = new FormData()
@@ -134,76 +156,110 @@ export default function GeneralSettingsPage() {
               project.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium">Project Name</label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-            </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              form.handleSubmit()
+            }}
+          >
+            <CardContent className="space-y-4">
+              <form.Field
+                name="title"
+                validators={{
+                  onChange: projectSettingsSchema.shape.title,
+                }}
+              >
+                {(field) => (
+                  <Field>
+                    <label htmlFor={field.name} className="text-xs font-medium">
+                      Project Name
+                    </label>
+                    <Input
+                      id={field.name}
+                      value={field.state.value as string}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">
-                Project Key (Read-only)
-              </label>
-              <Input
-                value={selectedProject?.projectKey || ""}
-                readOnly
-                disabled
-                className="cursor-not-allowed bg-muted font-mono uppercase"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium">Description</label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-medium">
-                Project Brand Icon
-              </label>
-              <div className="flex w-fit items-center gap-4 rounded-lg border p-3">
-                <IconPicker
-                  value={
-                    icon instanceof File
-                      ? URL.createObjectURL(icon)
-                      : (icon as string | null)
-                  }
-                  onChange={(val) => setIcon(val)}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Project Key (Read-only)
+                </label>
+                <Input
+                  value={selectedProject?.projectKey || ""}
+                  readOnly
+                  disabled
+                  className="cursor-not-allowed bg-muted font-mono uppercase"
                 />
-                <div className="text-2xs">
-                  <p className="font-semibold">Select Emoji / Graphic</p>
-                  <p className="mt-0.5">
-                    Helps identify this project at a glance.
-                  </p>
+              </div>
+
+              <form.Field name="description">
+                {(field) => (
+                  <Field>
+                    <label htmlFor={field.name} className="text-xs font-medium">
+                      Description
+                    </label>
+                    <Textarea
+                      id={field.name}
+                      value={field.state.value as string}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium">
+                  Project Brand Icon
+                </label>
+                <div className="flex w-fit items-center gap-4 rounded-lg border p-3">
+                  <IconPicker
+                    value={
+                      icon instanceof File
+                        ? URL.createObjectURL(icon)
+                        : (icon as string | null)
+                    }
+                    onChange={(val) => setIcon(val)}
+                  />
+                  <div className="text-2xs">
+                    <p className="font-semibold">Select Emoji / Graphic</p>
+                    <p className="mt-0.5">
+                      Helps identify this project at a glance.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex justify-end border-t pt-2">
-              <Button
-                disabled={!title.trim() || updateProjectMutation.isPending}
-                onClick={() =>
-                  updateProjectMutation.mutate({
-                    title,
-                    description,
-                    icon,
-                  })
-                }
-                variant="default"
-              >
-                {updateProjectMutation.isPending ? (
-                  "Saving..."
-                ) : (
-                  <>
-                    <HugeiconsIcon icon={SaveIcon} className="mr-1.5 h-4 w-4" /> Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
+              <div className="flex justify-end border-t pt-2">
+                <form.Subscribe
+                  selector={(state) => [state.canSubmit, state.isSubmitting]}
+                >
+                  {([canSubmit, isSubmitting]) => (
+                    <Button
+                      type="submit"
+                      disabled={!canSubmit || isSubmitting || updateProjectMutation.isPending}
+                      variant="default"
+                    >
+                      {updateProjectMutation.isPending ? (
+                        "Saving..."
+                      ) : (
+                        <>
+                          <HugeiconsIcon icon={SaveIcon} className="mr-1.5 h-4 w-4" /> Save Changes
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </form.Subscribe>
+              </div>
+            </CardContent>
+          </form>
         </Card>
 
         {/* Danger Zone */}
