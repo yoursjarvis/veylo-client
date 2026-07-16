@@ -18,6 +18,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useMemo, useState } from "react"
+import { useDebounce } from "use-debounce"
 import { useProject } from "../layout"
 
 interface StatusOption {
@@ -61,6 +62,7 @@ export default function ListPage() {
 
   const [activeFilters, setActiveFilters] = useState<Filter[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 400)
 
   const fields = useMemo<FilterFieldConfig[]>(() => {
     const membersList = selectedProject?.members || []
@@ -148,11 +150,11 @@ export default function ListPage() {
     if (activeFilters.length > 0) {
       params.filters = JSON.stringify(activeFilters)
     }
-    if (searchQuery.trim()) {
-      params.search = searchQuery.trim()
+    if (debouncedSearchQuery.trim()) {
+      params.search = debouncedSearchQuery.trim()
     }
     return params
-  }, [activeFilters, searchQuery])
+  }, [activeFilters, debouncedSearchQuery])
 
   const { data: tasks, isLoading } = useProjectTasks(projectId, serverFilters)
 

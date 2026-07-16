@@ -154,7 +154,7 @@ export function CommandCenter({
           group: "Actions",
           icon: Plus,
           onSelect: wrapOnSelect("Create Workspace", () => {
-            router.push(`/onboarding`)
+            router.push(`/org-setup`)
           }),
         })
       }

@@ -130,7 +130,14 @@ export function LoginForm({ callbackUrl, error }: LoginFormProps) {
           </Button>
         </div>
         <AuthDivider>OR</AuthDivider>
-        <div className="space-y-2">
+        <form
+          className="space-y-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            form.handleSubmit()
+          }}
+        >
           <form.Field name="email">
             {(field) => (
               <Field>
@@ -198,15 +205,14 @@ export function LoginForm({ callbackUrl, error }: LoginFormProps) {
               <Button
                 className="w-full"
                 size="sm"
-                type="button"
+                type="submit"
                 disabled={!canSubmit || isSubmitting}
-                onClick={() => form.handleSubmit()}
               >
                 {isSubmitting ? "Logging in..." : "Continue With Email"}
               </Button>
             )}
           </form.Subscribe>
-        </div>
+        </form>
       </div>
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}

@@ -67,6 +67,10 @@ interface TaskReportsProps {
   projectTemplate: string
 }
 
+const normalizeCssVar = (name: string) => {
+  return (name || "").toLowerCase().replace(/[^a-z0-9]/g, "-")
+}
+
 export function TaskReports({
   tasks,
   sprints,
@@ -156,7 +160,7 @@ export function TaskReports({
   )
 
   const assigneeBarConfig = barChartAssigneeData.reduce((acc, entry, idx) => {
-    acc[entry.name] = {
+    acc[normalizeCssVar(entry.name)] = {
       label: entry.name,
       color: `var(--color-chart-${(idx % 5) + 1})`,
     }
@@ -165,7 +169,7 @@ export function TaskReports({
 
   const barChartAssigneeDataWithFill = barChartAssigneeData.map((entry) => ({
     ...entry,
-    fill: `var(--color-${entry.name})`,
+    fill: `var(--color-${normalizeCssVar(entry.name)})`,
   }))
 
   // 5. Data for Cumulative Timeline Area Chart (Last 10 days growth)
@@ -225,7 +229,7 @@ export function TaskReports({
   }
 
   const teamConfig = workloadData.reduce((acc, member, idx) => {
-    acc[member.name] = {
+    acc[normalizeCssVar(member.name)] = {
       label: member.name,
       color: `var(--color-chart-${(idx % 5) + 1})`,
     }
@@ -234,7 +238,7 @@ export function TaskReports({
 
   const teamPieData = workloadData.map((item) => ({
     ...item,
-    fill: `var(--color-${item.name})`,
+    fill: `var(--color-${normalizeCssVar(item.name)})`,
   }))
 
   // 7. Calculate Sprint Velocity Data (Scrum only)

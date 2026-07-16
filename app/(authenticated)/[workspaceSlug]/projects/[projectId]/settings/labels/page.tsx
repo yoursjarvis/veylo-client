@@ -18,7 +18,7 @@ import {
 } from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
 import { useForm } from "@tanstack/react-form"
-import { Plus, Tag, Trash } from "lucide-react"
+import { Tag } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
@@ -31,7 +31,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { LabelIcon } from "@hugeicons/core-free-icons"
+import { Delete01Icon, LabelIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 const COLOR_PRESETS = [
@@ -224,7 +224,7 @@ export default function LabelsSettingsPage() {
                         disabled={deleteLabelMutation.isPending}
                         className="h-8 w-8"
                       >
-                        <Trash className="h-4 w-4" />
+                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
@@ -363,7 +363,7 @@ export default function LabelsSettingsPage() {
                           createLabelMutation.isPending
                         }
                       >
-                        <Plus className="mr-1.5 h-4 w-4" /> Create Label
+                        <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" /> Create Label
                       </Button>
                     )}
                   </form.Subscribe>

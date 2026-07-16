@@ -13,9 +13,9 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { AutomationBuilder } from "@/features/automations/components/automation-builder"
 import { AutomationRule } from "@/features/automations/types/automation"
-import { WorkflowSquare01Icon } from "@hugeicons/core-free-icons"
+import { Delete01Icon, Edit02Icon, PlusSignIcon, WorkflowSquare01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Archive, Edit2, Plus, Trash2 } from "lucide-react"
+import { Archive } from "lucide-react"
 import { useParams } from "next/navigation"
 import { useState } from "react"
 
@@ -72,7 +72,7 @@ export default function AutomationsPage() {
           </p>
         </div>
         <Button onClick={() => setIsBuilding(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <HugeiconsIcon icon={PlusSignIcon} className="mr-2 h-4 w-4" />
           Create Rule
         </Button>
       </div>
@@ -159,7 +159,7 @@ export default function AutomationsPage() {
                         setEditingRule(rule)
                       }}
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
@@ -186,7 +186,7 @@ export default function AutomationsPage() {
                         )
                       }}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

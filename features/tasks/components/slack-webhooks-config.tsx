@@ -11,9 +11,9 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
-import { WebhookIcon } from "@hugeicons/core-free-icons"
+import { Delete01Icon, PlusSignIcon, WebhookIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Loader2, Plus, Trash } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import React, { useState } from "react"
 import {
   useCreateSlackWebhook,
@@ -108,7 +108,7 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                 {createWebhookMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Plus className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={PlusSignIcon} className="mr-2 h-4 w-4" />
                 )}
                 Connect Slack Channel
               </Button>
@@ -191,7 +191,7 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                         }}
                         disabled={deleteWebhookMutation.isPending}
                       >
-                        <Trash className="h-4 w-4" />
+                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
                       </Button>
                     </div>
                   )

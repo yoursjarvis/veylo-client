@@ -16,7 +16,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Task, TaskStatus } from "@/types/models"
-import { AlertCircle, Link as LinkIcon, Plus, X } from "lucide-react"
+import { AlertCircle, Link as LinkIcon, X } from "lucide-react"
+import { PlusSignIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import React, { useState } from "react"
 import { useProjectTasks } from "../../hooks/use-tasks"
 
@@ -121,7 +123,7 @@ export function TaskDetailsDependencies({
         render={
           customTrigger || (
             <Button variant="ghost" size="icon-xs" className="h-6 w-6">
-              <Plus className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={PlusSignIcon} className="h-3.5 w-3.5" />
             </Button>
           )
         }
@@ -183,7 +185,7 @@ export function TaskDetailsDependencies({
                 size="sm"
                 className="h-8 px-3 text-xs font-medium"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-3.5 w-3.5" />
                 Add Blocked By
               </Button>
             )}
@@ -194,7 +196,7 @@ export function TaskDetailsDependencies({
                 size="sm"
                 className="h-8 px-3 text-xs font-medium"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-3.5 w-3.5" />
                 Add Blocking
               </Button>
             )}

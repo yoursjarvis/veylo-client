@@ -218,9 +218,16 @@ export function WorkspaceList() {
         {workspaces?.map((workspace) => (
           <div
             key={workspace.id}
-            className="group flex items-center justify-between p-3 transition-colors duration-200 hover:bg-muted/50"
+            className="group relative flex items-center justify-between p-3 transition-colors duration-200 hover:bg-muted/50"
           >
-            <div className="flex items-center gap-3">
+            {/* Clickable Card Link for all users */}
+            <Link
+              href={`/${workspace.slug}/dashboard`}
+              className="absolute inset-0 z-0"
+              aria-label={`Enter workspace ${workspace.name}`}
+            />
+
+            <div className="relative z-10 flex items-center gap-3 pointer-events-none">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 {renderIcon(workspace.icon)}
               </div>
@@ -241,78 +248,68 @@ export function WorkspaceList() {
               </div>
             </div>
 
-            {isOwnerOrAdmin ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 gap-1"
-                  nativeButton={false}
-                  render={<Link href={`/workspaces/${workspace.id}`} />}
-                >
-                  <HugeiconsIcon icon={UserMultipleIcon} size={14} />
-                  <span className="text-xs">Members</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  onClick={() => {
-                    setEditingWorkspace({
-                      id: workspace.id,
-                      name: workspace.name,
-                      slug: workspace.slug,
-                      icon: workspace.icon,
-                    })
-                    setIsEditModalOpen(true)
-                  }}
-                >
-                  <HugeiconsIcon icon={Edit01Icon} size={14} />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger
-                    render={
-                      <Button
-                        variant="outline"
-                        size="icon-sm"
-                        className="text-destructive hover:bg-destructive/10"
-                      >
-                        <HugeiconsIcon icon={Delete02Icon} size={14} />
-                      </Button>
-                    }
-                  />
-                  <AlertDialogContent className="sm:max-w-112.5">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will soft-delete the workspace. You can restore it
-                        later if needed.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDeleteWorkspace(workspace.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="gap-1"
-                  nativeButton={false}
-                  render={<Link href={`/${workspace.slug}/dashboard`} />}
-                >
-                  Enter Workspace
-                </Button>
-              </div>
-            )}
+            <div className="relative z-20 flex items-center gap-2">
+              {isOwnerOrAdmin && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1"
+                    nativeButton={false}
+                    render={<Link href={`/workspaces/${workspace.id}`} />}
+                  >
+                    <HugeiconsIcon icon={UserMultipleIcon} size={14} />
+                    <span className="text-xs">Members</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={() => {
+                      setEditingWorkspace({
+                        id: workspace.id,
+                        name: workspace.name,
+                        slug: workspace.slug,
+                        icon: workspace.icon,
+                      })
+                      setIsEditModalOpen(true)
+                    }}
+                  >
+                    <HugeiconsIcon icon={Edit01Icon} size={14} />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger
+                      render={
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          className="text-destructive hover:bg-destructive/10"
+                        >
+                          <HugeiconsIcon icon={Delete02Icon} size={14} />
+                        </Button>
+                      }
+                    />
+                    <AlertDialogContent className="sm:max-w-112.5">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will soft-delete the workspace. You can restore it
+                          later if needed.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteWorkspace(workspace.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
+            </div>
           </div>
         ))}
       </div>

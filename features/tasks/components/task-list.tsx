@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils"
 import { format, isPast, isToday } from "date-fns"
 import { AnimatePresence, motion } from "motion/react"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import React, { useState } from "react"
 
 import { IconStack } from "@/components/reui/icon-stack"
@@ -800,6 +801,7 @@ interface StatusSectionProps {
       email?: string | null
     }
   }[]
+  scrollElement: HTMLDivElement | null
 }
 
 export function StatusSection({
@@ -815,7 +817,17 @@ export function StatusSection({
   projectId,
   statuses,
   projectMembers,
+  scrollElement,
 }: StatusSectionProps) {
+  const rowVirtualizer = useVirtualizer({
+    count: tasks.length,
+    getScrollElement: () => scrollElement,
+    estimateSize: () => 48,
+    overscan: 10,
+  })
+
+  const virtualItems = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
   const { setNodeRef, isOver } = useDroppable({
     id: status.id,
     data: { type: "StatusSection", status },
@@ -922,20 +934,44 @@ export function StatusSection({
               items={tasks.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              {tasks.map((task) => (
-                <SortableTaskRow
-                  key={task.id}
-                  task={task}
-                  projectTemplate={projectTemplate}
-                  onSelectTask={onSelectTask}
-                  projectLabels={projectLabels}
-                  isSelected={selectedTasks.has(task.id)}
-                  onToggleSelect={onToggleSelect}
-                  projectId={projectId}
-                  statuses={statuses}
-                  projectMembers={projectMembers}
-                />
-              ))}
+              <div
+                style={{
+                  height: `${totalSize}px`,
+                  width: "100%",
+                  position: "relative",
+                }}
+              >
+                {virtualItems.map((virtualItem) => {
+                  const task = tasks[virtualItem.index]
+                  if (!task) return null
+                  return (
+                    <div
+                      key={virtualItem.key}
+                      data-index={virtualItem.index}
+                      ref={rowVirtualizer.measureElement}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                    >
+                      <SortableTaskRow
+                        task={task}
+                        projectTemplate={projectTemplate}
+                        onSelectTask={onSelectTask}
+                        projectLabels={projectLabels}
+                        isSelected={selectedTasks.has(task.id)}
+                        onToggleSelect={onToggleSelect}
+                        projectId={projectId}
+                        statuses={statuses}
+                        projectMembers={projectMembers}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
             </SortableContext>
           </motion.div>
         )}
@@ -971,6 +1007,7 @@ export function TaskList({
   onSelectTask,
   projectLabels = [],
 }: TaskListProps) {
+  const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null)
   const [collapsedSections, setCollapsedSections] = useState<
     Record<string, boolean>
   >({})
@@ -1161,7 +1198,7 @@ export function TaskList({
       onDragEnd={onDragEnd}
     >
       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-md border border-border bg-background shadow-sm">
-        <div className="h-full w-full overflow-auto">
+        <div className="h-full w-full overflow-auto" ref={setScrollElement}>
           <div className="flex min-w-325 flex-col">
             {/* Header */}
             <div
@@ -1214,6 +1251,7 @@ export function TaskList({
                     projectId={projectId}
                     statuses={statuses}
                     projectMembers={projectMembers || []}
+                    scrollElement={scrollElement}
                   />
                 )
               })}

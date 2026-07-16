@@ -13,6 +13,7 @@ import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
 import { FilterHorizontalIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import React, { useState } from "react"
+import { useDebounce } from "use-debounce"
 import { useProject } from "../layout"
 
 export default function BoardPage() {
@@ -124,7 +125,9 @@ export default function BoardPage() {
     return { filters: JSON.stringify(activeFilters) }
   }, [activeFilters])
 
-  const { data: tasks, isLoading } = useProjectTasks(projectId, queryFilters)
+  const [debouncedQueryFilters] = useDebounce(queryFilters, 400)
+
+  const { data: tasks, isLoading } = useProjectTasks(projectId, debouncedQueryFilters)
 
   if (isLoading) {
     return (

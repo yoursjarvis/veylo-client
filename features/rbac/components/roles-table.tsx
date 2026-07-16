@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { RoleModal } from "./role-modal/role-modal";
-import { Plus, Edit2, Trash2, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { Delete01Icon, Edit02Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,7 +65,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
             className="gap-2" 
             onClick={() => { setSelectedRole(null); setIsModalOpen(true); }}
           >
-            <Plus className="w-4 h-4" />
+            <HugeiconsIcon icon={PlusSignIcon} className="w-4 h-4" />
             Create Custom Role
           </Button>
         )}
@@ -110,7 +112,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
                             setIsModalOpen(true);
                           }}
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
+                          <HugeiconsIcon icon={Edit02Icon} className="w-3.5 h-3.5" />
                           {role.name.toLowerCase() === "owner" || !canUpdateRole ? "View" : "Edit"}
                         </Button>
                       )}
@@ -123,7 +125,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
                             setRoleToDelete({ id: role.id, name: role.name });
                           }}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <HugeiconsIcon icon={Delete01Icon} className="w-3.5 h-3.5" />
                           Delete
                         </Button>
                       )}

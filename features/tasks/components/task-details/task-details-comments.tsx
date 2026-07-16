@@ -6,7 +6,7 @@ import {
 } from "@/components/shared/rich-text-editor"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import {
   Popover,
   PopoverContent,
@@ -14,12 +14,6 @@ import {
 } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Comment, CommentReaction, ProjectMember, User } from "@/types/models"
 import { Message01Icon, SmilePlusIcon } from "@hugeicons/core-free-icons"
@@ -77,68 +71,71 @@ const ReactionChip = ({
   } = useReactionUsers(commentId, emoji, isOpen)
 
   return (
-    <TooltipProvider delay={300}>
-      <Tooltip open={isOpen} onOpenChange={setIsOpen}>
-        <TooltipTrigger
-          onClick={() => onToggle(emoji)}
-          className={cn(
-            "flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-medium transition-colors",
-            hasReacted
-              ? "border-primary/30 bg-primary/10 text-primary"
-              : "border-border/50 bg-muted/50 text-muted-foreground hover:bg-muted"
-          )}
-        >
-          <span className="text-xs">{emoji}</span>
-          <span className="text-xs">{count}</span>
-        </TooltipTrigger>
-        <TooltipContent
-          side="top"
-          align="center"
-          className="border-none bg-transparent p-0 shadow-none"
-        >
-          <Card className="w-auto min-w-[200px] border-border bg-popover shadow-md">
-            <div className="space-y-3 p-3">
-              <p className="text-sm text-muted-foreground">
-                Reacted with {emoji}
-              </p>
+    <HoverCard
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
+      <HoverCardTrigger
+        render={
+          <button
+            onClick={() => onToggle(emoji)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-medium transition-colors",
+              hasReacted
+                ? "border-primary/30 bg-primary/10 text-primary"
+                : "border-border/50 bg-muted/50 text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <span className="text-xs">{emoji}</span>
+            <span className="text-xs">{count}</span>
+          </button>
+        }
+      />
+      <HoverCardContent
+        side="top"
+        align="center"
+        className="w-auto min-w-[200px] border-border bg-popover shadow-md p-3"
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Reacted with {emoji}
+          </p>
 
-              <Separator />
+          <Separator />
 
-              <div className="space-y-2">
-                {isLoading || isFetching ? (
-                  Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                      <Skeleton className="h-4 w-32" />
-                    </div>
-                  ))
-                ) : isError ? (
-                  <div className="text-sm text-destructive italic">
-                    Failed to load users
-                  </div>
-                ) : users && users.length > 0 ? (
-                  users.map((user: User) => (
-                    <div key={user.id} className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8 border border-border">
-                        <AvatarImage src={user.image || ""} />
-                        <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
-                          {user.name?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">{user.name}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-sm text-muted-foreground italic">
-                    No users found
-                  </div>
-                )}
+          <div className="space-y-2">
+            {isLoading || isFetching ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              ))
+            ) : isError ? (
+              <div className="text-sm text-destructive italic">
+                Failed to load users
               </div>
-            </div>
-          </Card>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+            ) : users && users.length > 0 ? (
+              users.map((user: User) => (
+                <div key={user.id} className="flex items-center gap-3">
+                  <Avatar className="h-8 w-8 border border-border">
+                    <AvatarImage src={user.image || ""} />
+                    <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
+                      {user.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">{user.name}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-muted-foreground italic">
+                No users found
+              </div>
+            )}
+          </div>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 
