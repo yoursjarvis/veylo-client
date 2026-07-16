@@ -24,7 +24,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useForm } from "@tanstack/react-form"
-import { Check, Edit2, Plus, Tag, Trash, X, GripVertical } from "lucide-react"
+import { Check, Tag, X, GripVertical } from "lucide-react"
+import { Delete01Icon, Edit02Icon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
@@ -201,7 +203,7 @@ function StatusRow({
           onClick={() => setIsEditing(true)}
           className="h-8 w-8"
         >
-          <Edit2 className="h-4 w-4" />
+          <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"
@@ -210,7 +212,7 @@ function StatusRow({
           disabled={deleteStatusMutation.isPending}
           className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
         >
-          <Trash className="h-4 w-4" />
+          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
         </Button>
       </div>
     </div>
@@ -555,7 +557,7 @@ export default function StatusesSettingsPage() {
                           createStatusMutation.isPending
                         }
                       >
-                        <Plus className="mr-1.5 h-4 w-4" /> Create Status
+                        <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" /> Create Status
                       </Button>
                     )}
                   </form.Subscribe>

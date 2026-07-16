@@ -40,11 +40,11 @@ import {
   useUpdateEpic,
 } from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
-import { Target03Icon } from "@hugeicons/core-free-icons"
+import { Delete01Icon, Edit02Icon, PlusSignIcon, Target03Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useForm } from "@tanstack/react-form"
 import { format, isBefore, startOfDay } from "date-fns"
-import { Calendar, Edit, Plus, Target, Trash } from "lucide-react"
+import { Calendar, Target } from "lucide-react"
 import { toast } from "sonner"
 
 const PRESET_COLORS = [
@@ -214,7 +214,7 @@ export default function EpicsPage() {
         {!epics ||
           (epics.length !== 0 && (
             <Button onClick={handleOpenCreate}>
-              <Plus className="mr-1.5 h-4 w-4" /> Add Epic
+              <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" /> Add Epic
             </Button>
           ))}
       </div>
@@ -310,7 +310,7 @@ export default function EpicsPage() {
                         className="t h-7 w-7"
                         onClick={() => handleOpenEdit(epic)}
                       >
-                        <Edit className="h-3.5 w-3.5" />
+                        <HugeiconsIcon icon={Edit02Icon} className="h-3.5 w-3.5" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -318,7 +318,7 @@ export default function EpicsPage() {
                         className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
                         onClick={() => handleDelete(epic.id, epic.title)}
                       >
-                        <Trash className="h-3.5 w-3.5" />
+                        <HugeiconsIcon icon={Delete01Icon} className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>

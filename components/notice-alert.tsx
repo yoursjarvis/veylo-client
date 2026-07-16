@@ -1,4 +1,6 @@
-import { AlertCircle, CheckCircle2, Info, TriangleAlert } from "lucide-react"
+import { AlertCircle, CheckCircle2, TriangleAlert } from "lucide-react"
+import { InformationCircleIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
@@ -21,14 +23,13 @@ export function NoticeAlert({
   tone?: NoticeAlertTone
   className?: string
 }) {
+  const isInfo = tone !== "success" && tone !== "warning" && tone !== "destructive"
   const Icon =
     tone === "success"
       ? CheckCircle2
       : tone === "warning"
         ? TriangleAlert
-        : tone === "destructive"
-          ? AlertCircle
-          : Info
+        : AlertCircle
 
   return (
     <Alert
@@ -47,7 +48,11 @@ export function NoticeAlert({
         className
       )}
     >
-      <Icon className="size-4" />
+      {isInfo ? (
+        <HugeiconsIcon icon={InformationCircleIcon} className="size-4 shrink-0" />
+      ) : (
+        <Icon className="size-4 shrink-0" />
+      )}
       <div className="min-w-0">
         <AlertTitle>{title}</AlertTitle>
         {description ? (

@@ -22,13 +22,15 @@ import { Epic, Project } from "@/types/models"
 import {
   ArrowRight01Icon,
   Briefcase02Icon,
+  Delete01Icon,
+  Edit02Icon,
   Layers01Icon,
   Target02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useForm, useStore } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
-import { Edit, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react"
+import { MoreHorizontal, RotateCcw } from "lucide-react"
 import Image from "next/image"
 import React, { useState } from "react"
 import { z } from "zod"
@@ -422,7 +424,7 @@ export function OkrsDashboard() {
                                 }}
                                 className="gap-2"
                               >
-                                <Edit className="h-4 w-4" />
+                                <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
                             )}
@@ -433,7 +435,7 @@ export function OkrsDashboard() {
                                 }}
                                 className="gap-2"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
                                 Delete
                               </DropdownMenuItem>
                             )}
@@ -462,7 +464,7 @@ export function OkrsDashboard() {
                                 className="gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20"
                                 variant="destructive"
                               >
-                                <Trash2 className="h-4 w-4 text-destructive" />
+                                <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4 text-destructive" />
                                 Force Delete
                               </DropdownMenuItem>
                             )}

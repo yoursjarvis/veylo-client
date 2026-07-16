@@ -1,13 +1,14 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Info } from "lucide-react";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 export function HelpCard() {
   return (
     <Card className="p-4 space-y-2 bg-primary/5 border-primary/10">
       <div className="flex items-center gap-2 text-primary">
-        <Info className="w-4 h-4" />
+        <HugeiconsIcon icon={InformationCircleIcon} className="w-4 h-4" />
         <span className="text-sm font-semibold">Need help?</span>
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed">

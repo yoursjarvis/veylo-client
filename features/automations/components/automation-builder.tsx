@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { PlayIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Plus } from "lucide-react"
 import { useState } from "react"
 import {
   AutomationRule,
@@ -294,7 +293,7 @@ function AutomationBranch({
                       className="z-10 h-8 w-8 rounded-full border-border bg-background shadow-sm hover:border-primary hover:text-primary"
                       onClick={() => onAddStep(step.id, "true", "ACTION")}
                     >
-                      <Plus className="h-4 w-4" />
+                      <HugeiconsIcon icon={PlusSignIcon} className="h-4 w-4" />
                     </Button>
                   </div>
 
@@ -318,7 +317,7 @@ function AutomationBranch({
                       className="z-10 h-8 w-8 rounded-full border-border bg-background shadow-sm hover:border-primary hover:text-primary"
                       onClick={() => onAddStep(step.id, "false", "ACTION")}
                     >
-                      <Plus className="h-4 w-4" />
+                      <HugeiconsIcon icon={PlusSignIcon} className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

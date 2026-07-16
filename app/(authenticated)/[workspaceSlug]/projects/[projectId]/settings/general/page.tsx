@@ -14,7 +14,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { axiosInstance } from "@/lib/axios"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { AlertTriangle, Save, Sliders, Trash2 } from "lucide-react"
+import { Delete01Icon, SaveIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AlertTriangle, Sliders } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -196,7 +198,7 @@ export default function GeneralSettingsPage() {
                   "Saving..."
                 ) : (
                   <>
-                    <Save className="mr-1.5 h-4 w-4" /> Save Changes
+                    <HugeiconsIcon icon={SaveIcon} className="mr-1.5 h-4 w-4" /> Save Changes
                   </>
                 )}
               </Button>
@@ -240,7 +242,7 @@ export default function GeneralSettingsPage() {
                   "Deleting..."
                 ) : (
                   <>
-                    <Trash2 className="mr-1.5 h-4 w-4" /> Delete Project
+                    <HugeiconsIcon icon={Delete01Icon} className="mr-1.5 h-4 w-4" /> Delete Project
                   </>
                 )}
               </Button>

@@ -16,7 +16,9 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card"
-import { Columns, Trash, Plus } from "lucide-react"
+import { Columns } from "lucide-react"
+import { Delete01Icon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
@@ -167,7 +169,7 @@ export default function CustomFieldsSettingsPage() {
                           deleteCustomFieldMutation.mutate(field.id)
                         }
                       >
-                        <Trash className="h-4 w-4" />
+                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
@@ -336,7 +338,7 @@ export default function CustomFieldsSettingsPage() {
                           createCustomFieldMutation.isPending
                         }
                       >
-                        <Plus className="mr-1.5 h-4 w-4" /> Define Field
+                        <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" /> Define Field
                       </Button>
                     )}
                   </form.Subscribe>

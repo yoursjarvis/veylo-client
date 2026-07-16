@@ -31,10 +31,10 @@ import {
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { axiosInstance } from "@/lib/axios"
-import { AddTeam02Icon, UserGroupIcon } from "@hugeicons/core-free-icons"
+import { AddTeam02Icon, Delete01Icon, UserGroupIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Trash, UserPlus, Users } from "lucide-react"
+import { UserPlus, Users } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
@@ -228,7 +228,7 @@ export default function ProjectMembersPage() {
                           }
                         }}
                       >
-                        <Trash className="h-4 w-4" />
+                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

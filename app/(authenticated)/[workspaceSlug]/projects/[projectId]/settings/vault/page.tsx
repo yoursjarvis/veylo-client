@@ -23,10 +23,10 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { axiosInstance } from "@/lib/axios"
-import { Add01Icon, LockIcon } from "@hugeicons/core-free-icons"
+import { Add01Icon, Delete01Icon, LockIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Check, Copy, Eye, EyeOff, Plus, Shield, Trash } from "lucide-react"
+import { Check, Copy, Eye, EyeOff, Shield } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
@@ -283,7 +283,7 @@ export default function VaultSettingsPage() {
                       setIsAddItemOpen(true)
                     }}
                   >
-                    <Plus className="mr-1.5 h-3.5 w-3.5" /> Add Secret
+                    <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-3.5 w-3.5" /> Add Secret
                   </Button>
                   <Button
                     variant="ghost"
@@ -299,7 +299,7 @@ export default function VaultSettingsPage() {
                       }
                     }}
                   >
-                    <Trash className="h-4 w-4" />
+                    <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>
@@ -384,7 +384,7 @@ export default function VaultSettingsPage() {
                                       }
                                     }}
                                   >
-                                    <Trash className="h-3.5 w-3.5" />
+                                    <HugeiconsIcon icon={Delete01Icon} className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
                               </td>
