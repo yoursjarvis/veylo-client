@@ -14,20 +14,29 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { format, isPast, isToday } from "date-fns"
 import { AnimatePresence, motion } from "motion/react"
 import React, { useState } from "react"
 
+import { IconStack } from "@/components/reui/icon-stack"
+import { Card } from "@/components/ui/card"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import {
   closestCorners,
   defaultDropAnimationSideEffects,
@@ -62,6 +71,7 @@ import {
   CircleArrowUp01Icon,
   EqualSignIcon,
   SparklesIcon,
+  Target03Icon,
   UserIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -102,7 +112,12 @@ interface TaskRowProps {
   statuses: { id: string; name: string }[]
   projectMembers: {
     role?: string
-    user: { id: string; name?: string | null; image?: string | null; email?: string | null }
+    user: {
+      id: string
+      name?: string | null
+      image?: string | null
+      email?: string | null
+    }
   }[]
 }
 
@@ -195,7 +210,12 @@ function UserSelect({
   onChange: (userId: string | null) => void
   users: {
     role?: string
-    user: { id: string; name?: string | null; image?: string | null; email?: string | null }
+    user: {
+      id: string
+      name?: string | null
+      image?: string | null
+      email?: string | null
+    }
   }[]
   placeholder?: string
 }) {
@@ -241,31 +261,31 @@ function UserSelect({
         />
         {selectedUser && (
           <HoverCardContent
-            className="w-80 p-4 bg-popover border border-border/80 rounded-xl shadow-lg"
+            className="w-80 rounded-xl border border-border/80 bg-popover p-4 shadow-lg"
             align="start"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex gap-4">
-              <Avatar className="h-12 w-12 border border-border/50 shrink-0">
+              <Avatar className="h-12 w-12 shrink-0 border border-border/50">
                 <AvatarImage src={selectedUser.image || undefined} />
                 <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
                   {selectedUser.name?.substring(0, 2).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col gap-1 min-w-0">
-                <h4 className="font-semibold text-sm text-foreground truncate">
+              <div className="flex min-w-0 flex-col gap-1">
+                <h4 className="truncate text-sm font-semibold text-foreground">
                   {selectedUser.name}
                 </h4>
                 {selectedUser.email && (
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="truncate text-xs text-muted-foreground">
                     {selectedUser.email}
                   </p>
                 )}
-                <div className="flex items-center gap-1.5 mt-2">
+                <div className="mt-2 flex items-center gap-1.5">
                   <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-2xs font-medium text-emerald-600 dark:text-emerald-400">
                     Active
                   </span>
-                  <span className="text-2xs text-muted-foreground uppercase font-semibold tracking-wider">
+                  <span className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
                     {selectedMember?.role || "Member"}
                   </span>
                 </div>
@@ -649,7 +669,7 @@ export function TaskRow({
                 }
               }
             }}
-            className="w-full h-8 px-2 py-0.5 text-sm"
+            className="h-8 w-full px-2 py-0.5 text-sm"
             autoFocus
             onClick={(e) => e.stopPropagation()}
           />
@@ -773,7 +793,12 @@ interface StatusSectionProps {
   statuses: { id: string; name: string }[]
   projectMembers: {
     role?: string
-    user: { id: string; name?: string | null; image?: string | null; email?: string | null }
+    user: {
+      id: string
+      name?: string | null
+      image?: string | null
+      email?: string | null
+    }
   }[]
 }
 
@@ -925,7 +950,12 @@ interface TaskListProps {
   statuses: { id: string; name: string }[]
   projectMembers?: {
     role?: string
-    user: { id: string; name?: string | null; image?: string | null; email?: string | null }
+    user: {
+      id: string
+      name?: string | null
+      image?: string | null
+      email?: string | null
+    }
   }[]
   projectTemplate: string
   onSelectTask: (taskId: string) => void
@@ -1100,30 +1130,25 @@ export function TaskList({
 
   if (listTasks.length === 0) {
     return (
-      <div className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
-        <div className="mb-4 rounded-full bg-muted/50 p-4">
-          <svg
-            className="h-10 w-10 text-muted-foreground/50"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-base font-semibold text-foreground">
-          No tasks found
-        </h3>
-        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-          No tasks match your search query or filters in this view. Try
-          adjusting your filters above or create a new task to get started.
-        </p>
-      </div>
+      <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia>
+              <IconStack aria-hidden="true" className="h-24 w-22 text-primary">
+                <HugeiconsIcon
+                  icon={Target03Icon}
+                  className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                />
+              </IconStack>
+            </EmptyMedia>
+            <EmptyTitle>No task found.</EmptyTitle>
+            <EmptyDescription>
+              No tasks match your search query or filters in this view. Try
+              adjusting your filters above or create a new task to get started.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </Card>
     )
   }
 

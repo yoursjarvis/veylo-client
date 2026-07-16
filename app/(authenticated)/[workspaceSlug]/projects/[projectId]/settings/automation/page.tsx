@@ -1,12 +1,23 @@
 "use client"
 
-import React, { useState } from "react"
-import { useParams } from "next/navigation"
+import { IconStack } from "@/components/reui/icon-stack"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { Switch } from "@/components/ui/switch"
 import { AutomationBuilder } from "@/features/automations/components/automation-builder"
 import { AutomationRule } from "@/features/automations/types/automation"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Plus, Archive, Trash2, Edit2 } from "lucide-react"
+import { WorkflowSquare01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Archive, Edit2, Plus, Trash2 } from "lucide-react"
+import { useParams } from "next/navigation"
+import { useState } from "react"
 
 export default function AutomationsPage() {
   const params = useParams()
@@ -19,19 +30,27 @@ export default function AutomationsPage() {
     return (
       <div className="flex h-[calc(100vh-4rem)] flex-col bg-background">
         <div className="flex items-center gap-4 border-b border-border bg-card p-4">
-          <Button variant="ghost" onClick={() => { setIsBuilding(false)
-              setEditingRule(null); setEditingRule(null); }}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setIsBuilding(false)
+              setEditingRule(null)
+              setEditingRule(null)
+            }}
+          >
             Back to Automations
           </Button>
           <div className="flex-1 text-center font-bold">New Automation</div>
         </div>
         <div className="flex-1 overflow-hidden">
-          <AutomationBuilder 
+          <AutomationBuilder
             projectId={projectId}
             initialRule={editingRule || undefined}
             onSave={(rule) => {
               if (editingRule) {
-                setAutomations(automations.map(r => r.id === rule.id ? rule : r))
+                setAutomations(
+                  automations.map((r) => (r.id === rule.id ? rule : r))
+                )
               } else {
                 setAutomations([...automations, rule])
               }
@@ -59,93 +78,120 @@ export default function AutomationsPage() {
       </div>
 
       {automations.length === 0 ? (
-        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Plus className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-bold">No Automations Found</h3>
-          <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-            You haven&apos;t created any automations yet. Click the button above to build your first no-code workflow.
-          </p>
-        </div>
+        <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <IconStack
+                  aria-hidden="true"
+                  className="h-24 w-22 text-primary"
+                >
+                  <HugeiconsIcon
+                    icon={WorkflowSquare01Icon}
+                    className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                  />
+                </IconStack>
+              </EmptyMedia>
+              <EmptyTitle>
+                You haven&apos;t created any automations yet. Click the button
+                above to build your first no-code workflow.
+              </EmptyTitle>
+              <EmptyDescription>
+                Set up a webhook to get started.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </Card>
       ) : (
         <div className="grid gap-4">
           {automations
             .filter((r) => !r.isDeleted)
             .map((rule) => (
-            <div
-              key={rule.id}
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:border-foreground/30"
-            >
-              <div>
-                <h4 className="font-semibold">{rule.name}</h4>
-                <p className="text-xs text-muted-foreground">
-                  Trigger: {rule.trigger.type.replace("_", " ")} | Steps: {rule.steps.length}
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-semibold ${rule.isActive ? 'text-success' : 'text-muted-foreground'}`}>
-                    {rule.isActive ? "Active" : "Inactive"}
-                  </span>
-                  <Switch 
-                    checked={rule.isActive} 
-                    onCheckedChange={() => {
-                      setAutomations(
-                        automations.map(r => r.id === rule.id ? { ...r, isActive: !r.isActive } : r)
-                      )
-                    }} 
-                  />
+              <div
+                key={rule.id}
+                className="flex items-center justify-between rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:border-foreground/30"
+              >
+                <div>
+                  <h4 className="font-semibold">{rule.name}</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Trigger: {rule.trigger.type.replace("_", " ")} | Steps:{" "}
+                    {rule.steps.length}
+                  </p>
                 </div>
-                <div className="flex items-center gap-2 border-l border-border pl-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      setAutomations(
-                        automations.map(r => r.id === rule.id ? { ...r, isDeleted: true } : r)
-                      )
-                    }}
-                  >
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-xs font-semibold ${rule.isActive ? "text-success" : "text-muted-foreground"}`}
+                    >
+                      {rule.isActive ? "Active" : "Inactive"}
+                    </span>
+                    <Switch
+                      checked={rule.isActive}
+                      onCheckedChange={() => {
+                        setAutomations(
+                          automations.map((r) =>
+                            r.id === rule.id
+                              ? { ...r, isActive: !r.isActive }
+                              : r
+                          )
+                        )
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 border-l border-border pl-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        setAutomations(
+                          automations.map((r) =>
+                            r.id === rule.id ? { ...r, isDeleted: true } : r
+                          )
+                        )
+                      }}
+                    ></Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        setEditingRule(rule)
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4" />
                     </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-muted-foreground hover:text-foreground shrink-0"
-                    onClick={() => {
-                      setEditingRule(rule)
-                    }}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      setAutomations(
-                        automations.map(r => r.id === rule.id ? { ...r, isDeleted: true } : r)
-                      )
-                    }}
-                  >
-                    <Archive className="mr-1 h-3.5 w-3.5" />
-                    Archive
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
-                    onClick={() => {
-                      setAutomations(automations.filter((r) => r.id !== rule.id))
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        setAutomations(
+                          automations.map((r) =>
+                            r.id === rule.id ? { ...r, isDeleted: true } : r
+                          )
+                        )
+                      }}
+                    >
+                      <Archive className="mr-1 h-3.5 w-3.5" />
+                      Archive
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => {
+                        setAutomations(
+                          automations.filter((r) => r.id !== rule.id)
+                        )
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       )}
     </div>

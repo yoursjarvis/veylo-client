@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status"
+import { FluidTabs } from "@/components/ui/fluid-tabs"
 import { getThumbUrl } from "@/lib/utils"
 
 import { CreateTaskDialog } from "@/features/tasks/components/create-task-dialog"
@@ -403,6 +404,9 @@ export default function ProjectLayout({
     return pathname === linkPath
   }
 
+  const activeNavTab = navLinks.find((link) => isLinkActive(link.path))?.path
+  const activeSettingsTab = settingsLinks.find((link) => pathname === link.path)?.path
+
   return (
     <ProjectContext.Provider
       value={{
@@ -550,25 +554,17 @@ export default function ProjectLayout({
             </div>
 
             {/* Navigation Tabs Row */}
-            <div className="-mx-8 mt-2 flex scrollbar-none items-center justify-between overflow-x-auto border-t border-border/20 px-8 pt-1">
-              <nav className="flex items-center gap-5">
-                {navLinks.map((link) => {
-                  const isActive = isLinkActive(link.path)
-                  return (
-                    <Link key={link.path} href={link.path}>
-                      <span
-                        className={`flex cursor-pointer items-center gap-1 border-b-2 pt-2.5 pb-3 text-sm font-medium transition-all duration-150 ${
-                          isActive
-                            ? "border-primary font-semibold text-primary"
-                            : "border-transparent text-muted-foreground hover:border-border/60 hover:text-foreground"
-                        }`}
-                      >
-                        {link.name}
-                      </span>
-                    </Link>
-                  )
-                })}
-              </nav>
+            <div className="-mx-8 mt-2 flex scrollbar-none items-center justify-between overflow-x-auto border-t border-border/20 px-8 py-2">
+              <FluidTabs
+                tabs={navLinks.map((link) => ({
+                  id: link.path,
+                  label: link.name,
+                  icon: null,
+                }))}
+                active={activeNavTab}
+                onChange={(path) => router.push(path)}
+                layoutId="project-nav-tabs"
+              />
             </div>
           </header>
 
@@ -578,24 +574,16 @@ export default function ProjectLayout({
               <span className="mr-3 text-2xs font-extrabold tracking-wider text-muted-foreground uppercase">
                 Settings Module:
               </span>
-              <div className="flex gap-2">
-                {settingsLinks.map((link) => {
-                  const isActive = pathname === link.path
-                  return (
-                    <Link key={link.path} href={link.path}>
-                      <span
-                        className={`cursor-pointer rounded-md border px-3 py-1 text-xs font-medium transition-all duration-150 ${
-                          isActive
-                            ? "border-border bg-muted text-foreground shadow-sm"
-                            : "border-transparent bg-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                        }`}
-                      >
-                        {link.name}
-                      </span>
-                    </Link>
-                  )
-                })}
-              </div>
+              <FluidTabs
+                tabs={settingsLinks.map((link) => ({
+                  id: link.path,
+                  label: link.name,
+                  icon: null,
+                }))}
+                active={activeSettingsTab}
+                onChange={(path) => router.push(path)}
+                layoutId="project-settings-tabs"
+              />
             </div>
           )}
 

@@ -1,6 +1,15 @@
 "use client"
 
+import { IconStack } from "@/components/reui/icon-stack"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { axiosInstance } from "@/lib/axios"
 import {
@@ -162,38 +171,54 @@ export default function FilesPage() {
       </div>
 
       {isFilesLoading ? (
-        <div className="flex flex-col space-y-6 p-6 w-full">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-32" />
+        <div className="flex w-full flex-col space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-48" />
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-32" />
+            </div>
           </div>
-        </div>
-        <div className="rounded-md border border-border">
-          <div className="border-b border-border p-4 flex gap-4">
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-          </div>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+          <div className="rounded-md border border-border">
+            <div className="flex gap-4 border-b border-border p-4">
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
             </div>
-          ))}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex gap-4 border-b border-border p-4 last:border-0"
+              >
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
       ) : files && files.length === 0 ? (
-        <div className="flex min-h-75 flex-col items-center justify-center rounded-xl border-dashed p-6 text-center">
-          <HugeiconsIcon icon={Upload03Icon} className="mb-3 h-10 w-10" />
-          <h4 className="text-sm font-bold">No Files Uploaded</h4>
-          <p className="mt-1 max-w-xs text-xs leading-relaxed">
-            Upload images, PDFs, docs, spreadsheets, or CSVs. Executable/script
-            files are automatically blocked.
-          </p>
-        </div>
+        <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <IconStack
+                  aria-hidden="true"
+                  className="h-24 w-22 text-primary"
+                >
+                  <HugeiconsIcon
+                    icon={Upload03Icon}
+                    className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                  />
+                </IconStack>
+              </EmptyMedia>
+              <EmptyTitle>No Files Uploaded.</EmptyTitle>
+              <EmptyDescription>
+                Upload images, PDFs, docs, spreadsheets, or CSVs.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </Card>
       ) : (
         <div className="overflow-hidden rounded-xl shadow-xl">
           <div className="overflow-x-auto">
@@ -207,7 +232,7 @@ export default function FilesPage() {
                   <th className="p-4 pr-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-border divide-y">
+              <tbody className="divide-y divide-border">
                 {files?.map((file) => (
                   <tr key={file.id} className="hover text-xs transition-colors">
                     <td className="p-4 pl-6">
@@ -219,9 +244,7 @@ export default function FilesPage() {
                         <span className="font-semibold">{file.name}</span>
                       </div>
                     </td>
-                    <td className="p-4 font-mono text-2xs">
-                      {file.mimeType}
-                    </td>
+                    <td className="p-4 font-mono text-2xs">{file.mimeType}</td>
                     <td className="p-4">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </td>

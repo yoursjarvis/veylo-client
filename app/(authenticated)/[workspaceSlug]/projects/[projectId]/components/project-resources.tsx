@@ -10,15 +10,19 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 import {
   Add01Icon,
+  ArrowDown01Icon,
   Delete02Icon,
   DocumentValidationIcon,
+  Edit02Icon,
   Link02Icon,
   SparklesIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useForm } from "@tanstack/react-form"
+import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
@@ -29,6 +33,7 @@ interface ProjectResourcesProps {
 export function ProjectResources({ projectId }: ProjectResourcesProps) {
   const [projectBrief, setProjectBrief] = useState<string>("")
   const [isEditingBrief, setIsEditingBrief] = useState(false)
+  const [isBriefOpen, setIsBriefOpen] = useState(false)
   const [links, setLinks] = useState<
     { id: string; name: string; url: string }[]
   >([])
@@ -138,57 +143,115 @@ export function ProjectResources({ projectId }: ProjectResourcesProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Project Brief Section */}
-        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
-          <div className="flex items-center justify-between border-b border-border pb-2">
-            <span className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <HugeiconsIcon
-                icon={DocumentValidationIcon}
-                className="h-4 w-4 text-muted-foreground"
-              />{" "}
-              Project Brief
-            </span>
-            {!isEditingBrief ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsEditingBrief(true)}
-                className="h-7 px-2 text-xs font-bold text-muted-foreground uppercase hover:text-foreground"
-              >
-                Edit Brief
-              </Button>
-            ) : (
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  onClick={handleSaveBrief}
-                  className="h-6 px-2 text-xs"
-                >
-                  Save
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsEditingBrief(false)}
-                  className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  Cancel
-                </Button>
+        {(() => {
+          const isLong = (projectBrief?.length ?? 0) > 240
+          return (
+            <div
+              className={cn(
+                "relative space-y-3 overflow-visible rounded-xl border border-border bg-muted/30 p-4 transition-all duration-300",
+                !isEditingBrief && isLong && !isBriefOpen ? "pb-2" : "pb-4"
+              )}
+            >
+              <div className="flex items-center justify-between border-b border-border pb-2">
+                <span className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <HugeiconsIcon
+                    icon={DocumentValidationIcon}
+                    className="h-4 w-4 text-muted-foreground"
+                  />{" "}
+                  Project Brief
+                </span>
+                {!isEditingBrief ? (
+                  <Button
+                    variant="outline-default"
+                    size="sm"
+                    onClick={() => setIsEditingBrief(true)}
+                  >
+                    <HugeiconsIcon icon={Edit02Icon} />
+                    Edit Brief
+                  </Button>
+                ) : (
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      onClick={handleSaveBrief}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingBrief(false)}
+                      className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {isEditingBrief ? (
-            <Textarea
-              value={projectBrief}
-              onChange={(e) => setProjectBrief(e.target.value)}
-              className="min-h-30 w-full resize-y"
-            />
-          ) : (
-            <p className="font-sans text-sm leading-relaxed font-normal whitespace-pre-wrap text-muted-foreground">
-              {projectBrief}
-            </p>
-          )}
-        </div>
+              <div className="relative overflow-hidden">
+                <motion.div
+                  initial={false}
+                  animate={{
+                    height:
+                      !isEditingBrief && isLong && !isBriefOpen ? 96 : "auto",
+                  }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  {isEditingBrief ? (
+                    <Textarea
+                      value={projectBrief}
+                      onChange={(e) => setProjectBrief(e.target.value)}
+                      className="min-h-30 w-full resize-y"
+                    />
+                  ) : (
+                    <p className="font-sans text-sm leading-relaxed font-normal whitespace-pre-wrap text-muted-foreground">
+                      {projectBrief}
+                    </p>
+                  )}
+                </motion.div>
+
+                {/* Faded background effect for collapsed state */}
+                <AnimatePresence>
+                  {!isEditingBrief && isLong && !isBriefOpen && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-card to-transparent"
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Toggle button */}
+              {!isEditingBrief && isLong && (
+                <div className="absolute -bottom-4 left-1/2 z-10 -translate-x-1/2">
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    className="rounded-full bg-card shadow-sm hover:bg-muted"
+                    onClick={() => setIsBriefOpen(!isBriefOpen)}
+                  >
+                    <HugeiconsIcon
+                      icon={ArrowDown01Icon}
+                      strokeWidth={2}
+                      aria-hidden="true"
+                      className={cn(
+                        "transition-transform duration-300",
+                        isBriefOpen && "rotate-180"
+                      )}
+                    />
+                    <span className="sr-only">Toggle brief</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Resources Links Grid */}
         <div className="space-y-3">
@@ -201,7 +264,7 @@ export function ProjectResources({ projectId }: ProjectResourcesProps) {
               Reference Links
             </span>
             <Button
-              variant="outline"
+              variant="outline-default"
               size="sm"
               onClick={() => setIsAddingLink(!isAddingLink)}
               className="h-7 text-2xs font-bold uppercase"

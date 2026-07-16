@@ -14,7 +14,15 @@ import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
 import { Task } from "@/types/models"
-import { AlertDiamondIcon, Clock01Icon } from "@hugeicons/core-free-icons"
+import { IconStack } from "@/components/reui/icon-stack"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { AlertDiamondIcon, Clock01Icon, UserGroupIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   endOfWeek,
@@ -132,113 +140,137 @@ export function WorkloadView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {workloadByMember.map(({ member, totalHours, tasks }) => {
-          const user = member.user
-          const isOverAllocated = totalHours > 40
-          const capacityPercentage = Math.min((totalHours / 40) * 100, 100)
+      {workloadByMember.length === 0 ? (
+        <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <IconStack
+                  aria-hidden="true"
+                  className="h-24 w-22 text-primary"
+                >
+                  <HugeiconsIcon
+                    icon={UserGroupIcon}
+                    className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                  />
+                </IconStack>
+              </EmptyMedia>
+              <EmptyTitle>No Members in Project</EmptyTitle>
+              <EmptyDescription>
+                Add members to your project to see their workload and capacity.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {workloadByMember.map(({ member, totalHours, tasks }) => {
+            const user = member.user
+            const isOverAllocated = totalHours > 40
+            const capacityPercentage = Math.min((totalHours / 40) * 100, 100)
 
-          return (
-            <Card
-              key={member.id}
-              className={
-                isOverAllocated
-                  ? "border-destructive/50"
-                  : ""
-              }
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-10 w-10 border">
-                      <AvatarImage
-                        src={user?.image || ""}
-                        alt={user?.name || "Unknown"}
-                      />
-                      <AvatarFallback>
-                        {user?.name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">
-                        {user?.name || "Unknown User"}
-                      </CardTitle>
-                      <CardDescription className="mt-1 flex items-center">
-                        <HugeiconsIcon
-                          icon={Clock01Icon}
-                          className="mr-1 h-4 w-4"
+            return (
+              <Card
+                key={member.id}
+                className={
+                  isOverAllocated
+                    ? "border-destructive/50"
+                    : ""
+                }
+              >
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="h-10 w-10 border">
+                        <AvatarImage
+                          src={user?.image || ""}
+                          alt={user?.name || "Unknown"}
                         />
-                        {totalHours}h / 40h capacity
-                      </CardDescription>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-2">
-                  {isOverAllocated ? (
-                    <Badge
-                      variant="destructive"
-                      className="mt-2 flex w-max items-center"
-                    >
-                      <HugeiconsIcon
-                        icon={AlertDiamondIcon}
-                        className="mr-1 h-3 w-3"
-                      />{" "}
-                      Over Allocated
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="mt-2">
-                      On Track
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Progress
-                      value={capacityPercentage}
-                      className={`h-2 flex-1 ${isOverAllocated ? "[&>div]:bg-destructive" : ""}`}
-                    />
-                    <span className="w-12 text-right text-sm font-medium">
-                      {Math.round((totalHours / 40) * 100)}%
-                    </span>
-                  </div>
-
-                  {tasks.length > 0 ? (
-                    <div className="mt-4">
-                      <h4 className="mb-2 text-sm font-semibold">
-                        Assigned Tasks ({tasks.length})
-                      </h4>
-                      <div className="max-h-50 space-y-2 overflow-y-auto pr-2">
-                        {tasks.map((task) => (
-                          <div
-                            key={task.id}
-                            className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
-                          >
-                            <span
-                              className="flex-1 truncate pr-4 font-medium"
-                              title={task.title}
-                            >
-                              {task.title}
-                            </span>
-                            <span className="text-xs font-semibold whitespace-nowrap text-muted-foreground">
-                              {task.estimate || 0}h
-                            </span>
-                          </div>
-                        ))}
+                        <AvatarFallback>
+                          {user?.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg">
+                          {user?.name || "Unknown User"}
+                        </CardTitle>
+                        <CardDescription className="mt-1 flex items-center">
+                          <HugeiconsIcon
+                            icon={Clock01Icon}
+                            className="mr-1 h-4 w-4"
+                          />
+                          {totalHours}h / 40h capacity
+                        </CardDescription>
                       </div>
                     </div>
-                  ) : (
-                    <div className="mt-4 text-sm text-muted-foreground italic">
-                      No tasks assigned for this period.
+                  </div>
+                  <div className="mt-2">
+                    {isOverAllocated ? (
+                      <Badge
+                        variant="destructive"
+                        className="mt-2 flex w-max items-center"
+                      >
+                        <HugeiconsIcon
+                          icon={AlertDiamondIcon}
+                          className="mr-1 h-3 w-3"
+                        />{" "}
+                        Over Allocated
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="mt-2">
+                        On Track
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Progress
+                        value={capacityPercentage}
+                        className={`h-2 flex-1 ${isOverAllocated ? "[&>div]:bg-destructive" : ""}`}
+                      />
+                      <span className="w-12 text-right text-sm font-medium">
+                        {Math.round((totalHours / 40) * 100)}%
+                      </span>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+
+                    {tasks.length > 0 ? (
+                      <div className="mt-4">
+                        <h4 className="mb-2 text-sm font-semibold">
+                          Assigned Tasks ({tasks.length})
+                        </h4>
+                        <div className="max-h-50 space-y-2 overflow-y-auto pr-2">
+                          {tasks.map((task) => (
+                            <div
+                              key={task.id}
+                              className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm"
+                            >
+                              <span
+                                className="flex-1 truncate pr-4 font-medium"
+                                title={task.title}
+                              >
+                                {task.title}
+                              </span>
+                              <span className="text-xs font-semibold whitespace-nowrap text-muted-foreground">
+                                {task.estimate || 0}h
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-4 text-sm text-muted-foreground italic">
+                        No tasks assigned for this period.
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

@@ -15,6 +15,7 @@ interface FluidTabsProps {
   active?: string
   defaultActive?: string
   onChange?: (id: string) => void
+  layoutId?: string
 }
 
 const DEFAULT_TABS: TabItem[] = [
@@ -28,9 +29,11 @@ export const FluidTabs: FC<FluidTabsProps> = ({
   active: controlledActive,
   defaultActive = tabs[0]?.id,
   onChange,
+  layoutId = "active-pill",
 }) => {
   const [internalActive, setInternalActive] = useState<string>(defaultActive)
-  const active = controlledActive !== undefined ? controlledActive : internalActive
+  const active =
+    controlledActive !== undefined ? controlledActive : internalActive
 
   const handleChange = (id: string) => {
     if (controlledActive === undefined) {
@@ -40,7 +43,7 @@ export const FluidTabs: FC<FluidTabsProps> = ({
   }
 
   return (
-    <div className="relative flex items-center gap-0.5 rounded-lg border border-border bg-background p-1 transition-colors dark:bg-muted select-none">
+    <div className="relative flex items-center gap-0.5 rounded-lg border border-border bg-background p-1 transition-colors select-none dark:bg-muted">
       {tabs.map((tab) => {
         const isActive = active === tab.id
 
@@ -48,11 +51,11 @@ export const FluidTabs: FC<FluidTabsProps> = ({
           <button
             key={tab.id}
             onClick={() => handleChange(tab.id)}
-            className="group relative rounded-md px-3 py-1 outline-none transition-all"
+            className="group relative rounded-md px-3 py-1 transition-all outline-none"
           >
             {isActive && (
               <motion.div
-                layoutId="active-pill"
+                layoutId={layoutId}
                 transition={{
                   type: "spring",
                   stiffness: 280,
@@ -75,7 +78,7 @@ export const FluidTabs: FC<FluidTabsProps> = ({
               }}
               className={`relative z-10 flex items-center gap-1.5 transition-colors duration-200 ${
                 isActive
-                  ? "font-bold text-primary-foreground animate-none"
+                  ? "animate-none font-bold text-primary-foreground"
                   : "font-semibold text-muted-foreground group-hover:text-foreground"
               }`}
             >
@@ -85,7 +88,7 @@ export const FluidTabs: FC<FluidTabsProps> = ({
                   transition={{
                     scale: { type: "spring", stiffness: 300, damping: 15 },
                   }}
-                  className="flex shrink-0 items-center justify-center animate-none"
+                  className="flex shrink-0 animate-none items-center justify-center"
                 >
                   {tab.icon}
                 </motion.div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { IconStack } from "@/components/reui/icon-stack"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ChartContainer,
@@ -12,6 +13,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status"
@@ -443,9 +445,24 @@ export function TaskReports({
             </CardHeader>
             <CardContent className="flex h-72 flex-col items-center justify-center p-6">
               {donutData.length === 0 ? (
-                <div className="text-xs text-muted-foreground italic">
-                  No tasks found.
-                </div>
+                <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia>
+                        <IconStack
+                          aria-hidden="true"
+                          className="h-24 w-22 text-primary"
+                        >
+                          <HugeiconsIcon
+                            icon={CheckmarkCircle01Icon}
+                            className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                          />
+                        </IconStack>
+                      </EmptyMedia>
+                      <EmptyTitle>No task found.</EmptyTitle>
+                    </EmptyHeader>
+                  </Empty>
+                </Card>
               ) : (
                 <div className="relative flex h-full w-full items-center justify-center">
                   <ChartContainer
@@ -506,9 +523,24 @@ export function TaskReports({
             </CardHeader>
             <CardContent className="p-6">
               {totalTasks === 0 ? (
-                <div className="flex h-60 items-center justify-center text-xs text-muted-foreground italic">
-                  No history details to report.
-                </div>
+                <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia>
+                        <IconStack
+                          aria-hidden="true"
+                          className="h-24 w-22 text-primary"
+                        >
+                          <HugeiconsIcon
+                            icon={AnalysisTextLinkIcon}
+                            className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                          />
+                        </IconStack>
+                      </EmptyMedia>
+                      <EmptyTitle>No history details to report.</EmptyTitle>
+                    </EmptyHeader>
+                  </Empty>
+                </Card>
               ) : (
                 <ChartContainer config={timelineConfig} className="h-60 w-full">
                   <AreaChart
@@ -612,14 +644,27 @@ export function TaskReports({
             </CardHeader>
             <CardContent className="flex min-h-75 flex-col items-center justify-center p-6">
               {workloadData.length === 0 ? (
-                <Empty>
-                  <EmptyHeader>
-                    <EmptyTitle>No tasks assigned</EmptyTitle>
-                    <EmptyDescription>
-                      Assign tasks to team members to see workload breakdown.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
+                <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia>
+                        <IconStack
+                          aria-hidden="true"
+                          className="h-24 w-22 text-primary"
+                        >
+                          <HugeiconsIcon
+                            icon={TeamWorkIcon}
+                            className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                          />
+                        </IconStack>
+                      </EmptyMedia>
+                      <EmptyTitle>No tasks assigned.</EmptyTitle>
+                      <EmptyDescription>
+                        Assign tasks to team members to see workload breakdown.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </Card>
               ) : (
                 <ChartContainer config={teamConfig} className="h-62.5 w-full">
                   <PieChart>
@@ -666,9 +711,24 @@ export function TaskReports({
             </CardHeader>
             <CardContent className="p-6">
               {barChartStatusData.length === 0 ? (
-                <div className="flex h-60 items-center justify-center text-xs text-muted-foreground italic">
-                  No incomplete tasks found.
-                </div>
+                <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia>
+                        <IconStack
+                          aria-hidden="true"
+                          className="h-24 w-22 text-primary"
+                        >
+                          <HugeiconsIcon
+                            icon={ChartBarBigIcon}
+                            className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                          />
+                        </IconStack>
+                      </EmptyMedia>
+                      <EmptyTitle>No incomplete tasks found.</EmptyTitle>
+                    </EmptyHeader>
+                  </Empty>
+                </Card>
               ) : (
                 <ChartContainer
                   config={barChartStatusConfig}
@@ -930,9 +990,24 @@ export function TaskReports({
             </CardHeader>
             <CardContent className="p-6">
               {barChartAssigneeData.length === 0 ? (
-                <div className="flex h-60 items-center justify-center text-xs text-muted-foreground italic">
-                  No active assignments.
-                </div>
+                <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia>
+                        <IconStack
+                          aria-hidden="true"
+                          className="h-24 w-22 text-primary"
+                        >
+                          <HugeiconsIcon
+                            icon={UserGroupIcon}
+                            className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                          />
+                        </IconStack>
+                      </EmptyMedia>
+                      <EmptyTitle>No active assignments.</EmptyTitle>
+                    </EmptyHeader>
+                  </Empty>
+                </Card>
               ) : (
                 <ChartContainer
                   config={assigneeBarConfig}

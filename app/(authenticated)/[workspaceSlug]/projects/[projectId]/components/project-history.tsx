@@ -19,11 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
 import {
   ArrowRightIcon,
@@ -33,6 +28,8 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { format } from "date-fns"
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface ProjectMember {
   id: string
@@ -51,6 +48,119 @@ interface ProjectHistoryProps {
   projectCreatedAt?: string
 }
 
+interface HistoryEvent {
+  id: string
+  type: "initialization" | "member_joined"
+  date: Date
+  title: string
+  description: string
+  user?: {
+    name: string
+    email: string
+    avatar: string | null
+  }
+}
+
+function HistoryEventItem({ event, index }: { event: HistoryEvent; index: number }) {
+  const [isOpen, setIsOpen] = useState(true)
+
+  return (
+    <TimelineItem step={index + 1} className="ms-10 pb-10">
+      <TimelineHeader>
+        <TimelineSeparator className="group-data-[orientation=vertical]/timeline:-left-7 group-data-[orientation=vertical]/timeline:h-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=vertical]/timeline:translate-y-7" />
+        <div className="flex items-center gap-2">
+          <TimelineTitle className="text-sm font-semibold">
+            {event.title}
+          </TimelineTitle>
+          <Badge
+            variant={
+              event.type === "initialization"
+                ? "success-light"
+                : "primary-light"
+            }
+            size="sm"
+          >
+            {format(event.date, "PPP")}
+          </Badge>
+        </div>
+        <TimelineIndicator
+          className={cn(
+            "flex size-6 items-center justify-center border-none bg-muted text-muted-foreground group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground group-data-[orientation=vertical]/timeline:-left-7"
+          )}
+        >
+          <HugeiconsIcon
+            icon={
+              event.type === "initialization"
+                ? SparklesIcon
+                : UserAdd01Icon
+            }
+            strokeWidth={2}
+            className="size-3.5"
+          />
+        </TimelineIndicator>
+      </TimelineHeader>
+      <TimelineContent className="mt-2">
+        <Frame stacked dense spacing="sm">
+          <div className="group/collapsible">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex w-full text-left focus:outline-none"
+            >
+              <FrameHeader className="flex grow flex-row items-center justify-between gap-2">
+                {event.type === "member_joined" && event.user ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="size-5">
+                      <AvatarImage
+                        src={event.user.avatar || ""}
+                        alt={event.user.name}
+                      />
+                      <AvatarFallback className="bg-muted text-2xs font-bold text-muted-foreground">
+                        {event.user.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {event.user.name} ({event.user.email})
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-xs font-medium text-muted-foreground">
+                    System Milestone
+                  </span>
+                )}
+                <HugeiconsIcon
+                  icon={ArrowRightIcon}
+                  strokeWidth={2}
+                  className={cn(
+                    "size-4 text-muted-foreground transition-transform duration-200",
+                    isOpen && "rotate-90"
+                  )}
+                />
+              </FrameHeader>
+            </button>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <FramePanel>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {event.description}
+                    </p>
+                  </FramePanel>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </Frame>
+      </TimelineContent>
+    </TimelineItem>
+  )
+}
+
 export function ProjectHistory({
   members,
   projectCreatedAt,
@@ -60,7 +170,7 @@ export function ProjectHistory({
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   )
 
-  const events = [
+  const events: HistoryEvent[] = [
     ...(projectCreatedAt
       ? [
           {
@@ -109,87 +219,11 @@ export function ProjectHistory({
         ) : (
           <Timeline defaultValue={events.length}>
             {events.map((event, index) => (
-              <TimelineItem
+              <HistoryEventItem
                 key={event.id}
-                step={index + 1}
-                className="ms-10 pb-10"
-              >
-                <TimelineHeader>
-                  <TimelineSeparator className="group-data-[orientation=vertical]/timeline:-left-7 group-data-[orientation=vertical]/timeline:h-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=vertical]/timeline:translate-y-7" />
-                  <div className="flex items-center gap-2">
-                    <TimelineTitle className="text-sm font-semibold">
-                      {event.title}
-                    </TimelineTitle>
-                    <Badge
-                      variant={
-                        event.type === "initialization"
-                          ? "success-light"
-                          : "primary-light"
-                      }
-                      size="sm"
-                    >
-                      {format(event.date, "PPP")}
-                    </Badge>
-                  </div>
-                  <TimelineIndicator
-                    className={cn(
-                      "flex size-6 items-center justify-center border-none bg-muted text-muted-foreground group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground group-data-[orientation=vertical]/timeline:-left-7"
-                    )}
-                  >
-                    <HugeiconsIcon
-                      icon={
-                        event.type === "initialization"
-                          ? SparklesIcon
-                          : UserAdd01Icon
-                      }
-                      strokeWidth={2}
-                      className="size-3.5"
-                    />
-                  </TimelineIndicator>
-                </TimelineHeader>
-                <TimelineContent className="mt-2">
-                  <Frame stacked dense spacing="sm">
-                    <Collapsible defaultOpen className="group/collapsible">
-                      <CollapsibleTrigger className="flex w-full">
-                        <FrameHeader className="flex grow flex-row items-center justify-between gap-2">
-                          {event.type === "member_joined" && event.user ? (
-                            <div className="flex items-center gap-2">
-                              <Avatar className="size-5">
-                                <AvatarImage
-                                  src={event.user.avatar || ""}
-                                  alt={event.user.name}
-                                />
-                                <AvatarFallback className="bg-muted text-2xs font-bold text-muted-foreground">
-                                  {event.user.name.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-xs font-medium text-muted-foreground">
-                                {event.user.name} ({event.user.email})
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-xs font-medium text-muted-foreground">
-                              System Milestone
-                            </span>
-                          )}
-                          <HugeiconsIcon
-                            icon={ArrowRightIcon}
-                            strokeWidth={2}
-                            className="size-4 text-muted-foreground transition-transform duration-200 group-data-open/collapsible:rotate-90"
-                          />
-                        </FrameHeader>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <FramePanel>
-                          <p className="text-sm leading-relaxed text-muted-foreground">
-                            {event.description}
-                          </p>
-                        </FramePanel>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </Frame>
-                </TimelineContent>
-              </TimelineItem>
+                event={event}
+                index={index}
+              />
             ))}
           </Timeline>
         )}

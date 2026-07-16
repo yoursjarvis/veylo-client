@@ -4,6 +4,7 @@ import { Epic, Task, TaskStatus } from "@/types/models"
 import { useEffect, useState } from "react"
 import { useProject } from "../layout"
 
+import { IconStack } from "@/components/reui/icon-stack"
 import { Button } from "@/components/ui/button"
 import { Calendar as ShadcnCalendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -32,6 +40,8 @@ import {
   useUpdateEpic,
 } from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
+import { Target03Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { useForm } from "@tanstack/react-form"
 import { format, isBefore, startOfDay } from "date-fns"
 import { Calendar, Edit, Plus, Target, Trash } from "lucide-react"
@@ -160,7 +170,7 @@ export default function EpicsPage() {
 
   if (isEpicsLoading || isTasksLoading) {
     return (
-      <div className="flex flex-col space-y-6 p-6 w-full">
+      <div className="flex w-full flex-col space-y-6 p-6">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
           <div className="flex gap-2">
@@ -169,13 +179,16 @@ export default function EpicsPage() {
           </div>
         </div>
         <div className="rounded-md border border-border">
-          <div className="border-b border-border p-4 flex gap-4">
+          <div className="flex gap-4 border-b border-border p-4">
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-full" />
           </div>
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+            <div
+              key={i}
+              className="flex gap-4 border-b border-border p-4 last:border-0"
+            >
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
@@ -198,27 +211,46 @@ export default function EpicsPage() {
             goals.
           </p>
         </div>
-        <Button onClick={handleOpenCreate}>
-          <Plus className="mr-1.5 h-4 w-4" /> Add Epic
-        </Button>
+        {!epics ||
+          (epics.length !== 0 && (
+            <Button onClick={handleOpenCreate}>
+              <Plus className="mr-1.5 h-4 w-4" /> Add Epic
+            </Button>
+          ))}
       </div>
 
       {!epics || epics.length === 0 ? (
-        <div className="flex min-h-75 flex-col items-center justify-center rounded-xl border border-dashed p-6 text-center">
-          <Target className="mb-3 h-12 w-12" />
-          <h4 className="text-sm font-bold">No Epics Created</h4>
-          <p className="mt-1 max-w-xs text-xs leading-relaxed">
-            Create an epic to group tasks under a larger initiative and monitor
-            project outcomes.
-          </p>
-          <Button
-            onClick={handleOpenCreate}
-            variant="secondary"
-            className="mt-4 h-8 text-xs font-semibold"
-          >
-            Create Epic
-          </Button>
-        </div>
+        <Card className="flex flex-col items-center justify-center border-dashed p-12 text-center shadow-none">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <IconStack
+                  aria-hidden="true"
+                  className="h-24 w-22 text-primary"
+                >
+                  <HugeiconsIcon
+                    icon={Target03Icon}
+                    className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                  />
+                </IconStack>
+              </EmptyMedia>
+              <EmptyTitle>Ready to create your first epic?</EmptyTitle>
+              <EmptyDescription>
+                Create an epic to group tasks under a larger initiative and
+                monitor project outcomes.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyDescription>
+              <Button
+                onClick={handleOpenCreate}
+                variant="outline-default"
+                className="mt-4 h-8 text-xs font-semibold"
+              >
+                Create Epic
+              </Button>
+            </EmptyDescription>
+          </Empty>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {epics.map((epic: Epic) => {
@@ -625,7 +657,7 @@ export default function EpicsPage() {
               </form.Field>
             </div>
 
-            <DialogFooter className="border-border flex gap-2 border-t pt-4">
+            <DialogFooter className="flex gap-2 border-t border-border pt-4">
               <Button
                 type="button"
                 variant="ghost"

@@ -193,9 +193,12 @@ export default function VaultSettingsPage() {
             decrypted only when requested.
           </p>
         </div>
-        <Button onClick={() => setIsAddServiceOpen(true)}>
-          <Plus className="mr-1.5 h-4 w-4" /> Add Service
-        </Button>
+        {vault?.services && vault.services.length !== 0 && (
+          <Button onClick={() => setIsAddServiceOpen(true)}>
+            <HugeiconsIcon icon={Add01Icon} className="mr-1.5 h-4 w-4" /> Add
+            Service
+          </Button>
+        )}
       </div>
 
       {isVaultLoading ? (
@@ -226,35 +229,40 @@ export default function VaultSettingsPage() {
           </div>
         </div>
       ) : vault?.services && vault.services.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia>
-              <IconStack aria-hidden="true" className="h-24 w-22 text-primary">
-                <HugeiconsIcon
-                  icon={LockIcon}
-                  className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
-                />
-              </IconStack>
-            </EmptyMedia>
-            <EmptyTitle>Vault Empty</EmptyTitle>
-            <EmptyDescription>
-              Securely store credentials for chatgpt, aws, stripe, github, or
-              other tools.
-            </EmptyDescription>
-          </EmptyHeader>
+        <Card className="m-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card px-4 py-16 text-center">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <IconStack
+                  aria-hidden="true"
+                  className="h-24 w-22 text-primary"
+                >
+                  <HugeiconsIcon
+                    icon={LockIcon}
+                    className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                  />
+                </IconStack>
+              </EmptyMedia>
+              <EmptyTitle>Vault Empty</EmptyTitle>
+              <EmptyDescription>
+                Securely store credentials for chatgpt, aws, stripe, github, or
+                other tools.
+              </EmptyDescription>
+            </EmptyHeader>
 
-          <EmptyContent className="flex-row justify-center gap-2">
-            <Button
-              variant="outline-default"
-              size="sm"
-              onClick={() => setIsAddServiceOpen(true)}
-              className="h-8 text-2xs font-bold uppercase"
-            >
-              <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
-              Add First Service
-            </Button>
-          </EmptyContent>
-        </Empty>
+            <EmptyContent className="flex-row justify-center gap-2">
+              <Button
+                variant="outline-default"
+                size="sm"
+                onClick={() => setIsAddServiceOpen(true)}
+                className="h-8 text-2xs font-bold uppercase"
+              >
+                <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
+                Add First Service
+              </Button>
+            </EmptyContent>
+          </Empty>
+        </Card>
       ) : (
         <div className="grid max-w-4xl grid-cols-1 gap-6">
           {vault?.services?.map((service) => (
