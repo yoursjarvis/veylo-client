@@ -227,11 +227,17 @@ export function useDeleteTask(projectId: string) {
 export function useUploadTaskAttachment(taskId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({ file, onProgress }: { file: File; onProgress?: (percent: number) => void }) => {
       const formData = new FormData();
       formData.append("file", file);
       const response = await axiosInstance.post(`/tasks/${taskId}/attachments`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total && onProgress) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            onProgress(percent);
+          }
+        }
       });
       return response.data.data;
     },

@@ -65,6 +65,7 @@ function MyTaskRow({
   const completedStatus =
     projectStatuses.find(
       (st) =>
+        st.progressWeight === 100 ||
         st.name.toLowerCase() === "done" ||
         st.name.toLowerCase() === "completed" ||
         st.name.toLowerCase() === "complete"

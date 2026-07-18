@@ -264,6 +264,9 @@ export default function EpicsPage() {
               const status = statuses?.find(
                 (s: TaskStatus) => s.id === t.statusId
               )
+              if (status && typeof status.progressWeight === "number") {
+                return status.progressWeight === 100
+              }
               return (
                 status?.category === "done" ||
                 status?.name?.toLowerCase() === "done" ||

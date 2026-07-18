@@ -14,8 +14,10 @@ import {
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { usePermissions } from "@/hooks/use-permissions"
 import { axiosInstance } from "@/lib/axios"
+import { cn } from "@/lib/utils"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { ArrowLeft, CheckCircle2, ChevronRight, Circle, X } from "lucide-react"
+import { format } from "date-fns"
+import { CheckCircle2, ChevronRight, Circle, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -27,12 +29,18 @@ import {
 import React, { createContext, useContext, useEffect, useState } from "react"
 import { toast } from "sonner"
 
+import { Badge } from "@/components/reui/badge"
 import { IconPicker } from "@/components/shared/icon-picker"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status"
-import { FluidTabs } from "@/components/ui/fluid-tabs"
 import { getThumbUrl } from "@/lib/utils"
 
 import { CreateTaskDialog } from "@/features/tasks/components/create-task-dialog"
@@ -46,8 +54,21 @@ import {
   useProjectStatuses,
   useProjectTasks,
 } from "@/features/tasks/hooks/use-tasks"
-import { AlertDiamondIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import {
+  AlertDiamondIcon,
+  ArrowLeft01Icon,
+  ArrowReloadHorizontalIcon,
+  ChevronRightIcon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+
+interface TemplateConfig {
+  guidance?: {
+    welcome?: string
+    firstStep?: string
+  }
+}
 
 interface ProjectContextType {
   workspaceSlug: string
@@ -228,6 +249,13 @@ export default function ProjectLayout({
     setIsOnboardingDismissed(true)
   }
 
+  const config = templateDetails?.config as TemplateConfig | undefined
+  const welcomeMessage =
+    config?.guidance?.welcome || "Welcome to your new workspace!"
+  const firstStepMessage =
+    config?.guidance?.firstStep ||
+    "Complete these quick setup tasks to onboard your team."
+
   const showOnboarding = !isOnboardingDismissed && !allCompleted
   const completedCount = onboardingSteps.filter((s) => s.completed).length
   const totalCount = onboardingSteps.length
@@ -404,8 +432,29 @@ export default function ProjectLayout({
     return pathname === linkPath
   }
 
+  const doneStatusIds = (statuses || [])
+    .filter((s: { name: string; progressWeight?: number }) => {
+      if (typeof s.progressWeight === "number") {
+        return s.progressWeight === 100
+      }
+      return s.name.toLowerCase() === "done"
+    })
+    .map((s: { id: string }) => s.id)
+
+  const totalTasksCount = projectTasks?.length || 0
+  const doneTasksCount =
+    projectTasks?.filter(
+      (t: { statusId?: string | null }) =>
+        t.statusId && doneStatusIds.includes(t.statusId)
+    ).length || 0
+  const activeSprint = sprints?.find(
+    (s: { status: string }) => s.status === "active"
+  )
+
   const activeNavTab = navLinks.find((link) => isLinkActive(link.path))?.path
-  const activeSettingsTab = settingsLinks.find((link) => pathname === link.path)?.path
+  const activeSettingsTab = settingsLinks.find(
+    (link) => pathname === link.path
+  )?.path
 
   return (
     <ProjectContext.Provider
@@ -426,29 +475,45 @@ export default function ProjectLayout({
         setIsCreateTaskOpen,
       }}
     >
-      <div className="flex min-h-[calc(100vh-4rem)] w-full min-w-0 flex-col overflow-x-hidden bg-background text-foreground">
+      <Card
+        plain
+        className="flex min-h-[calc(100vh-4rem)] w-full min-w-0 flex-col overflow-x-hidden"
+      >
         {/* Main Content Area */}
-        <div className="ml-2 flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden">
+        <Card
+          plain
+          className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden"
+        >
           {/* Header */}
-          <header className="flex shrink-0 flex-col gap-4 border-b border-border bg-card/85 px-8 pt-5 pb-0 backdrop-blur-md">
-            {/* Top Row: Back Navigation, Breadcrumb, Project Title, Status & Actions */}
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              {/* Left Side: Back Navigation, Breadcrumb, Project Icon, Project name, Project status badge */}
-              <div className="flex flex-wrap items-center gap-3">
-                <Link
-                  href={`/${workspaceSlug}/projects`}
-                  className="group flex h-7.5 w-7.5 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
+          <header className="mb-5 flex shrink-0 flex-col">
+            <div className="px-6 pt-5 pb-4">
+              {/* Breadcrumb section */}
+              <div className="mb-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Button
+                  onClick={() => router.push(`/${workspaceSlug}/projects`)}
+                  variant="outline"
+                  size="icon"
                   aria-label="Back to projects"
                 >
-                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                  <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
+                </Button>
+                <Link
+                  href={`/${workspaceSlug}/projects`}
+                  className="font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Projects
                 </Link>
+                <HugeiconsIcon
+                  icon={ChevronRightIcon}
+                  className="size-3 shrink-0"
+                />
+                <span className="font-medium">{selectedProject?.title}</span>
+              </div>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>Projects</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
-                </div>
-
-                <div className="flex items-center gap-2">
+              {/* Title & Metadata row */}
+              <div className="flex items-start justify-between">
+                {/* Left side: Project icon, title, status and sprint metadata */}
+                <div className="flex items-center gap-3">
                   <div className="group relative shrink-0">
                     {isWorkspaceAdmin ? (
                       <IconPicker
@@ -464,7 +529,7 @@ export default function ProjectLayout({
                         <div className="cursor-pointer transition-opacity hover:opacity-85">
                           {renderProjectIcon(
                             selectedProject?.icon,
-                            "h-8 w-8 rounded-md",
+                            "h-9 w-9 rounded-lg text-lg bg-warning",
                             "text-base"
                           )}
                         </div>
@@ -472,234 +537,304 @@ export default function ProjectLayout({
                     ) : (
                       renderProjectIcon(
                         selectedProject?.icon,
-                        "h-8 w-8 rounded-md",
+                        "h-9 w-9 rounded-lg text-lg bg-warning",
                         "text-base"
                       )
                     )}
                   </div>
-
-                  <h1 className="text-lg font-semibold tracking-tight text-foreground">
-                    {selectedProject?.title}
-                  </h1>
-
-                  {isScrum && (
-                    <span className="rounded bg-muted px-1.5 py-0.5 text-2xs font-medium tracking-wide text-muted-foreground">
-                      Scrum
-                    </span>
-                  )}
-
-                  {/* Status Badge */}
-                  <Status
-                    variant={
-                      projectStatus === "on_track"
-                        ? "success"
-                        : projectStatus === "at_risk"
-                          ? "warning"
-                          : "destructive"
-                    }
-                    className="rounded-full border border-border/20 bg-muted/40 px-2.5 py-0.5 text-xs font-medium text-foreground/90 shadow-xs"
-                  >
-                    <StatusIndicator />
-                    <StatusLabel className="py-0.5 text-2xs font-bold tracking-wide uppercase">
-                      {projectStatus === "on_track"
-                        ? "On Track"
-                        : projectStatus === "at_risk"
-                          ? "At Risk"
-                          : "Off Track"}
-                    </StatusLabel>
-                  </Status>
-                </div>
-              </div>
-
-              {/* Right Side: Member Avatars and Single "New Task" primary CTA */}
-              <div className="flex items-center gap-3">
-                {/* Overlapping member avatars stack */}
-                <div className="flex items-center -space-x-1.5">
-                  {(selectedProject?.members || [])
-                    .slice(0, 5)
-                    .map((member: ProjectMember) => (
-                      <Avatar
-                        key={member.id}
-                        className="h-6.5 w-6.5 border-2 border-background transition-all hover:scale-105"
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <h1 className="font-headings text-2xl leading-none font-semibold text-foreground">
+                        {selectedProject?.title}
+                      </h1>
+                      <Badge variant="outline" size="sm">
+                        {isScrum ? "Scrum" : "Simple"}
+                      </Badge>
+                      <Badge
+                        variant={
+                          projectStatus === "on_track"
+                            ? "success-outline"
+                            : projectStatus === "at_risk"
+                              ? "warning-outline"
+                              : "destructive-outline"
+                        }
+                        size="sm"
+                        className="gap-1.5"
                       >
-                        <AvatarImage src={member.user?.image || ""} />
-                        <AvatarFallback className="bg-muted text-2xs font-extrabold text-muted-foreground">
-                          {member.user?.name
-                            ? member.user?.name.charAt(0).toUpperCase()
-                            : "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                    ))}
-                  {(selectedProject?.members || []).length > 5 && (
-                    <div className="flex h-6.5 w-6.5 items-center justify-center rounded-full border-2 border-background bg-muted text-2xs font-extrabold text-muted-foreground">
-                      +{(selectedProject?.members || []).length - 5}
+                        <span
+                          className={cn(
+                            "h-1.5 w-1.5 shrink-0 rounded-full",
+                            projectStatus === "on_track"
+                              ? "bg-success"
+                              : projectStatus === "at_risk"
+                                ? "bg-warning"
+                                : "bg-destructive"
+                          )}
+                        />
+                        <span>
+                          {projectStatus === "on_track"
+                            ? "On Track"
+                            : projectStatus === "at_risk"
+                              ? "At Risk"
+                              : "Off Track"}
+                        </span>
+                      </Badge>
                     </div>
-                  )}
+                    {isScrum && (
+                      <div className="mt-1.5 flex items-center gap-4">
+                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <HugeiconsIcon
+                            icon={ArrowReloadHorizontalIcon}
+                            strokeWidth={3}
+                            className="size-3 shrink-0"
+                          />
+                          <span>{activeSprint?.name || "Sprint 4"}</span>
+                          <span className="text-border">·</span>
+                          <span>
+                            {activeSprint
+                              ? `${format(new Date(activeSprint.startDate), "MMM d")} – ${format(new Date(activeSprint.endDate), "MMM d, yyyy")}`
+                              : "Jul 8 – Jul 22, 2026"}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <Button
-                  onClick={() => setIsCreateTaskOpen(true)}
-                  variant="default"
-                  size="sm"
-                  className="h-8.5 gap-1.5 bg-primary text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95"
-                >
-                  <HugeiconsIcon
-                    icon={PlusSignIcon}
-                    size={14}
-                    className="h-3.5 w-3.5"
-                  />
-                  <span>New Task</span>
-                </Button>
+                {/* Right side: Sprint progress bar, members, and New Task CTA */}
+                <div className="flex items-center gap-5">
+                  <div className="text-right">
+                    <div className="mb-1 flex items-center justify-end gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        Sprint Progress
+                      </span>
+                      <span className="text-xs font-semibold text-foreground">
+                        {totalTasksCount > 0
+                          ? Math.round((doneTasksCount / totalTasksCount) * 100)
+                          : 0}
+                        %
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-36 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{
+                          width: `${totalTasksCount > 0 ? (doneTasksCount / totalTasksCount) * 100 : 0}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {doneTasksCount} of {totalTasksCount} tasks done
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    {(selectedProject?.members || [])
+                      .slice(0, 4)
+                      .map((member: ProjectMember, idx: number) => (
+                        <div
+                          key={member.id}
+                          className="border-surface -ml-2 rounded-full border-2 border-card first:ml-0"
+                        >
+                          <Avatar className="h-7 w-7 transition-all hover:scale-105">
+                            <AvatarImage src={member.user?.image || ""} />
+                            <AvatarFallback className="bg-muted text-2xs font-extrabold text-muted-foreground">
+                              {member.user?.name
+                                ? member.user?.name.charAt(0).toUpperCase()
+                                : "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                      ))}
+                    {(selectedProject?.members || []).length > 4 && (
+                      <div className="border-surface -ml-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-secondary text-xs font-medium text-muted-foreground">
+                        +{(selectedProject?.members || []).length - 4}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    onClick={() => setIsCreateTaskOpen(true)}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/95"
+                  >
+                    <HugeiconsIcon
+                      icon={PlusSignIcon}
+                      className="size-3.5 shrink-0"
+                    />
+                    <span>New Task</span>
+                  </Button>
+                </div>
               </div>
             </div>
 
             {/* Navigation Tabs Row */}
-            <div className="-mx-8 mt-2 flex scrollbar-none items-center justify-between overflow-x-auto border-t border-border/20 px-8 py-2">
-              <FluidTabs
-                tabs={navLinks.map((link) => ({
-                  id: link.path,
-                  label: link.name,
-                  icon: null,
-                }))}
-                active={activeNavTab}
-                onChange={(path) => router.push(path)}
-                layoutId="project-nav-tabs"
-              />
+            <div className="flex items-center gap-0.5 px-6">
+              {navLinks.map((link) => {
+                const isActive = isLinkActive(link.path)
+                return (
+                  <a
+                    key={link.path}
+                    onClick={() => router.push(link.path)}
+                    className={cn(
+                      "mb-2 cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-all",
+                      isActive
+                        ? "bg-secondary text-primary"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    )}
+                  >
+                    <span>{link.name}</span>
+                  </a>
+                )
+              })}
             </div>
           </header>
 
           {/* Settings Sub-Navbar (only when on a settings subpage) */}
           {pathname.includes("/settings") && (
-            <div className="flex scrollbar-none items-center gap-2 overflow-x-auto border-b border-border bg-card/45 px-8 py-2">
+            <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto border-b border-border bg-card/45 px-8 py-2">
               <span className="mr-3 text-2xs font-extrabold tracking-wider text-muted-foreground uppercase">
                 Settings Module:
               </span>
-              <FluidTabs
-                tabs={settingsLinks.map((link) => ({
-                  id: link.path,
-                  label: link.name,
-                  icon: null,
-                }))}
-                active={activeSettingsTab}
-                onChange={(path) => router.push(path)}
-                layoutId="project-settings-tabs"
-              />
+              {settingsLinks.map((link) => {
+                const isActive = pathname === link.path
+                return (
+                  <Button
+                    key={link.path}
+                    onClick={() => router.push(link.path)}
+                    variant={isActive ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "h-7 cursor-pointer px-3 text-xs font-semibold transition-all",
+                      isActive
+                        ? "bg-primary/10 text-primary hover:bg-primary/15"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    {link.name}
+                  </Button>
+                )
+              })}
             </div>
           )}
-
           {/* Children View Content */}
-          <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-background p-8">
-            <div className="mx-auto w-full max-w-full min-w-0 space-y-6">
-              {showOnboarding && (
-                <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xs backdrop-blur-md transition-all duration-300">
-                  {/* Background glowing gradient using theme colors */}
-                  <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/5 blur-3xl" />
-                  <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
+          <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-background">
+            <Card
+              plain
+              className={cn(
+                "mx-auto w-full max-w-full min-w-0",
+                pathname.includes("/list") ||
+                  pathname.includes("/board") ||
+                  pathname.includes("/calendar")
+                  ? ""
+                  : "space-y-6"
+              )}
+            >
+              <CardContent className="p-0">
+                {showOnboarding && (
+                  <Card className="relative mt-2 overflow-hidden p-6 shadow-xs backdrop-blur-md transition-all duration-300">
+                    {/* Background glowing gradient using theme colors */}
+                    <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/5 blur-3xl" />
+                    <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
 
-                  <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-2 w-2 animate-pulse rounded-full bg-primary" />
-                        <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                          Getting Started Guide
-                        </h3>
-                      </div>
-                      <h2 className="text-lg font-bold text-foreground">
-                        {(
-                          templateDetails?.config as {
-                            guidance?: { welcome?: string }
-                          }
-                        )?.guidance?.welcome ||
-                          "Welcome to your new workspace!"}
-                      </h2>
-                      <p className="max-w-xl text-xs text-muted-foreground">
-                        {(
-                          templateDetails?.config as {
-                            guidance?: { firstStep?: string }
-                          }
-                        )?.guidance?.firstStep ||
-                          "Complete these quick setup tasks to onboard your team."}
-                      </p>
-
-                      {/* Progress Bar */}
-                      <div className="max-w-sm space-y-1.5 pt-2">
-                        <div className="flex justify-between text-2xs font-semibold text-muted-foreground uppercase">
-                          <span>Setup Progress</span>
-                          <span>
-                            {completedCount}/{totalCount} completed
+                    <div className="relative">
+                      <CardHeader className="p-0 pr-12 pb-4">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-2 w-2 animate-pulse rounded-full bg-primary" />
+                          <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                            Getting Started Guide
                           </span>
                         </div>
-                        <div className="h-2 w-full overflow-hidden rounded-full border border-border bg-background">
-                          <div
-                            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
-                            style={{ width: `${progressPercent}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                        <CardTitle className="text-lg font-bold text-foreground">
+                          {welcomeMessage}
+                        </CardTitle>
+                        <CardDescription className="max-w-xl text-xs text-muted-foreground">
+                          {firstStepMessage}
+                        </CardDescription>
+                      </CardHeader>
 
-                    {/* Onboarding steps list */}
-                    <div className="flex min-w-70 flex-col gap-2">
-                      {onboardingSteps.map((step) => {
-                        const Icon = step.completed ? CheckCircle2 : Circle
-                        const buttonStyles = `flex items-center gap-3 p-3 rounded-lg border text-left text-xs font-medium transition-all ${
-                          step.completed
-                            ? "bg-success/5 border-success/20 text-success hover:bg-success/10"
-                            : "bg-background border-border text-foreground hover:bg-muted"
-                        }`
-                        if (step.href) {
-                          return (
-                            <Link
-                              key={step.id}
-                              href={step.href}
-                              className={buttonStyles}
-                            >
-                              <Icon
-                                className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-success" : "text-muted-foreground"}`}
-                              />
-                              <span className="flex-1">{step.label}</span>
-                              {!step.completed && (
-                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                              )}
-                            </Link>
-                          )
-                        }
-                        return (
-                          <button
-                            key={step.id}
-                            type="button"
-                            onClick={step.action || undefined}
-                            className={buttonStyles}
-                          >
-                            <Icon
-                              className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-success" : "text-muted-foreground"}`}
+                      <CardContent className="flex flex-col justify-between gap-6 p-0 md:flex-row md:items-center">
+                        {/* Progress Bar */}
+                        <div className="flex-grow space-y-1.5">
+                          <div className="flex justify-between text-2xs font-semibold text-muted-foreground uppercase">
+                            <span>Setup Progress</span>
+                            <span>
+                              {completedCount}/{totalCount} completed
+                            </span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full border border-border bg-background">
+                            <div
+                              className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                              style={{ width: `${progressPercent}%` }}
                             />
-                            <span className="flex-1">{step.label}</span>
-                            {!step.completed && (
-                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                            )}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
+                          </div>
+                        </div>
 
-                  {/* Close button */}
-                  <Button
-                    onClick={handleDismissOnboarding}
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              {children}
-            </div>
+                        {/* Onboarding steps list */}
+                        <div className="flex min-w-70 flex-col gap-2">
+                          {onboardingSteps.map((step) => {
+                            const Icon = step.completed ? CheckCircle2 : Circle
+                            const buttonStyles = `flex items-center gap-3 p-3 rounded-lg border text-left text-xs font-medium transition-all ${
+                              step.completed
+                                ? "bg-success/5 border-success/20 text-success hover:bg-success/10"
+                                : "bg-background border-border text-foreground hover:bg-muted"
+                            }`
+                            if (step.href) {
+                              return (
+                                <Link
+                                  key={step.id}
+                                  href={step.href}
+                                  className={cn(
+                                    buttonVariants({ variant: "outline" }),
+                                    buttonStyles
+                                  )}
+                                >
+                                  <Icon
+                                    className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-success" : "text-muted-foreground"}`}
+                                  />
+                                  <span className="flex-1">{step.label}</span>
+                                  {!step.completed && (
+                                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                </Link>
+                              )
+                            }
+                            return (
+                              <Button
+                                key={step.id}
+                                type="button"
+                                variant="outline"
+                                onClick={step.action || undefined}
+                                className={buttonStyles}
+                              >
+                                <Icon
+                                  className={`h-4.5 w-4.5 shrink-0 ${step.completed ? "text-success" : "text-muted-foreground"}`}
+                                />
+                                <span className="flex-1">{step.label}</span>
+                                {!step.completed && (
+                                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </CardContent>
+                    </div>
+
+                    {/* Close button */}
+                    <Button
+                      onClick={handleDismissOnboarding}
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </Card>
+                )}
+                {children}
+              </CardContent>
+            </Card>
           </main>
-        </div>
-      </div>
+        </Card>
+      </Card>
 
       {/* Global Drawers & Dialogs */}
       {activeTaskId && (

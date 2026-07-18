@@ -168,6 +168,7 @@ export interface StatusRequest {
   category: "backlog" | "todo" | "in_progress" | "done";
   order?: number;
   color?: string;
+  progressWeight?: number;
 }
 
 export interface StatusUpdateRequest {
@@ -175,6 +176,7 @@ export interface StatusUpdateRequest {
   category?: "backlog" | "todo" | "in_progress" | "done";
   order?: number;
   color?: string;
+  progressWeight?: number;
 }
 
 export interface SubtaskRequest {

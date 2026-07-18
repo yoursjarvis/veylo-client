@@ -93,7 +93,7 @@ export function ProjectStatusPicker({ projectId }: ProjectStatusPickerProps) {
   const current = getStatusDisplay()
 
   return (
-    <Card className="border border-border bg-card shadow-sm">
+    <Card className="mt-2 border border-border bg-card shadow-sm">
       <CardHeader className="space-y-1.5 pb-4">
         <CardTitle className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
           <HugeiconsIcon

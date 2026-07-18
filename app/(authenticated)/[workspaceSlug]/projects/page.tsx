@@ -3,26 +3,18 @@ import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { usePermissions } from "@/hooks/use-permissions"
 import { axiosInstance } from "@/lib/axios"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { motion } from "framer-motion"
 import { Loader2 } from "lucide-react"
 import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import React, { useState } from "react"
-import { motion } from "framer-motion"
 import { toast } from "sonner"
 
 import { IconPicker } from "@/components/shared/icon-picker"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-} from "@/components/ui/card"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox"
+import { Card } from "@/components/ui/card"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import {
   Dialog,
   DialogContent,
@@ -266,13 +258,16 @@ export default function ProjectsPage() {
             </div>
             <Skeleton className="h-10 w-32" />
           </div>
-          
+
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex flex-col justify-between overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
+              <div
+                key={i}
+                className="flex flex-col justify-between overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm"
+              >
                 <div className="flex flex-row items-start gap-4 p-6 pb-4">
                   <Skeleton className="h-12 w-12 rounded-lg" />
-                  <div className="space-y-2 w-full">
+                  <div className="w-full space-y-2">
                     <Skeleton className="h-5 w-1/2" />
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-5/6" />
@@ -348,7 +343,7 @@ export default function ProjectsPage() {
                   <div className="grid gap-1.5">
                     <label
                       htmlFor="title"
-                      className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+                      className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                     >
                       Title <span className="text-destructive">*</span>
                     </label>
@@ -365,7 +360,7 @@ export default function ProjectsPage() {
                   <div className="grid gap-1.5">
                     <label
                       htmlFor="projectKey"
-                      className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+                      className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                     >
                       Project Key <span className="text-destructive">*</span>
                     </label>
@@ -402,7 +397,7 @@ export default function ProjectsPage() {
                   <div className="grid gap-1.5">
                     <label
                       htmlFor="desc"
-                      className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+                      className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                     >
                       Description
                     </label>
@@ -417,62 +412,30 @@ export default function ProjectsPage() {
 
                   {/* Template Picker */}
                   <div className="grid gap-1.5">
-                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                    <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                       Project Template
                     </label>
-                    <Combobox
+                    <SearchableSelect
                       value={selectedTemplate}
                       onValueChange={(val) => {
                         if (val) setSelectedTemplate(val)
                       }}
-                    >
-                      <ComboboxInput
-                        placeholder="Select a template..."
-                        className="h-9 w-full border border-border bg-background text-xs"
-                        showTrigger
-                      />
-                      <ComboboxContent className="border border-border/50 bg-popover">
-                        <ComboboxList>
-                          {templates?.map((tpl) => (
-                            <ComboboxItem key={tpl.id} value={tpl.slug}>
-                              <div className="flex w-full items-center gap-2.5">
-                                <span className="shrink-0 text-muted-foreground">
-                                  {getTemplateIcon(tpl.icon)}
-                                </span>
-                                <div className="flex min-w-0 flex-col text-left">
-                                  <span className="truncate text-xs font-semibold text-foreground">
-                                    {tpl.name}
-                                  </span>
-                                  {tpl.description && (
-                                    <span className="line-clamp-1 max-w-50 truncate text-2xs text-muted-foreground">
-                                      {tpl.description}
-                                    </span>
-                                  )}
-                                </div>
-                                <Badge
-                                  variant="outline"
-                                  className="ml-auto shrink-0 px-1 py-0 text-2xs leading-none uppercase"
-                                >
-                                  {tpl.category}
-                                </Badge>
-                              </div>
-                            </ComboboxItem>
-                          ))}
-                          {templates?.length === 0 && (
-                            <ComboboxItem disabled value="">
-                              No templates found
-                            </ComboboxItem>
-                          )}
-                        </ComboboxList>
-                      </ComboboxContent>
-                    </Combobox>
+                      options={(templates || []).map((tpl) => ({
+                        value: tpl.slug,
+                        label: tpl.name,
+                      }))}
+                      placeholder="Select a template..."
+                      searchPlaceholder="Search templates..."
+                      emptyText="No templates found"
+                      triggerClassName="h-9 text-xs"
+                    />
                   </div>
 
                   {/* Icon Selector */}
                   <div className="grid gap-1.5">
                     <label
                       htmlFor="icon"
-                      className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+                      className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                     >
                       Project Icon
                     </label>
@@ -514,7 +477,7 @@ export default function ProjectsPage() {
                         template: selectedTemplate,
                       })
                     }
-                    className="h-9 text-xs bg-primary text-primary-foreground"
+                    className="h-9 bg-primary text-xs text-primary-foreground"
                   >
                     {createProjectMutation.isPending && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -533,7 +496,9 @@ export default function ProjectsPage() {
               icon={DocumentValidationIcon}
               className="mb-6 h-12 w-12 text-muted-foreground"
             />
-            <h3 className="text-lg font-semibold text-foreground">No Projects Found</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              No Projects Found
+            </h3>
             <p className="mt-2 max-w-xs text-sm text-muted-foreground">
               Get started by creating your first project in this workspace.
             </p>
@@ -560,21 +525,21 @@ export default function ProjectsPage() {
                 onClick={() =>
                   router.push(`/${params.workspaceSlug}/projects/${project.id}`)
                 }
-                className="group relative flex cursor-pointer flex-col p-5 overflow-hidden transition-all duration-300 hover:border-primary/40 hover:-translate-y-0.5"
+                className="group relative flex cursor-pointer flex-col overflow-hidden p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40"
               >
                 <div className="flex items-start gap-4">
                   {renderProjectIcon(project.icon, "h-12 w-12", "text-2xl")}
                   <div className="flex-1 space-y-1">
-                    <h3 className="font-semibold text-foreground line-clamp-1 transition-colors duration-200 group-hover:text-primary">
+                    <h3 className="line-clamp-1 font-semibold text-foreground transition-colors duration-200 group-hover:text-primary">
                       {project.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 min-h-10">
+                    <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">
                       {project.description || "No description provided."}
                     </p>
                   </div>
                 </div>
-                <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between">
-                  <span className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">
+                <div className="mt-auto flex items-center justify-between border-t border-border/50 pt-3">
+                  <span className="text-2xs font-medium tracking-wider text-muted-foreground uppercase">
                     {project.projectKey}
                   </span>
                   <Badge variant="secondary" className="px-2 py-0.5">

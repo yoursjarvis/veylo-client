@@ -151,6 +151,7 @@ export interface TaskStatus {
   name: string;
   category: string;
   order: number;
+  progressWeight: number;
   createdAt: string;
 }
 

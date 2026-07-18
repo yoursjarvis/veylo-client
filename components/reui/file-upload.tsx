@@ -20,7 +20,26 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { AlertCircleIcon, FileArchiveIcon, FileSpreadsheetIcon, DocumentValidationIcon, HeadsetIcon, Image03Icon, Refresh03Icon, Upload05Icon, Video01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
+import {
+  AlertCircleIcon,
+  FileArchiveIcon,
+  FileSpreadsheetIcon,
+  DocumentValidationIcon,
+  HeadsetIcon,
+  Image03Icon,
+  Refresh03Icon,
+  Upload05Icon,
+  Video01Icon,
+  Cancel01Icon,
+  EyeIcon,
+} from "@hugeicons/core-free-icons"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Spinner } from "@/components/ui/spinner"
 
 interface FileUploadItem extends FileWithPreview {
   progress: number
@@ -36,6 +55,8 @@ interface ProgressUploadProps {
   className?: string
   onFilesChange?: (files: FileWithPreview[]) => void
   simulateUpload?: boolean
+  initialFiles?: FileMetadata[]
+  onUpload?: (file: File, onProgress: (progress: number) => void) => Promise<unknown>
 }
 
 export function Pattern({
@@ -45,28 +66,15 @@ export function Pattern({
   multiple = true,
   className,
   onFilesChange,
-  simulateUpload = true,
+  simulateUpload = false,
+  initialFiles = [],
+  onUpload,
 }: ProgressUploadProps) {
-  // Create default images using FileMetadata type
-  const defaultImages: FileMetadata[] = [
-    {
-      id: "default-3",
-      name: "image-1.png",
-      size: 42048,
-      type: "image/png",
-      url: "https://picsum.photos/1000/800?grayscale&random=10",
-    },
-    {
-      id: "default-4",
-      name: "image-2.png",
-      size: 62807,
-      type: "image/png",
-      url: "https://picsum.photos/1000/800?grayscale&random=11",
-    },
-  ]
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false)
 
   // Convert default images to FileUploadItem format
-  const defaultUploadFiles: FileUploadItem[] = defaultImages.map((image) => ({
+  const defaultUploadFiles: FileUploadItem[] = initialFiles.map((image) => ({
     id: image.id,
     file: {
       name: image.name,
@@ -98,23 +106,25 @@ export function Pattern({
     maxSize,
     accept,
     multiple,
-    initialFiles: defaultImages,
+    initialFiles,
     onFilesChange: (newFiles) => {
+      // Find files that are not already in uploadFiles
+      const filesToUpload = newFiles.filter(
+        (file) => !uploadFiles.some((existing) => existing.id === file.id)
+      )
+
       // Convert to upload items when files change, preserving existing status
       const newUploadFiles = newFiles.map((file) => {
-        // Check if this file already exists in uploadFiles
         const existingFile = uploadFiles.find(
           (existing) => existing.id === file.id
         )
 
         if (existingFile) {
-          // Preserve existing file status and progress
           return {
             ...existingFile,
-            ...file, // Update any changed properties from the file
+            ...file,
           }
         } else {
-          // New file - set to uploading
           return {
             ...file,
             progress: 0,
@@ -124,12 +134,52 @@ export function Pattern({
       })
       setUploadFiles(newUploadFiles)
       onFilesChange?.(newFiles)
+
+      // Start actual uploads
+      filesToUpload.forEach((fileItem) => {
+        if (onUpload && fileItem.file instanceof File) {
+          onUpload(fileItem.file, (progress) => {
+            setUploadFiles((prev) =>
+              prev.map((item) =>
+                item.id === fileItem.id ? { ...item, progress } : item
+              )
+            )
+          })
+            .then(() => {
+              setUploadFiles((prev) =>
+                prev.map((item) =>
+                  item.id === fileItem.id
+                    ? { ...item, progress: 100, status: "completed" as const }
+                    : item
+                )
+              )
+              // Automatically clear completed items from queue after a short delay
+              setTimeout(() => {
+                setUploadFiles((prev) => prev.filter((item) => item.id !== fileItem.id))
+                removeFile(fileItem.id)
+              }, 1500)
+            })
+            .catch((err) => {
+              setUploadFiles((prev) =>
+                prev.map((item) =>
+                  item.id === fileItem.id
+                    ? {
+                        ...item,
+                        status: "error" as const,
+                        error: err?.message || "Upload failed. Please try again.",
+                      }
+                    : item
+                )
+              )
+            })
+        }
+      })
     },
   })
 
   // Simulate upload progress
   useEffect(() => {
-    if (!simulateUpload) return
+    if (!simulateUpload || onUpload) return
 
     const interval = setInterval(() => {
       setUploadFiles((prev) =>
@@ -166,9 +216,12 @@ export function Pattern({
     }, 500)
 
     return () => clearInterval(interval)
-  }, [simulateUpload])
+  }, [simulateUpload, onUpload])
 
   const retryUpload = (fileId: string) => {
+    const fileItem = uploadFiles.find((f) => f.id === fileId)
+    if (!fileItem) return
+
     setUploadFiles((prev) =>
       prev.map((file) =>
         file.id === fileId
@@ -181,6 +234,42 @@ export function Pattern({
           : file
       )
     )
+
+    if (onUpload && fileItem.file instanceof File) {
+      onUpload(fileItem.file, (progress) => {
+        setUploadFiles((prev) =>
+          prev.map((item) =>
+            item.id === fileId ? { ...item, progress } : item
+          )
+        )
+      })
+        .then(() => {
+          setUploadFiles((prev) =>
+            prev.map((item) =>
+              item.id === fileId
+                ? { ...item, progress: 100, status: "completed" as const }
+                : item
+            )
+          )
+          setTimeout(() => {
+            setUploadFiles((prev) => prev.filter((item) => item.id !== fileId))
+            removeFile(fileId)
+          }, 1500)
+        })
+        .catch((err) => {
+          setUploadFiles((prev) =>
+            prev.map((item) =>
+              item.id === fileId
+                ? {
+                    ...item,
+                    status: "error" as const,
+                    error: err?.message || "Upload failed. Please try again.",
+                  }
+                : item
+            )
+          )
+        })
+    }
   }
 
   const removeUploadFile = (fileId: string) => {
@@ -191,36 +280,20 @@ export function Pattern({
   const getFileIcon = (file: File | FileMetadata) => {
     const type = file instanceof File ? file.type : file.type
     if (type.startsWith("image/"))
-      return (
-        <HugeiconsIcon icon={Image03Icon}  className="size-4" />
-      )
+      return <HugeiconsIcon icon={Image03Icon} className="size-4" />
     if (type.startsWith("video/"))
-      return (
-        <HugeiconsIcon icon={Video01Icon}  className="size-4" />
-      )
+      return <HugeiconsIcon icon={Video01Icon} className="size-4" />
     if (type.startsWith("audio/"))
-      return (
-        <HugeiconsIcon icon={HeadsetIcon}  className="size-4" />
-      )
+      return <HugeiconsIcon icon={HeadsetIcon} className="size-4" />
     if (type.includes("pdf"))
-      return (
-        <HugeiconsIcon icon={DocumentValidationIcon}  className="size-4" />
-      )
+      return <HugeiconsIcon icon={DocumentValidationIcon} className="size-4" />
     if (type.includes("word") || type.includes("doc"))
-      return (
-        <HugeiconsIcon icon={DocumentValidationIcon}  className="size-4" />
-      )
+      return <HugeiconsIcon icon={DocumentValidationIcon} className="size-4" />
     if (type.includes("excel") || type.includes("sheet"))
-      return (
-        <HugeiconsIcon icon={FileSpreadsheetIcon}  className="size-4" />
-      )
+      return <HugeiconsIcon icon={FileSpreadsheetIcon} className="size-4" />
     if (type.includes("zip") || type.includes("rar"))
-      return (
-        <HugeiconsIcon icon={FileArchiveIcon}  className="size-4" />
-      )
-    return (
-      <HugeiconsIcon icon={DocumentValidationIcon}  className="size-4" />
-    )
+      return <HugeiconsIcon icon={FileArchiveIcon} className="size-4" />
+    return <HugeiconsIcon icon={DocumentValidationIcon} className="size-4" />
   }
 
   const completedCount = uploadFiles.filter(
@@ -275,7 +348,7 @@ export function Pattern({
           </div>
 
           <Button onClick={openFileDialog}>
-            <HugeiconsIcon icon={Upload05Icon}  className="h-4 w-4" />
+            <HugeiconsIcon icon={Upload05Icon} className="h-4 w-4" />
             Select files
           </Button>
         </div>
@@ -349,6 +422,20 @@ export function Pattern({
                       </span>
                     </p>
                     <div className="flex items-center gap-2">
+                      {/* View Button */}
+                      {fileItem.preview && (
+                        <Button
+                          onClick={() => {
+                            setSelectedImage(fileItem.preview!)
+                            setIsPreviewLoading(true)
+                          }}
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground size-6 hover:bg-transparent hover:opacity-100"
+                        >
+                          <HugeiconsIcon icon={EyeIcon} className="size-4" />
+                        </Button>
+                      )}
                       {/* Remove Button */}
                       <Button
                         onClick={() => removeUploadFile(fileItem.id)}
@@ -356,7 +443,7 @@ export function Pattern({
                         size="icon"
                         className="text-muted-foreground size-6 hover:bg-transparent hover:opacity-100"
                       >
-                        <HugeiconsIcon icon={Cancel01Icon}  className="size-4" />
+                        <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
                       </Button>
                     </div>
                   </div>
@@ -371,7 +458,7 @@ export function Pattern({
                   {/* Error Message */}
                   {fileItem.status === "error" && fileItem.error && (
                     <Alert variant="destructive" className="mt-2 px-2 py-1">
-                        <HugeiconsIcon icon={AlertCircleIcon} className="size-4" />
+                      <HugeiconsIcon icon={AlertCircleIcon} className="size-4" />
                       <AlertTitle className="text-xs">
                         {fileItem.error}
                       </AlertTitle>
@@ -382,7 +469,7 @@ export function Pattern({
                           size="icon"
                           className="text-muted-foreground size-6 hover:bg-transparent hover:opacity-100"
                         >
-                          <HugeiconsIcon icon={Refresh03Icon}  className="size-3.5" />
+                          <HugeiconsIcon icon={Refresh03Icon} className="size-3.5" />
                         </Button>
                       </AlertAction>
                     </Alert>
@@ -408,6 +495,41 @@ export function Pattern({
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Image Preview Dialog */}
+      <Dialog
+        open={!!selectedImage}
+        onOpenChange={(open) => !open && setSelectedImage(null)}
+      >
+        <DialogContent className="w-full border-none bg-transparent p-0 shadow-none sm:max-w-xl [&_[data-slot=dialog-close]]:-end-7 [&_[data-slot=dialog-close]]:-top-7 [&_[data-slot=dialog-close]]:size-7 [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-background [&_[data-slot=dialog-close]]:text-muted-foreground [&_[data-slot=dialog-close]]:hover:text-foreground">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Image Preview</DialogTitle>
+          </DialogHeader>
+          <div className="relative flex items-center justify-center min-h-[300px]">
+            {selectedImage && (
+              <>
+                {isPreviewLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Spinner className="size-8 text-white" />
+                  </div>
+                )}
+                <Image
+                  src={selectedImage}
+                  alt="Preview"
+                  width={800}
+                  height={600}
+                  onLoad={() => setIsPreviewLoading(false)}
+                  className={cn(
+                    "h-full w-auto rounded-lg object-contain transition-opacity duration-300",
+                    isPreviewLoading ? "opacity-0" : "opacity-100"
+                  )}
+                  unoptimized
+                />
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

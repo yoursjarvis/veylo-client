@@ -1,9 +1,5 @@
 "use client"
 
-import * as React from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Cancel01Icon, UnfoldMoreIcon } from "@hugeicons/core-free-icons"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   Command,
   CommandEmpty,
@@ -12,7 +8,15 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import { Cancel01Icon, UnfoldMoreIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import * as React from "react"
 
 export type SearchableSelectOption = {
   value: string
@@ -73,7 +77,7 @@ export function SearchableSelect({
           </span>
           <HugeiconsIcon
             icon={UnfoldMoreIcon}
-            className="size-4 text-muted-foreground shrink-0"
+            className="size-4 shrink-0 text-muted-foreground"
           />
         </PopoverTrigger>
         <PopoverContent
@@ -108,7 +112,7 @@ export function SearchableSelect({
           type="button"
           onClick={handleClear}
           aria-label="Clear selection"
-          className="absolute right-7 top-1/2 -translate-y-1/2 rounded-sm p-0.5 opacity-50 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 z-10 bg-background dark:bg-card"
+          className="absolute top-1/2 right-7 z-10 -translate-y-1/2 rounded-sm bg-background p-0.5 opacity-50 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-card"
         >
           <HugeiconsIcon
             icon={Cancel01Icon}

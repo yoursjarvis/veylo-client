@@ -1,17 +1,16 @@
 "use client"
 
 import React from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AttachmentIcon } from "@hugeicons/core-free-icons"
 import { AttachmentItem } from "../attachments"
 import { Media } from "@/types/models"
+import { Pattern as FileUpload } from "@/components/reui/file-upload"
 
 interface TaskDetailsAttachmentsProps {
   taskId: string
   attachments: Media[]
-  onUpload: (file: File) => void
+  onUpload: (variables: { file: File; onProgress?: (percent: number) => void }) => Promise<unknown>
   onDelete: (id: string) => void
   canDelete: (id: string) => boolean
   isUploading: boolean
@@ -25,36 +24,27 @@ export function TaskDetailsAttachments({
   canDelete,
   isUploading,
 }: TaskDetailsAttachmentsProps) {
+  const handleUpload = async (file: File, onProgress: (progress: number) => void) => {
+    await onUpload({ file, onProgress })
+  }
+
   return (
-    <div className="space-y-4 border-t border-border/50">
+    <div className="space-y-4 border-t border-border/50 pt-4">
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
           <HugeiconsIcon icon={AttachmentIcon} size={14} className="text-muted-foreground/70" />{" "}
           Attachments
         </label>
-        <div className="relative">
-          <Input
-            type="file"
-            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-            title="Upload file"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                onUpload(e.target.files[0])
-              }
-            }}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs font-medium"
-            disabled={isUploading}
-          >
-            {isUploading ? "Uploading..." : "Add Attachment"}
-          </Button>
-        </div>
       </div>
+
+      <FileUpload
+        multiple
+        onUpload={handleUpload}
+        className="w-full"
+      />
+
       {attachments.filter(a => !a.parentMediaId).length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 mt-4">
           {attachments.filter(a => !a.parentMediaId).map((attachment) => (
             <AttachmentItem
               key={attachment.id}
@@ -68,7 +58,7 @@ export function TaskDetailsAttachments({
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No attachments yet. Click the button above to upload.
+          No attachments yet. Drag and drop files above to upload.
         </div>
       )}
     </div>

@@ -1,25 +1,15 @@
 // import { Geist, Geist_Mono, Inter } from "next/font/google"
-import { JetBrains_Mono, Noto_Serif, Poppins } from "next/font/google"
+import { Geist_Mono, Merriweather, Poppins } from "next/font/google"
 
 import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
 import { Metadata } from "next"
-import { NuqsAdapter } from "nuqs/adapters/next/app"
 import NextTopLoader from "nextjs-toploader"
+import { NuqsAdapter } from "nuqs/adapters/next/app"
 import "./globals.css"
-
-// const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
-
-// const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
-
-// const fontMono = Geist_Mono({
-//   subsets: ["latin"],
-//   variable: "--font-mono",
-// })
 
 const fontSans = Poppins({
   subsets: ["latin"],
@@ -27,12 +17,12 @@ const fontSans = Poppins({
   variable: "--font-sans",
 })
 
-const fontSerif = Noto_Serif({
+const fontSerif = Merriweather({
   subsets: ["latin"],
   variable: "--font-serif",
 })
 
-const fontMono = JetBrains_Mono({
+const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
@@ -63,12 +53,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn(
-        "antialiased",
-        fontSans.variable,
-        fontMono.variable,
-        fontSerif.variable
-      )}
+      className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} antialiased`}
     >
       <body className="overflow-x-hidden antialiased">
         <ThemeProvider>

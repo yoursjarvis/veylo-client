@@ -200,7 +200,7 @@ export function IconPicker({
           <div className="mb-2 flex gap-1 border-b pb-2">
             <Button
               type="button"
-              variant={tab === "emoji" ? "secondary" : "ghost"}
+              variant={tab === "emoji" ? "outline" : "ghost"}
               size="sm"
               className="flex-1"
               onClick={() => setTab("emoji")}
@@ -210,7 +210,7 @@ export function IconPicker({
             </Button>
             <Button
               type="button"
-              variant={tab === "image" ? "secondary" : "ghost"}
+              variant={tab === "image" ? "outline" : "ghost"}
               size="sm"
               className="flex-1"
               onClick={() => setTab("image")}

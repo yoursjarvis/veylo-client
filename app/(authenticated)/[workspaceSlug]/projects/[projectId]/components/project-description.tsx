@@ -54,7 +54,7 @@ export function ProjectDescription({
   const isLong = (initialDescription?.length ?? 0) > 240
 
   return (
-    <Card className="relative overflow-visible pb-1">
+    <Card className="relative mt-2 overflow-visible pb-1">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
           <HugeiconsIcon
