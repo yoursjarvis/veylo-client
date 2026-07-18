@@ -16,9 +16,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Task, TaskStatus } from "@/types/models"
-import { AlertCircle, Link as LinkIcon, X } from "lucide-react"
 import { PlusSignIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { AlertCircle, Link as LinkIcon, X } from "lucide-react"
 import React, { useState } from "react"
 import { useProjectTasks } from "../../hooks/use-tasks"
 
@@ -162,7 +162,7 @@ export function TaskDetailsDependencies({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+        <h3 className="flex items-center gap-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           <LinkIcon className="h-4 w-4 text-muted-foreground" />
           Dependencies
         </h3>
@@ -185,7 +185,10 @@ export function TaskDetailsDependencies({
                 size="sm"
                 className="h-8 px-3 text-xs font-medium"
               >
-                <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-3.5 w-3.5" />
+                <HugeiconsIcon
+                  icon={PlusSignIcon}
+                  className="mr-1.5 h-3.5 w-3.5"
+                />
                 Add Blocked By
               </Button>
             )}
@@ -196,7 +199,10 @@ export function TaskDetailsDependencies({
                 size="sm"
                 className="h-8 px-3 text-xs font-medium"
               >
-                <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-3.5 w-3.5" />
+                <HugeiconsIcon
+                  icon={PlusSignIcon}
+                  className="mr-1.5 h-3.5 w-3.5"
+                />
                 Add Blocking
               </Button>
             )}
@@ -207,7 +213,7 @@ export function TaskDetailsDependencies({
           {/* Blocked By Section */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <h4 className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+              <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 <AlertCircle className="h-3.5 w-3.5 text-warning" />
                 Blocked By
               </h4>
@@ -267,7 +273,7 @@ export function TaskDetailsDependencies({
           {/* Blocking Section */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <h4 className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+              <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 <LinkIcon className="h-3.5 w-3.5 text-success" />
                 Blocks
               </h4>

@@ -1,5 +1,6 @@
 "use client"
 import { Button } from "@/components/ui/button"
+import { ComboboxSelect } from "@/components/ui/combobox-select"
 import {
   Card,
   CardContent,
@@ -65,16 +66,25 @@ const COLOR_PRESETS = [
   { name: "Rose", hex: "#f43f5e" },
 ]
 
+const CATEGORY_OPTIONS = [
+  { value: "backlog", label: "Backlog" },
+  { value: "todo", label: "To Do" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "done", label: "Done" },
+]
+
 function StatusRow({
   status,
   projectId,
 }: {
-  status: { id: string; name: string; color?: string }
+  status: { id: string; name: string; color?: string; progressWeight?: number; category: string }
   projectId: string
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedName, setEditedName] = useState(status.name)
   const [editedColor, setEditedColor] = useState(status.color || "#e2e8f0")
+  const [editedWeight, setEditedWeight] = useState(status.progressWeight ?? 0)
+  const [editedCategory, setEditedCategory] = useState<string>(status.category)
 
   const updateStatusMutation = useUpdateStatus(projectId)
   const deleteStatusMutation = useDeleteStatus(projectId)
@@ -98,7 +108,12 @@ function StatusRow({
     updateStatusMutation.mutate(
       {
         id: status.id,
-        data: { name: editedName.trim(), color: editedColor },
+        data: {
+          name: editedName.trim(),
+          color: editedColor,
+          progressWeight: Number(editedWeight),
+          category: editedCategory as "backlog" | "todo" | "in_progress" | "done",
+        },
       },
       {
         onSuccess: () => {
@@ -125,13 +140,35 @@ function StatusRow({
         style={style}
         className="flex flex-col gap-3 rounded-lg border border-primary/50 bg-card p-3 shadow-sm relative z-10"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Input
             value={editedName}
             onChange={(e) => setEditedName(e.target.value)}
-            className="h-8 text-xs font-medium"
+            className="h-8 flex-1 min-w-[120px] text-xs font-medium"
             placeholder="Status name"
           />
+          <div className="flex items-center gap-2">
+            <span className="text-2xs text-muted-foreground whitespace-nowrap">Category:</span>
+            <ComboboxSelect
+              value={editedCategory}
+              onValueChange={(val) => setEditedCategory(val || "todo")}
+              options={CATEGORY_OPTIONS}
+              placeholder="Select category..."
+              className="h-8 w-32 font-medium"
+              isSearchable={false}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-2xs text-muted-foreground whitespace-nowrap">Weight (%):</span>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={editedWeight}
+              onChange={(e) => setEditedWeight(Number(e.target.value))}
+              className="h-8 w-16 text-xs font-mono"
+            />
+          </div>
           <div className="flex items-center gap-2">
             <Input
               type="color"
@@ -190,6 +227,12 @@ function StatusRow({
           />
         </div>
         <span className="text-xs font-semibold">{status.name}</span>
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-extrabold text-primary">
+          {status.progressWeight ?? 0}%
+        </span>
+        <span className="rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground capitalize">
+          {status.category.replace("_", " ")}
+        </span>
         {status.color && (
           <span className="font-mono text-2xs text-muted-foreground">
             {status.color}
@@ -231,7 +274,7 @@ export default function StatusesSettingsPage() {
   const createStatusMutation = useCreateStatus(projectId)
   const updateStatusMutation = useUpdateStatus(projectId)
 
-  const [localStatuses, setLocalStatuses] = useState<{ id: string; name: string; color?: string; order?: number }[]>([])
+  const [localStatuses, setLocalStatuses] = useState<{ id: string; name: string; color?: string; order?: number; progressWeight?: number; category: string }[]>([])
 
   useEffect(() => {
     if (statuses) {
@@ -275,6 +318,7 @@ export default function StatusesSettingsPage() {
       name: "",
       color: "#e2e8f0",
       category: "todo",
+      progressWeight: 0,
     },
     onSubmit: async ({ value }) => {
       setValidationErrors({})
@@ -285,6 +329,7 @@ export default function StatusesSettingsPage() {
           name: value.name.trim(),
           color: value.color,
           category: value.category as "backlog" | "todo" | "in_progress" | "done",
+          progressWeight: Number(value.progressWeight),
         },
         {
           onSuccess: () => {
@@ -389,7 +434,7 @@ export default function StatusesSettingsPage() {
                       items={localStatuses.map(s => s.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      {localStatuses.map((st: { id: string; name: string; color?: string; order?: number }) => (
+                      {localStatuses.map((st: { id: string; name: string; color?: string; order?: number; progressWeight?: number; category: string }) => (
                         <StatusRow 
                           key={st.id} 
                           status={st} 
@@ -471,22 +516,54 @@ export default function StatusesSettingsPage() {
                   {(field) => (
                     <div className="space-y-1.5">
                       <label className="font-semibold">Category</label>
-                      <Select
+                      <ComboboxSelect
                         value={field.state.value}
                         onValueChange={(val) => field.handleChange(val as "backlog" | "todo" | "in_progress" | "done")}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select category..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="backlog">Backlog</SelectItem>
-                          <SelectItem value="todo">To Do</SelectItem>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
-                          <SelectItem value="done">Done</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        options={CATEGORY_OPTIONS}
+                        placeholder="Select category..."
+                        isSearchable={false}
+                        className="h-9 font-medium"
+                      />
                     </div>
                   )}
+                </form.Field>
+
+                <form.Field
+                  name="progressWeight"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const num = Number(value)
+                      if (isNaN(num) || num < 0 || num > 100) return "Weight must be between 0 and 100"
+                      return undefined
+                    },
+                  }}
+                >
+                  {(field) => {
+                    const fieldErrors: string[] = []
+                    field.state.meta.errors.forEach((err) => {
+                      if (err) fieldErrors.push(String(err))
+                    })
+                    const hasError = field.state.meta.isTouched && !!fieldErrors.length
+                    return (
+                      <div className="space-y-1.5">
+                        <label className="font-semibold">Progress Weight (%)</label>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={100}
+                          placeholder="e.g. 50"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(Number(e.target.value))}
+                          aria-invalid={hasError}
+                        />
+                        {hasError && (
+                          <p className="mt-1 text-2xs font-medium text-destructive">
+                            {fieldErrors.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    )
+                  }}
                 </form.Field>
 
                 <form.Field name="color">

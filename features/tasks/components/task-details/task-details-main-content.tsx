@@ -1,15 +1,21 @@
 "use client"
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  ProjectMember,
+  Task,
+  TaskActivity,
+  TaskStatus,
+  User,
+} from "@/types/models"
+import { UseMutationResult } from "@tanstack/react-query"
 import React from "react"
+import { TaskDetailsActivity } from "./task-details-activity"
+import { TaskDetailsAttachments } from "./task-details-attachments"
+import { TaskDetailsComments } from "./task-details-comments"
+import { TaskDetailsDependencies } from "./task-details-dependencies"
 import { TaskDetailsDescription } from "./task-details-description"
 import { TaskDetailsSubtasks } from "./task-details-subtasks"
-import { TaskDetailsAttachments } from "./task-details-attachments"
-import { TaskDetailsDependencies } from "./task-details-dependencies"
-import { TaskDetailsComments } from "./task-details-comments"
-import { TaskDetailsActivity } from "./task-details-activity"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Task, ProjectMember, TaskStatus, User, TaskActivity } from "@/types/models"
-import { UseMutationResult } from "@tanstack/react-query"
 
 interface TaskDetailsMainContentProps {
   task: Task
@@ -20,7 +26,10 @@ interface TaskDetailsMainContentProps {
   onDeleteSubtask: (id: string) => void
   onNavigateToSubtask: (id: string) => void
   onAddSubtask: (title: string) => void
-  onUploadAttachment: (file: File) => void
+  onUploadAttachment: (variables: {
+    file: File
+    onProgress?: (percent: number) => void
+  }) => Promise<unknown>
   onDeleteAttachment: (id: string) => void
   canDeleteAttachment: (id: string) => boolean
   isUploadingAttachment: boolean
@@ -41,9 +50,17 @@ interface TaskDetailsMainContentProps {
   editingContent: string
   setEditingContent: (val: string) => void
   handleUpdateComment: (commentId: string) => void
-  toggleReactionMutation: UseMutationResult<unknown, Error, { commentId: string; emoji: string }, unknown>
+  toggleReactionMutation: UseMutationResult<
+    unknown,
+    Error,
+    { commentId: string; emoji: string },
+    unknown
+  >
   deleteCommentMutation: UseMutationResult<unknown, Error, string, unknown>
-  onCreateDependency: (data: { dependencyTaskId: string; direction: "blocks" | "blocked_by" }) => void
+  onCreateDependency: (data: {
+    dependencyTaskId: string
+    direction: "blocks" | "blocked_by"
+  }) => void
   onDeleteDependency: (id: string) => void
 }
 
@@ -121,11 +138,14 @@ export function TaskDetailsMainContent({
       />
 
       <Tabs defaultValue="comments" className="w-full">
-        <TabsList className="w-full justify-start border-b mb-6 h-auto p-0 rounded-none gap-4" variant="line">
-          <TabsTrigger value="comments" className="pb-2 pt-1 text-sm">
+        <TabsList
+          className="mb-6 h-auto w-full justify-start gap-4 rounded-none border-b p-0"
+          variant="line"
+        >
+          <TabsTrigger value="comments" className="pt-1 pb-2 text-sm">
             Comments
           </TabsTrigger>
-          <TabsTrigger value="activity" className="pb-2 pt-1 text-sm">
+          <TabsTrigger value="activity" className="pt-1 pb-2 text-sm">
             Activity
           </TabsTrigger>
         </TabsList>
@@ -161,11 +181,18 @@ export function TaskDetailsMainContent({
               const newValue = activity.newValue
 
               if (action === "comment_added") return "added a comment"
-              if (action === "description_changed") return "updated the description"
-              if (action === "title_changed") return `renamed this task to "${newValue}"`
-              if (action === "status_changed") return `changed status from "${oldValue}" to "${newValue}"`
-              if (action === "priority_changed") return `changed priority from "${oldValue}" to "${newValue}"`
-              if (action === "assignee_changed") return newValue ? `assigned to ${newValue}` : "unassigned this task"
+              if (action === "description_changed")
+                return "updated the description"
+              if (action === "title_changed")
+                return `renamed this task to "${newValue}"`
+              if (action === "status_changed")
+                return `changed status from "${oldValue}" to "${newValue}"`
+              if (action === "priority_changed")
+                return `changed priority from "${oldValue}" to "${newValue}"`
+              if (action === "assignee_changed")
+                return newValue
+                  ? `assigned to ${newValue}`
+                  : "unassigned this task"
               if (action === "created") return "created this task"
               if (action === "deleted") return "deleted this task"
 

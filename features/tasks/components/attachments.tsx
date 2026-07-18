@@ -8,7 +8,18 @@ import {
   Cancel01Icon,
   EyeIcon,
   File02Icon,
+  Video01Icon,
 } from "@hugeicons/core-free-icons"
+import {
+  MediaPlayer,
+  MediaPlayerVideo,
+  MediaPlayerControls,
+  MediaPlayerPlay,
+  MediaPlayerVolume,
+  MediaPlayerSeek,
+  MediaPlayerTime,
+  MediaPlayerFullscreen,
+} from "@/components/ui/media-player"
 import { Media } from "@/types/models"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -74,7 +85,8 @@ export function AttachmentItem({
 
   const isImage = activeVersion.mimeType?.startsWith("image/")
   const isPdf = activeVersion.mimeType === "application/pdf"
-  const canPreview = isImage || isPdf
+  const isVideo = activeVersion.mimeType?.startsWith("video/")
+  const canPreview = isImage || isPdf || isVideo
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isImage) return
@@ -101,6 +113,7 @@ export function AttachmentItem({
 
   const getFileIcon = () => {
     if (isImage) return null
+    if (isVideo) return <HugeiconsIcon icon={Video01Icon} className="h-8 w-8 text-primary" />
     if (isPdf) return <HugeiconsIcon icon={File02Icon} className="h-8 w-8 text-destructive" />
 
     return <HugeiconsIcon icon={File02Icon} className="h-8 w-8 text-muted-foreground/50" />
@@ -147,7 +160,7 @@ export function AttachmentItem({
                     e.stopPropagation()
                     setIsPreviewOpen(true)
                   }}
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-primary-foreground transition hover:bg-primary"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-foreground transition hover:bg-primary hover:text-primary-foreground"
                   title="View Proof"
                 >
                   <HugeiconsIcon icon={EyeIcon} size={14} />
@@ -155,7 +168,7 @@ export function AttachmentItem({
                 <a
                   href={attachment.url}
                   download={attachment.name}
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-primary-foreground transition hover:bg-primary"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-foreground transition hover:bg-primary hover:text-primary-foreground"
                   title="Download"
                 >
                   <HugeiconsIcon icon={Download01Icon} size={14} />
@@ -166,7 +179,7 @@ export function AttachmentItem({
                       e.stopPropagation()
                       setIsDeleteDialogOpen(true)
                     }}
-                    className="flex h-6 w-6 items-center justify-center rounded-full text-primary-foreground transition hover:bg-destructive"
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-foreground transition hover:bg-destructive hover:text-destructive-foreground"
                     title="Delete"
                   >
                     <HugeiconsIcon icon={Cancel01Icon} size={14} />
@@ -302,6 +315,19 @@ export function AttachmentItem({
                     </form>
                   </div>
                 )}
+              </div>
+            ) : isVideo ? (
+              <div className="w-full h-full max-h-[70vh] flex items-center justify-center bg-black rounded-lg overflow-hidden p-2">
+                <MediaPlayer className="w-full h-full aspect-video">
+                  <MediaPlayerVideo src={activeVersion.url} className="w-full h-full" />
+                  <MediaPlayerControls>
+                    <MediaPlayerPlay className="text-white hover:text-white/80" />
+                    <MediaPlayerSeek className="flex-1" />
+                    <MediaPlayerTime className="text-white text-xs font-medium" />
+                    <MediaPlayerVolume className="text-white hover:text-white/80" />
+                    <MediaPlayerFullscreen className="text-white hover:text-white/80" />
+                  </MediaPlayerControls>
+                </MediaPlayer>
               </div>
             ) : isPdf ? (
               <iframe

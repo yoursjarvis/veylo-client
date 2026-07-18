@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useEffect } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { useWorkspaceContext } from "@/components/providers/workspace-provider"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sheet,
   SheetContent,
@@ -9,15 +9,23 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
-import { useTaskDetails, useProjectCustomFields } from "../hooks/use-tasks"
+import {
+  Epic,
+  Label,
+  Milestone,
+  ProjectMember,
+  Sprint,
+  TaskStatus,
+  User,
+} from "@/types/models"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { useTaskDetailsManager } from "../hooks/use-task-details-manager"
+import { useProjectCustomFields, useTaskDetails } from "../hooks/use-tasks"
 import { TaskDetailsHeader } from "./task-details/task-details-header"
 import { TaskDetailsMainContent } from "./task-details/task-details-main-content"
 import { TaskDetailsSidebar } from "./task-details/task-details-sidebar"
-import { useTaskDetailsManager } from "../hooks/use-task-details-manager"
-import { ProjectMember, TaskStatus, Sprint, Epic, Milestone, Label, User } from "@/types/models"
 
 interface TaskDetailsDrawerProps {
   taskId: string | null
@@ -56,6 +64,7 @@ export function TaskDetailsDrawer({
   const completedStatus =
     projectStatuses.find(
       (st) =>
+        st.progressWeight === 100 ||
         st.name.toLowerCase() === "done" ||
         st.name.toLowerCase() === "completed" ||
         st.name.toLowerCase() === "complete"
@@ -63,7 +72,7 @@ export function TaskDetailsDrawer({
 
   const isCompleted = task?.statusId === completedStatus?.id
 
-  const { setLocalTitle, setLocalDesc } = manager.state;
+  const { setLocalTitle, setLocalDesc } = manager.state
 
   useEffect(() => {
     if (task) {
@@ -87,9 +96,16 @@ export function TaskDetailsDrawer({
   const canDeleteAttachment = () => {
     if (!currentUser?.user || !task) return false
     if (task.creatorId === String(currentUser.user.id)) return true
-    const member = projectMembers.find(m => m.user?.id === currentUser.user?.id)
+    const member = projectMembers.find(
+      (m) => m.user?.id === currentUser.user?.id
+    )
     const role = member?.role
-    const adminRoles = ["org_owner", "org_admin", "workspace_admin", "project_admin"]
+    const adminRoles = [
+      "org_owner",
+      "org_admin",
+      "workspace_admin",
+      "project_admin",
+    ]
     if (role && adminRoles.includes(role)) return true
     return false
   }
@@ -101,7 +117,7 @@ export function TaskDetailsDrawer({
       <SheetContent className="flex h-full w-full flex-col border-l border-border bg-card p-0 text-foreground data-[side=right]:sm:max-w-[90vw] data-[side=right]:md:max-w-[80vw] data-[side=right]:lg:max-w-[70vw] data-[side=right]:xl:max-w-[60vw]">
         <SheetHeader className="flex flex-row items-center justify-between border-b border-border/50 px-6 py-4">
           <div>
-            <SheetTitle className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+            <SheetTitle className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
               Task Details
             </SheetTitle>
           </div>
@@ -109,25 +125,37 @@ export function TaskDetailsDrawer({
 
         {isLoading ? (
           <div className="flex flex-1 flex-row overflow-hidden">
-            <div className="flex-1 p-6 space-y-6 border-r border-border">
+            <div className="flex-1 space-y-6 border-r border-border p-6">
               <Skeleton className="h-8 w-3/4" />
-              <div className="space-y-2 mt-4">
+              <div className="mt-4 space-y-2">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-5/6" />
                 <Skeleton className="h-4 w-4/6" />
               </div>
-              <Skeleton className="h-[200px] w-full mt-8" />
-              <div className="space-y-4 mt-8">
+              <Skeleton className="mt-8 h-[200px] w-full" />
+              <div className="mt-8 space-y-4">
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
               </div>
             </div>
-            <div className="w-[320px] p-6 space-y-6">
+            <div className="w-[320px] space-y-6 p-6">
               <div className="space-y-4">
-                <div className="flex items-center space-x-4"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 flex-1" /></div>
-                <div className="flex items-center space-x-4"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 flex-1" /></div>
-                <div className="flex items-center space-x-4"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 flex-1" /></div>
-                <div className="flex items-center space-x-4"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 flex-1" /></div>
+                <div className="flex items-center space-x-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 flex-1" />
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 flex-1" />
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 flex-1" />
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 flex-1" />
+                </div>
               </div>
             </div>
           </div>
@@ -143,7 +171,9 @@ export function TaskDetailsDrawer({
                   task={task!}
                   isCompleted={isCompleted}
                   onTitleChange={manager.state.setLocalTitle}
-                  onTitleBlur={() => manager.handlers.handleTitleBlur(task!.title || "")}
+                  onTitleBlur={() =>
+                    manager.handlers.handleTitleBlur(task!.title || "")
+                  }
                   workspaceSlug={activeWorkspace?.slug || ""}
                   onToggleCompletion={handleToggleCompletion}
                 />
@@ -152,22 +182,41 @@ export function TaskDetailsDrawer({
                   projectMembers={projectMembers}
                   completedStatus={completedStatus}
                   projectStatuses={projectStatuses}
-                  onUpdateSubtask={(id, data) => manager.mutations.updateSubtaskMutation.mutate({ id, data: data as import("@/types/api-types").TaskUpdateRequest })}
-                  onDeleteSubtask={(id) => manager.mutations.deleteSubtaskMutation.mutate(id)}
-                  onNavigateToSubtask={(id) => router.push(`${pathname}?taskId=${id}`)}
-                  onAddSubtask={(title) => manager.mutations.createSubtaskMutation.mutate({
-                    title,
-                    statusId: projectStatuses[0]?.id || "",
-                    type: "subtask",
-                    priority: "medium",
-                  })}
-                  onUploadAttachment={manager.mutations.uploadAttachmentMutation.mutate}
-                  onDeleteAttachment={manager.mutations.deleteAttachmentMutation.mutate} // Wait, need to define this in the hook
+                  onUpdateSubtask={(id, data) =>
+                    manager.mutations.updateSubtaskMutation.mutate({
+                      id,
+                      data: data as import("@/types/api-types").TaskUpdateRequest,
+                    })
+                  }
+                  onDeleteSubtask={(id) =>
+                    manager.mutations.deleteSubtaskMutation.mutate(id)
+                  }
+                  onNavigateToSubtask={(id) =>
+                    router.push(`${pathname}?taskId=${id}`)
+                  }
+                  onAddSubtask={(title) =>
+                    manager.mutations.createSubtaskMutation.mutate({
+                      title,
+                      statusId: projectStatuses[0]?.id || "",
+                      type: "subtask",
+                      priority: "medium",
+                    })
+                  }
+                  onUploadAttachment={
+                    manager.mutations.uploadAttachmentMutation.mutateAsync
+                  }
+                  onDeleteAttachment={
+                    manager.mutations.deleteAttachmentMutation.mutate
+                  } // Wait, need to define this in the hook
                   canDeleteAttachment={canDeleteAttachment}
-                  isUploadingAttachment={manager.mutations.uploadAttachmentMutation.isPending}
+                  isUploadingAttachment={
+                    manager.mutations.uploadAttachmentMutation.isPending
+                  }
                   descriptionValue={manager.state.localDesc}
                   setDescriptionValue={manager.state.setLocalDesc}
-                  onDescriptionBlur={() => manager.handlers.handleDescBlur(task!.description || "")}
+                  onDescriptionBlur={() =>
+                    manager.handlers.handleDescBlur(task!.description || "")
+                  }
                   commentValue={manager.state.newComment}
                   setCommentValue={manager.state.setNewComment}
                   handleAddComment={manager.handlers.handleAddComment}
@@ -182,10 +231,18 @@ export function TaskDetailsDrawer({
                   editingContent={manager.state.editingContent}
                   setEditingContent={manager.state.setEditingContent}
                   handleUpdateComment={manager.handlers.handleUpdateComment}
-                  toggleReactionMutation={manager.mutations.toggleReactionMutation}
-                  deleteCommentMutation={manager.mutations.deleteCommentMutation}
-                  onCreateDependency={manager.mutations.createDependencyMutation.mutate}
-                  onDeleteDependency={manager.mutations.deleteDependencyMutation.mutate}
+                  toggleReactionMutation={
+                    manager.mutations.toggleReactionMutation
+                  }
+                  deleteCommentMutation={
+                    manager.mutations.deleteCommentMutation
+                  }
+                  onCreateDependency={
+                    manager.mutations.createDependencyMutation.mutate
+                  }
+                  onDeleteDependency={
+                    manager.mutations.deleteDependencyMutation.mutate
+                  }
                 />
               </div>
             </ScrollArea>

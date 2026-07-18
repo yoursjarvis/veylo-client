@@ -31,21 +31,21 @@ const badgeVariants = cva(
         "destructive-light-alt":
           "border-none bg-destructive/10 text-destructive dark:bg-destructive/20",
         "invert-light":
-          "border-none bg-invert/10 text-foreground dark:bg-invert/20",
+          "bg-invert/10 dark:bg-invert/20 border-none text-foreground",
         "focus-light":
           "bg-focus/10 text-focus-foreground dark:bg-focus/20 border-none",
         "primary-outline":
-          "border-border bg-background text-primary dark:bg-input/30",
+          "border-primary/20 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/20",
         "warning-outline":
-          "border-border bg-background text-warning-foreground dark:bg-input/30",
+          "border-warning/20 bg-warning/10 text-warning dark:border-warning/30 dark:bg-warning/20",
         "success-outline":
-          "border-border bg-background text-success-foreground dark:bg-input/30",
+          "border-success/20 bg-success/10 text-success dark:border-success/30 dark:bg-success/20",
         "info-outline":
-          "border-border bg-background text-info-foreground dark:bg-input/30",
+          "border-info/20 bg-info/10 text-info dark:border-info/30 dark:bg-info/20",
         "destructive-outline":
-          "border-border bg-background text-destructive-foreground dark:bg-input/30",
+          "border-destructive/20 bg-destructive/10 text-destructive dark:border-destructive/30 dark:bg-destructive/20",
         "invert-outline":
-          "border-border bg-background text-invert-foreground dark:bg-input/30",
+          "text-invert-foreground border-border bg-background dark:bg-input/30",
         "focus-outline":
           "text-focus-foreground border-border bg-background dark:bg-input/30",
       },

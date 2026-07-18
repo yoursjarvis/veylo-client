@@ -52,6 +52,7 @@ export default function TaskDetailPage() {
   const completedStatus =
     projectStatuses.find(
       (st: TaskStatus) =>
+        st.progressWeight === 100 ||
         st.name.toLowerCase() === "done" ||
         st.name.toLowerCase() === "completed" ||
         st.name.toLowerCase() === "complete"
@@ -224,7 +225,7 @@ export default function TaskDetailPage() {
                 type: "subtask",
                 priority: "medium",
               })}
-              onUploadAttachment={manager.mutations.uploadAttachmentMutation.mutate}
+              onUploadAttachment={manager.mutations.uploadAttachmentMutation.mutateAsync}
               onDeleteAttachment={manager.mutations.deleteAttachmentMutation.mutate}
               canDeleteAttachment={canDeleteAttachment}
               isUploadingAttachment={manager.mutations.uploadAttachmentMutation.isPending}

@@ -11,15 +11,29 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TaskList } from "@/features/tasks/components/task-list"
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
-import {
-  FilterHorizontalIcon,
-  MultiplicationSignIcon,
-  Search01Icon,
-} from "@hugeicons/core-free-icons"
+import { Cancel01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  ArrowUpDown,
+  Calendar,
+  Filter as FilterIcon,
+  Kanban,
+  Layers,
+  List,
+  Search,
+} from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import { useDebounce } from "use-debounce"
 import { useProject } from "../layout"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface StatusOption {
   id: string
@@ -48,8 +62,8 @@ interface MemberOption {
   }
 }
 
-
 export default function ListPage() {
+  const router = useRouter()
   const {
     projectId,
     statuses,
@@ -58,11 +72,20 @@ export default function ListPage() {
     epics,
     labels,
     milestones,
+    sprints,
+    workspaceSlug,
   } = useProject()
 
   const [activeFilters, setActiveFilters] = useState<Filter[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearchQuery] = useDebounce(searchQuery, 400)
+  const [groupBy, setGroupBy] = useState<
+    "status" | "assignee" | "type" | "priority" | "epics" | "milestones" | "sprints"
+  >("status")
+  const [sortBy, setSortBy] = useState<
+    "position" | "title" | "dueDate" | "priority" | "createdAt"
+  >("position")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 
   const fields = useMemo<FilterFieldConfig[]>(() => {
     const membersList = selectedProject?.members || []
@@ -163,52 +186,41 @@ export default function ListPage() {
   return (
     <div className="flex h-full flex-col gap-6 bg-background text-foreground">
       {/* Search and Filters Toolbar */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col justify-between gap-4 py-2 sm:flex-row sm:items-center">
-          {/* Unified search bar */}
-          <div className="relative max-w-md flex-1">
-            <HugeiconsIcon
-              icon={Search01Icon}
-              className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground/60"
-            />
+      <div className="flex flex-col justify-between gap-3 rounded-t-lg border border-border bg-card px-4 py-2.5 shadow-xs sm:flex-row sm:items-center">
+        {/* Left Side: Search and Action Buttons */}
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          {/* Search bar */}
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
             <Input
               type="text"
-              placeholder="Search tasks..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8"
+              className="h-8 w-full border-border bg-muted/40 pr-8 pl-9 text-xs"
             />
             {searchQuery && (
-              <button
+              <Button
                 onClick={() => setSearchQuery("")}
-                className="absolute top-1/2 right-2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                variant="ghost"
                 aria-label="Clear search"
+                size="sm"
               >
-                <HugeiconsIcon
-                  icon={MultiplicationSignIcon}
-                  className="h-3.5 w-3.5"
-                />
-              </button>
+                <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" />
+              </Button>
             )}
           </div>
 
-          {/* Action buttons (Filters only) */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Filters trigger */}
             <Filters
               filters={activeFilters}
               fields={fields}
               onChange={setActiveFilters}
               size="sm"
               trigger={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8.5 gap-2 border-border/80 text-xs font-medium hover:bg-muted hover:text-foreground"
-                >
-                  <HugeiconsIcon
-                    icon={FilterHorizontalIcon}
-                    className="size-3.5 text-muted-foreground/80"
-                  />
+                <Button variant="outline" size="sm">
+                  <FilterIcon className="h-3.5 w-3.5" />
                   <span>Filter</span>
                   {activeFilters.length > 0 && (
                     <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
@@ -218,56 +230,178 @@ export default function ListPage() {
                 </Button>
               }
             />
+
+            {/* Group Filter Button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <Layers className="h-3.5 w-3.5" />
+                    <span className="capitalize">
+                      Group:{" "}
+                      {groupBy === "epics"
+                        ? "Epics"
+                        : groupBy === "milestones"
+                          ? "Milestones"
+                          : groupBy === "sprints"
+                            ? "Sprints"
+                            : groupBy}
+                    </span>
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuRadioGroup
+                  value={groupBy}
+                  onValueChange={(val) =>
+                    setGroupBy(
+                      val as
+                        | "status"
+                        | "assignee"
+                        | "type"
+                        | "priority"
+                        | "epics"
+                        | "milestones"
+                        | "sprints"
+                    )
+                  }
+                >
+                  <DropdownMenuRadioItem value="status">Status</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="assignee">Assignee</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="type">Type</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="priority">Priority</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="epics">Epics</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="milestones">Milestones</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="sprints">Sprints</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Sort Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    <span className="capitalize">
+                      Sort: {sortBy === "position" ? "Default" : sortBy === "dueDate" ? "Due Date" : sortBy === "createdAt" ? "Created Date" : sortBy} ({sortOrder === "asc" ? "Asc" : "Desc"})
+                    </span>
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuRadioGroup
+                  value={sortBy}
+                  onValueChange={(val) =>
+                    setSortBy(
+                      val as
+                        | "position"
+                        | "title"
+                        | "dueDate"
+                        | "priority"
+                        | "createdAt"
+                    )
+                  }
+                >
+                  <DropdownMenuRadioItem value="position">Default</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="title">Title</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="dueDate">Due Date</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="priority">Priority</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="createdAt">Created Date</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={sortOrder}
+                  onValueChange={(val) => setSortOrder(val as "asc" | "desc")}
+                >
+                  <DropdownMenuRadioItem value="asc">Ascending</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="desc">Descending</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {activeFilters.length > 0 && (
+              <>
+                <div className="mx-1 hidden h-5 w-px bg-border sm:block"></div>
+                <FiltersContent
+                  filters={activeFilters}
+                  fields={fields}
+                  onChange={setActiveFilters}
+                />
+                <Button
+                  variant="ghost"
+                  onClick={() => setActiveFilters([])}
+                  className="h-7 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                >
+                  Clear all
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Filter UX Pills & Clear All */}
-        {activeFilters.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/40 bg-muted/20 px-1 py-1">
-            <span className="mr-1 pl-2 text-2xs font-bold tracking-wider text-muted-foreground uppercase">
-              Active Filters ({activeFilters.length}):
-            </span>
-            <FiltersContent
-              filters={activeFilters}
-              fields={fields}
-              onChange={setActiveFilters}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveFilters([])}
-              className="h-7 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-            >
-              Clear all
-            </Button>
-          </div>
-        )}
+        {/* Right Side: View Switcher (List active, Kanban, Calendar) */}
+        <div className="flex shrink-0 items-center gap-1 self-end rounded-md bg-muted p-0.5 sm:self-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 bg-card p-0 text-foreground shadow-sm"
+            aria-label="List view"
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            aria-label="Board view"
+            onClick={() =>
+              router.push(`/${workspaceSlug}/projects/${projectId}/board`)
+            }
+          >
+            <Kanban className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            aria-label="Calendar view"
+            onClick={() =>
+              router.push(`/${workspaceSlug}/projects/${projectId}/calendar`)
+            }
+          >
+            <Calendar className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col space-y-6 p-6 w-full">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-32" />
+        <div className="flex w-full flex-col space-y-6 rounded-b-lg border border-t-0 border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-48" />
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-32" />
+            </div>
           </div>
-        </div>
-        <div className="rounded-md border border-border">
-          <div className="border-b border-border p-4 flex gap-4">
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-          </div>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+          <div className="rounded-md border border-border">
+            <div className="flex gap-4 border-b border-border p-4">
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
             </div>
-          ))}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex gap-4 border-b border-border p-4 last:border-0"
+              >
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
       ) : (
         <TaskList
           projectId={projectId as string}
@@ -279,18 +413,24 @@ export default function ListPage() {
               typeof TaskList
             >[0]["statuses"]
           }
-          projectMembers={(selectedProject?.members || []).map(m => ({
+          projectMembers={(selectedProject?.members || []).map((m) => ({
             role: m.role,
             user: {
               id: m.user?.id || "",
               name: m.user?.name || null,
               image: m.user?.image || null,
               email: m.user?.email || null,
-            }
+            },
           }))}
           projectTemplate={selectedProject?.template || "simple"}
           onSelectTask={handleSelectTask}
           projectLabels={labels || []}
+          groupBy={groupBy}
+          epics={epics}
+          milestones={milestones}
+          sprints={sprints}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
         />
       )}
     </div>

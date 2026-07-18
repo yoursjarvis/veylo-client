@@ -90,7 +90,7 @@ interface Task {
 interface TaskBoardProps {
   projectId: string
   tasks: Task[]
-  statuses: { id: string; name: string; color?: string }[]
+  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
   projectMembers: ProjectMember[]
   sprints: Sprint[]
   projectTemplate: string
@@ -205,7 +205,7 @@ function SubtaskItem({
 }: {
   subtask: Task
   projectId: string
-  statuses: { id: string; name: string; color?: string }[]
+  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
   completedStatus?: { id: string }
   onSelectTask?: (id: string) => void
 }) {
@@ -285,7 +285,7 @@ function TaskCard({
 }: {
   task: Task
   projectId: string
-  statuses: { id: string; name: string; color?: string }[]
+  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
   isDragging?: boolean
   onSelectTask?: (id: string) => void
   projectLabels?: Label[]
@@ -309,6 +309,7 @@ function TaskCard({
 
   const completedStatus = statuses.find(
     (st) =>
+      st.progressWeight === 100 ||
       st.name.toLowerCase() === "done" ||
       st.name.toLowerCase() === "completed" ||
       st.name.toLowerCase() === "closed"
@@ -722,7 +723,7 @@ function SortableTaskCard({
 }: {
   task: Task
   projectId: string
-  statuses: { id: string; name: string; color?: string }[]
+  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
   onSelectTask: (id: string) => void
   index: number
   projectLabels?: Label[]
@@ -775,7 +776,7 @@ function SortableTaskCard({
 
 interface BoardColumnProps {
   projectId: string
-  statuses: { id: string; name: string; color?: string }[]
+  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
   status: { id: string; name: string; color?: string }
   tasks: Task[]
   quickAddStatusId: string | null

@@ -3,7 +3,11 @@ This is a UI design exported as HTML/CSS from Banani. Integrate it into my proje
 Instructions:
 
 - Convert the HTML/CSS into components that fit my project's framework and conventions
-- Replace inline styles with my project's styling approach (e.g., Tailwind classes, CSS modules, styled-components)
+- Replace inline styles with my project's styling approach Tailwind classes
+- use all shadcn components do not create a new component related to UI util it not provided by shadcn
+- create compose based on the functionality if required
+- reuse current code as much as possible just update the visaul details
+- keep the current functionality intact like drap and drop drag and reordering task and other things 
 - Use existing UI components from my project where appropriate
 - Ensure the result is responsive and accessible
 - Remove any Banani-specific artifacts (export wrappers, CDN scripts)
