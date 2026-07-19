@@ -540,7 +540,7 @@ export function ProjectTimeline({
       </div>
 
       {/* Custom Virtual Gantt Board */}
-      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs h-150">
+      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs h-150 pt-0">
         <GanttChart
           tasks={filteredTasks}
           visibleRows={visibleRows}

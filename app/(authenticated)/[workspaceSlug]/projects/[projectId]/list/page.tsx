@@ -104,9 +104,11 @@ export default function ListPage() {
         label: "Priority",
         type: "select",
         options: [
+          { value: "lowest", label: "Lowest" },
           { value: "low", label: "Low" },
           { value: "medium", label: "Medium" },
           { value: "high", label: "High" },
+          { value: "highest", label: "Highest" },
           { value: "urgent", label: "Urgent" },
         ],
       },

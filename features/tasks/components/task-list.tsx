@@ -163,21 +163,10 @@ const getTypeIcon = (type: string) => {
   }
 }
 
+import { getPriority, renderPriorityIcon, priorityList } from "@/lib/priority"
+
 const getPriorityIcon = (prio: string) => {
-  switch (prio.toLowerCase()) {
-    case "urgent":
-    case "critical":
-    case "highest":
-      return <AlertCircle className="h-3.5 w-3.5 text-danger shrink-0" />
-    case "high":
-      return <ArrowUp className="h-3.5 w-3.5 text-warning shrink-0" />
-    case "medium":
-      return <Minus className="h-3.5 w-3.5 text-primary shrink-0" />
-    case "low":
-    case "lowest":
-    default:
-      return <ArrowDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-  }
+  return renderPriorityIcon(prio, "h-3.5 w-3.5 shrink-0");
 }
 
 function UserSelect({
@@ -476,13 +465,7 @@ export function StatusSelect({
   )
 }
 
-const PRIORITIES = [
-  { value: "lowest", label: "Lowest" },
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
-  { value: "urgent", label: "Urgent" },
-]
+const PRIORITIES = priorityList
 
 export function PrioritySelect({
   value,
@@ -494,26 +477,7 @@ export function PrioritySelect({
   placeholder?: string
 }) {
   const [open, setOpen] = useState(false)
-  const selectedPriority = PRIORITIES.find(
-    (p) => p.value === value?.toLowerCase()
-  )
-
-  const getPriorityColor = (prio: string) => {
-    switch (prio.toLowerCase()) {
-      case "urgent":
-      case "critical":
-      case "highest":
-        return "text-danger"
-      case "high":
-        return "text-warning"
-      case "medium":
-        return "text-primary"
-      case "low":
-      case "lowest":
-      default:
-        return "text-muted-foreground"
-    }
-  }
+  const selectedPriority = getPriority(value || "medium")
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -523,10 +487,10 @@ export function PrioritySelect({
             onClick={(e) => e.stopPropagation()}
             className="flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:border-border/80 hover:bg-muted focus:outline-none"
           >
-            {selectedPriority ? (
+            {value ? (
               <div className="flex items-center gap-1.5">
                 {getPriorityIcon(selectedPriority.value)}
-                <span className={cn("text-xs font-semibold", getPriorityColor(selectedPriority.value))}>
+                <span className={cn("text-xs font-semibold", selectedPriority.color)}>
                   {selectedPriority.label}
                 </span>
               </div>

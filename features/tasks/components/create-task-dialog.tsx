@@ -75,7 +75,7 @@ export function CreateTaskDialog({
   const [statusId, setStatusId] = useState("")
   const [type, setType] = useState<"task" | "bug" | "feature">("task")
   const [priority, setPriority] = useState<
-    "low" | "medium" | "high" | "urgent"
+    "lowest" | "low" | "medium" | "high" | "highest" | "urgent"
   >("medium")
   const [sprintId, setSprintId] = useState<string | null>(null)
   const [epicId, setEpicId] = useState<string | null>(null)
@@ -210,9 +210,11 @@ export function CreateTaskDialog({
 
   const priorityOptions = React.useMemo(
     () => [
+      { value: "lowest", label: "Lowest" },
       { value: "low", label: "Low" },
       { value: "medium", label: "Medium" },
       { value: "high", label: "High" },
+      { value: "highest", label: "Highest" },
       { value: "urgent", label: "Urgent" },
     ],
     []
@@ -388,7 +390,7 @@ export function CreateTaskDialog({
                       value={priority}
                       onValueChange={(val) =>
                         setPriority(
-                          (val as "low" | "medium" | "high" | "urgent") ||
+                          (val as "lowest" | "low" | "medium" | "high" | "highest" | "urgent") ||
                             "medium"
                         )
                       }

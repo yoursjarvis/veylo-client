@@ -99,58 +99,10 @@ interface TaskBoardProps {
   projectLabels?: Label[]
 }
 
+import { getPriority, renderPriorityIcon } from "@/lib/priority"
+
 const getPriorityIcon = (prio: string) => {
-  switch (prio.toLowerCase()) {
-    case "urgent":
-    case "highest":
-      return (
-        <HugeiconsIcon
-          icon={CircleArrowUp01Icon}
-          className="h-10 w-10 text-destructive"
-          strokeWidth={2.5}
-        />
-      )
-    case "high":
-      return (
-        <HugeiconsIcon
-          icon={ArrowUp01Icon}
-          className="h-7 w-7 text-destructive"
-          strokeWidth={2.5}
-        />
-      )
-    case "medium":
-      return (
-        <HugeiconsIcon
-          icon={EqualSignIcon}
-          className="h-7 w-7 text-warning"
-          strokeWidth={2}
-        />
-      )
-    case "low":
-      return (
-        <HugeiconsIcon
-          icon={ArrowDown01Icon}
-          className="h-7 w-7 text-primary"
-          strokeWidth={2.5}
-        />
-      )
-    case "lowest":
-      return (
-        <HugeiconsIcon
-          icon={ArrowDown01Icon}
-          className="h-7 w-7 text-muted-foreground"
-          strokeWidth={2.5}
-        />
-      )
-    default:
-      return (
-        <HugeiconsIcon
-          icon={EqualSignIcon}
-          className="h-7 w-7 text-muted-foreground"
-          strokeWidth={2.5}
-        />
-      )
-  }
+  return renderPriorityIcon(prio, "h-4 w-4 shrink-0");
 }
 
 const getPriorityBadge = (prio: string) => {

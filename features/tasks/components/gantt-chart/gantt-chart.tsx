@@ -61,40 +61,13 @@ import {
   TimelineTask,
 } from "../../hooks/use-timeline-state"
 
+import { getPriority } from "@/lib/priority"
+
 const getPriorityStyle = (priorityVal: string) => {
-  const normalized = (priorityVal || "").toLowerCase().replace("priority-", "")
-  switch (normalized) {
-    case "urgent":
-    case "highest":
-      return {
-        icon: CircleArrowUp01Icon,
-        className: "text-destructive",
-      }
-    case "high":
-      return {
-        icon: ArrowUp01Icon,
-        className: "text-destructive",
-      }
-    case "medium":
-      return {
-        icon: EqualSignIcon,
-        className: "text-warning",
-      }
-    case "low":
-      return {
-        icon: ArrowDown01Icon,
-        className: "text-primary",
-      }
-    case "lowest":
-      return {
-        icon: ArrowDown01Icon,
-        className: "text-muted-foreground",
-      }
-    default:
-      return {
-        icon: EqualSignIcon,
-        className: "text-muted-foreground",
-      }
+  const info = getPriority(priorityVal)
+  return {
+    icon: info.icon,
+    className: info.color,
   }
 }
 
@@ -924,7 +897,6 @@ export function GanttChart({
                             <HugeiconsIcon
                               icon={style.icon}
                               className={cn("h-5 w-5", style.className)}
-                              strokeWidth={2}
                             />
                           )
                         })()
@@ -967,7 +939,7 @@ export function GanttChart({
                         return (
                           <HugeiconsIcon
                             icon={style.icon}
-                            className={cn(style.className, "shrink-0")}
+                            className={cn(style.className, "h-3.5 w-3.5 shrink-0")}
                           />
                         )
                       })()}

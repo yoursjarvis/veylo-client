@@ -209,7 +209,7 @@ export interface TaskCreateRequest {
   epicId?: string | null;
   milestoneId?: string | null;
   type?: "task" | "bug" | "feature" | "subtask";
-  priority?: "low" | "medium" | "high" | "urgent";
+  priority?: "lowest" | "low" | "medium" | "high" | "highest" | "urgent";
   estimate?: number | null;
   dueDate?: string | null;
   assigneeId?: string | null;
@@ -229,7 +229,7 @@ export interface TaskUpdateRequest {
   epicId?: string | null;
   milestoneId?: string | null;
   type?: "task" | "bug" | "feature" | "subtask";
-  priority?: "low" | "medium" | "high" | "urgent";
+  priority?: "lowest" | "low" | "medium" | "high" | "highest" | "urgent";
   estimate?: number | null;
   dueDate?: string | null;
   createdAt?: string;

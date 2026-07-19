@@ -21,6 +21,7 @@ import * as React from "react"
 export type SearchableSelectOption = {
   value: string
   label: string
+  icon?: React.ReactNode
 }
 
 export type SearchableSelectProps = {
@@ -72,9 +73,12 @@ export function SearchableSelect({
           )}
           aria-invalid={ariaInvalid}
         >
-          <span className="truncate">
-            {selectedOption ? selectedOption.label : placeholder}
-          </span>
+          <div className="flex items-center gap-1.5 truncate">
+            {selectedOption?.icon}
+            <span className="truncate">
+              {selectedOption ? selectedOption.label : placeholder}
+            </span>
+          </div>
           <HugeiconsIcon
             icon={UnfoldMoreIcon}
             className="size-4 shrink-0 text-muted-foreground"
@@ -98,7 +102,9 @@ export function SearchableSelect({
                       onValueChange(opt.value)
                       setOpen(false)
                     }}
+                    className="flex cursor-pointer items-center gap-2"
                   >
+                    {opt.icon}
                     <span className="truncate">{opt.label}</span>
                   </CommandItem>
                 ))}

@@ -25,6 +25,7 @@ import {
 } from "date-fns"
 import { useMemo, useState } from "react"
 import { useProject } from "../layout"
+import { getPriority } from "@/lib/priority"
 
 interface TaskItem {
   id: string
@@ -75,16 +76,8 @@ export default function CalendarPage() {
   }, [tasks])
 
   const getPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case "urgent":
-        return "bg-destructive/10 text-destructive border border-destructive/20"
-      case "high":
-        return "bg-warning/10 text-warning border border-warning/20"
-      case "medium":
-        return "bg-info/10 text-info border border-info/20"
-      default:
-        return "bg-muted/10 text-muted-foreground border border-muted/20"
-    }
+    const info = getPriority(priority);
+    return `${info.bgColor} ${info.color} border ${info.borderColor}`;
   }
 
   if (isLoading) {

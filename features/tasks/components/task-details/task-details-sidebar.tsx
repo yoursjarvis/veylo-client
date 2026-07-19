@@ -33,6 +33,8 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import { useTaskWorkLogs, useCreateWorkLog, useDeleteWorkLog } from "@/features/tasks/hooks/use-tasks"
+import { priorityList, renderPriorityIcon } from "@/lib/priority"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 
 interface TaskDetailsSidebarProps {
   task: Task
@@ -206,12 +208,13 @@ export function TaskDetailsSidebar({
     { value: "feature", label: "Feature" },
   ]
 
-  const priorityOptions = [
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
-    { value: "urgent", label: "Urgent" },
-  ]
+  const priorityOptions = React.useMemo(() => {
+    return priorityList.map((p) => ({
+      value: p.value,
+      label: p.label,
+      icon: renderPriorityIcon(p.value, "h-4 w-4 shrink-0"),
+    }))
+  }, [])
 
   const sprintOptions = [
     { value: "", label: "Backlog" },
@@ -319,16 +322,14 @@ export function TaskDetailsSidebar({
               />
             </div >
           </div >
-
           <div className="space-y-1.5 border-b border-border/50 pb-3">
             <span className="text-2xs uppercase tracking-wider text-muted-foreground">Priority</span>
             <div className="pt-1">
-              <ComboboxSelect
-                value={task.priority}
+              <SearchableSelect
+                value={task.priority || null}
                 onValueChange={(val) => onFieldChange("priority", val)}
                 options={priorityOptions}
                 placeholder="Select priority..."
-                className="h-8"
               />
             </div >
           </div >
