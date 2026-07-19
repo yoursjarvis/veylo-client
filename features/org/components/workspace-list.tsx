@@ -45,12 +45,13 @@ import { toast } from "sonner"
 import { IconPicker } from "@/components/shared/icon-picker"
 import { getThumbUrl } from "@/lib/utils"
 import { usePermissions } from "@/hooks/use-permissions"
+import { Switch } from "@/components/ui/switch"
 
 export function WorkspaceList() {
   const { workspaces, isLoading, setIsCreateModalOpen } = useWorkspaceContext()
   const { updateWorkspace, deleteWorkspace } = useWorkspaces()
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingWorkspace, setEditingWorkspace] = useState<{ id: string; name: string; slug: string; icon?: string | File | null } | null>(null)
+  const [editingWorkspace, setEditingWorkspace] = useState<{ id: string; name: string; slug: string; icon?: string | File | null; kpiEnabled?: boolean } | null>(null)
 
   const { hasPermission } = usePermissions()
   const isOwnerOrAdmin = hasPermission("workspace:update")
@@ -79,7 +80,8 @@ export function WorkspaceList() {
         data: { 
           name: editingWorkspace.name, 
           slug: editingWorkspace.slug,
-          icon: !isFile ? (editingWorkspace.icon as string) : undefined
+          icon: !isFile ? (editingWorkspace.icon as string) : undefined,
+          kpiEnabled: editingWorkspace.kpiEnabled,
         },
       })
       
@@ -270,6 +272,7 @@ export function WorkspaceList() {
                         name: workspace.name,
                         slug: workspace.slug,
                         icon: workspace.icon,
+                        kpiEnabled: workspace.kpiEnabled,
                       })
                       setIsEditModalOpen(true)
                     }}
@@ -366,6 +369,24 @@ export function WorkspaceList() {
                       }
                     }}
                     required
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-4 py-2 border-t border-border/30 mt-2">
+                  <div className="flex flex-col gap-0.5">
+                    <Label htmlFor="edit-kpi-enabled" className="text-sm font-semibold cursor-pointer">Enable KPI Point System</Label>
+                    <span className="text-xs text-muted-foreground">Gamify the workspace and track employee point rankings</span>
+                  </div>
+                  <Switch
+                    id="edit-kpi-enabled"
+                    checked={editingWorkspace?.kpiEnabled || false}
+                    onCheckedChange={(checked) => {
+                      if (editingWorkspace) {
+                        setEditingWorkspace({
+                          ...editingWorkspace,
+                          kpiEnabled: checked,
+                        });
+                      }
+                    }}
                   />
                 </div>
               </div>

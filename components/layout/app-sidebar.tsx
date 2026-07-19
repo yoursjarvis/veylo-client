@@ -37,11 +37,16 @@ export function AppSidebar() {
   const hasNoWorkspaces = workspaces && workspaces.length === 0
   const isCollapsed = state === "collapsed"
 
-  const navGroups = getNavGroups(workspaceSlug, !!hasNoWorkspaces, {
-    canReadProjects,
-    isOwnerOrAdmin,
-    canReadRoles,
-  })
+  const navGroups = getNavGroups(
+    workspaceSlug,
+    !!hasNoWorkspaces,
+    {
+      canReadProjects,
+      isOwnerOrAdmin,
+      canReadRoles,
+    },
+    activeWorkspace?.kpiEnabled
+  )
 
   return (
     <Sidebar

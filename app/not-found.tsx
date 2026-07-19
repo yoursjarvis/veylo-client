@@ -17,7 +17,7 @@ export default function NotFound() {
           </p>
         </div>
         <div className="pt-2 w-full">
-          <Link href="/" passHref legacyBehavior>
+          <Link href="/" className="w-full">
             <Button className="w-full font-semibold gap-2">
               <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
               Go Back Home

@@ -35,6 +35,7 @@ import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import { useTaskWorkLogs, useCreateWorkLog, useDeleteWorkLog } from "@/features/tasks/hooks/use-tasks"
 import { priorityList, renderPriorityIcon } from "@/lib/priority"
 import { SearchableSelect } from "@/components/ui/searchable-select"
+import { useWorkspaces } from "@/hooks/use-workspaces"
 
 interface TaskDetailsSidebarProps {
   task: Task
@@ -68,11 +69,34 @@ export function TaskDetailsSidebar({
   const { data: workLogs = [] } = useTaskWorkLogs(task.id)
   const createWorkLogMutation = useCreateWorkLog(task.id)
   const deleteWorkLogMutation = useDeleteWorkLog(task.id)
+  const { activeWorkspace } = useWorkspaces()
 
   const [isLogWorkOpen, setIsLogWorkOpen] = React.useState(false)
   const [hours, setHours] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [descError, setDescError] = React.useState(false)
+
+  const estimateInputRef = React.useRef<HTMLInputElement>(null)
+  const kpiInputRef = React.useRef<HTMLInputElement>(null)
+
+  const [localEstimate, setLocalEstimate] = React.useState<string>(
+    task.estimate !== undefined && task.estimate !== null ? String(task.estimate) : ""
+  )
+  const [localKpiPoints, setLocalKpiPoints] = React.useState<string>(
+    task.estimatedPoints !== undefined && task.estimatedPoints !== null ? String(task.estimatedPoints) : ""
+  )
+
+  React.useEffect(() => {
+    if (document.activeElement !== estimateInputRef.current) {
+      setLocalEstimate(task.estimate !== undefined && task.estimate !== null ? String(task.estimate) : "")
+    }
+  }, [task.estimate])
+
+  React.useEffect(() => {
+    if (document.activeElement !== kpiInputRef.current) {
+      setLocalKpiPoints(task.estimatedPoints !== undefined && task.estimatedPoints !== null ? String(task.estimatedPoints) : "")
+    }
+  }, [task.estimatedPoints])
 
   const [isTimerRunning, setIsTimerRunning] = React.useState(() => {
     const activeTimerKey = `task-timer-${task.id}`
@@ -380,19 +404,50 @@ export function TaskDetailsSidebar({
             <span className="text-2xs uppercase tracking-wider text-muted-foreground">Estimate</span>
             <div className="pt-1">
               <Input
+                ref={estimateInputRef}
                 type="number"
-                value={task.estimate ?? ""}
-                onChange={(e) =>
-                  onFieldChange(
-                    "estimate",
-                    e.target.value ? parseFloat(e.target.value) : null
-                  )
-                }
+                value={localEstimate}
+                onChange={(e) => {
+                  setLocalEstimate(e.target.value)
+                  const val = e.target.value ? parseFloat(e.target.value) : null
+                  onFieldChange("estimate", val)
+                }}
                 className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
                 placeholder="Estimate value..."
               />
             </div >
           </div >
+
+          {activeWorkspace?.kpiEnabled && (
+            <>
+              <div className="space-y-1.5 border-b border-border/50 pb-3">
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">KPI Points</span>
+                <div className="pt-1">
+                  <Input
+                    ref={kpiInputRef}
+                    type="number"
+                    value={localKpiPoints}
+                    onChange={(e) => {
+                      setLocalKpiPoints(e.target.value)
+                      const val = e.target.value ? parseInt(e.target.value, 10) : 0
+                      onFieldChange("estimatedPoints", val)
+                    }}
+                    className="h-8 w-full rounded-md border-transparent bg-transparent px-2 text-xs text-foreground transition-colors hover:border-border/50 hover:bg-muted/40 focus:border-border/80 focus:bg-background focus:outline-none"
+                    placeholder="KPI Points..."
+                  />
+                </div>
+              </div>
+
+              {task.awardedPoints !== undefined && task.awardedPoints > 0 && (
+                <div className="space-y-1.5 border-b border-border/50 pb-3">
+                  <span className="text-2xs uppercase tracking-wider text-muted-foreground">Awarded Points</span>
+                  <div className="pt-1 text-xs font-semibold text-emerald-500 flex items-center gap-1 pl-2">
+                    ⭐ {task.awardedPoints} Points Awarded
+                  </div>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="space-y-1.5 border-b border-border/50 pb-3">
             <span className="text-2xs uppercase tracking-wider text-muted-foreground">Due Date</span>

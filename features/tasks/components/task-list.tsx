@@ -97,6 +97,8 @@ interface Task {
   createdAt?: string
   dueDate?: string
   estimate?: string | number
+  estimatedPoints?: number
+  awardedPoints?: number
   labels?: { labelId: string }[]
   comments?: { id: string }[]
   position?: number

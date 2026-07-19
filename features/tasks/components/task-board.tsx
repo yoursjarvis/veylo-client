@@ -13,6 +13,7 @@ import {
 
 import { Badge } from "@/components/reui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useWorkspaces } from "@/hooks/use-workspaces"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -74,6 +75,8 @@ interface Task {
   title: string
   priority: string
   estimate?: number
+  estimatedPoints?: number
+  awardedPoints?: number
   dueDate?: string
   assignee?: { name?: string; image?: string }
   assignees?: { name?: string; image?: string }[]
@@ -243,6 +246,7 @@ function TaskCard({
   projectLabels?: Label[]
   projectMembers?: ProjectMember[]
 }) {
+  const { activeWorkspace } = useWorkspaces()
   const [isEditing, setIsEditing] = useState(false)
   const [editedTitle, setEditedTitle] = useState(task.title)
   const [isSubtasksExpanded, setIsSubtasksExpanded] = useState(false)
@@ -633,6 +637,12 @@ function TaskCard({
               </div>
             )}
 
+            {activeWorkspace?.kpiEnabled && task.estimatedPoints !== undefined && task.estimatedPoints > 0 && (
+              <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded" title="KPI Points">
+                ⭐ {task.awardedPoints && task.awardedPoints > 0 ? task.awardedPoints : task.estimatedPoints}
+              </div>
+            )}
+
             {task.estimate !== undefined && (
               <div className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-foreground">
                 <span>Est: {task.estimate}</span>
@@ -858,6 +868,7 @@ export function TaskBoard({
   projectLabels = [],
   projectMembers = [],
 }: TaskBoardProps) {
+  const { activeWorkspace } = useWorkspaces()
   const [prevTasks, setPrevTasks] = useState<Task[]>(initialTasks)
   const [boardTasks, setBoardTasks] = useState<Task[]>(() =>
     [...initialTasks].sort((a, b) => (a.position || 0) - (b.position || 0))
