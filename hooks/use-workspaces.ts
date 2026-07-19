@@ -9,6 +9,7 @@ export interface Workspace {
   slug: string;
   icon: string | null;
   organizationId: string;
+  kpiEnabled: boolean;
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -69,7 +70,7 @@ export function useWorkspaces() {
   const activeWorkspace = workspaces?.find((w) => w.id === activeWorkspaceId) || null;
 
   const createWorkspace = useMutation({
-    mutationFn: async (data: { name: string; slug: string; icon?: string }) => {
+    mutationFn: async (data: { name: string; slug: string; icon?: string; kpiEnabled?: boolean }) => {
       const response = await axiosInstance.post("/workspaces", data);
       return response.data.data;
     },
@@ -79,7 +80,7 @@ export function useWorkspaces() {
   });
 
   const updateWorkspace = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name?: string; slug?: string; icon?: string } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { name?: string; slug?: string; icon?: string; kpiEnabled?: boolean } }) => {
       const response = await axiosInstance.patch(`/workspaces/${id}`, data);
       return response.data.data;
     },

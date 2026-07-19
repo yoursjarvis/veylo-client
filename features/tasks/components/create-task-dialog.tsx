@@ -35,6 +35,7 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import React, { useEffect, useState } from "react"
 import { useCreateTask, useProjectCustomFields } from "../hooks/use-tasks"
+import { useWorkspaces } from "@/hooks/use-workspaces"
 
 interface CreateTaskDialogProps {
   open: boolean
@@ -68,6 +69,7 @@ export function CreateTaskDialog({
   const createTaskMutation = useCreateTask(projectId)
   const { data: customFieldDefinitions } = useProjectCustomFields(projectId)
   const queryClient = useQueryClient()
+  const { activeWorkspace } = useWorkspaces()
 
   // Form states
   const [title, setTitle] = useState("")
@@ -84,6 +86,7 @@ export function CreateTaskDialog({
   const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [reporterId, setReporterId] = useState<string | null>(null)
   const [estimate, setEstimate] = useState<number | null>(null)
+  const [estimatedPoints, setEstimatedPoints] = useState<number | null>(null)
   const [dueDate, setDueDate] = useState("")
   type CustomFieldValue = string | number | boolean
   const [customFields, setCustomFields] = useState<
@@ -141,6 +144,7 @@ export function CreateTaskDialog({
         setAssigneeId(null)
         setReporterId(null)
         setEstimate(null)
+        setEstimatedPoints(null)
         setDueDate("")
         setCustomFields({})
       })
@@ -180,6 +184,7 @@ export function CreateTaskDialog({
         assigneeId: assigneeId || null,
         reporterId: reporterId || null,
         estimate: estimate,
+        estimatedPoints: estimatedPoints || 0,
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         customFields,
       },
@@ -439,23 +444,22 @@ export function CreateTaskDialog({
                 </h3>
 
                 {/* Due Date & Estimate */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className={`grid grid-cols-1 gap-4 ${activeWorkspace?.kpiEnabled ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
                   <div className="space-y-2">
-                    <Label className="block text-xs font-medium text-foreground">
+                    <Label className="text-xs font-medium text-foreground">
                       Due Date
                     </Label>
                     <Popover>
                       <PopoverTrigger
                         render={
                           <Button
-                            type="button"
                             variant="outline"
                             className={cn(
-                              "h-9 w-full justify-start border-border bg-background text-left text-xs font-normal text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary/20",
+                              "w-full justify-start text-left text-xs font-normal border-border bg-background h-9 text-foreground hover:bg-muted/50",
                               !dueDate && "text-muted-foreground"
                             )}
                           >
-                            <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                            <CalendarIcon className="mr-2 h-4 w-4 shrink-0 opacity-75" />
                             {dueDate ? (
                               format(new Date(dueDate), "PPP")
                             ) : (
@@ -492,6 +496,25 @@ export function CreateTaskDialog({
                       className="h-9 border-border bg-background text-xs text-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
                     />
                   </div>
+
+                  {activeWorkspace?.kpiEnabled && (
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-foreground">
+                        KPI Points
+                      </Label>
+                      <Input
+                        type="number"
+                        placeholder="Points (e.g. 50)"
+                        value={estimatedPoints ?? ""}
+                        onChange={(e) =>
+                          setEstimatedPoints(
+                            e.target.value ? parseInt(e.target.value, 10) : null
+                          )
+                        }
+                        className="h-9 border-border bg-background text-xs text-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Epic & Milestone */}

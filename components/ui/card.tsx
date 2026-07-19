@@ -20,7 +20,7 @@ function Card({
       data-stacked={stacked}
       className={cn(
         plain
-          ? "flex flex-col min-w-0 text-sm text-card-foreground"
+          ? "flex min-w-0 flex-col text-sm text-card-foreground"
           : "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl border border-border/50 bg-card py-(--card-spacing) text-sm text-card-foreground transition-all duration-200 [--card-spacing:--spacing(4)] hover:-translate-y-0.5 hover:border-primary/40 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         stacked && !plain
           ? [

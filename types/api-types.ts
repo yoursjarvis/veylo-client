@@ -211,6 +211,8 @@ export interface TaskCreateRequest {
   type?: "task" | "bug" | "feature" | "subtask";
   priority?: "lowest" | "low" | "medium" | "high" | "highest" | "urgent";
   estimate?: number | null;
+  estimatedPoints?: number;
+  awardedPoints?: number;
   dueDate?: string | null;
   assigneeId?: string | null;
   reporterId?: string | null;
@@ -231,6 +233,8 @@ export interface TaskUpdateRequest {
   type?: "task" | "bug" | "feature" | "subtask";
   priority?: "lowest" | "low" | "medium" | "high" | "highest" | "urgent";
   estimate?: number | null;
+  estimatedPoints?: number;
+  awardedPoints?: number;
   dueDate?: string | null;
   createdAt?: string;
   assigneeId?: string | null;

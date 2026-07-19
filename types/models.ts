@@ -118,6 +118,8 @@ export interface Task {
   type: string;
   priority: string;
   estimate?: number | null;
+  estimatedPoints?: number;
+  awardedPoints?: number;
   dueDate?: string | null;
   creatorId: string;
   assigneeId?: string | null;

@@ -206,10 +206,10 @@ export function Dashboard() {
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
           <div className="col-span-4 rounded-xl border bg-card p-6 text-card-foreground shadow">
-            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className="h-75 w-full" />
           </div>
           <div className="col-span-3 rounded-xl border bg-card p-6 text-card-foreground shadow">
-            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className="h-75 w-full" />
           </div>
         </div>
       </div>
@@ -226,7 +226,7 @@ export function Dashboard() {
 
       {/* KPI Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="border-primary/20 bg-linear-to-br from-primary/10 via-background to-background">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="font-medium text-muted-foreground">
               Active Projects
@@ -240,7 +240,7 @@ export function Dashboard() {
             <div className="text-2xl font-bold">{projects.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-primary/20 bg-linear-to-br from-primary/10 via-background to-background">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="font-medium text-muted-foreground">
               Total Tasks
@@ -254,7 +254,7 @@ export function Dashboard() {
             <div className="text-2xl font-bold">{totalTasks}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-primary/20 bg-linear-to-br from-primary/10 via-background to-background">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="font-medium text-muted-foreground">
               Tasks Completed
@@ -274,7 +274,7 @@ export function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-primary/20 bg-linear-to-br from-primary/10 via-background to-background">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="font-medium text-muted-foreground">
               Team Members
@@ -298,7 +298,7 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="text-lg">Project Health & Progress</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-75">
             {healthData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -359,7 +359,7 @@ export function Dashboard() {
               Resource Allocation (Active Tasks)
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px] overflow-auto">
+          <CardContent className="h-75 overflow-auto">
             {Object.keys(userWorkload).length > 0 ? (
               <table className="w-full text-left text-sm">
                 <thead className="sticky top-0 bg-muted/50 text-xs text-muted-foreground uppercase">
