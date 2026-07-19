@@ -101,6 +101,7 @@ export function AppSidebar() {
               <SidebarMenuButton
                 isActive={!!(item.path && pathname.startsWith(item.path))}
                 size="sm"
+                tooltip={item.title}
                 render={<Link href={item.path || "#"} />}
               >
                 {item.icon}

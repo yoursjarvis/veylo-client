@@ -1,12 +1,11 @@
-import React from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
+  AlertCircleIcon,
   ArrowDown01Icon,
   ArrowUp01Icon,
   CircleArrowUp01Icon,
   EqualSignIcon,
-  AlertCircleIcon
 } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react"
 
 export type PriorityType =
   "lowest" | "low" | "medium" | "high" | "highest" | "urgent"
@@ -17,7 +16,7 @@ export interface PriorityInfo {
   color: string // Tailwind text color class
   bgColor: string // Tailwind background color class
   borderColor: string // Tailwind border color class
-  icon: any
+  icon: IconSvgElement
 }
 
 export const priorities: Record<PriorityType, PriorityInfo> = {

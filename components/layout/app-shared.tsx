@@ -115,6 +115,29 @@ export const getNavGroups = (
           ),
           isActive: false,
         },
+      ].filter((item) => {
+        if (hasNoWorkspaces) return false
+        if (item.title === "Dashboard" || item.title === "Projects")
+          return permissions.canReadProjects
+        if (item.title === "Audit Logs") return permissions.isOwnerOrAdmin
+        return true
+      }),
+    },
+    {
+      label: "Genernal",
+      items: [
+        {
+          title: "KPIs",
+          path: `/${workspaceSlug}/kpi`,
+          icon: (
+            <HugeiconsIcon
+              icon={Award01Icon}
+              strokeWidth={2}
+              className="h-4 w-4"
+            />
+          ),
+          isActive: false,
+        },
         {
           title: "Audit Logs",
           path: `/${workspaceSlug}/audit-logs`,
@@ -127,23 +150,7 @@ export const getNavGroups = (
           ),
           isActive: false,
         },
-        {
-          title: "Gamification & KPIs",
-          path: `/${workspaceSlug}/kpi`,
-          icon: (
-            <HugeiconsIcon
-              icon={Award01Icon}
-              strokeWidth={2}
-              className="h-4 w-4"
-            />
-          ),
-          isActive: false,
-        },
       ].filter((item) => {
-        if (hasNoWorkspaces) return false
-        if (item.title === "Dashboard" || item.title === "Projects")
-          return permissions.canReadProjects
-        if (item.title === "Audit Logs") return permissions.isOwnerOrAdmin
         if (item.title === "Gamification & KPIs") return !!kpiEnabled
         return true
       }),
@@ -204,6 +211,7 @@ export const getNavGroups = (
           return permissions.isOwnerOrAdmin
         if (item.title === "Roles & Permissions")
           return permissions.canReadRoles
+        if (item.title === "Gamification & KPIs") return !!kpiEnabled
         return true
       }),
     },
@@ -244,11 +252,15 @@ export const getNavLinks = (
   },
   kpiEnabled?: boolean
 ): SidebarNavItem[] => [
-  ...getNavGroups(workspaceSlug, hasNoWorkspaces, permissions, kpiEnabled).flatMap(
-    (group) =>
-      group.items.flatMap((item) =>
-        item.subItems?.length ? [item, ...item.subItems] : [item]
-      )
+  ...getNavGroups(
+    workspaceSlug,
+    hasNoWorkspaces,
+    permissions,
+    kpiEnabled
+  ).flatMap((group) =>
+    group.items.flatMap((item) =>
+      item.subItems?.length ? [item, ...item.subItems] : [item]
+    )
   ),
   ...footerNavLinks,
 ]

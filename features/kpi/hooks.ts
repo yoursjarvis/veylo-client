@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import {
   fetchKpiAccessibleProjects,
+  fetchKpiAllProjects,
   fetchKpiLeaderboard,
   fetchKpiTransactions,
   fetchKpiUserStats,
@@ -62,3 +63,13 @@ export function useKpiAccessibleProjects(workspaceId: string) {
     staleTime: 60_000,
   })
 }
+
+export function useKpiAllProjects(workspaceId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["kpi-all-projects", workspaceId],
+    queryFn: () => fetchKpiAllProjects(workspaceId),
+    enabled: !!workspaceId && enabled,
+    staleTime: 60_000,
+  })
+}
+

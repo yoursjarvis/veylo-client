@@ -1,6 +1,7 @@
 import { axiosInstance } from "@/lib/axios"
 import type {
   KpiAccessibleProject,
+  KpiAllProject,
   KpiLeaderboardResponse,
   KpiPaginatedTransactions,
   KpiUserStats,
@@ -72,3 +73,13 @@ export async function fetchKpiAccessibleProjects(
   )
   return response.data.data
 }
+
+export async function fetchKpiAllProjects(
+  workspaceId: string
+): Promise<KpiAllProject[]> {
+  const response = await axiosInstance.get(
+    `/workspaces/${workspaceId}/kpi/all-projects`
+  )
+  return response.data.data
+}
+

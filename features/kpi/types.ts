@@ -46,9 +46,15 @@ export type KpiUserStats = {
   totalPoints: number
   rank: number
   weeklyPoints: number[]
+  isAdminOrOwner: boolean
 }
 
 export type KpiAccessibleProject = {
+  id: string
+  title: string
+}
+
+export type KpiAllProject = {
   id: string
   title: string
 }

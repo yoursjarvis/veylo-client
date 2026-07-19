@@ -5,6 +5,7 @@ import {
   useTheme as useNextTheme,
 } from "next-themes"
 import * as React from "react"
+import { toast } from "sonner"
 
 type Theme = "light" | "dark" | "system"
 
@@ -44,6 +45,23 @@ function ThemeProviderWrapper({ children }: { children: React.ReactNode }) {
     const nextTheme = resolvedTheme === "dark" ? "light" : "dark"
     setTheme(nextTheme)
   }, [setTheme, resolvedTheme])
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "d") {
+        event.preventDefault()
+        const themes: Theme[] = ["light", "dark", "system"]
+        const currentTheme = (theme as Theme) || "system"
+        const nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length
+        const newTheme = themes[nextIndex]
+        setTheme(newTheme)
+        toast(`Theme set to ${newTheme}`)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [theme, setTheme])
 
   const value = React.useMemo<ThemeContextValue>(
     () => ({

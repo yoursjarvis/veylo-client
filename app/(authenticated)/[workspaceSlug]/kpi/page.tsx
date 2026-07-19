@@ -1,19 +1,20 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs"
 import { format } from "date-fns"
+import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useDebounce } from "use-debounce"
 
-import {
-  useKpiAccessibleProjects,
-  useKpiLeaderboard,
-  useKpiTransactionsInfinite,
-  useKpiUserStats,
-} from "@/features/kpi/hooks"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/reui/badge"
+import {
+  Filters,
+  type Filter,
+  type FilterFieldConfig,
+} from "@/components/reui/filters"
+import { IconStack } from "@/components/reui/icon-stack"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Empty,
@@ -21,38 +22,54 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { IconStack } from "@/components/reui/icon-stack"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import {
-  Filters,
-  type Filter,
-  type FilterFieldConfig,
-} from "@/components/reui/filters"
-import { Button } from "@/components/ui/button"
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  useKpiAccessibleProjects,
+  useKpiAllProjects,
+  useKpiLeaderboard,
+  useKpiTransactionsInfinite,
+  useKpiUserStats,
+} from "@/features/kpi/hooks"
+import type { KpiLeaderboardEntry, KpiTransaction } from "@/features/kpi/types"
+import * as TanStackTable from "@tanstack/react-table"
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+} from "@tanstack/react-table"
+
 import { useWorkspaces } from "@/hooks/use-workspaces"
 import { cn } from "@/lib/utils"
 import {
   Award01Icon,
+  Building04Icon,
   Calendar01Icon,
   DatabaseIcon,
   FilterIcon,
   ReceiptTextIcon,
   Search01Icon,
   Time02Icon,
+  UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts"
-import { useParams } from "next/navigation"
+
 import { useState } from "react"
+import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts"
 
 const LEADERBOARD_ROW_HEIGHT = 72
 const TRANSACTION_ROW_HEIGHT = 88
 
 export default function KpiPage() {
-  const params = useParams()
-  const workspaceSlug = params?.workspaceSlug as string
   const { activeWorkspace } = useWorkspaces()
   const workspaceId = activeWorkspace?.id ?? ""
 
@@ -95,10 +112,25 @@ export default function KpiPage() {
   const [debouncedSearch] = useDebounce(userNameQuery, 350)
 
   // ---------------------------------------------------------------------------
-  // Data fetching
+  // Data fetching — always fetch user stats first to determine role
   // ---------------------------------------------------------------------------
+  const { data: statsData, isLoading: isStatsLoading } =
+    useKpiUserStats(workspaceId)
+
+  const isAdminOrOwner = statsData?.isAdminOrOwner ?? false
+
   const { data: accessibleProjects = [], isLoading: isProjectsLoading } =
     useKpiAccessibleProjects(workspaceId)
+
+  // Only admins get all projects — conditionally fetched
+  const { data: allProjects = [], isLoading: isAllProjectsLoading } =
+    useKpiAllProjects(workspaceId, isAdminOrOwner)
+
+  // Use appropriate project list based on role
+  const projectList = isAdminOrOwner ? allProjects : accessibleProjects
+  const isProjectListLoading = isAdminOrOwner
+    ? isAllProjectsLoading
+    : isProjectsLoading
 
   const leaderboardFilters = useMemo(
     () => ({
@@ -109,23 +141,25 @@ export default function KpiPage() {
     [projectFilterIds, startDateStr, endDateStr]
   )
 
+  // For members, scope transactions to their own userId only
   const transactionFilters = useMemo(
     () => ({
-      userId: debouncedSearch
-        ? undefined // searching by name happens on leaderboard side; transactions use userId
-        : undefined,
+      userId: isAdminOrOwner ? undefined : statsData?.userId,
       projectIds: projectFilterIds,
       startDate: startDateStr || undefined,
       endDate: endDateStr || undefined,
     }),
-    [debouncedSearch, projectFilterIds, startDateStr, endDateStr]
+    [
+      isAdminOrOwner,
+      statsData?.userId,
+      projectFilterIds,
+      startDateStr,
+      endDateStr,
+    ]
   )
 
   const { data: leaderboardData, isLoading: isLeaderboardLoading } =
     useKpiLeaderboard(workspaceId, leaderboardFilters)
-
-  const { data: statsData, isLoading: isStatsLoading } =
-    useKpiUserStats(workspaceId)
 
   const {
     data: transactionPages,
@@ -142,9 +176,7 @@ export default function KpiPage() {
     const list = leaderboardData?.leaderboard ?? []
     if (!debouncedSearch) return list
     const query = debouncedSearch.toLowerCase()
-    return list.filter((entry) =>
-      entry.user.name.toLowerCase().includes(query)
-    )
+    return list.filter((entry) => entry.user.name.toLowerCase().includes(query))
   }, [leaderboardData, debouncedSearch])
 
   const allTransactions = useMemo(
@@ -161,17 +193,30 @@ export default function KpiPage() {
     [statsData]
   )
 
+  // Org-wide aggregate stats for admin header
+  const orgTotalPoints = useMemo(() => {
+    return (leaderboardData?.leaderboard ?? []).reduce(
+      (sum, e) => sum + e.totalPoints,
+      0
+    )
+  }, [leaderboardData])
+
+  const topPerformer = useMemo(() => {
+    const list = leaderboardData?.leaderboard ?? []
+    return list.length > 0 ? list[0] : null
+  }, [leaderboardData])
+
   // ---------------------------------------------------------------------------
-  // Filters component config (projects + date range only — search is separate)
+  // Filters component config
   // ---------------------------------------------------------------------------
   const filterFields = useMemo<FilterFieldConfig[]>(() => {
-    if (isProjectsLoading) return []
+    if (isProjectListLoading) return []
     return [
       {
         key: "projects",
         label: "Projects",
         type: "multiselect",
-        options: accessibleProjects.map((p) => ({
+        options: projectList.map((p) => ({
           value: p.id,
           label: p.title,
         })),
@@ -198,7 +243,7 @@ export default function KpiPage() {
         },
       },
     ]
-  }, [accessibleProjects, isProjectsLoading, startDateStr, endDateStr])
+  }, [projectList, isProjectListLoading, startDateStr, endDateStr])
 
   // Sync the Filters component state with nuqs
   const filtersValue = useMemo<Filter[]>(() => {
@@ -255,8 +300,99 @@ export default function KpiPage() {
   // ---------------------------------------------------------------------------
   const leaderboardParentRef = useRef<HTMLDivElement>(null)
 
+  const { useReactTable: useTable } = { ...TanStackTable }
+
+  const columns = useMemo(() => {
+    const columnHelper = createColumnHelper<KpiLeaderboardEntry>()
+    return [
+      columnHelper.display({
+        id: "rank",
+        header: "Rank",
+        size: 80,
+        cell: (info) => {
+          const rankNum = info.row.index + 1
+          return (
+            <div className="flex justify-center">
+              <span
+                className={cn(
+                  "w-6 text-center text-sm font-bold",
+                  rankNum === 1 && "text-lg text-amber-500",
+                  rankNum === 2 && "text-base text-slate-400",
+                  rankNum === 3 && "text-amber-700",
+                  rankNum > 3 && "text-muted-foreground"
+                )}
+              >
+                {rankNum === 1
+                  ? "🥇"
+                  : rankNum === 2
+                    ? "🥈"
+                    : rankNum === 3
+                      ? "🥉"
+                      : rankNum}
+              </span>
+            </div>
+          )
+        },
+      }),
+      columnHelper.accessor("user", {
+        header: "Member",
+        size: 300,
+        cell: (info) => {
+          const user = info.getValue()
+          const isCurrentUser = user.id === statsData?.userId
+          return (
+            <div className="flex items-center gap-4">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={user.image ?? ""} />
+                <AvatarFallback>
+                  {user.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="flex items-center gap-1.5 text-sm text-foreground">
+                  {user.name}
+                  {isCurrentUser && (
+                    <Badge
+                      variant="secondary"
+                      className="text-3xs h-4 scale-90 px-1"
+                    >
+                      You
+                    </Badge>
+                  )}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {user.email}
+                </span>
+              </div>
+            </div>
+          )
+        },
+      }),
+      columnHelper.accessor("totalPoints", {
+        header: "Points",
+        size: 150,
+        cell: (info) => (
+          <div className="flex items-center gap-1.5">
+            <span className="text-base font-bold text-foreground">
+              {info.getValue()}
+            </span>
+            <span className="text-xs text-muted-foreground">pts</span>
+          </div>
+        ),
+      }),
+    ]
+  }, [statsData?.userId])
+
+  const leaderboardTable = useTable({
+    data: filteredLeaderboard,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  const leaderboardRows = leaderboardTable.getRowModel().rows
+
   const leaderboardVirtualizer = useVirtualizer({
-    count: filteredLeaderboard.length,
+    count: leaderboardRows.length,
     getScrollElement: () => leaderboardParentRef.current,
     estimateSize: () => LEADERBOARD_ROW_HEIGHT,
     overscan: 5,
@@ -267,8 +403,77 @@ export default function KpiPage() {
   // ---------------------------------------------------------------------------
   const transactionsParentRef = useRef<HTMLDivElement>(null)
 
+  const txColumns = useMemo(() => {
+    const columnHelper = createColumnHelper<KpiTransaction>()
+    return [
+      columnHelper.accessor("user", {
+        header: "Transaction Details",
+        size: 400,
+        cell: (info) => {
+          const tx = info.row.original
+          return (
+            <div className="flex items-start gap-3">
+              <Avatar className="mt-0.5 h-8 w-8 shrink-0">
+                <AvatarImage src={tx.user.image ?? ""} />
+                <AvatarFallback>
+                  {tx.user.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-semibold text-foreground">
+                  {tx.user.name}
+                </span>
+                <p className="text-xs leading-normal text-muted-foreground">
+                  {tx.reason}
+                </p>
+                {tx.task && (
+                  <span className="text-xs font-medium text-primary/80">
+                    🔗 {tx.task.taskKey} – {tx.task.title}
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        },
+      }),
+      columnHelper.accessor("points", {
+        header: "Points & Time",
+        size: 150,
+        cell: (info) => {
+          const tx = info.row.original
+          return (
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <span
+                className={cn(
+                  "rounded px-2 py-0.5 text-xs font-bold",
+                  tx.points >= 0
+                    ? "bg-emerald-500/10 text-emerald-500"
+                    : "bg-destructive/10 text-destructive"
+                )}
+              >
+                {tx.points >= 0 ? `+${tx.points}` : tx.points}
+              </span>
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <HugeiconsIcon icon={Calendar01Icon} size={10} />
+                {format(new Date(tx.createdAt), "MMM d, h:mm a")}
+              </span>
+            </div>
+          )
+        },
+      }),
+    ]
+  }, [])
+
+  const transactionTable = useTable({
+    data: allTransactions,
+    columns: txColumns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  const transactionRows = transactionTable.getRowModel().rows
+
   const transactionVirtualizer = useVirtualizer({
-    count: hasNextPage ? allTransactions.length + 1 : allTransactions.length,
+    count: hasNextPage ? transactionRows.length + 1 : transactionRows.length,
     getScrollElement: () => transactionsParentRef.current,
     estimateSize: () => TRANSACTION_ROW_HEIGHT,
     overscan: 5,
@@ -325,168 +530,359 @@ export default function KpiPage() {
   const hasActiveFilters =
     !!userNameQuery || projectFilterIds.length > 0 || !!startDateStr
 
+  // ---------------------------------------------------------------------------
+  // Render — Admin/Owner view vs Member view
+  // ---------------------------------------------------------------------------
   return (
-    <div className="mx-auto max-w-6xl space-y-8 p-6">
-      {/* Header */}
+    <div className="max-w-8xl mx-auto space-y-8 p-6">
+      {/* ------------------------------------------------------------------ */}
+      {/* Header — role-aware title                                           */}
+      {/* ------------------------------------------------------------------ */}
       <div className="flex flex-col justify-between gap-4 border-b border-border/40 pb-6 sm:flex-row sm:items-center">
         <div>
-          <h1 className="flex items-center gap-2 text-3xl font-extrabold tracking-tight text-foreground">
-            🏆 Gamification &amp; KPIs
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Monitor point tallies, earn stars, and view team productivity
-            leaderboard.
-          </p>
+          {isStatsLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          ) : isAdminOrOwner ? (
+            <>
+              <h1 className="flex items-center gap-2 text-3xl font-extrabold tracking-tight text-foreground">
+                <HugeiconsIcon
+                  icon={Building04Icon}
+                  size={28}
+                  className="text-primary"
+                />
+                Organization KPI Overview
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Monitor all team members&apos; performance, leaderboards, and
+                point transactions across the workspace.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="flex items-center gap-2 text-3xl font-extrabold tracking-tight text-foreground">
+                🏆 My KPI Performance
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Track your points, rank, and progress across your assigned
+                projects.
+              </p>
+            </>
+          )}
         </div>
+
+        {/* Role badge */}
+        {!isStatsLoading && (
+          <Badge
+            variant={isAdminOrOwner ? "default" : "secondary"}
+            className="h-7 shrink-0 gap-1.5 px-3 text-xs font-semibold"
+          >
+            <HugeiconsIcon
+              icon={isAdminOrOwner ? Building04Icon : UserMultipleIcon}
+              size={12}
+            />
+            {isAdminOrOwner ? "Admin View" : "Member View"}
+          </Badge>
+        )}
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Rank */}
-        <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-background to-background">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              <HugeiconsIcon icon={Award01Icon} size={14} className="text-primary" />
-              Your Standing
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
-            {isStatsLoading ? (
-              <div className="space-y-3 py-1">
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            ) : (
-              <>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black text-foreground">
-                    #{statsData?.rank ?? "–"}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    in workspace
-                  </span>
+      {/* ------------------------------------------------------------------ */}
+      {/* Stats Cards                                                         */}
+      {/* ------------------------------------------------------------------ */}
+      {isAdminOrOwner ? (
+        /* Admin: org-wide summary cards */
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Total Org Points */}
+          <Card className="relative overflow-hidden border-primary/20 bg-linear-to-br from-primary/10 via-background to-background">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <HugeiconsIcon
+                  icon={Award01Icon}
+                  size={14}
+                  className="text-primary"
+                />
+                Total Org Points
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {isLeaderboardLoading ? (
+                <div className="space-y-3 py-1">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-4 w-32" />
                 </div>
-                <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
-                  <HugeiconsIcon icon={Award01Icon} size={12} />
-                  Out of {leaderboardData?.leaderboard.length ?? 0} members
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-black text-foreground">
+                      {orgTotalPoints.toLocaleString()}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      points
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
+                    <HugeiconsIcon icon={UserMultipleIcon} size={12} />
+                    Across {leaderboardData?.leaderboard.length ?? 0} members
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Total Points */}
-        <Card className="relative overflow-hidden border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-background to-background">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              <HugeiconsIcon icon={Award01Icon} size={14} className="text-amber-500" />
-              Total KPI Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
-            {isStatsLoading ? (
-              <div className="space-y-3 py-1">
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            ) : (
-              <>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black text-amber-500">
-                    {statsData?.totalPoints ?? 0}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    points earned
-                  </span>
+          {/* Active Members */}
+          <Card className="relative overflow-hidden border-indigo-500/20 bg-linear-to-br from-indigo-500/10 via-background to-background hover:border-indigo-500/40">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <HugeiconsIcon
+                  icon={UserMultipleIcon}
+                  size={14}
+                  className="text-indigo-500"
+                />
+                Active Members
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {isLeaderboardLoading ? (
+                <div className="space-y-3 py-1">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-4 w-32" />
                 </div>
-                <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
-                  <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
-                  Keep resolving tasks to maintain rank!
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-black">
+                      {leaderboardData?.leaderboard.length ?? 0}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      members
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
+                    <span className="inline-block h-2 w-2 rounded-full bg-indigo-500" />
+                    With KPI activity in workspace
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Top Performer */}
+          <Card className="relative overflow-hidden border-amber-500/20 bg-linear-to-br from-amber-500/10 via-background to-background hover:border-amber-500/40">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <HugeiconsIcon
+                  icon={Award01Icon}
+                  size={14}
+                  className="text-amber-500"
+                />
+                Top Performer
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {isLeaderboardLoading ? (
+                <div className="space-y-3 py-1">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-4 w-32" />
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              ) : topPerformer ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10 border-2 border-amber-500/30">
+                      <AvatarImage src={topPerformer.user.image ?? ""} />
+                      <AvatarFallback>
+                        {topPerformer.user.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">
+                        {topPerformer.user.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {topPerformer.totalPoints.toLocaleString()} pts
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
+                    🥇 Leading the leaderboard
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">No data yet</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        /* Member: personal stats cards */
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Rank */}
+          <Card className="relative overflow-hidden border-primary/20 bg-linear-to-br from-primary/10 via-background to-background">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <HugeiconsIcon
+                  icon={Award01Icon}
+                  size={14}
+                  className="text-primary"
+                />
+                Your Standing
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {isStatsLoading ? (
+                <div className="space-y-3 py-1">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-black text-foreground">
+                      #{statsData?.rank ?? "–"}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      in workspace
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
+                    <HugeiconsIcon icon={Award01Icon} size={12} />
+                    Out of {leaderboardData?.leaderboard.length ?? 0} members
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Weekly Trend */}
-        <Card className="md:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              <HugeiconsIcon icon={Time02Icon} size={14} />
-              Recent Progress (Points)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex h-[100px] items-end overflow-hidden p-0">
-            {isStatsLoading ? (
-              <div className="w-full px-4 pb-2">
-                <Skeleton className="h-[75px] w-full" />
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={chartData}
-                  margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="colorPoints"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                      <stop
-                        offset="95%"
-                        stopColor="#f59e0b"
-                        stopOpacity={0}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="rounded-lg border bg-background p-2 text-xs font-semibold shadow-sm">
-                            {payload[0].value} pts
-                          </div>
-                        )
-                      }
-                      return null
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="points"
-                    stroke="#f59e0b"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorPoints)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          {/* Total Points */}
+          <Card className="relative overflow-hidden border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-background to-background">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <HugeiconsIcon
+                  icon={Award01Icon}
+                  size={14}
+                  className="text-amber-500"
+                />
+                Total KPI Score
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {isStatsLoading ? (
+                <div className="space-y-3 py-1">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-black text-amber-500">
+                      {statsData?.totalPoints ?? 0}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      points earned
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
+                    <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                    Keep resolving tasks to maintain rank!
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-      {/* Filters — below stats cards */}
+          {/* Weekly Trend */}
+          <Card className="md:col-span-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <HugeiconsIcon icon={Time02Icon} size={14} />
+                Recent Progress (Points)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex h-[100px] items-end overflow-hidden p-0">
+              {isStatsLoading ? (
+                <div className="w-full px-4 pb-2">
+                  <Skeleton className="h-[75px] w-full" />
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={chartData}
+                    margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="colorPoints"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="rounded-lg border bg-background p-2 text-xs font-semibold shadow-sm">
+                              {payload[0].value} pts
+                            </div>
+                          )
+                        }
+                        return null
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="points"
+                      stroke="#f59e0b"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorPoints)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Filters bar                                                         */}
+      {/* ------------------------------------------------------------------ */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-        {/* Username Search */}
-        <div className="relative min-w-[200px] flex-1">
-          <HugeiconsIcon
-            icon={Search01Icon}
-            size={14}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            id="kpi-search-user"
-            placeholder="Search by user name…"
-            value={userNameQuery}
-            onChange={(e) => setUserNameQuery(e.target.value)}
-            className="h-8 pl-8 text-sm"
-          />
-        </div>
+        {/* Search — admins search all users, members search leaderboard only */}
+        {(isAdminOrOwner || activeTab === "leaderboard") && (
+          <div className="relative min-w-50 flex-1">
+            <HugeiconsIcon
+              icon={Search01Icon}
+              size={14}
+              className="absolute top-1/2 left-2.5 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              id="kpi-search-user"
+              placeholder={
+                isAdminOrOwner
+                  ? "Search by member name…"
+                  : "Search leaderboard…"
+              }
+              value={userNameQuery}
+              onChange={(e) => setUserNameQuery(e.target.value)}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+        )}
 
         {/* Project + Date Range via Filters component */}
         <Filters
@@ -532,7 +928,9 @@ export default function KpiPage() {
         )}
       </div>
 
-      {/* Main Grid */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Main Grid                                                           */}
+      {/* ------------------------------------------------------------------ */}
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           {/* Tabs */}
@@ -546,7 +944,7 @@ export default function KpiPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
             >
-              Leaderboard
+              {isAdminOrOwner ? "Team Leaderboard" : "Leaderboard"}
             </button>
             <button
               onClick={() => setActiveTab("transactions")}
@@ -557,7 +955,7 @@ export default function KpiPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
             >
-              Transaction Log
+              {isAdminOrOwner ? "All Transactions" : "My Transactions"}
             </button>
           </div>
 
@@ -589,92 +987,106 @@ export default function KpiPage() {
                     No points awarded for the current filters.
                   </div>
                 ) : (
-                  // Virtualized leaderboard list
+                  // Virtualized leaderboard table
                   <div
                     ref={leaderboardParentRef}
-                    className="max-h-[520px] overflow-auto"
+                    className="max-h-130 overflow-auto"
                   >
-                    <div
-                      style={{
-                        height: `${leaderboardVirtualizer.getTotalSize()}px`,
-                        position: "relative",
-                      }}
-                    >
-                      {leaderboardVirtualizer
-                        .getVirtualItems()
-                        .map((virtualRow) => {
-                          const entry = filteredLeaderboard[virtualRow.index]
-                          const isCurrentUser =
-                            entry.user.id === statsData?.userId
-                          const rankNum = virtualRow.index + 1
-
-                          return (
-                            <div
-                              key={virtualRow.key}
-                              data-index={virtualRow.index}
-                              ref={leaderboardVirtualizer.measureElement}
-                              className={cn(
-                                "absolute left-0 top-0 w-full flex items-center justify-between border-b border-border/40 px-4 transition-all",
-                                isCurrentUser && "bg-primary/5 font-semibold"
-                              )}
-                              style={{
-                                transform: `translateY(${virtualRow.start}px)`,
-                                height: `${LEADERBOARD_ROW_HEIGHT}px`,
-                              }}
-                            >
-                              <div className="flex items-center gap-4">
-                                <span
+                    <Table className="min-w-125 table-fixed">
+                      <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
+                        {leaderboardTable
+                          .getHeaderGroups()
+                          .map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                              {headerGroup.headers.map((header) => (
+                                <TableHead
+                                  key={header.id}
+                                  style={{ width: header.getSize() }}
                                   className={cn(
-                                    "w-6 text-center text-sm font-bold",
-                                    rankNum === 1 && "text-lg text-amber-500",
-                                    rankNum === 2 && "text-base text-slate-400",
-                                    rankNum === 3 && "text-amber-700",
-                                    rankNum > 3 && "text-muted-foreground"
+                                    "h-10 px-4 text-xs font-semibold tracking-wider text-muted-foreground uppercase",
+                                    header.id === "rank" ? "text-center" : ""
                                   )}
                                 >
-                                  {rankNum === 1
-                                    ? "🥇"
-                                    : rankNum === 2
-                                      ? "🥈"
-                                      : rankNum === 3
-                                        ? "🥉"
-                                        : rankNum}
-                                </span>
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage src={entry.user.image ?? ""} />
-                                  <AvatarFallback>
-                                    {entry.user.name.charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                  <span className="flex items-center gap-1.5 text-sm text-foreground">
-                                    {entry.user.name}
-                                    {isCurrentUser && (
-                                      <Badge
-                                        variant="secondary"
-                                        className="text-3xs h-4 scale-90 px-1"
-                                      >
-                                        You
-                                      </Badge>
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                                </TableHead>
+                              ))}
+                            </TableRow>
+                          ))}
+                      </TableHeader>
+                      <TableBody>
+                        {(() => {
+                          const virtualItems =
+                            leaderboardVirtualizer.getVirtualItems()
+                          const paddingTop =
+                            virtualItems.length > 0
+                              ? virtualItems[0]?.start || 0
+                              : 0
+                          const paddingBottom =
+                            virtualItems.length > 0
+                              ? leaderboardVirtualizer.getTotalSize() -
+                                (virtualItems[virtualItems.length - 1]?.end ||
+                                  0)
+                              : 0
+
+                          return (
+                            <>
+                              {paddingTop > 0 && (
+                                <TableRow>
+                                  <TableCell
+                                    style={{ height: `${paddingTop}px` }}
+                                    colSpan={columns.length}
+                                    className="border-0 p-0"
+                                  />
+                                </TableRow>
+                              )}
+                              {virtualItems.map((virtualRow) => {
+                                const row = leaderboardRows[virtualRow.index]
+                                const isCurrentUser =
+                                  row.original.user.id === statsData?.userId
+                                return (
+                                  <TableRow
+                                    key={row.id}
+                                    data-index={virtualRow.index}
+                                    ref={leaderboardVirtualizer.measureElement}
+                                    className={cn(
+                                      isCurrentUser &&
+                                        "bg-primary/5 hover:bg-primary/10"
                                     )}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {entry.user.email}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-base font-bold text-foreground">
-                                  {entry.totalPoints}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  pts
-                                </span>
-                              </div>
-                            </div>
+                                    style={{
+                                      height: `${LEADERBOARD_ROW_HEIGHT}px`,
+                                    }}
+                                  >
+                                    {row.getVisibleCells().map((cell) => (
+                                      <TableCell
+                                        key={cell.id}
+                                        className="px-4 py-2"
+                                      >
+                                        {flexRender(
+                                          cell.column.columnDef.cell,
+                                          cell.getContext()
+                                        )}
+                                      </TableCell>
+                                    ))}
+                                  </TableRow>
+                                )
+                              })}
+                              {paddingBottom > 0 && (
+                                <TableRow>
+                                  <TableCell
+                                    style={{ height: `${paddingBottom}px` }}
+                                    colSpan={columns.length}
+                                    className="border-0 p-0"
+                                  />
+                                </TableRow>
+                              )}
+                            </>
                           )
-                        })}
-                    </div>
+                        })()}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>
@@ -684,26 +1096,40 @@ export default function KpiPage() {
             <Card className="py-0">
               <CardContent className="p-0">
                 {isTransactionsLoading ? (
-                  <div className="space-y-4 p-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start justify-between gap-4"
-                      >
-                        <div className="flex items-start gap-3">
-                          <Skeleton className="h-8 w-8 rounded-full" />
-                          <div className="space-y-1">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-3 w-48" />
-                            <Skeleton className="h-3 w-64" />
-                          </div>
-                        </div>
-                        <div className="flex shrink-0 flex-col items-end gap-1">
-                          <Skeleton className="h-5 w-10 rounded" />
-                          <Skeleton className="h-3 w-20" />
-                        </div>
-                      </div>
-                    ))}
+                  <div className="overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[400px]">
+                            <Skeleton className="h-4 w-32" />
+                          </TableHead>
+                          <TableHead className="w-[150px]">
+                            <Skeleton className="ml-auto h-4 w-20" />
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell>
+                              <div className="flex items-start gap-3">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                                <div className="space-y-1">
+                                  <Skeleton className="h-4 w-24" />
+                                  <Skeleton className="h-3 w-48" />
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col items-end gap-1">
+                                <Skeleton className="h-5 w-10 rounded" />
+                                <Skeleton className="h-3 w-20" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 ) : allTransactions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center border-dashed p-12 text-center">
@@ -729,88 +1155,129 @@ export default function KpiPage() {
                     ref={transactionsParentRef}
                     className="max-h-[560px] overflow-auto"
                   >
-                    <div
-                      style={{
-                        height: `${transactionVirtualizer.getTotalSize()}px`,
-                        position: "relative",
-                      }}
-                    >
-                      {virtualTransactionRows.map((virtualRow) => {
-                        const isLoaderRow =
-                          virtualRow.index >= allTransactions.length
-                        const tx = allTransactions[virtualRow.index]
+                    <Table className="min-w-125 table-fixed">
+                      <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
+                        {transactionTable
+                          .getHeaderGroups()
+                          .map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                              {headerGroup.headers.map((header) => (
+                                <TableHead
+                                  key={header.id}
+                                  style={{ width: header.getSize() }}
+                                  className={cn(
+                                    "h-10 px-4 text-xs font-semibold tracking-wider text-muted-foreground uppercase",
+                                    header.id === "points" ? "text-right" : ""
+                                  )}
+                                >
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                                </TableHead>
+                              ))}
+                            </TableRow>
+                          ))}
+                      </TableHeader>
+                      <TableBody>
+                        {(() => {
+                          const virtualItems =
+                            transactionVirtualizer.getVirtualItems()
+                          const paddingTop =
+                            virtualItems.length > 0
+                              ? virtualItems[0]?.start || 0
+                              : 0
+                          const paddingBottom =
+                            virtualItems.length > 0
+                              ? transactionVirtualizer.getTotalSize() -
+                                (virtualItems[virtualItems.length - 1]?.end ||
+                                  0)
+                              : 0
 
-                        return (
-                          <div
-                            key={virtualRow.key}
-                            data-index={virtualRow.index}
-                            ref={transactionVirtualizer.measureElement}
-                            className="absolute left-0 top-0 w-full border-b border-border/40 px-4"
-                            style={{
-                              transform: `translateY(${virtualRow.start}px)`,
-                              height: `${TRANSACTION_ROW_HEIGHT}px`,
-                            }}
-                          >
-                            {isLoaderRow ? (
-                              <div className="flex h-full items-center justify-center">
-                                <Spinner className="size-5" />
-                              </div>
-                            ) : (
-                              <div className="flex h-full items-center justify-between gap-4">
-                                <div className="flex items-start gap-3">
-                                  <Avatar className="mt-0.5 h-8 w-8 shrink-0">
-                                    <AvatarImage
-                                      src={tx.user.image ?? ""}
-                                    />
-                                    <AvatarFallback>
-                                      {tx.user.name.charAt(0).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex flex-col gap-0.5">
-                                    <span className="text-sm font-semibold text-foreground">
-                                      {tx.user.name}
-                                    </span>
-                                    <p className="text-xs leading-normal text-muted-foreground">
-                                      {tx.reason}
-                                    </p>
-                                    {tx.task && (
-                                      <span className="text-xs font-medium text-primary/80">
-                                        🔗 {tx.task.taskKey} –{" "}
-                                        {tx.task.title}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex shrink-0 flex-col items-end gap-1">
-                                  <span
-                                    className={cn(
-                                      "rounded px-2 py-0.5 text-xs font-bold",
-                                      tx.points >= 0
-                                        ? "bg-emerald-500/10 text-emerald-500"
-                                        : "bg-destructive/10 text-destructive"
-                                    )}
+                          return (
+                            <>
+                              {paddingTop > 0 && (
+                                <TableRow>
+                                  <TableCell
+                                    style={{ height: `${paddingTop}px` }}
+                                    colSpan={txColumns.length}
+                                    className="border-0 p-0"
+                                  />
+                                </TableRow>
+                              )}
+                              {virtualItems.map((virtualRow) => {
+                                const isLoaderRow =
+                                  virtualRow.index >= transactionRows.length
+
+                                if (isLoaderRow) {
+                                  return (
+                                    <TableRow
+                                      key={virtualRow.key}
+                                      data-index={virtualRow.index}
+                                      ref={
+                                        transactionVirtualizer.measureElement
+                                      }
+                                      style={{
+                                        height: `${TRANSACTION_ROW_HEIGHT}px`,
+                                      }}
+                                    >
+                                      <TableCell>
+                                        <div className="flex items-start gap-3">
+                                          <Skeleton className="h-8 w-8 rounded-full" />
+                                          <div className="space-y-1">
+                                            <Skeleton className="h-4 w-24" />
+                                            <Skeleton className="h-3 w-48" />
+                                          </div>
+                                        </div>
+                                      </TableCell>
+                                      <TableCell>
+                                        <div className="flex flex-col items-end gap-1">
+                                          <Skeleton className="h-5 w-10 rounded" />
+                                          <Skeleton className="h-3 w-20" />
+                                        </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  )
+                                }
+
+                                const row = transactionRows[virtualRow.index]
+                                return (
+                                  <TableRow
+                                    key={row.id}
+                                    data-index={virtualRow.index}
+                                    ref={transactionVirtualizer.measureElement}
+                                    style={{
+                                      height: `${TRANSACTION_ROW_HEIGHT}px`,
+                                    }}
                                   >
-                                    {tx.points >= 0
-                                      ? `+${tx.points}`
-                                      : tx.points}
-                                  </span>
-                                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                    <HugeiconsIcon
-                                      icon={Calendar01Icon}
-                                      size={10}
-                                    />
-                                    {format(
-                                      new Date(tx.createdAt),
-                                      "MMM d, h:mm a"
-                                    )}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
+                                    {row.getVisibleCells().map((cell) => (
+                                      <TableCell
+                                        key={cell.id}
+                                        className="px-4 py-2"
+                                      >
+                                        {flexRender(
+                                          cell.column.columnDef.cell,
+                                          cell.getContext()
+                                        )}
+                                      </TableCell>
+                                    ))}
+                                  </TableRow>
+                                )
+                              })}
+                              {paddingBottom > 0 && (
+                                <TableRow>
+                                  <TableCell
+                                    style={{ height: `${paddingBottom}px` }}
+                                    colSpan={txColumns.length}
+                                    className="border-0 p-0"
+                                  />
+                                </TableRow>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>
@@ -827,7 +1294,7 @@ export default function KpiPage() {
                 Point System Rules
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-xs text-muted-foreground">
+            <CardContent className="space-y-4 text-muted-foreground">
               <div className="flex items-start gap-2.5">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                   1
@@ -836,7 +1303,7 @@ export default function KpiPage() {
                   <p className="font-semibold text-foreground">
                     Task Completion
                   </p>
-                  <p className="mt-0.5">
+                  <p className="mt-0.5 font-medium">
                     When a task is moved to &quot;Done&quot;, its estimated
                     points are awarded to the assignee.
                   </p>
@@ -872,6 +1339,54 @@ export default function KpiPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Admin-only: Quick insight card */}
+          {isAdminOrOwner && !isLeaderboardLoading && (
+            <Card className="">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                  <HugeiconsIcon icon={Award01Icon} size={20} strokeWidth={2} />
+                  Quick Insight
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-muted-foreground">
+                    Total Members
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {leaderboardData?.leaderboard.length ?? 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-muted-foreground">
+                    Total Points
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {orgTotalPoints.toLocaleString()}
+                  </span>
+                </div>
+                {topPerformer && (
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-muted-foreground">
+                      Leader
+                    </span>
+                    <span className="font-bold text-foreground">
+                      {topPerformer.user.name.split(" ")[0]}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-muted-foreground">
+                    Projects
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {allProjects.length}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
