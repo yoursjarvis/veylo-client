@@ -62,7 +62,7 @@ export function AppHeader() {
       <div className="flex flex-1 items-center justify-center">
         <Button
           variant="outline"
-          className="relative h-8 w-full max-w-sm justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12"
+          className="relative h-8 w-full max-w-sm justify-start rounded-xl bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12"
           onClick={() => setCommandOpen(true)}
         >
           <span className="hidden lg:inline-flex">Search...</span>

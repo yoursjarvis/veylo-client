@@ -36,6 +36,8 @@ export const getNavGroups = (
     canReadProjects: boolean
     isOwnerOrAdmin: boolean
     canReadRoles: boolean
+    canViewAdminKpi?: boolean
+    canViewMemberKpi?: boolean
   },
   kpiEnabled?: boolean
 ): SidebarNavGroup[] =>
@@ -151,6 +153,9 @@ export const getNavGroups = (
           isActive: false,
         },
       ].filter((item) => {
+        if (item.title === "KPIs") {
+          return !!kpiEnabled && (permissions.canViewAdminKpi || permissions.canViewMemberKpi)
+        }
         if (item.title === "Gamification & KPIs") return !!kpiEnabled
         return true
       }),
@@ -249,6 +254,8 @@ export const getNavLinks = (
     canReadProjects: boolean
     isOwnerOrAdmin: boolean
     canReadRoles: boolean
+    canViewAdminKpi?: boolean
+    canViewMemberKpi?: boolean
   },
   kpiEnabled?: boolean
 ): SidebarNavItem[] => [

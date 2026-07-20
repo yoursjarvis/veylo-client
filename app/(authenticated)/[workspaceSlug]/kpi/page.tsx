@@ -48,6 +48,7 @@ import {
   getCoreRowModel,
 } from "@tanstack/react-table"
 
+import { usePermissions } from "@/hooks/use-permissions"
 import { useWorkspaces } from "@/hooks/use-workspaces"
 import { cn } from "@/lib/utils"
 import {
@@ -56,8 +57,10 @@ import {
   Calendar01Icon,
   DatabaseIcon,
   FilterIcon,
+  Link01Icon,
   ReceiptTextIcon,
   Search01Icon,
+  SecurityLockIcon,
   Time02Icon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
@@ -114,10 +117,26 @@ export default function KpiPage() {
   // ---------------------------------------------------------------------------
   // Data fetching — always fetch user stats first to determine role
   // ---------------------------------------------------------------------------
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions()
+  const canViewAdminKpi = hasPermission("kpi:view-admin")
+  const canViewMemberKpi = hasPermission("kpi:view-member")
+
+  const [viewMode, setViewMode] = useState<"admin" | "member">("member")
+
+  useEffect(() => {
+    if (canViewAdminKpi && !canViewMemberKpi) {
+      setViewMode("admin")
+    } else if (canViewMemberKpi && !canViewAdminKpi) {
+      setViewMode("member")
+    } else if (canViewAdminKpi && canViewMemberKpi && !viewMode) {
+      setViewMode("admin")
+    }
+  }, [canViewAdminKpi, canViewMemberKpi, viewMode])
+
   const { data: statsData, isLoading: isStatsLoading } =
     useKpiUserStats(workspaceId)
 
-  const isAdminOrOwner = statsData?.isAdminOrOwner ?? false
+  const isAdminOrOwner = viewMode === "admin"
 
   const { data: accessibleProjects = [], isLoading: isProjectsLoading } =
     useKpiAccessibleProjects(workspaceId)
@@ -427,8 +446,9 @@ export default function KpiPage() {
                   {tx.reason}
                 </p>
                 {tx.task && (
-                  <span className="text-xs font-medium text-primary/80">
-                    🔗 {tx.task.taskKey} – {tx.task.title}
+                  <span className="flex text-xs font-medium text-primary/80">
+                    <HugeiconsIcon icon={Link01Icon} size={18} />{" "}
+                    {tx.task.taskKey} – {tx.task.title}
                   </span>
                 )}
               </div>
@@ -454,7 +474,7 @@ export default function KpiPage() {
                 {tx.points >= 0 ? `+${tx.points}` : tx.points}
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <HugeiconsIcon icon={Calendar01Icon} size={10} />
+                <HugeiconsIcon icon={Calendar01Icon} size={18} />
                 {format(new Date(tx.createdAt), "MMM d, h:mm a")}
               </span>
             </div>
@@ -502,10 +522,26 @@ export default function KpiPage() {
   // ---------------------------------------------------------------------------
   // Early returns
   // ---------------------------------------------------------------------------
-  if (!activeWorkspace) {
+  if (!activeWorkspace || isPermissionsLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Spinner className="size-8" />
+      </div>
+    )
+  }
+
+  if (!canViewAdminKpi && !canViewMemberKpi) {
+    return (
+      <div className="flex h-[80vh] flex-col items-center justify-center px-4 text-center">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <HugeiconsIcon icon={SecurityLockIcon} size={32} />
+        </div>
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
+          Access Denied
+        </h2>
+        <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+          You do not have permission to view KPIs in this workspace.
+        </p>
       </div>
     )
   }
@@ -573,18 +609,51 @@ export default function KpiPage() {
           )}
         </div>
 
-        {/* Role badge */}
+        {/* Role badge / toggle */}
         {!isStatsLoading && (
-          <Badge
-            variant={isAdminOrOwner ? "default" : "secondary"}
-            className="h-7 shrink-0 gap-1.5 px-3 text-xs font-semibold"
-          >
-            <HugeiconsIcon
-              icon={isAdminOrOwner ? Building04Icon : UserMultipleIcon}
-              size={12}
-            />
-            {isAdminOrOwner ? "Admin View" : "Member View"}
-          </Badge>
+          <div className="flex shrink-0 items-center gap-2">
+            {canViewAdminKpi && canViewMemberKpi ? (
+              <div className="flex items-center rounded-md border border-border bg-muted/30 p-1">
+                <Button
+                  variant={isAdminOrOwner ? "default" : "ghost"}
+                  size="sm"
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setViewMode("admin")}
+                >
+                  <HugeiconsIcon
+                    icon={Building04Icon}
+                    size={12}
+                    className="mr-1.5"
+                  />
+                  Admin View
+                </Button>
+                <Button
+                  variant={!isAdminOrOwner ? "default" : "ghost"}
+                  size="sm"
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setViewMode("member")}
+                >
+                  <HugeiconsIcon
+                    icon={UserMultipleIcon}
+                    size={12}
+                    className="mr-1.5"
+                  />
+                  Member View
+                </Button>
+              </div>
+            ) : (
+              <Badge
+                variant={isAdminOrOwner ? "default" : "secondary"}
+                className="h-7 gap-1.5 px-3 text-xs font-semibold"
+              >
+                <HugeiconsIcon
+                  icon={isAdminOrOwner ? Building04Icon : UserMultipleIcon}
+                  size={12}
+                />
+                {isAdminOrOwner ? "Admin View" : "Member View"}
+              </Badge>
+            )}
+          </div>
         )}
       </div>
 
@@ -755,7 +824,7 @@ export default function KpiPage() {
           </Card>
 
           {/* Total Points */}
-          <Card className="relative overflow-hidden border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-background to-background">
+          <Card className="relative overflow-hidden border-amber-500/20 bg-linear-to-br from-amber-500/10 via-background to-background">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 <HugeiconsIcon
@@ -799,10 +868,10 @@ export default function KpiPage() {
                 Recent Progress (Points)
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex h-[100px] items-end overflow-hidden p-0">
+            <CardContent className="flex h-25 items-end overflow-hidden p-0">
               {isStatsLoading ? (
                 <div className="w-full px-4 pb-2">
-                  <Skeleton className="h-[75px] w-full" />
+                  <Skeleton className="h-18.75 w-full" />
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -1100,10 +1169,10 @@ export default function KpiPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[400px]">
+                          <TableHead className="w-100">
                             <Skeleton className="h-4 w-32" />
                           </TableHead>
-                          <TableHead className="w-[150px]">
+                          <TableHead className="w-37.5">
                             <Skeleton className="ml-auto h-4 w-20" />
                           </TableHead>
                         </TableRow>
@@ -1153,7 +1222,7 @@ export default function KpiPage() {
                 ) : (
                   <div
                     ref={transactionsParentRef}
-                    className="max-h-[560px] overflow-auto"
+                    className="max-h-140 overflow-auto"
                   >
                     <Table className="min-w-125 table-fixed">
                       <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">

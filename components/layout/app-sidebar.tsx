@@ -33,6 +33,8 @@ export function AppSidebar() {
   const isOwnerOrAdmin = hasPermission("member:read")
   const canReadProjects = hasPermission("project:read")
   const canReadRoles = hasPermission("role:read")
+  const canViewAdminKpi = hasPermission("kpi:view-admin")
+  const canViewMemberKpi = hasPermission("kpi:view-member")
 
   const hasNoWorkspaces = workspaces && workspaces.length === 0
   const isCollapsed = state === "collapsed"
@@ -44,6 +46,8 @@ export function AppSidebar() {
       canReadProjects,
       isOwnerOrAdmin,
       canReadRoles,
+      canViewAdminKpi,
+      canViewMemberKpi,
     },
     activeWorkspace?.kpiEnabled
   )
