@@ -69,7 +69,8 @@ export function RoleAssignmentModal({
   open,
   onOpenChange,
 }: RoleAssignmentModalProps) {
-  const { data: roles } = useOrganizationRoles(organizationId)
+  const { data } = useOrganizationRoles(organizationId)
+  const roles = data?.pages.flatMap((page) => page.data) ?? []
   const { mutateAsync: assignRole, isPending } = useAssignRole()
 
   // Fetch ALL assignments for the user by not passing scopeType and scopeId

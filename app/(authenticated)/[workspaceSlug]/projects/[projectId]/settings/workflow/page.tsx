@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { axiosInstance } from "@/lib/axios"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { usePermissions } from "@/hooks/use-permissions"
 import {
   Card,
   CardHeader,
@@ -39,8 +40,13 @@ interface Transition {
 }
 
 export default function WorkflowSettingsPage() {
-  const { projectId, isWorkspaceAdmin } = useProject()
+  const { projectId } = useProject()
   const queryClient = useQueryClient()
+  const { hasPermission } = usePermissions()
+
+  const canRead = hasPermission("project-workflow:read")
+  const canCreate = hasPermission("project-workflow:create")
+  const canDelete = hasPermission("project-workflow:delete")
 
   const [transitions, setTransitions] = useState<Transition[]>([])
   const [statuses, setStatuses] = useState<{ id: string; name: string }[]>([])
@@ -118,10 +124,10 @@ export default function WorkflowSettingsPage() {
     }
   })
 
-  if (!isWorkspaceAdmin) {
+  if (!canRead) {
     return (
-      <div className="p-8 text-center">
-        You do not have administrative permissions to view workflow settings.
+      <div className="p-8 text-center text-muted-foreground">
+        You do not have permission to view project workflow.
       </div>
     )
   }
@@ -141,14 +147,15 @@ export default function WorkflowSettingsPage() {
       </div>
 
       <div className="grid gap-6">
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">Create New Transition</CardTitle>
-            <CardDescription className="text-xs">
-              Specify which status change is allowed and who can perform it.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-4 items-end">
+        {canCreate && (
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">Create New Transition</CardTitle>
+              <CardDescription className="text-xs">
+                Specify which status change is allowed and who can perform it.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-4 items-end">
             <div className="space-y-1.5">
               <label className="text-xs font-medium">From Status</label>
               <Select 
@@ -210,6 +217,7 @@ export default function WorkflowSettingsPage() {
             </Button>
           </CardContent>
         </Card>
+        )}
 
         <Card className="shadow-sm">
           <CardHeader>
@@ -254,15 +262,17 @@ export default function WorkflowSettingsPage() {
                           )}
                         </td>
                         <td className="p-4 text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
-                            onClick={() => deleteTransitionMutation.mutate(t.id)}
-                            disabled={deleteTransitionMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {canDelete && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                              onClick={() => deleteTransitionMutation.mutate(t.id)}
+                              disabled={deleteTransitionMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     ))

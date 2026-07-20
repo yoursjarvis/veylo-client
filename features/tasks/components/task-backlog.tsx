@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/popover"
 import { axiosInstance } from "@/lib/axios"
 import { cn } from "@/lib/utils"
+import { usePermissions } from "@/hooks/use-permissions"
 import { format } from "date-fns"
 import {
   Calendar as CalendarIcon,
@@ -91,6 +92,10 @@ export function TaskBacklog({
     string | null
   >(null)
   const [quickAddTaskTitle, setQuickAddTaskTitle] = useState("")
+  
+  const { hasPermission } = usePermissions()
+  const canCreateSprint = hasPermission("sprint:create")
+  const canUpdateSprint = hasPermission("sprint:update")
 
   // Sprint Completion Wizard state
   const [completingSprint, setCompletingSprint] = useState<{
@@ -282,12 +287,14 @@ export function TaskBacklog({
             Plan sprints, assign estimations, drag items, and track velocity.
           </p>
         </div>
-        <Button
-          onClick={() => setIsCreateSprintOpen(true)}
-          className="h-8 text-xs"
-        >
-          <Plus size={14} className="mr-1.5" /> Create Sprint
-        </Button>
+        {canCreateSprint && (
+          <Button
+            onClick={() => setIsCreateSprintOpen(true)}
+            className="h-8 text-xs"
+          >
+            <Plus size={14} className="mr-1.5" /> Create Sprint
+          </Button>
+        )}
       </div>
 
       {/* Active & Planned Sprints */}
@@ -356,7 +363,7 @@ export function TaskBacklog({
                   )}
 
                   {/* Sprint Actions */}
-                  {sprint.status === "planned" && (
+                  {sprint.status === "planned" && canUpdateSprint && (
                     <Button
                       onClick={() => handleStartSprint(sprint)}
                       size="sm"
@@ -366,7 +373,7 @@ export function TaskBacklog({
                     </Button>
                   )}
 
-                  {sprint.status === "active" && (
+                  {sprint.status === "active" && canUpdateSprint && (
                     <Button
                       onClick={() => triggerCompleteSprint(sprint)}
                       size="sm"

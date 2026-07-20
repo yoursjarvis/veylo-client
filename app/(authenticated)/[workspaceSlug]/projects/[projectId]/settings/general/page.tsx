@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
+import { usePermissions } from "@/hooks/use-permissions"
 
 const projectSettingsSchema = z.object({
   title: z.string().min(2, "Project name must be at least 2 characters"),
@@ -32,9 +33,13 @@ const projectSettingsSchema = z.object({
 })
 
 export default function GeneralSettingsPage() {
-  const { projectId, workspaceSlug, selectedProject, isWorkspaceAdmin } =
+  const { projectId, workspaceSlug, selectedProject } =
     useProject()
   const { activeWorkspace } = useWorkspaceContext()
+  const { hasPermission } = usePermissions()
+
+  const canUpdate = hasPermission("project:update")
+  const canDelete = hasPermission("project:delete")
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -125,10 +130,10 @@ export default function GeneralSettingsPage() {
     },
   })
 
-  if (!isWorkspaceAdmin) {
+  if (!canUpdate && !canDelete) {
     return (
-      <div className="p-8 text-center">
-        You do not have administrative permissions to view settings.
+      <div className="p-8 text-center text-muted-foreground">
+        You do not have permission to view project settings.
       </div>
     )
   }
@@ -146,23 +151,24 @@ export default function GeneralSettingsPage() {
       </div>
 
       <div className="grid max-w-2xl grid-cols-1 gap-6">
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">
-              Project Identity
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Change the primary name, description, and icon of this workspace
-              project.
-            </CardDescription>
-          </CardHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              form.handleSubmit()
-            }}
-          >
+        {canUpdate && (
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">
+                Project Identity
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Change the primary name, description, and icon of this workspace
+                project.
+              </CardDescription>
+            </CardHeader>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                form.handleSubmit()
+              }}
+            >
             <CardContent className="space-y-4">
               <form.Field
                 name="title"
@@ -261,10 +267,12 @@ export default function GeneralSettingsPage() {
             </CardContent>
           </form>
         </Card>
+        )}
 
         {/* Danger Zone */}
-        <Card className="shadow-md">
-          <CardHeader>
+        {canDelete && (
+          <Card className="shadow-md">
+            <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm font-semibold text-destructive">
               <AlertTriangle className="h-4.5 w-4.5" /> Danger Zone
             </CardTitle>
@@ -305,6 +313,7 @@ export default function GeneralSettingsPage() {
             </div>
           </CardContent>
         </Card>
+        )}
       </div>
     </div>
   )

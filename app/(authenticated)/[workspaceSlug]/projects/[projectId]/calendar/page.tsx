@@ -26,6 +26,7 @@ import {
 import { useMemo, useState } from "react"
 import { useProject } from "../layout"
 import { getPriority } from "@/lib/priority"
+import { usePermissions } from "@/hooks/use-permissions"
 
 interface TaskItem {
   id: string
@@ -40,6 +41,8 @@ interface TaskItem {
 
 export default function CalendarPage() {
   const { projectId, handleSelectTask, setIsCreateTaskOpen } = useProject()
+  const { hasPermission } = usePermissions()
+  const canCreateTask = hasPermission("task:create")
   const [currentDate, setCurrentDate] = useState(new Date())
 
   // Fetch all tasks for the project without filtering out any initially on the server,
@@ -157,14 +160,16 @@ export default function CalendarPage() {
             {format(currentDate, "MMMM yyyy")}
           </span>
 
-          <Button
-            size="sm"
-            onClick={() => setIsCreateTaskOpen(true)}
-            className="h-9 gap-2 rounded-lg bg-primary text-xs font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/95"
-          >
-            <HugeiconsIcon icon={PlusSignIcon} className="h-3.5 w-3.5" />
-            <span>Create Task</span>
-          </Button>
+          {canCreateTask && (
+            <Button
+              size="sm"
+              onClick={() => setIsCreateTaskOpen(true)}
+              className="h-9 gap-2 rounded-lg bg-primary text-xs font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/95"
+            >
+              <HugeiconsIcon icon={PlusSignIcon} className="h-3.5 w-3.5" />
+              <span>Create Task</span>
+            </Button>
+          )}
         </div>
       </div>
 

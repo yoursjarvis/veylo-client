@@ -8,6 +8,7 @@ import {
   useDeleteCustomField,
 } from "@/features/tasks/hooks/use-tasks"
 import { Button } from "@/components/ui/button"
+import { usePermissions } from "@/hooks/use-permissions"
 import { Input } from "@/components/ui/input"
 import {
   Card,
@@ -31,7 +32,12 @@ import {
 } from "@/components/ui/combobox"
 
 export default function CustomFieldsSettingsPage() {
-  const { projectId, isWorkspaceAdmin } = useProject()
+  const { projectId } = useProject()
+  const { hasPermission } = usePermissions()
+
+  const canRead = hasPermission("project-custom-field:read")
+  const canCreate = hasPermission("project-custom-field:create")
+  const canDelete = hasPermission("project-custom-field:delete")
 
   const [fieldValidationErrors, setFieldValidationErrors] = useState<Record<string, string>>({});
 
@@ -85,10 +91,10 @@ export default function CustomFieldsSettingsPage() {
     },
   });
 
-  if (!isWorkspaceAdmin) {
+  if (!canRead) {
     return (
-      <div className="p-8 text-center">
-        You do not have administrative permissions to view settings.
+      <div className="p-8 text-center text-muted-foreground">
+        You do not have permission to view project custom fields.
       </div>
     )
   }
@@ -162,15 +168,17 @@ export default function CustomFieldsSettingsPage() {
                           </p>
                         )}
                       </div>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={() =>
-                          deleteCustomFieldMutation.mutate(field.id)
-                        }
-                      >
-                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
-                      </Button>
+                      {canDelete && (
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() =>
+                            deleteCustomFieldMutation.mutate(field.id)
+                          }
+                        >
+                          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -179,8 +187,9 @@ export default function CustomFieldsSettingsPage() {
           </Card>
 
           {/* Form to Add Custom Field */}
-          <Card className="h-fit shadow-md border border-border bg-card text-foreground">
-            <CardHeader>
+          {canCreate && (
+            <Card className="h-fit shadow-md border border-border bg-card text-foreground">
+              <CardHeader>
               <CardTitle className="text-sm font-semibold">
                 Create Custom Field
               </CardTitle>
@@ -346,6 +355,7 @@ export default function CustomFieldsSettingsPage() {
               </form>
             </CardContent>
           </Card>
+          )}
         </div>
       )}
     </div>

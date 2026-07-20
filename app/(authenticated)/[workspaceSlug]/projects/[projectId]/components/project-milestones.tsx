@@ -31,6 +31,7 @@ import {
   useProjectMilestones,
 } from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
+import { usePermissions } from "@/hooks/use-permissions"
 import {
   Add01Icon,
   Calendar03Icon,
@@ -57,6 +58,10 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
   const [milestoneValidationErrors, setMilestoneValidationErrors] = useState<
     Record<string, string>
   >({})
+  
+  const { hasPermission } = usePermissions()
+  const canCreate = hasPermission("project-milestone:create")
+  const canDelete = hasPermission("project-milestone:delete")
 
   const milestoneForm = useForm({
     defaultValues: {
@@ -129,7 +134,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
             Track critical check points and release markers on your roadmap.
           </CardDescription>
         </div>
-        {(milestones || []).length > 0 && (
+        {(milestones || []).length > 0 && canCreate && (
           <Button
             variant="outline"
             size="sm"
@@ -332,12 +337,14 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteMilestone(milestone.id)}
-                    className="p-1.5 text-muted-foreground opacity-0 transition-all group-hover:opacity-100 hover:text-destructive"
-                  >
-                    <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
-                  </button>
+                  {canDelete && (
+                    <button
+                      onClick={() => handleDeleteMilestone(milestone.id)}
+                      className="p-1.5 text-muted-foreground opacity-0 transition-all group-hover:opacity-100 hover:text-destructive"
+                    >
+                      <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               )
             )}
@@ -361,23 +368,25 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                   </EmptyDescription>
                 </EmptyHeader>
 
-                <EmptyContent className="flex-row justify-center gap-2">
-                  <Button
-                    variant="outline-default"
-                    size="sm"
-                    onClick={() => {
-                      setIsAddingMilestone(!isAddingMilestone)
-                      setMilestoneValidationErrors({})
-                    }}
-                    className="h-8 text-2xs font-bold uppercase"
-                  >
-                    <HugeiconsIcon
-                      icon={Add01Icon}
-                      className="mr-1 h-3.5 w-3.5"
-                    />{" "}
-                    Add Milestone
-                  </Button>
-                </EmptyContent>
+                {canCreate && (
+                  <EmptyContent className="flex-row justify-center gap-2">
+                    <Button
+                      variant="outline-default"
+                      size="sm"
+                      onClick={() => {
+                        setIsAddingMilestone(!isAddingMilestone)
+                        setMilestoneValidationErrors({})
+                      }}
+                      className="h-8 text-2xs font-bold uppercase"
+                    >
+                      <HugeiconsIcon
+                        icon={Add01Icon}
+                        className="mr-1 h-3.5 w-3.5"
+                      />{" "}
+                      Add Milestone
+                    </Button>
+                  </EmptyContent>
+                )}
               </Empty>
             )}
           </div>

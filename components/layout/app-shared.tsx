@@ -38,6 +38,11 @@ export const getNavGroups = (
     canReadRoles: boolean
     canViewAdminKpi?: boolean
     canViewMemberKpi?: boolean
+    canReadTasks?: boolean
+    canReadPortfolio?: boolean
+    canReadOkrs?: boolean
+    canReadWorkspaces?: boolean
+    canReadAuditLogs?: boolean
   },
   kpiEnabled?: boolean
 ): SidebarNavGroup[] =>
@@ -121,7 +126,9 @@ export const getNavGroups = (
         if (hasNoWorkspaces) return false
         if (item.title === "Dashboard" || item.title === "Projects")
           return permissions.canReadProjects
-        if (item.title === "Audit Logs") return permissions.isOwnerOrAdmin
+        if (item.title === "My Tasks") return permissions.canReadTasks
+        if (item.title === "Portfolio") return permissions.canReadPortfolio
+        if (item.title === "Goals & OKRs") return permissions.canReadOkrs
         return true
       }),
     },
@@ -157,6 +164,7 @@ export const getNavGroups = (
           return !!kpiEnabled && (permissions.canViewAdminKpi || permissions.canViewMemberKpi)
         }
         if (item.title === "Gamification & KPIs") return !!kpiEnabled
+        if (item.title === "Audit Logs") return permissions.canReadAuditLogs
         return true
       }),
     },
@@ -212,10 +220,10 @@ export const getNavGroups = (
           isActive: false,
         },
       ].filter((item) => {
-        if (item.title === "Members" || item.title === "Organization Logs")
-          return permissions.isOwnerOrAdmin
-        if (item.title === "Roles & Permissions")
-          return permissions.canReadRoles
+        if (item.title === "Members") return permissions.isOwnerOrAdmin
+        if (item.title === "Organization Logs") return permissions.canReadAuditLogs
+        if (item.title === "Workspaces") return permissions.canReadWorkspaces
+        if (item.title === "Roles & Permissions") return permissions.canReadRoles
         if (item.title === "Gamification & KPIs") return !!kpiEnabled
         return true
       }),
@@ -256,6 +264,11 @@ export const getNavLinks = (
     canReadRoles: boolean
     canViewAdminKpi?: boolean
     canViewMemberKpi?: boolean
+    canReadTasks?: boolean
+    canReadPortfolio?: boolean
+    canReadOkrs?: boolean
+    canReadWorkspaces?: boolean
+    canReadAuditLogs?: boolean
   },
   kpiEnabled?: boolean
 ): SidebarNavItem[] => [

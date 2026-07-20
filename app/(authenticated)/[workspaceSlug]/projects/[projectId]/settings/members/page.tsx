@@ -38,6 +38,7 @@ import { UserPlus, Users } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
+import { usePermissions } from "@/hooks/use-permissions"
 
 interface WorkspaceMember {
   id: string
@@ -52,9 +53,14 @@ interface WorkspaceMember {
 }
 
 export default function ProjectMembersPage() {
-  const { projectId, selectedProject, isWorkspaceAdmin } = useProject()
+  const { projectId, selectedProject } = useProject()
   const { activeWorkspace } = useWorkspaceContext()
   const queryClient = useQueryClient()
+  const { hasPermission } = usePermissions()
+
+  const canRead = hasPermission("project-member:read")
+  const canInvite = hasPermission("project-member:invite")
+  const canRemove = hasPermission("project-member:remove-member")
 
   const [isManageMembersOpen, setIsManageMembersOpen] = useState(false)
   const [selectedMembers, setSelectedMembers] = useState<string[]>([])
@@ -109,10 +115,10 @@ export default function ProjectMembersPage() {
     },
   })
 
-  if (!isWorkspaceAdmin) {
+  if (!canRead) {
     return (
-      <div className="p-8 text-center">
-        You do not have administrative permissions to view settings.
+      <div className="p-8 text-center text-muted-foreground">
+        You do not have permission to view project members.
       </div>
     )
   }
@@ -129,7 +135,7 @@ export default function ProjectMembersPage() {
             ownership.
           </p>
         </div>
-        {selectedProject?.members && selectedProject.members.length !== 0 && (
+        {canInvite && selectedProject?.members && selectedProject.members.length !== 0 && (
           <Button
             onClick={() => setIsManageMembersOpen(true)}
             className="h-9 rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90"
@@ -171,19 +177,21 @@ export default function ProjectMembersPage() {
                       Click &quot;Add Members&quot; belown to add teammates.
                     </EmptyDescription>
                   </EmptyHeader>
-                  <EmptyContent>
-                    <Button
-                      variant="outline-default"
-                      onClick={() => setIsManageMembersOpen(true)}
-                      className="h-9 rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90"
-                    >
-                      <HugeiconsIcon
-                        icon={AddTeam02Icon}
-                        className="mr-1.5 h-4 w-4"
-                      />{" "}
-                      Add Members
-                    </Button>
-                  </EmptyContent>
+                  {canInvite && (
+                    <EmptyContent>
+                      <Button
+                        variant="outline-default"
+                        onClick={() => setIsManageMembersOpen(true)}
+                        className="h-9 rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                      >
+                        <HugeiconsIcon
+                          icon={AddTeam02Icon}
+                          className="mr-1.5 h-4 w-4"
+                        />{" "}
+                        Add Members
+                      </Button>
+                    </EmptyContent>
+                  )}
                 </Empty>
               </Card>
             ) : (
@@ -214,22 +222,24 @@ export default function ProjectMembersPage() {
                       <span className="rounded-full bg-secondary px-2.5 py-0.5 text-2xs font-semibold tracking-wider text-secondary-foreground uppercase">
                         {member.role || "Member"}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Remove ${member.user?.name} from this project?`
-                            )
-                          ) {
-                            removeMemberMutation.mutate(member.userId)
-                          }
-                        }}
-                      >
-                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
-                      </Button>
+                      {canRemove && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Remove ${member.user?.name} from this project?`
+                              )
+                            ) {
+                              removeMemberMutation.mutate(member.userId)
+                            }
+                          }}
+                        >
+                          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

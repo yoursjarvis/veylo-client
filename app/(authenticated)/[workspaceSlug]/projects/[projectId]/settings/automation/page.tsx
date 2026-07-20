@@ -18,6 +18,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Archive } from "lucide-react"
 import { useParams } from "next/navigation"
 import { useState } from "react"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export default function AutomationsPage() {
   const params = useParams()
@@ -25,6 +26,20 @@ export default function AutomationsPage() {
   const [isBuilding, setIsBuilding] = useState(false)
   const [editingRule, setEditingRule] = useState<AutomationRule | null>(null)
   const [automations, setAutomations] = useState<AutomationRule[]>([])
+
+  const { hasPermission } = usePermissions()
+  const canRead = hasPermission("project-automation:read")
+  const canCreate = hasPermission("project-automation:create")
+  const canUpdate = hasPermission("project-automation:update")
+  const canDelete = hasPermission("project-automation:delete")
+
+  if (!canRead) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        You do not have permission to view project automations.
+      </div>
+    )
+  }
 
   if (isBuilding || editingRule) {
     return (
@@ -71,10 +86,12 @@ export default function AutomationsPage() {
             Create automated workflows to save time and enforce processes.
           </p>
         </div>
-        <Button onClick={() => setIsBuilding(true)}>
-          <HugeiconsIcon icon={PlusSignIcon} className="mr-2 h-4 w-4" />
-          Create Rule
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setIsBuilding(true)}>
+            <HugeiconsIcon icon={PlusSignIcon} className="mr-2 h-4 w-4" />
+            Create Rule
+          </Button>
+        )}
       </div>
 
       {automations.length === 0 ? (
@@ -127,7 +144,9 @@ export default function AutomationsPage() {
                     </span>
                     <Switch
                       checked={rule.isActive}
+                      disabled={!canUpdate}
                       onCheckedChange={() => {
+                        if (!canUpdate) return;
                         setAutomations(
                           automations.map((r) =>
                             r.id === rule.id
@@ -139,55 +158,49 @@ export default function AutomationsPage() {
                     />
                   </div>
                   <div className="flex items-center gap-2 border-l border-border pl-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => {
-                        setAutomations(
-                          automations.map((r) =>
-                            r.id === rule.id ? { ...r, isDeleted: true } : r
+                    {canUpdate && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          setEditingRule(rule)
+                        }}
+                      >
+                        <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          setAutomations(
+                            automations.map((r) =>
+                              r.id === rule.id ? { ...r, isDeleted: true } : r
+                            )
                           )
-                        )
-                      }}
-                    ></Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 text-muted-foreground hover:text-foreground"
-                      onClick={() => {
-                        setEditingRule(rule)
-                      }}
-                    >
-                      <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => {
-                        setAutomations(
-                          automations.map((r) =>
-                            r.id === rule.id ? { ...r, isDeleted: true } : r
+                        }}
+                      >
+                        <Archive className="mr-1 h-3.5 w-3.5" />
+                        Archive
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => {
+                          setAutomations(
+                            automations.filter((r) => r.id !== rule.id)
                           )
-                        )
-                      }}
-                    >
-                      <Archive className="mr-1 h-3.5 w-3.5" />
-                      Archive
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => {
-                        setAutomations(
-                          automations.filter((r) => r.id !== rule.id)
-                        )
-                      }}
-                    >
-                      <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
-                    </Button>
+                        }}
+                      >
+                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

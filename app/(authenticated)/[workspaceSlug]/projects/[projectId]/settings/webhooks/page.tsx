@@ -4,14 +4,18 @@ import React from "react";
 import { useProject } from "../../layout";
 import { SlackWebhooksConfig } from "@/features/tasks/components/slack-webhooks-config";
 import { Webhook } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function SlackIntegrationsSettingsPage() {
-  const { projectId, isWorkspaceAdmin } = useProject();
+  const { projectId } = useProject();
+  const { hasPermission } = usePermissions();
 
-  if (!isWorkspaceAdmin) {
+  const canRead = hasPermission("project-webhook:read");
+
+  if (!canRead) {
     return (
-      <div className="text-center p-8">
-        You do not have administrative permissions to view settings.
+      <div className="text-center p-8 text-muted-foreground">
+        You do not have permission to view project webhooks.
       </div>
     );
   }

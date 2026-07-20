@@ -23,6 +23,7 @@ import EmojiPicker, { Theme } from "emoji-picker-react"
 import { useTheme } from "next-themes"
 import React, { useState } from "react"
 import { useReactionUsers } from "../../hooks/use-tasks"
+import { usePermissions } from "@/hooks/use-permissions"
 
 interface TaskDetailsCommentsProps {
   comments: Comment[]
@@ -176,6 +177,11 @@ const CommentNode = ({
     variables?: { emoji: string } | null
   }
 }) => {
+  const { hasPermission } = usePermissions()
+  const canDeleteOwn = hasPermission("task:delete-own-comment")
+  const canDeleteAny = hasPermission("task:delete-any-comment")
+  const canComment = hasPermission("task:comment")
+
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -306,28 +312,31 @@ const CommentNode = ({
                 }
               />
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setReplyingToCommentId(comment.id)
-                    setReplyContent("")
-                  }}
-                  className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Reply
-                </button>
+                {canComment && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReplyingToCommentId(comment.id)
+                      setReplyContent("")
+                    }}
+                    className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-primary"
+                  >
+                    Reply
+                  </button>
+                )}
                 {comment.userId === currentUser?.user?.id && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingCommentId(comment.id)
-                        setEditingContent(comment.content)
-                      }}
-                      className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-primary"
-                    >
-                      Edit
-                    </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCommentId(comment.id)
+                      setEditingContent(comment.content)
+                    }}
+                    className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-primary"
+                  >
+                    Edit
+                  </button>
+                )}
+                {(canDeleteAny || (comment.userId === currentUser?.user?.id && canDeleteOwn)) && (
                     <button
                       type="button"
                       onClick={() => deleteCommentMutation.mutate(comment.id)}
@@ -335,8 +344,7 @@ const CommentNode = ({
                     >
                       Delete
                     </button>
-                  </>
-                )}
+                  )}
               </div>
             </>
           )}
@@ -515,32 +523,37 @@ export function TaskDetailsComments({
   deleteCommentMutation,
   toggleReactionMutation,
 }: TaskDetailsCommentsProps) {
+  const { hasPermission } = usePermissions()
+  const canComment = hasPermission("task:comment")
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <RichTextEditor
-          placeholder="Write a comment... (Supports rich text, @mentions, /commands, paste images)"
-          value={newComment}
-          onChange={setNewComment}
-          projectMembers={
-            projectMembers.filter((m) => m.user) as (ProjectMember & {
-              user: User
-            })[]
-          }
-          minHeight="80px"
-          onSubmit={handleAddComment}
-        />
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            onClick={() => handleAddComment()}
-            size="sm"
-            className="px-3 text-xs"
-          >
-            Post Comment
-          </Button>
+      {canComment && (
+        <div className="flex flex-col gap-2">
+          <RichTextEditor
+            placeholder="Write a comment... (Supports rich text, @mentions, /commands, paste images)"
+            value={newComment}
+            onChange={setNewComment}
+            projectMembers={
+              projectMembers.filter((m) => m.user) as (ProjectMember & {
+                user: User
+              })[]
+            }
+            minHeight="80px"
+            onSubmit={handleAddComment}
+          />
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              onClick={() => handleAddComment()}
+              size="sm"
+              className="px-3 text-xs"
+            >
+              Post Comment
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
       <div className="space-y-4">
         {buildCommentThreads(comments).map((comment: Comment) => (
           <CommentNode

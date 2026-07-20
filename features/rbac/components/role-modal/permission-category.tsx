@@ -5,7 +5,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import { useState } from "react"
 import { PermissionGrid } from "./permission-grid"
 
 interface PermissionCategoryProps {
@@ -15,6 +14,8 @@ interface PermissionCategoryProps {
   selectedPermissionIds: string[]
   onChange: (id: string, checked: boolean) => void
   disabled?: boolean
+  isExpanded: boolean
+  onToggleExpand: () => void
 }
 
 export function PermissionCategory({
@@ -24,13 +25,12 @@ export function PermissionCategory({
   selectedPermissionIds,
   onChange,
   disabled,
+  isExpanded,
+  onToggleExpand,
 }: PermissionCategoryProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
-
   const allSelected =
     permissions.length > 0 &&
     permissions.every((p) => selectedPermissionIds.includes(p.id))
-
 
   const toggleAll = (checked: boolean) => {
     if (checked) {
@@ -49,7 +49,7 @@ export function PermissionCategory({
     >
       <div
         className="flex cursor-pointer items-center justify-between gap-4 p-4"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={onToggleExpand}
       >
         <div className="flex items-center space-x-3">
           <Checkbox

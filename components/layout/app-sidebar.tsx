@@ -35,6 +35,11 @@ export function AppSidebar() {
   const canReadRoles = hasPermission("role:read")
   const canViewAdminKpi = hasPermission("kpi:view-admin")
   const canViewMemberKpi = hasPermission("kpi:view-member")
+  const canReadTasks = hasPermission("task:read")
+  const canReadPortfolio = hasPermission("portfolio:read")
+  const canReadOkrs = hasPermission("goal-okrs:read")
+  const canReadWorkspaces = hasPermission("workspace:read")
+  const canReadAuditLogs = hasPermission("audit-log:read")
 
   const hasNoWorkspaces = workspaces && workspaces.length === 0
   const isCollapsed = state === "collapsed"
@@ -48,6 +53,11 @@ export function AppSidebar() {
       canReadRoles,
       canViewAdminKpi,
       canViewMemberKpi,
+      canReadTasks,
+      canReadPortfolio,
+      canReadOkrs,
+      canReadWorkspaces,
+      canReadAuditLogs,
     },
     activeWorkspace?.kpiEnabled
   )

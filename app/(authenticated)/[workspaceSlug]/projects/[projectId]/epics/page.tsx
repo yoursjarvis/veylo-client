@@ -46,6 +46,7 @@ import { useForm } from "@tanstack/react-form"
 import { format, isBefore, startOfDay } from "date-fns"
 import { Calendar, Target } from "lucide-react"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
 
 const PRESET_COLORS = [
   { name: "Indigo", value: "#6366f1" },
@@ -60,8 +61,14 @@ const PRESET_COLORS = [
 
 export default function EpicsPage() {
   const { projectId, statuses } = useProject()
+  const { hasPermission } = usePermissions()
   const { data: epics, isLoading: isEpicsLoading } = useProjectEpics(projectId)
   const { data: tasks, isLoading: isTasksLoading } = useProjectTasks(projectId)
+
+  const canRead = hasPermission("project-epic:read")
+  const canCreate = hasPermission("project-epic:create")
+  const canUpdate = hasPermission("project-epic:update")
+  const canDelete = hasPermission("project-epic:delete")
 
   const createEpicMutation = useCreateEpic(projectId)
   const updateEpicMutation = useUpdateEpic(projectId)
@@ -199,6 +206,14 @@ export default function EpicsPage() {
     )
   }
 
+  if (!canRead) {
+    return (
+      <div className="flex h-full w-full items-center justify-center p-8 text-muted-foreground">
+        You do not have permission to view epics.
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
@@ -211,12 +226,12 @@ export default function EpicsPage() {
             goals.
           </p>
         </div>
-        {!epics ||
+        {canCreate && (!epics ||
           (epics.length !== 0 && (
             <Button onClick={handleOpenCreate}>
               <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" /> Add Epic
             </Button>
-          ))}
+          )))}
       </div>
 
       {!epics || epics.length === 0 ? (
@@ -240,15 +255,17 @@ export default function EpicsPage() {
                 monitor project outcomes.
               </EmptyDescription>
             </EmptyHeader>
-            <EmptyDescription>
-              <Button
-                onClick={handleOpenCreate}
-                variant="outline-default"
-                className="mt-4 h-8 text-xs font-semibold"
-              >
-                Create Epic
-              </Button>
-            </EmptyDescription>
+            {canCreate && (
+              <EmptyDescription>
+                <Button
+                  onClick={handleOpenCreate}
+                  variant="outline-default"
+                  className="mt-4 h-8 text-xs font-semibold"
+                >
+                  Create Epic
+                </Button>
+              </EmptyDescription>
+            )}
           </Empty>
         </Card>
       ) : (
@@ -307,22 +324,26 @@ export default function EpicsPage() {
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="t h-7 w-7"
-                        onClick={() => handleOpenEdit(epic)}
-                      >
-                        <HugeiconsIcon icon={Edit02Icon} className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => handleDelete(epic.id, epic.title)}
-                      >
-                        <HugeiconsIcon icon={Delete01Icon} className="h-3.5 w-3.5" />
-                      </Button>
+                      {canUpdate && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="t h-7 w-7"
+                          onClick={() => handleOpenEdit(epic)}
+                        >
+                          <HugeiconsIcon icon={Edit02Icon} className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => handleDelete(epic.id, epic.title)}
+                        >
+                          <HugeiconsIcon icon={Delete01Icon} className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardHeader>

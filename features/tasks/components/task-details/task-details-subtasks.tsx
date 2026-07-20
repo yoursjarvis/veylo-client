@@ -21,6 +21,8 @@ import { format } from "date-fns"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { useProjectChecklistTemplates, useApplyChecklistTemplate } from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
+import { usePermissions } from "@/hooks/use-permissions"
+
 interface TaskDetailsSubtasksProps {
   taskId: string
   subtasks: Task[]
@@ -48,6 +50,10 @@ export function TaskDetailsSubtasks({
   const { data: templates = [] } = useProjectChecklistTemplates(activeWorkspace?.id || null)
   const applyTemplateMutation = useApplyChecklistTemplate(taskId)
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("")
+  
+  const { hasPermission } = usePermissions()
+  const canCreateTask = hasPermission("task:create")
+  const canUpdateTask = hasPermission("task:update")
 
   const handleAddSubtask = (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,7 +69,7 @@ export function TaskDetailsSubtasks({
           <HugeiconsIcon icon={CircleCheckIcon} size={14} className="text-muted-foreground/70" />{" "}
           Subtask Checklist
         </label>
-        {templates.length > 0 && (
+        {templates.length > 0 && canCreateTask && (
           <Popover>
             <PopoverTrigger render={
               <Button
@@ -111,6 +117,7 @@ export function TaskDetailsSubtasks({
             >
               <div className="flex flex-1 items-center gap-2.5">
                 <Checkbox
+                  disabled={!canUpdateTask}
                   checked={isSubtaskCompleted}
                   onCheckedChange={(checked) =>
                     onUpdateSubtask(subtask.id, {
@@ -135,12 +142,13 @@ export function TaskDetailsSubtasks({
                 </button>
               </div>
 
-              <div
-                className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [&:has([data-state=open])]:opacity-100"
-                style={{
-                  opacity: subtask.assigneeId || subtask.dueDate ? 1 : undefined,
-                }}
-              >
+              {canUpdateTask && (
+                <div
+                  className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [&:has([data-state=open])]:opacity-100"
+                  style={{
+                    opacity: subtask.assigneeId || subtask.dueDate ? 1 : undefined,
+                  }}
+                >
                 {/* Assignee Popover */}
                 <Popover>
                   <PopoverTrigger render={
@@ -245,27 +253,30 @@ export function TaskDetailsSubtasks({
                 >
                   <HugeiconsIcon icon={Delete01Icon} size={12} />
                 </button>
-              </div>
+                </div>
+              )}
             </div>
           )
         })}
       </div>
-      <form onSubmit={handleAddSubtask} className="flex gap-2">
-        <Input
-          placeholder="Add a subtask..."
-          value={newSubtaskTitle}
-          onChange={(e) => setNewSubtaskTitle(e.target.value)}
-          className="h-8 flex-1 text-xs"
-        />
-        <Button
-          type="submit"
-          size="sm"
-          variant="secondary"
-          className="h-8 px-3 text-xs"
-        >
-          <HugeiconsIcon icon={Add01Icon} size={14} className="mr-1" /> Add
-        </Button>
-      </form>
+      {canCreateTask && (
+        <form onSubmit={handleAddSubtask} className="flex gap-2">
+          <Input
+            placeholder="Add a subtask..."
+            value={newSubtaskTitle}
+            onChange={(e) => setNewSubtaskTitle(e.target.value)}
+            className="h-8 flex-1 text-xs"
+          />
+          <Button
+            type="submit"
+            size="sm"
+            variant="secondary"
+            className="h-8 px-3 text-xs"
+          >
+            <HugeiconsIcon icon={Add01Icon} size={14} className="mr-1" /> Add
+          </Button>
+        </form>
+      )}
     </div>
   )
 }

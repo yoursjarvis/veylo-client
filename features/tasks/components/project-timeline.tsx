@@ -53,8 +53,7 @@ import { useTimelineState, TaskGroupType } from "../hooks/use-timeline-state"
 interface ProjectTimelineProps {
   workspaceId: string
   projectId?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectedProject?: any
+  selectedProject?: { members?: { userId: string; user?: { name: string } }[] } | null
   onSelectTask: (taskId: string) => void
 }
 
