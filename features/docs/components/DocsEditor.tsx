@@ -2,7 +2,7 @@
 
 import { Editor, EditorContext } from "@tiptap/react"
 import EmojiPicker, { Theme } from "emoji-picker-react"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Cropper from "react-easy-crop"
 import { WebsocketProvider } from "y-websocket"
 import * as Y from "yjs"
@@ -27,9 +27,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 // --- Custom Subcomponents ---
 import { CollaboratorsHeaderAvatars } from "./CollaboratorsHeaderAvatars"
+import { DocsComments } from "./DocsComments"
 import { DocsEditorCanvas } from "./DocsEditorCanvas"
 import { MainToolbarContent, MobileToolbarContent } from "./DocsEditorToolbar"
-import { DocsComments } from "./DocsComments"
 
 // --- Utilities & Actions ---
 import { axiosInstance } from "@/lib/axios"
@@ -96,28 +96,11 @@ export function DocsEditor({
   const [provider, setProvider] = useState<WebsocketProvider | null>(null)
   const [isSynced, setIsSynced] = useState(false)
   const [isOfflineMode, setIsOfflineMode] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  useEffect(() => {
-    const checkDark = () => document.documentElement.classList.contains("dark")
-
-    const frameId = requestAnimationFrame(() => {
-      setIsDarkMode(checkDark())
-    })
-
-    const observer = new MutationObserver(() => {
-      setIsDarkMode(checkDark())
-    })
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    })
-
-    return () => {
-      cancelAnimationFrame(frameId)
-      observer.disconnect()
-    }
-  }, [])
+  // Check dark mode lazily only when emoji picker opens, avoiding MutationObserver overhead
+  const getIsDarkMode = useCallback(
+    () => document.documentElement.classList.contains("dark"),
+    []
+  )
 
   const editorContainerRef = useRef<HTMLDivElement>(null)
   const [localTitle, setLocalTitle] = useState(doc?.title || "")
@@ -132,33 +115,36 @@ export function DocsEditor({
   const toolbarRef = useRef<HTMLDivElement>(null)
 
   // Custom upload image to Veylo server backend instead of mock/local upload
-  const uploadImage = async (
-    file: File,
-    onProgress?: (event: { progress: number }) => void,
-    abortSignal?: AbortSignal
-  ): Promise<string> => {
-    const formData = new FormData()
-    formData.append("file", file)
+  const uploadImage = useCallback(
+    async (
+      file: File,
+      onProgress?: (event: { progress: number }) => void,
+      abortSignal?: AbortSignal
+    ): Promise<string> => {
+      const formData = new FormData()
+      formData.append("file", file)
 
-    const response = await axiosInstance.post("/media/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent.total) {
-          const progress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          )
-          onProgress?.({ progress })
-        }
-      },
-      signal: abortSignal,
-    })
+      const response = await axiosInstance.post("/media/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const progress = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            )
+            onProgress?.({ progress })
+          }
+        },
+        signal: abortSignal,
+      })
 
-    const url = response.data?.data?.url
-    if (!url) {
-      throw new Error("Upload failed, no URL returned")
-    }
-    return url
-  }
+      const url = response.data?.data?.url
+      if (!url) {
+        throw new Error("Upload failed, no URL returned")
+      }
+      return url
+    },
+    []
+  )
 
   // Derived states to adjust state during render instead of inside useEffect (React 19 pattern)
   const [prevDocId, setPrevDocId] = useState<string | null>(null)
@@ -238,26 +224,26 @@ export function DocsEditor({
     }
   }
 
-  // Map user ID to a unique color
-  const colors = [
-    "#f43f5e",
-    "#ec4899",
-    "#d946ef",
-    "#a855f7",
-    "#8b5cf6",
-    "#6366f1",
-    "#3b82f6",
-    "#0ea5e9",
-    "#06b6d4",
-    "#14b8a6",
-    "#10b981",
-    "#22c55e",
-    "#84cc16",
-    "#eab308",
-    "#f97316",
-  ]
-  const userColor =
-    colors[
+  // Map user ID to a unique color (memoized to avoid recomputation)
+  const userColor = useMemo(() => {
+    const colors = [
+      "#f43f5e",
+      "#ec4899",
+      "#d946ef",
+      "#a855f7",
+      "#8b5cf6",
+      "#6366f1",
+      "#3b82f6",
+      "#0ea5e9",
+      "#06b6d4",
+      "#14b8a6",
+      "#10b981",
+      "#22c55e",
+      "#84cc16",
+      "#eab308",
+      "#f97316",
+    ]
+    return colors[
       Math.abs(
         userId
           .split("-")
@@ -266,6 +252,7 @@ export function DocsEditor({
           .reduce((acc, c) => acc + c.charCodeAt(0), 0)
       ) % colors.length
     ]
+  }, [userId])
 
   // Setup dynamic WebSocket connection for Yjs
   const userInfoRef = useRef({ userName, userEmail, userAvatar, userColor })
@@ -373,43 +360,57 @@ export function DocsEditor({
     }
   }, [])
 
-  // Mouse move tracker for live cursor presence
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!provider || readOnly || previewVersion) return
-    const rect = editorContainerRef.current?.getBoundingClientRect()
-    if (!rect) return
+  // Mouse move tracker for live cursor presence (throttled to 50ms)
+  const lastMouseUpdateRef = useRef(0)
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!provider || readOnly || previewVersion) return
+      const now = Date.now()
+      if (now - lastMouseUpdateRef.current < 50) return
+      lastMouseUpdateRef.current = now
 
-    const x = (e.clientX - rect.left) / rect.width
-    const y = (e.clientY - rect.top) / rect.height
-    provider.awareness.setLocalStateField("mouse", { x, y, inside: true })
-  }
+      const rect = editorContainerRef.current?.getBoundingClientRect()
+      if (!rect) return
 
-  const handleMouseLeave = () => {
+      const x = (e.clientX - rect.left) / rect.width
+      const y = (e.clientY - rect.top) / rect.height
+      provider.awareness.setLocalStateField("mouse", { x, y, inside: true })
+    },
+    [provider, readOnly, previewVersion]
+  )
+
+  const handleMouseLeave = useCallback(() => {
     if (!provider) return
     provider.awareness.setLocalStateField("mouse", {
       x: 0,
       y: 0,
       inside: false,
     })
-  }
+  }, [provider])
 
   // Cover Image update
-  const handleUpdateCover = async (coverUrl: string | null) => {
-    if (readOnly || previewVersion) return
-    await updateDoc({
-      id: docId,
-      data: { coverImage: coverUrl },
-    })
-  }
+  const handleUpdateCover = useCallback(
+    async (coverUrl: string | null) => {
+      if (readOnly || previewVersion) return
+      await updateDoc({
+        id: docId,
+        data: { coverImage: coverUrl },
+      })
+    },
+    [readOnly, previewVersion, updateDoc, docId]
+  )
 
   // Emoji update
-  const handleUpdateEmoji = async (emoji: string | null) => {
-    if (readOnly || previewVersion) return
-    await updateDoc({
-      id: docId,
-      data: { emoji },
-    })
-  }
+  const handleUpdateEmoji = useCallback(
+    async (emoji: string | null) => {
+      if (readOnly || previewVersion) return
+      await updateDoc({
+        id: docId,
+        data: { emoji },
+      })
+    },
+    [readOnly, previewVersion, updateDoc, docId]
+  )
 
   if (isLoading || !doc) {
     return (
@@ -515,197 +516,201 @@ export function DocsEditor({
 
         {/* Editor Content Area (Scrollable) */}
         <div className="flex-1 overflow-y-auto px-4 py-6">
-          <div className={`mx-auto transition-all duration-300 flex gap-8 items-start justify-center ${
-            isCommentsOpen ? "max-w-7xl" : "max-w-4xl"
-          }`}>
-            <div className="flex-1 min-w-0 space-y-4 max-w-4xl">
-            {/* Cover Image Picker */}
-            <div className="group/cover relative h-48 overflow-hidden rounded-xl border border-border/40 bg-muted">
-              {doc.coverImage ? (
-                <div
-                  style={{
-                    backgroundImage: doc.coverImage.startsWith(
-                      "linear-gradient"
-                    )
-                      ? doc.coverImage
-                      : `url(${doc.coverImage})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                  className="h-full w-full"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-linear-to-r from-muted/50 to-muted/80 text-xs text-muted-foreground/50">
-                  No Cover Image
-                </div>
-              )}
-
-              {isEditable && (
-                <div className="absolute right-4 bottom-4 opacity-0 transition-opacity group-hover/cover:opacity-100">
-                  <Popover>
-                    <PopoverTrigger className="absolute right-4 bottom-4 inline-flex h-8 w-40 items-center justify-center gap-1.5 rounded-lg bg-secondary px-3 text-sm text-secondary-foreground shadow-md hover:bg-secondary/80">
-                      <HugeiconsIcon
-                        icon={Camera01Icon}
-                        className="h-5 w-5"
-                        strokeWidth={2}
-                      />{" "}
-                      Change Cover
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64 space-y-3 p-3">
-                      <div>
-                        <span className="mb-1.5 block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
-                          Select Cover Gradient
-                        </span>
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {COVER_GRADIENTS.map((grad, index) => (
-                            <div
-                              key={index}
-                              onClick={() => handleUpdateCover(grad)}
-                              style={{ backgroundImage: grad }}
-                              className="h-10 cursor-pointer rounded-md border border-white/20 transition-all hover:scale-105"
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="border-t border-border/60 pt-2.5">
-                        <span className="mb-1.5 block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
-                          Custom Cover Image
-                        </span>
-                        <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-border/80 bg-muted/30 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/60">
-                          <HugeiconsIcon
-                            icon={Upload01Icon}
-                            size={14}
-                            strokeWidth={2}
-                          />
-                          <span>Upload Image</span>
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                          />
-                        </label>
-                      </div>
-
-                      {doc.coverImage && (
-                        <Button
-                          variant="destructive"
-                          size="xs"
-                          onClick={() => handleUpdateCover(null)}
-                          className="mt-1 w-full text-2xs"
-                        >
-                          Remove Cover
-                        </Button>
-                      )}
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              )}
-            </div>
-
-            {/* Document Header (Emoji, Title) */}
-            <div className="relative space-y-3 px-8 pt-4">
-              {/* Document Emoji */}
-              <div className="flex items-center gap-2">
-                {isEditable ? (
-                  <Popover>
-                    <PopoverTrigger className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/50 bg-card text-2xl shadow-sm transition-transform hover:scale-105">
-                      {doc.emoji || "📝"}
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto border-none bg-transparent p-0 shadow-none">
-                      <EmojiPicker
-                        theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
-                        onEmojiClick={(emojiData) =>
-                          handleUpdateEmoji(emojiData.emoji)
-                        }
-                      />
-                    </PopoverContent>
-                  </Popover>
+          <div
+            className={`mx-auto flex items-start justify-center gap-8 transition-all duration-300 ${
+              isCommentsOpen ? "max-w-7xl" : "max-w-4xl"
+            }`}
+          >
+            <div className="max-w-4xl min-w-0 flex-1 space-y-4">
+              {/* Cover Image Picker */}
+              <div className="group/cover relative h-48 overflow-hidden rounded-xl border border-border/40 bg-muted">
+                {doc.coverImage ? (
+                  <div
+                    style={{
+                      backgroundImage: doc.coverImage.startsWith(
+                        "linear-gradient"
+                      )
+                        ? doc.coverImage
+                        : `url(${doc.coverImage})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                    className="h-full w-full"
+                  />
                 ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/50 bg-card text-2xl">
-                    {doc.emoji || "📝"}
+                  <div className="flex h-full w-full items-center justify-center bg-linear-to-r from-muted/50 to-muted/80 text-xs text-muted-foreground/50">
+                    No Cover Image
+                  </div>
+                )}
+
+                {isEditable && (
+                  <div className="absolute right-4 bottom-4 opacity-0 transition-opacity group-hover/cover:opacity-100">
+                    <Popover>
+                      <PopoverTrigger className="absolute right-4 bottom-4 inline-flex h-8 w-40 items-center justify-center gap-1.5 rounded-lg bg-secondary px-3 text-sm text-secondary-foreground shadow-md hover:bg-secondary/80">
+                        <HugeiconsIcon
+                          icon={Camera01Icon}
+                          className="h-5 w-5"
+                          strokeWidth={2}
+                        />{" "}
+                        Change Cover
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64 space-y-3 p-3">
+                        <div>
+                          <span className="mb-1.5 block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
+                            Select Cover Gradient
+                          </span>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {COVER_GRADIENTS.map((grad, index) => (
+                              <div
+                                key={index}
+                                onClick={() => handleUpdateCover(grad)}
+                                style={{ backgroundImage: grad }}
+                                className="h-10 cursor-pointer rounded-md border border-white/20 transition-all hover:scale-105"
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="border-t border-border/60 pt-2.5">
+                          <span className="mb-1.5 block text-2xs font-bold tracking-wider text-muted-foreground uppercase">
+                            Custom Cover Image
+                          </span>
+                          <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-border/80 bg-muted/30 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/60">
+                            <HugeiconsIcon
+                              icon={Upload01Icon}
+                              size={14}
+                              strokeWidth={2}
+                            />
+                            <span>Upload Image</span>
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                            />
+                          </label>
+                        </div>
+
+                        {doc.coverImage && (
+                          <Button
+                            variant="destructive"
+                            size="xs"
+                            onClick={() => handleUpdateCover(null)}
+                            className="mt-1 w-full text-2xs"
+                          >
+                            Remove Cover
+                          </Button>
+                        )}
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 )}
               </div>
 
-              {/* Document Title */}
-              <input
-                type="text"
-                value={localTitle}
-                disabled={!isEditable}
-                onChange={(e) => {
-                  const newTitle = e.target.value
-                  setLocalTitle(newTitle)
-                  if (titleSaveTimeoutRef.current)
-                    clearTimeout(titleSaveTimeoutRef.current)
-                  titleSaveTimeoutRef.current = setTimeout(async () => {
-                    if (readOnly || previewVersion) return
-                    await updateDoc({ id: docId, data: { title: newTitle } })
-                  }, 1500)
-                }}
-                placeholder="Untitled Document"
-                className="w-full border-0 bg-transparent text-3xl font-bold tracking-tight text-foreground placeholder:text-muted-foreground/35 focus:ring-0 focus:outline-none"
-              />
-            </div>
-
-            {/* Interactive Editor Canvas */}
-            <div
-              ref={editorContainerRef}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
-              className="relative overflow-hidden rounded-xl border border-border/30 bg-card/35 shadow-xs"
-            >
-              {!previewVersion && !isSynced && !isOfflineMode ? (
-                <div className="min-h-100 space-y-4 p-8">
-                  <Skeleton className="h-4 w-full rounded-md" />
-                  <Skeleton className="h-4 w-5/6 rounded-md" />
-                  <Skeleton className="h-4 w-3/4 rounded-md" />
-                  <Skeleton className="h-4 w-full rounded-md" />
-                  <Skeleton className="h-4 w-2/3 rounded-md" />
+              {/* Document Header (Emoji, Title) */}
+              <div className="relative space-y-3 px-8 pt-4">
+                {/* Document Emoji */}
+                <div className="flex items-center gap-2">
+                  {isEditable ? (
+                    <Popover>
+                      <PopoverTrigger className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/50 bg-card text-2xl shadow-sm transition-transform hover:scale-105">
+                        {doc.emoji || "📝"}
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto border-none bg-transparent p-0 shadow-none">
+                        <EmojiPicker
+                          theme={getIsDarkMode() ? Theme.DARK : Theme.LIGHT}
+                          onEmojiClick={(emojiData) =>
+                            handleUpdateEmoji(emojiData.emoji)
+                          }
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/50 bg-card text-2xl">
+                      {doc.emoji || "📝"}
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <DocsEditorCanvas
-                  projectId={projectId}
-                  yDoc={yDoc}
-                  provider={provider}
-                  previewVersion={previewVersion}
-                  userId={userId}
-                  userName={userName}
-                  userEmail={userEmail}
-                  userAvatar={userAvatar}
-                  userColor={userColor}
-                  readOnly={readOnly}
-                  doc={doc}
-                  isSynced={isSynced}
-                  isOfflineMode={isOfflineMode}
-                  setEditor={setEditor}
-                  uploadImage={uploadImage}
-                  updateDoc={updateDoc}
-                  docId={docId}
-                />
-              )}
-            </div>
-          </div>
 
-          {/* Comments side column */}
-          {isCommentsOpen && (
-            <div className="w-80 shrink-0 relative self-stretch">
-              <DocsComments
-                projectId={projectId}
-                docId={docId}
-                userId={userId}
-                isWorkspaceAdmin={members?.some(
-                  (m) =>
-                    m.userId === userId &&
-                    (m.role === "owner" || m.role === "admin")
-                ) || false}
-              />
+                {/* Document Title */}
+                <input
+                  type="text"
+                  value={localTitle}
+                  disabled={!isEditable}
+                  onChange={(e) => {
+                    const newTitle = e.target.value
+                    setLocalTitle(newTitle)
+                    if (titleSaveTimeoutRef.current)
+                      clearTimeout(titleSaveTimeoutRef.current)
+                    titleSaveTimeoutRef.current = setTimeout(async () => {
+                      if (readOnly || previewVersion) return
+                      await updateDoc({ id: docId, data: { title: newTitle } })
+                    }, 1500)
+                  }}
+                  placeholder="Untitled Document"
+                  className="w-full border-0 bg-transparent text-3xl font-bold tracking-tight text-foreground placeholder:text-muted-foreground/35 focus:ring-0 focus:outline-none"
+                />
+              </div>
+
+              {/* Interactive Editor Canvas */}
+              <div
+                ref={editorContainerRef}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                className="relative overflow-hidden rounded-xl border border-border/30 bg-card/35 shadow-xs"
+              >
+                {!previewVersion && !isSynced && !isOfflineMode ? (
+                  <div className="min-h-100 space-y-4 p-8">
+                    <Skeleton className="h-4 w-full rounded-md" />
+                    <Skeleton className="h-4 w-5/6 rounded-md" />
+                    <Skeleton className="h-4 w-3/4 rounded-md" />
+                    <Skeleton className="h-4 w-full rounded-md" />
+                    <Skeleton className="h-4 w-2/3 rounded-md" />
+                  </div>
+                ) : (
+                  <DocsEditorCanvas
+                    projectId={projectId}
+                    yDoc={yDoc}
+                    provider={provider}
+                    previewVersion={previewVersion}
+                    userId={userId}
+                    userName={userName}
+                    userEmail={userEmail}
+                    userAvatar={userAvatar}
+                    userColor={userColor}
+                    readOnly={readOnly}
+                    doc={doc}
+                    isSynced={isSynced}
+                    isOfflineMode={isOfflineMode}
+                    setEditor={setEditor}
+                    uploadImage={uploadImage}
+                    updateDoc={updateDoc}
+                    docId={docId}
+                  />
+                )}
+              </div>
             </div>
-          )}
+
+            {/* Comments side column */}
+            {isCommentsOpen && (
+              <div className="relative w-80 shrink-0 self-stretch">
+                <DocsComments
+                  projectId={projectId}
+                  docId={docId}
+                  userId={userId}
+                  isWorkspaceAdmin={
+                    members?.some(
+                      (m) =>
+                        m.userId === userId &&
+                        (m.role === "owner" || m.role === "admin")
+                    ) || false
+                  }
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Cropper Dialog */}
       <Dialog

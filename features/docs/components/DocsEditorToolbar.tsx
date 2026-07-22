@@ -35,8 +35,7 @@ import { LinkIcon } from "@/components/tiptap-icons/link-icon"
 // --- Hooks ---
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
 
-// --- Theme Toggle ---
-import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle"
+
 import { TableIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
@@ -134,9 +133,7 @@ export function MainToolbarContent({
 
       {isMobile && <ToolbarSeparator />}
 
-      <ToolbarGroup>
-        <ThemeToggle />
-      </ToolbarGroup>
+
     </>
   )
 }

@@ -7,7 +7,7 @@ import { DocsSidebar } from "@/features/docs/components/DocsSidebar"
 import { DocsVersions } from "@/features/docs/components/DocsVersions"
 import { DocVersion, ProjectDoc, useDocs } from "@/features/docs/hooks/useDocs"
 import { useQueryState } from "nuqs"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useProject } from "../layout"
 
 import { Button } from "@/components/ui/button"
@@ -60,46 +60,60 @@ export default function DocsPage() {
   const [previewVersion, setPreviewVersion] = useState<DocVersion | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
-  // Auto-select first document on load if none selected
-  useEffect(() => {
-    if (!activeDocId && docs.length > 0) {
-      const defaultDoc = docs.find(
-        (d) => !d.parentId && !d.deleted && !d.archived
-      )
-      if (defaultDoc) {
-        setActiveDocId(defaultDoc.id)
-      }
-    }
-  }, [docs, activeDocId, setActiveDocId])
+  // Auto-select first document: update URL param in background, but use effectiveDocId
+  // synchronously so we never flash the empty state when docs are already loaded.
+  const defaultDocId = useMemo(() => {
+    if (docs.length === 0) return null
+    const defaultDoc = docs.find(
+      (d) => !d.parentId && !d.deleted && !d.archived
+    )
+    return defaultDoc?.id ?? null
+  }, [docs])
 
-  // Auto-open comments panel if a comment is highlighted (React 19 pattern during render)
+  // The effective doc ID: use activeDocId from URL if set, otherwise fall back to default
+  const effectiveDocId = activeDocId ?? defaultDocId
+
+  // Sync URL in useEffect to avoid render-phase state update, which blocks navigation transitions.
+  useEffect(() => {
+    if (!activeDocId && defaultDocId) {
+      setActiveDocId(defaultDocId)
+    }
+  }, [activeDocId, defaultDocId, setActiveDocId])
+
+  // Auto-open comments panel if a comment is highlighted
   const [prevCommentId, setPrevCommentId] = useState<string | null>(null)
   if (commentId !== prevCommentId) {
     setPrevCommentId(commentId)
-    if (activeDocId && commentId) {
+    if (effectiveDocId && commentId) {
       setIsCommentsOpen(true)
       setIsVersionsOpen(false)
     }
   }
 
-  // Reset preview version and panels when active document changes (React 19 pattern during render)
+  // Reset preview version and panels when active document changes
   const [prevActiveDocId, setPrevActiveDocId] = useState<string | null>(null)
-  if (activeDocId !== prevActiveDocId) {
-    setPrevActiveDocId(activeDocId)
+  if (effectiveDocId !== prevActiveDocId) {
+    setPrevActiveDocId(effectiveDocId)
     setPreviewVersion(null)
     setIsVersionsOpen(false)
     setIsCommentsOpen(false)
-    setCommentId(null)
+    // Only update commentId URL param if it's currently set, to avoid unnecessary URL updates
+    if (commentId) {
+      setCommentId(null)
+    }
   }
 
-  // Get active doc details
-  const activeDoc = docs.find((d) => d.id === activeDocId)
+  // Get active doc details (memoized to avoid re-computation on every render)
+  const activeDoc = useMemo(
+    () => docs.find((d) => d.id === effectiveDocId),
+    [docs, effectiveDocId]
+  )
 
-  // Calculate local breadcrumbs
-  const getBreadcrumbs = () => {
-    if (!activeDocId) return []
+  // Calculate local breadcrumbs (memoized)
+  const breadcrumbs = useMemo(() => {
+    if (!effectiveDocId) return []
     const trail: { id: string; title: string; emoji?: string | null }[] = []
-    let current: ProjectDoc | undefined = docs.find((d) => d.id === activeDocId)
+    let current: ProjectDoc | undefined = docs.find((d) => d.id === effectiveDocId)
     while (current) {
       const activeCurrent = current
       trail.unshift({
@@ -112,39 +126,45 @@ export default function DocsPage() {
         : undefined
     }
     return trail
-  }
-
-  const breadcrumbs = getBreadcrumbs()
+  }, [docs, effectiveDocId])
 
   // Add root or nested document
-  const handleCreateDoc = async (parentId?: string | null) => {
-    const newDoc = await createDoc({
-      title: "Untitled Page",
-      parentId: parentId || null,
-      emoji: "📄",
-    })
-    setActiveDocId(newDoc.id)
-  }
+  const handleCreateDoc = useCallback(
+    async (parentId?: string | null) => {
+      const newDoc = await createDoc({
+        title: "Untitled Page",
+        parentId: parentId || null,
+        emoji: "📄",
+      })
+      setActiveDocId(newDoc.id)
+    },
+    [createDoc, setActiveDocId]
+  )
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = useCallback(async () => {
     if (!activeDoc) return
     const isFav = activeDoc.favorites?.[0]?.isFavorite ?? false
     await toggleFavorite({ id: activeDoc.id, data: { isFavorite: !isFav } })
-  }
+  }, [activeDoc, toggleFavorite])
 
-  const handleDuplicate = async () => {
+  const handleDuplicate = useCallback(async () => {
     if (!activeDoc) return
     const newDoc = await duplicateDoc(activeDoc.id)
     setActiveDocId(newDoc.id)
-  }
+  }, [activeDoc, duplicateDoc, setActiveDocId])
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!activeDoc) return
     if (confirm("Move this page to Trash? It can be restored later.")) {
       await deleteDoc(activeDoc.id)
       setActiveDocId(null)
     }
-  }
+  }, [activeDoc, deleteDoc, setActiveDocId])
+
+  const isFavorite = useMemo(
+    () => activeDoc?.favorites?.[0]?.isFavorite ?? false,
+    [activeDoc]
+  )
 
   if (isDocsLoading || isAuthLoading || !user) {
     return (
@@ -161,8 +181,6 @@ export default function DocsPage() {
     )
   }
 
-  const isFavorite = activeDoc?.favorites?.[0]?.isFavorite ?? false
-
   return (
     <div className="flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-xl border border-border/40 bg-background/50 backdrop-blur-md">
       {/* Sidebar Tree Navigation */}
@@ -173,7 +191,7 @@ export default function DocsPage() {
       >
         <DocsSidebar
           projectId={projectId}
-          activeDocId={activeDocId}
+          activeDocId={effectiveDocId}
           onSelectDoc={setActiveDocId}
           onCreateDoc={handleCreateDoc}
         />
@@ -181,7 +199,7 @@ export default function DocsPage() {
 
       {/* Editor & Content Canvas Container */}
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        {activeDocId && activeDoc ? (
+        {effectiveDocId && activeDoc ? (
           <>
             {/* Header toolbar for this doc */}
             <div className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-card/20 px-6 select-none">
