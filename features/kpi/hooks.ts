@@ -35,7 +35,12 @@ export function useKpiTransactionsInfinite(
   return useInfiniteQuery({
     queryKey: ["kpi-transactions", workspaceId, filters],
     queryFn: ({ pageParam = 1 }) =>
-      fetchKpiTransactions(workspaceId, pageParam as number, KPI_PAGE_LIMIT, filters),
+      fetchKpiTransactions(
+        workspaceId,
+        pageParam as number,
+        KPI_PAGE_LIMIT,
+        filters
+      ),
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.pagination.page + 1
       return nextPage <= lastPage.pagination.totalPages ? nextPage : undefined
@@ -72,4 +77,3 @@ export function useKpiAllProjects(workspaceId: string, enabled: boolean) {
     staleTime: 60_000,
   })
 }
-

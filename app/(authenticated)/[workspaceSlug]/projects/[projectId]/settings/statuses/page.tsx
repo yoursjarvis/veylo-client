@@ -26,7 +26,11 @@ import {
 } from "@/components/ui/select"
 import { useForm } from "@tanstack/react-form"
 import { Check, Tag, X, GripVertical } from "lucide-react"
-import { Delete01Icon, Edit02Icon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import {
+  Delete01Icon,
+  Edit02Icon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { useState, useEffect } from "react"
@@ -80,7 +84,13 @@ function StatusRow({
   canUpdate,
   canDelete,
 }: {
-  status: { id: string; name: string; color?: string; progressWeight?: number; category: string }
+  status: {
+    id: string
+    name: string
+    color?: string
+    progressWeight?: number
+    category: string
+  }
   projectId: string
   canUpdate: boolean
   canDelete: boolean
@@ -117,7 +127,8 @@ function StatusRow({
           name: editedName.trim(),
           color: editedColor,
           progressWeight: Number(editedWeight),
-          category: editedCategory as "backlog" | "todo" | "in_progress" | "done",
+          category: editedCategory as
+            "backlog" | "todo" | "in_progress" | "done",
         },
       },
       {
@@ -140,20 +151,22 @@ function StatusRow({
 
   if (isEditing) {
     return (
-      <div 
+      <div
         ref={setNodeRef}
         style={style}
-        className="flex flex-col gap-3 rounded-lg border border-primary/50 bg-card p-3 shadow-sm relative z-10"
+        className="relative z-10 flex flex-col gap-3 rounded-lg border border-primary/50 bg-card p-3 shadow-sm"
       >
         <div className="flex flex-wrap items-center gap-3">
           <Input
             value={editedName}
             onChange={(e) => setEditedName(e.target.value)}
-            className="h-8 flex-1 min-w-[120px] text-xs font-medium"
+            className="h-8 min-w-[120px] flex-1 text-xs font-medium"
             placeholder="Status name"
           />
           <div className="flex items-center gap-2">
-            <span className="text-2xs text-muted-foreground whitespace-nowrap">Category:</span>
+            <span className="text-2xs whitespace-nowrap text-muted-foreground">
+              Category:
+            </span>
             <ComboboxSelect
               value={editedCategory}
               onValueChange={(val) => setEditedCategory(val || "todo")}
@@ -164,14 +177,16 @@ function StatusRow({
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-2xs text-muted-foreground whitespace-nowrap">Weight (%):</span>
+            <span className="text-2xs whitespace-nowrap text-muted-foreground">
+              Weight (%):
+            </span>
             <Input
               type="number"
               min={0}
               max={100}
               value={editedWeight}
               onChange={(e) => setEditedWeight(Number(e.target.value))}
-              className="h-8 w-16 text-xs font-mono"
+              className="h-8 w-16 font-mono text-xs"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -211,7 +226,7 @@ function StatusRow({
       style={style}
       className={cn(
         "group flex items-center justify-between rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/10",
-        isDragging && "opacity-50 z-50 border-primary shadow-md"
+        isDragging && "z-50 border-primary opacity-50 shadow-md"
       )}
     >
       <div className="flex items-center gap-3">
@@ -219,7 +234,7 @@ function StatusRow({
           {...attributes}
           {...listeners}
           disabled={!canUpdate}
-          className="cursor-grab text-muted-foreground hover:text-foreground touch-none focus:outline-none disabled:opacity-50 disabled:cursor-default"
+          className="cursor-grab touch-none text-muted-foreground hover:text-foreground focus:outline-none disabled:cursor-default disabled:opacity-50"
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -290,7 +305,16 @@ export default function StatusesSettingsPage() {
   const createStatusMutation = useCreateStatus(projectId)
   const updateStatusMutation = useUpdateStatus(projectId)
 
-  const [localStatuses, setLocalStatuses] = useState<{ id: string; name: string; color?: string; order?: number; progressWeight?: number; category: string }[]>([])
+  const [localStatuses, setLocalStatuses] = useState<
+    {
+      id: string
+      name: string
+      color?: string
+      order?: number
+      progressWeight?: number
+      category: string
+    }[]
+  >([])
 
   useEffect(() => {
     if (statuses) {
@@ -302,7 +326,7 @@ export default function StatusesSettingsPage() {
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 5,
-      }
+      },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -311,14 +335,14 @@ export default function StatusesSettingsPage() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
-    
+
     if (over && active.id !== over.id) {
       const oldIndex = localStatuses.findIndex((s) => s.id === active.id)
       const newIndex = localStatuses.findIndex((s) => s.id === over.id)
-      
+
       const newStatuses = arrayMove(localStatuses, oldIndex, newIndex)
       setLocalStatuses(newStatuses)
-      
+
       // Update orders for all affected items
       newStatuses.forEach((st, index) => {
         const currentOrder = st.order ?? -1
@@ -344,7 +368,8 @@ export default function StatusesSettingsPage() {
         {
           name: value.name.trim(),
           color: value.color,
-          category: value.category as "backlog" | "todo" | "in_progress" | "done",
+          category: value.category as
+            "backlog" | "todo" | "in_progress" | "done",
           progressWeight: Number(value.progressWeight),
         },
         {
@@ -399,29 +424,32 @@ export default function StatusesSettingsPage() {
       </div>
 
       {isStatusesLoading ? (
-        <div className="flex flex-col space-y-6 p-6 w-full">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-32" />
+        <div className="flex w-full flex-col space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-48" />
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-32" />
+            </div>
           </div>
-        </div>
-        <div className="rounded-md border border-border">
-          <div className="border-b border-border p-4 flex gap-4">
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-          </div>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="p-4 flex gap-4 border-b border-border last:border-0">
+          <div className="rounded-md border border-border">
+            <div className="flex gap-4 border-b border-border p-4">
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
             </div>
-          ))}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex gap-4 border-b border-border p-4 last:border-0"
+              >
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
       ) : (
         <div className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-2">
           {/* List of Statuses */}
@@ -431,7 +459,8 @@ export default function StatusesSettingsPage() {
                 Active Statuses
               </CardTitle>
               <CardDescription className="text-xs">
-                Statuses currently available for tasks in this project. You can drag and drop them to reorder.
+                Statuses currently available for tasks in this project. You can
+                drag and drop them to reorder.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -447,18 +476,27 @@ export default function StatusesSettingsPage() {
                     onDragEnd={handleDragEnd}
                   >
                     <SortableContext
-                      items={localStatuses.map(s => s.id)}
+                      items={localStatuses.map((s) => s.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      {localStatuses.map((st: { id: string; name: string; color?: string; order?: number; progressWeight?: number; category: string }) => (
-                        <StatusRow 
-                          key={st.id} 
-                          status={st} 
-                          projectId={projectId}
-                          canUpdate={canUpdate}
-                          canDelete={canDelete}
-                        />
-                      ))}
+                      {localStatuses.map(
+                        (st: {
+                          id: string
+                          name: string
+                          color?: string
+                          order?: number
+                          progressWeight?: number
+                          category: string
+                        }) => (
+                          <StatusRow
+                            key={st.id}
+                            status={st}
+                            projectId={projectId}
+                            canUpdate={canUpdate}
+                            canDelete={canDelete}
+                          />
+                        )
+                      )}
                     </SortableContext>
                   </DndContext>
                 </div>
@@ -470,201 +508,214 @@ export default function StatusesSettingsPage() {
           {canCreate && (
             <Card className="h-fit shadow-md">
               <CardHeader>
-              <CardTitle className="text-sm font-semibold">
-                Create Project Status
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Define a new status with a name and custom color.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  form.handleSubmit()
-                }}
-                className="space-y-4 text-xs"
-              >
-                <form.Field
-                  name="name"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value.trim()) return "Status name is required"
-                      return undefined
-                    },
+                <CardTitle className="text-sm font-semibold">
+                  Create Project Status
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Define a new status with a name and custom color.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    form.handleSubmit()
                   }}
+                  className="space-y-4 text-xs"
                 >
-                  {(field) => {
-                    const fieldErrors: string[] = []
-                    field.state.meta.errors.forEach((err) => {
-                      if (err) fieldErrors.push(String(err))
-                    })
-                    if (validationErrors.name)
-                      fieldErrors.push(validationErrors.name)
-                    const hasError =
-                      field.state.meta.isTouched && !!fieldErrors.length
-                    return (
-                      <div className="space-y-1.5">
-                        <label className="font-semibold">Status Name</label>
-                        <Input
-                          placeholder="e.g. To Do, In Progress, Done"
-                          value={field.state.value}
-                          onChange={(e) => {
-                            field.handleChange(e.target.value)
-                            setValidationErrors((prev) => ({
-                              ...prev,
-                              name: "",
-                            }))
-                          }}
-                          aria-invalid={hasError}
-                        />
-                        {hasError && (
-                          <p className="mt-1 text-2xs font-medium text-destructive">
-                            {fieldErrors.join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    )
-                  }}
-                </form.Field>
-
-                <form.Field
-                  name="category"
-                >
-                  {(field) => (
-                    <div className="space-y-1.5">
-                      <label className="font-semibold">Category</label>
-                      <ComboboxSelect
-                        value={field.state.value}
-                        onValueChange={(val) => field.handleChange(val as "backlog" | "todo" | "in_progress" | "done")}
-                        options={CATEGORY_OPTIONS}
-                        placeholder="Select category..."
-                        isSearchable={false}
-                        className="h-9 font-medium"
-                      />
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field
-                  name="progressWeight"
-                  validators={{
-                    onChange: ({ value }) => {
-                      const num = Number(value)
-                      if (isNaN(num) || num < 0 || num > 100) return "Weight must be between 0 and 100"
-                      return undefined
-                    },
-                  }}
-                >
-                  {(field) => {
-                    const fieldErrors: string[] = []
-                    field.state.meta.errors.forEach((err) => {
-                      if (err) fieldErrors.push(String(err))
-                    })
-                    const hasError = field.state.meta.isTouched && !!fieldErrors.length
-                    return (
-                      <div className="space-y-1.5">
-                        <label className="font-semibold">Progress Weight (%)</label>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={100}
-                          placeholder="e.g. 50"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(Number(e.target.value))}
-                          aria-invalid={hasError}
-                        />
-                        {hasError && (
-                          <p className="mt-1 text-2xs font-medium text-destructive">
-                            {fieldErrors.join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    )
-                  }}
-                </form.Field>
-
-                <form.Field name="color">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <label className="font-semibold">Status Color</label>
-
-                      {/* Presets Grid */}
-                      <div className="grid grid-cols-6 gap-2">
-                        {COLOR_PRESETS.map((preset) => (
-                          <button
-                            key={preset.hex}
-                            type="button"
-                            onClick={() => field.handleChange(preset.hex)}
-                            className={cn(
-                              "flex h-8 w-full items-center justify-center rounded-md border text-2xs font-semibold text-primary-foreground transition-all hover:scale-105",
-                              field.state.value === preset.hex
-                                ? "scale-100 border-primary-foreground ring-2 ring-primary"
-                                : "border-transparent"
-                            )}
-                            style={{ backgroundColor: preset.hex }}
-                            title={preset.name}
-                          >
-                            {field.state.value === preset.hex && "✓"}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Custom Color Input */}
-                      <div className="flex items-center gap-2 pt-2">
-                        <div className="relative flex-1">
+                  <form.Field
+                    name="name"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value.trim()) return "Status name is required"
+                        return undefined
+                      },
+                    }}
+                  >
+                    {(field) => {
+                      const fieldErrors: string[] = []
+                      field.state.meta.errors.forEach((err) => {
+                        if (err) fieldErrors.push(String(err))
+                      })
+                      if (validationErrors.name)
+                        fieldErrors.push(validationErrors.name)
+                      const hasError =
+                        field.state.meta.isTouched && !!fieldErrors.length
+                      return (
+                        <div className="space-y-1.5">
+                          <label className="font-semibold">Status Name</label>
                           <Input
-                            type="text"
-                            placeholder="#ffffff"
+                            placeholder="e.g. To Do, In Progress, Done"
+                            value={field.state.value}
+                            onChange={(e) => {
+                              field.handleChange(e.target.value)
+                              setValidationErrors((prev) => ({
+                                ...prev,
+                                name: "",
+                              }))
+                            }}
+                            aria-invalid={hasError}
+                          />
+                          {hasError && (
+                            <p className="mt-1 text-2xs font-medium text-destructive">
+                              {fieldErrors.join(", ")}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    }}
+                  </form.Field>
+
+                  <form.Field name="category">
+                    {(field) => (
+                      <div className="space-y-1.5">
+                        <label className="font-semibold">Category</label>
+                        <ComboboxSelect
+                          value={field.state.value}
+                          onValueChange={(val) =>
+                            field.handleChange(
+                              val as "backlog" | "todo" | "in_progress" | "done"
+                            )
+                          }
+                          options={CATEGORY_OPTIONS}
+                          placeholder="Select category..."
+                          isSearchable={false}
+                          className="h-9 font-medium"
+                        />
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field
+                    name="progressWeight"
+                    validators={{
+                      onChange: ({ value }) => {
+                        const num = Number(value)
+                        if (isNaN(num) || num < 0 || num > 100)
+                          return "Weight must be between 0 and 100"
+                        return undefined
+                      },
+                    }}
+                  >
+                    {(field) => {
+                      const fieldErrors: string[] = []
+                      field.state.meta.errors.forEach((err) => {
+                        if (err) fieldErrors.push(String(err))
+                      })
+                      const hasError =
+                        field.state.meta.isTouched && !!fieldErrors.length
+                      return (
+                        <div className="space-y-1.5">
+                          <label className="font-semibold">
+                            Progress Weight (%)
+                          </label>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            placeholder="e.g. 50"
+                            value={field.state.value}
+                            onChange={(e) =>
+                              field.handleChange(Number(e.target.value))
+                            }
+                            aria-invalid={hasError}
+                          />
+                          {hasError && (
+                            <p className="mt-1 text-2xs font-medium text-destructive">
+                              {fieldErrors.join(", ")}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    }}
+                  </form.Field>
+
+                  <form.Field name="color">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <label className="font-semibold">Status Color</label>
+
+                        {/* Presets Grid */}
+                        <div className="grid grid-cols-6 gap-2">
+                          {COLOR_PRESETS.map((preset) => (
+                            <button
+                              key={preset.hex}
+                              type="button"
+                              onClick={() => field.handleChange(preset.hex)}
+                              className={cn(
+                                "flex h-8 w-full items-center justify-center rounded-md border text-2xs font-semibold text-primary-foreground transition-all hover:scale-105",
+                                field.state.value === preset.hex
+                                  ? "scale-100 border-primary-foreground ring-2 ring-primary"
+                                  : "border-transparent"
+                              )}
+                              style={{ backgroundColor: preset.hex }}
+                              title={preset.name}
+                            >
+                              {field.state.value === preset.hex && "✓"}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Custom Color Input */}
+                        <div className="flex items-center gap-2 pt-2">
+                          <div className="relative flex-1">
+                            <Input
+                              type="text"
+                              placeholder="#ffffff"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              className="pl-9 font-mono"
+                            />
+                            <span
+                              className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 rounded-full border border-border/20"
+                              style={{ backgroundColor: field.state.value }}
+                            />
+                          </div>
+                          <input
+                            type="color"
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            className="pl-9 font-mono"
-                          />
-                          <span
-                            className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 rounded-full border border-border/20"
-                            style={{ backgroundColor: field.state.value }}
+                            className="h-9 w-9 cursor-pointer rounded border border-border bg-transparent p-0.5"
                           />
                         </div>
-                        <input
-                          type="color"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          className="h-9 w-9 cursor-pointer rounded border border-border bg-transparent p-0.5"
-                        />
                       </div>
-                    </div>
-                  )}
-                </form.Field>
-
-                {/* Form Actions */}
-                <div className="flex justify-end border-t border-border/80 pt-4">
-                  <form.Subscribe
-                    selector={(state) =>
-                      [state.values.name, state.canSubmit] as const
-                    }
-                  >
-                    {([nameVal, canSubmit]) => (
-                      <Button
-                        type="submit"
-                        disabled={
-                          !nameVal.trim() ||
-                          !canSubmit ||
-                          createStatusMutation.isPending
-                        }
-                      >
-                        <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" /> Create Status
-                      </Button>
                     )}
-                  </form.Subscribe>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                  </form.Field>
+
+                  {/* Form Actions */}
+                  <div className="flex justify-end border-t border-border/80 pt-4">
+                    <form.Subscribe
+                      selector={(state) =>
+                        [state.values.name, state.canSubmit] as const
+                      }
+                    >
+                      {([nameVal, canSubmit]) => (
+                        <Button
+                          type="submit"
+                          disabled={
+                            !nameVal.trim() ||
+                            !canSubmit ||
+                            createStatusMutation.isPending
+                          }
+                        >
+                          <HugeiconsIcon
+                            icon={PlusSignIcon}
+                            className="mr-1.5 h-4 w-4"
+                          />{" "}
+                          Create Status
+                        </Button>
+                      )}
+                    </form.Subscribe>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
     </div>
   )
 }
-

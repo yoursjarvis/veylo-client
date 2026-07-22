@@ -179,7 +179,9 @@ export function RoleModal({
                 selectedPermissionIds={selectedPermissionIds}
                 onChange={(id, checked) => {
                   if (checked) {
-                    setSelectedPermissionIds((prev) => prev.includes(id) ? prev : [...prev, id])
+                    setSelectedPermissionIds((prev) =>
+                      prev.includes(id) ? prev : [...prev, id]
+                    )
                   } else {
                     setSelectedPermissionIds((prev) =>
                       prev.filter((pid) => pid !== id)

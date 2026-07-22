@@ -54,7 +54,9 @@ function NavGroupItem({
       {item.subItems?.length ? (
         <>
           <CollapsibleTrigger
-            render={<SidebarMenuButton isActive={isActive} tooltip={item.title} />}
+            render={
+              <SidebarMenuButton isActive={isActive} tooltip={item.title} />
+            }
           >
             {item.icon}
             <span className="flex-1">{item.title}</span>

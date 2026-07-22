@@ -2,8 +2,16 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card"
 import { axiosInstance } from "@/lib/axios"
 import { useTheme } from "next-themes"
 import EmojiPicker, { Theme, SkinTones } from "emoji-picker-react"
@@ -142,7 +150,7 @@ function CodeBlockComponent({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search language..."
-                className="w-full h-7 px-2 text-xs"
+                className="h-7 w-full px-2 text-xs"
               />
             </div>
 
@@ -310,7 +318,7 @@ function MentionNodeView({ node }: NodeViewProps) {
       style={{ verticalAlign: "middle" }}
     >
       <HoverCard>
-        <HoverCardTrigger className="align-middle outline-none flex">
+        <HoverCardTrigger className="flex align-middle outline-none">
           <span className="inline-flex max-w-37.5 cursor-pointer items-center gap-1 rounded border border-border bg-accent py-0.5 pr-1.5 pl-1 align-middle text-2xs font-semibold text-accent-foreground select-none">
             <SafeAvatar src={userAvatar} name={displayName} size={14} />
             <span className="max-w-27.5 truncate">{displayName}</span>
@@ -391,7 +399,9 @@ const CustomMention = Mention.extend({
 })
 
 // Custom slash command extension
-export const SlashCommand = Extension.create<{ suggestion: Omit<SuggestionOptions, 'editor'> }>({
+export const SlashCommand = Extension.create<{
+  suggestion: Omit<SuggestionOptions, "editor">
+}>({
   name: "slashCommand",
   addOptions() {
     return {
@@ -1084,7 +1094,10 @@ export function RichTextEditor({
                 onSkinToneChange={(newSkinTone) => {
                   setSkinTone(newSkinTone)
                   if (typeof window !== "undefined") {
-                    window.localStorage.setItem("veylo-emoji-skintone", newSkinTone)
+                    window.localStorage.setItem(
+                      "veylo-emoji-skintone",
+                      newSkinTone
+                    )
                   }
                 }}
               />
@@ -1167,7 +1180,8 @@ export function RichTextRenderer({
     ],
     editorProps: {
       attributes: {
-        class: "max-w-full overflow-hidden text-xs leading-relaxed text-foreground outline-none",
+        class:
+          "max-w-full overflow-hidden text-xs leading-relaxed text-foreground outline-none",
       },
     },
   })

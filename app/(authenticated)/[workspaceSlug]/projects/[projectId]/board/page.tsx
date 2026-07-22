@@ -127,7 +127,10 @@ export default function BoardPage() {
 
   const [debouncedQueryFilters] = useDebounce(queryFilters, 400)
 
-  const { data: tasks, isLoading } = useProjectTasks(projectId, debouncedQueryFilters)
+  const { data: tasks, isLoading } = useProjectTasks(
+    projectId,
+    debouncedQueryFilters
+  )
 
   if (isLoading) {
     return (
@@ -140,7 +143,7 @@ export default function BoardPage() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="flex h-full min-w-[300px] flex-col rounded-lg bg-muted/30 p-4"
+              className="flex h-full min-w-75 flex-col rounded-lg bg-muted/30 p-4"
             >
               <Skeleton className="mb-4 h-6 w-32" />
               <div className="space-y-3">

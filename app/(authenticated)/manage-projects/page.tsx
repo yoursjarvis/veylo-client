@@ -73,27 +73,32 @@ export default function ManageProjectsPage() {
       try {
         const parsed = JSON.parse(decodeURIComponent(filtersParam))
         if (Array.isArray(parsed)) {
-          setActiveFilters(parsed)
+          setActiveFilters((prev) => {
+            if (JSON.stringify(prev) === JSON.stringify(parsed)) {
+              return prev
+            }
+            return parsed
+          })
         }
       } catch (e) {
         console.error("Failed to parse filters from URL", e)
       }
+    } else {
+      setActiveFilters((prev) => (prev.length === 0 ? prev : []))
     }
 
-    const searchParam = searchParams.get("search")
-    if (searchParam) {
-      setSearchQuery(searchParam)
-      setDebouncedSearchQuery(searchParam)
-    }
+    const searchParam = searchParams.get("search") || ""
+    setSearchQuery((prev) => (prev === searchParam ? prev : searchParam))
+    setDebouncedSearchQuery((prev) =>
+      prev === searchParam ? prev : searchParam
+    )
 
-    const sortByParam = searchParams.get("sortBy")
-    if (sortByParam) {
-      setSortBy(sortByParam)
-    }
+    const sortByParam = searchParams.get("sortBy") || "createdAt"
+    setSortBy((prev) => (prev === sortByParam ? prev : sortByParam))
 
-    const sortOrderParam = searchParams.get("sortOrder")
+    const sortOrderParam = searchParams.get("sortOrder") || "desc"
     if (sortOrderParam === "asc" || sortOrderParam === "desc") {
-      setSortOrder(sortOrderParam)
+      setSortOrder((prev) => (prev === sortOrderParam ? prev : sortOrderParam))
     }
   }, [searchParams])
 

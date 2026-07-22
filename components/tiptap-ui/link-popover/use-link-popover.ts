@@ -110,12 +110,14 @@ export function shouldShowLinkButton(props: {
 export function useLinkHandler(props: LinkHandlerProps) {
   const { editor, onSetLink } = props
   const [url, setUrl] = useState<string | null>(null)
-  const [prevEditor, setPrevEditor] = useState<typeof editor | undefined>(undefined)
+  const [prevEditor, setPrevEditor] = useState<typeof editor | undefined>(
+    undefined
+  )
   if (editor !== prevEditor) {
     setPrevEditor(editor)
     if (editor) {
       const { href } = editor.getAttributes("link")
-      setUrl(isLinkActive(editor) ? (href || "") : null)
+      setUrl(isLinkActive(editor) ? href || "" : null)
     } else {
       setUrl(null)
     }

@@ -6,7 +6,11 @@ import {
 } from "@/components/shared/rich-text-editor"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 import {
   Popover,
   PopoverContent,
@@ -72,10 +76,7 @@ const ReactionChip = ({
   } = useReactionUsers(commentId, emoji, isOpen)
 
   return (
-    <HoverCard
-      open={isOpen}
-      onOpenChange={setIsOpen}
-    >
+    <HoverCard open={isOpen} onOpenChange={setIsOpen}>
       <HoverCardTrigger
         render={
           <button
@@ -95,12 +96,10 @@ const ReactionChip = ({
       <HoverCardContent
         side="top"
         align="center"
-        className="w-auto min-w-[200px] border-border bg-popover shadow-md p-3"
+        className="w-auto min-w-[200px] border-border bg-popover p-3 shadow-md"
       >
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Reacted with {emoji}
-          </p>
+          <p className="text-sm text-muted-foreground">Reacted with {emoji}</p>
 
           <Separator />
 
@@ -336,15 +335,17 @@ const CommentNode = ({
                     Edit
                   </button>
                 )}
-                {(canDeleteAny || (comment.userId === currentUser?.user?.id && canDeleteOwn)) && (
-                    <button
-                      type="button"
-                      onClick={() => deleteCommentMutation.mutate(comment.id)}
-                      className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-destructive"
-                    >
-                      Delete
-                    </button>
-                  )}
+                {(canDeleteAny ||
+                  (comment.userId === currentUser?.user?.id &&
+                    canDeleteOwn)) && (
+                  <button
+                    type="button"
+                    onClick={() => deleteCommentMutation.mutate(comment.id)}
+                    className="text-2xs font-semibold text-muted-foreground transition-colors hover:text-destructive"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </>
           )}

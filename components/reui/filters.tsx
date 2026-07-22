@@ -17,10 +17,7 @@ import { cva } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  ButtonGroup,
-  ButtonGroupText,
-} from "@/components/ui/button-group"
+import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -49,7 +46,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { AlertCircleIcon, Cancel01Icon, Tick02Icon } from "@hugeicons/core-free-icons"
+import {
+  AlertCircleIcon,
+  Cancel01Icon,
+  Tick02Icon,
+} from "@hugeicons/core-free-icons"
 
 // i18n Configuration Interface
 export interface FilterI18nConfig {
@@ -343,12 +344,9 @@ function FilterInput<T = unknown>({
     <InputGroup
       className={cn(
         "w-36",
-        context.size == "sm" &&
-          "h-7!",
-        context.size == "default" &&
-          "h-8!",
-        context.size == "lg" &&
-          "h-9!",
+        context.size == "sm" && "h-7!",
+        context.size == "default" && "h-8!",
+        context.size == "lg" && "h-9!",
         className
       )}
     >
@@ -368,12 +366,9 @@ function FilterInput<T = unknown>({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className={cn(
-          context.size == "sm" &&
-            "h-7! text-xs",
-          context.size == "default" &&
-            "h-8!",
-          context.size == "lg" &&
-            "h-9!"
+          context.size == "sm" && "h-7! text-xs",
+          context.size == "default" && "h-8!",
+          context.size == "lg" && "h-9!"
         )}
         {...props}
       />
@@ -381,7 +376,11 @@ function FilterInput<T = unknown>({
         <InputGroupAddon align="inline-end">
           <Tooltip>
             <TooltipTrigger render={<InputGroupButton size="icon-xs" />}>
-              <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={2} className="text-destructive size-3.5" />
+              <HugeiconsIcon
+                icon={AlertCircleIcon}
+                strokeWidth={2}
+                className="size-3.5 text-destructive"
+              />
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-sm">{validationMessage}</p>
@@ -405,9 +404,7 @@ interface FilterRemoveButtonProps extends React.ButtonHTMLAttributes<HTMLButtonE
 
 function FilterRemoveButton({
   className,
-  icon = (
-    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-  ),
+  icon = <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />,
   ...props
 }: FilterRemoveButtonProps) {
   const context = useFilterContext()
@@ -466,8 +463,7 @@ export interface FilterFieldGroup<T = unknown> {
 
 // Union type for both flat and grouped field configurations
 export type FilterFieldsConfig<T = unknown> =
-  | FilterFieldConfig<T>[]
-  | FilterFieldGroup<T>[]
+  FilterFieldConfig<T>[] | FilterFieldGroup<T>[]
 
 export interface FilterFieldConfig<T = unknown> {
   key?: string
@@ -666,14 +662,18 @@ function FilterOperatorDropdown<T = unknown>({
             key={op.value}
             onClick={() => onChange(op.value)}
             className={cn(
-              "data-highlighted:bg-accent data-highlighted:text-accent-foreground flex items-center justify-between"
+              "flex items-center justify-between data-highlighted:bg-accent data-highlighted:text-accent-foreground"
             )}
           >
             <span>{op.label}</span>
-            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className={cn(
-                                "text-primary ms-auto",
-                                op.value === operator ? "opacity-100" : "opacity-0"
-                              )} />
+            <HugeiconsIcon
+              icon={Tick02Icon}
+              strokeWidth={2}
+              className={cn(
+                "ms-auto text-primary",
+                op.value === operator ? "opacity-100" : "opacity-0"
+              )}
+            />
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -775,7 +775,7 @@ function SelectOptionsPopover<T = unknown>({
               field.label || ""
             )}
             className={cn(
-              "border-input h-8 rounded-none border-0 bg-transparent! px-2 text-sm shadow-none",
+              "h-8 rounded-none border-0 border-input bg-transparent! px-2 text-sm shadow-none",
               "focus-visible:border-border focus-visible:ring-0 focus-visible:ring-offset-0",
               open && "placeholder:text-foreground"
             )}
@@ -843,7 +843,7 @@ function SelectOptionsPopover<T = unknown>({
         >
           <ScrollArea className="size-full min-h-0 **:data-[slot=scroll-area-scrollbar]:m-0 [&_[data-slot=scroll-area-viewport]]:h-full [&_[data-slot=scroll-area-viewport]]:overscroll-contain">
             {allFilteredOptions.length === 0 && (
-              <div className="text-muted-foreground py-2 text-center text-sm">
+              <div className="py-2 text-center text-sm text-muted-foreground">
                 {context.i18n.noResultsFound}
               </div>
             )}
@@ -1020,7 +1020,7 @@ function FilterValueSelector<T = unknown>({
 
   if (field.customRenderer) {
     return (
-      <ButtonGroupText className="hover:bg-accent aria-expanded:bg-accent bg-background dark:bg-input/30 text-start whitespace-nowrap outline-hidden">
+      <ButtonGroupText className="bg-background text-start whitespace-nowrap outline-hidden hover:bg-accent aria-expanded:bg-accent dark:bg-input/30">
         {field.customRenderer({ field, values, onChange, operator })}
       </ButtonGroupText>
     )
@@ -1358,7 +1358,7 @@ function FilterSubmenuContent<T = unknown>({
         >
           <ScrollArea className="size-full min-h-0 **:data-[slot=scroll-area-scrollbar]:m-0 [&_[data-slot=scroll-area-viewport]]:h-full [&_[data-slot=scroll-area-viewport]]:overscroll-contain">
             {filteredOptions.length === 0 ? (
-              <div className="text-muted-foreground py-2 text-center text-sm">
+              <div className="py-2 text-center text-sm text-muted-foreground">
                 {i18n.noResultsFound}
               </div>
             ) : (
@@ -1709,7 +1709,7 @@ export function Filters<T = unknown>({
                       }}
                     />
                     {enableShortcut && shortcutLabel && (
-                      <Kbd className="bg-background absolute top-1/2 right-2 -translate-y-1/2 border">
+                      <Kbd className="absolute top-1/2 right-2 -translate-y-1/2 border bg-background">
                         {shortcutLabel}
                       </Kbd>
                     )}
@@ -1729,7 +1729,7 @@ export function Filters<T = unknown>({
                     {(() => {
                       if (filteredFields.length === 0) {
                         return (
-                          <div className="text-muted-foreground py-2 text-center text-sm">
+                          <div className="py-2 text-center text-sm text-muted-foreground">
                             {mergedI18n.noFieldsFound}
                           </div>
                         )
@@ -1776,7 +1776,7 @@ export function Filters<T = unknown>({
                                   setHighlightedIndex(index)
                                   setActiveMenu("root")
                                 }}
-                                className="data-popup-open:bg-accent data-popup-open:text-accent-foreground data-highlighted:bg-accent data-highlighted:text-accent-foreground"
+                                className="data-highlighted:bg-accent data-highlighted:text-accent-foreground data-popup-open:bg-accent data-popup-open:text-accent-foreground"
                               >
                                 {field.icon}
                                 <span>{field.label}</span>
@@ -1882,32 +1882,33 @@ export function Filters<T = unknown>({
           </DropdownMenu>
         )}
 
-        {!hidePills && filters.map((filter) => {
-          const field = fieldsMap[filter.field]
-          if (!field) return null
-          return (
-            <ButtonGroup key={filter.id}>
-              <ButtonGroupText className="bg-background dark:bg-input/30">
-                {field.icon && field.icon}
-                {field.label}
-              </ButtonGroupText>
-              <FilterOperatorDropdown<T>
-                field={field}
-                operator={filter.operator}
-                values={filter.values}
-                onChange={(operator) => updateFilter(filter.id, { operator })}
-              />
-              <FilterValueSelector<T>
-                field={field}
-                values={filter.values}
-                operator={filter.operator}
-                onChange={(values) => updateFilter(filter.id, { values })}
-                autoFocus={filter.id === lastAddedFilterId}
-              />
-              <FilterRemoveButton onClick={() => removeFilter(filter.id)} />
-            </ButtonGroup>
-          )
-        })}
+        {!hidePills &&
+          filters.map((filter) => {
+            const field = fieldsMap[filter.field]
+            if (!field) return null
+            return (
+              <ButtonGroup key={filter.id}>
+                <ButtonGroupText className="bg-background dark:bg-input/30">
+                  {field.icon && field.icon}
+                  {field.label}
+                </ButtonGroupText>
+                <FilterOperatorDropdown<T>
+                  field={field}
+                  operator={filter.operator}
+                  values={filter.values}
+                  onChange={(operator) => updateFilter(filter.id, { operator })}
+                />
+                <FilterValueSelector<T>
+                  field={field}
+                  values={filter.values}
+                  operator={filter.operator}
+                  onChange={(values) => updateFilter(filter.id, { values })}
+                  autoFocus={filter.id === lastAddedFilterId}
+                />
+                <FilterRemoveButton onClick={() => removeFilter(filter.id)} />
+              </ButtonGroup>
+            )
+          })}
       </div>
     </FilterContext.Provider>
   )

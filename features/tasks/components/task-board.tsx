@@ -93,7 +93,12 @@ interface Task {
 interface TaskBoardProps {
   projectId: string
   tasks: Task[]
-  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
+  statuses: {
+    id: string
+    name: string
+    color?: string
+    progressWeight?: number
+  }[]
   projectMembers: ProjectMember[]
   sprints: Sprint[]
   projectTemplate: string
@@ -105,7 +110,7 @@ interface TaskBoardProps {
 import { getPriority, renderPriorityIcon } from "@/lib/priority"
 
 const getPriorityIcon = (prio: string) => {
-  return renderPriorityIcon(prio, "h-4 w-4 shrink-0");
+  return renderPriorityIcon(prio, "h-4 w-4 shrink-0")
 }
 
 const getPriorityBadge = (prio: string) => {
@@ -124,13 +129,12 @@ const getPriorityBadge = (prio: string) => {
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "bug":
-      return <HugeiconsIcon icon={Bug01Icon} className="h-4 w-4 text-destructive" />
+      return (
+        <HugeiconsIcon icon={Bug01Icon} className="h-4 w-4 text-destructive" />
+      )
     case "feature":
       return (
-        <HugeiconsIcon
-          icon={SparklesIcon}
-          className="h-4 w-4 text-primary"
-        />
+        <HugeiconsIcon icon={SparklesIcon} className="h-4 w-4 text-primary" />
       )
     case "task":
       return (
@@ -160,7 +164,12 @@ function SubtaskItem({
 }: {
   subtask: Task
   projectId: string
-  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
+  statuses: {
+    id: string
+    name: string
+    color?: string
+    progressWeight?: number
+  }[]
   completedStatus?: { id: string }
   onSelectTask?: (id: string) => void
 }) {
@@ -176,7 +185,7 @@ function SubtaskItem({
 
   return (
     <div
-      className="group/subtask flex cursor-pointer items-center gap-3 rounded-md p-2 transition-all duration-200 border border-border/50 bg-background/50 hover:bg-muted/50 hover:border-border/80"
+      className="group/subtask flex cursor-pointer items-center gap-3 rounded-md border border-border/50 bg-background/50 p-2 transition-all duration-200 hover:border-border/80 hover:bg-muted/50"
       onClick={(e) => {
         e.stopPropagation()
         onSelectTask?.(subtask.id)
@@ -240,7 +249,12 @@ function TaskCard({
 }: {
   task: Task
   projectId: string
-  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
+  statuses: {
+    id: string
+    name: string
+    color?: string
+    progressWeight?: number
+  }[]
   isDragging?: boolean
   onSelectTask?: (id: string) => void
   projectLabels?: Label[]
@@ -364,7 +378,7 @@ function TaskCard({
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">
+          <span className="text-2xs font-medium tracking-wider text-muted-foreground uppercase">
             {task.taskKey || task.id.substring(0, 8)}
           </span>
         </div>
@@ -372,21 +386,23 @@ function TaskCard({
         {task.labels && task.labels.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {projectLabels
-              .filter((lbl) =>
-                task.labels!.some((tl) => tl.labelId === lbl.id)
-              )
+              .filter((lbl) => task.labels!.some((tl) => tl.labelId === lbl.id))
               .map((lbl) => (
                 <div
                   key={lbl.id}
                   className={cn(
                     "flex items-center rounded-full border px-2 py-0.5 text-2xs font-semibold",
-                    !lbl.color && "bg-primary/10 border-primary/20 text-primary"
+                    !lbl.color && "border-primary/20 bg-primary/10 text-primary"
                   )}
-                  style={lbl.color ? {
-                    backgroundColor: `${lbl.color}20`,
-                    borderColor: `${lbl.color}40`,
-                    color: lbl.color,
-                  } : undefined}
+                  style={
+                    lbl.color
+                      ? {
+                          backgroundColor: `${lbl.color}20`,
+                          borderColor: `${lbl.color}40`,
+                          color: lbl.color,
+                        }
+                      : undefined
+                  }
                 >
                   {lbl.name}
                 </div>
@@ -463,7 +479,7 @@ function TaskCard({
                   <HoverCard key={idx}>
                     <HoverCardTrigger
                       render={
-                        <Avatar className="inline-block h-6 w-6 rounded-full ring-2 ring-card transition-transform hover:z-10 hover:scale-110 cursor-pointer">
+                        <Avatar className="inline-block h-6 w-6 cursor-pointer rounded-full ring-2 ring-card transition-transform hover:z-10 hover:scale-110">
                           <AvatarImage src={assignee.image || ""} />
                           <AvatarFallback className="bg-primary/10 text-2xs font-semibold text-primary">
                             {assignee.name
@@ -475,31 +491,31 @@ function TaskCard({
                     />
                     {user.name && (
                       <HoverCardContent
-                        className="w-80 p-4 bg-popover border border-border/80 rounded-xl shadow-lg"
+                        className="w-80 rounded-xl border border-border/80 bg-popover p-4 shadow-lg"
                         align="end"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex gap-4">
-                          <Avatar className="h-12 w-12 border border-border/50 shrink-0">
+                          <Avatar className="h-12 w-12 shrink-0 border border-border/50">
                             <AvatarImage src={user.image || undefined} />
                             <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
                               {user.name?.substring(0, 2).toUpperCase() || "U"}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="flex flex-col gap-1 min-w-0">
-                            <h4 className="font-semibold text-sm text-foreground truncate">
+                          <div className="flex min-w-0 flex-col gap-1">
+                            <h4 className="truncate text-sm font-semibold text-foreground">
                               {user.name}
                             </h4>
                             {"email" in user && user.email && (
-                              <p className="text-xs text-muted-foreground truncate">
+                              <p className="truncate text-xs text-muted-foreground">
                                 {user.email}
                               </p>
                             )}
-                            <div className="flex items-center gap-1.5 mt-2">
+                            <div className="mt-2 flex items-center gap-1.5">
                               <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-2xs font-medium text-emerald-600 dark:text-emerald-400">
                                 Active
                               </span>
-                              <span className="text-2xs text-muted-foreground uppercase font-semibold tracking-wider">
+                              <span className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 {member?.role || "Member"}
                               </span>
                             </div>
@@ -525,7 +541,7 @@ function TaskCard({
                   <HoverCard>
                     <HoverCardTrigger
                       render={
-                        <Avatar className="h-6 w-6 ring-2 ring-card transition-transform hover:scale-110 cursor-pointer">
+                        <Avatar className="h-6 w-6 cursor-pointer ring-2 ring-card transition-transform hover:scale-110">
                           <AvatarImage src={task.assignee.image || ""} />
                           <AvatarFallback className="bg-primary/10 text-2xs font-semibold text-primary">
                             {task.assignee.name
@@ -537,31 +553,31 @@ function TaskCard({
                     />
                     {user.name && (
                       <HoverCardContent
-                        className="w-80 p-4 bg-popover border border-border/80 rounded-xl shadow-lg"
+                        className="w-80 rounded-xl border border-border/80 bg-popover p-4 shadow-lg"
                         align="end"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex gap-4">
-                          <Avatar className="h-12 w-12 border border-border/50 shrink-0">
+                          <Avatar className="h-12 w-12 shrink-0 border border-border/50">
                             <AvatarImage src={user.image || undefined} />
                             <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
                               {user.name?.substring(0, 2).toUpperCase() || "U"}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="flex flex-col gap-1 min-w-0">
-                            <h4 className="font-semibold text-sm text-foreground truncate">
+                          <div className="flex min-w-0 flex-col gap-1">
+                            <h4 className="truncate text-sm font-semibold text-foreground">
                               {user.name}
                             </h4>
                             {"email" in user && user.email && (
-                              <p className="text-xs text-muted-foreground truncate">
+                              <p className="truncate text-xs text-muted-foreground">
                                 {user.email}
                               </p>
                             )}
-                            <div className="flex items-center gap-1.5 mt-2">
+                            <div className="mt-2 flex items-center gap-1.5">
                               <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-2xs font-medium text-emerald-600 dark:text-emerald-400">
                                 Active
                               </span>
-                              <span className="text-2xs text-muted-foreground uppercase font-semibold tracking-wider">
+                              <span className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 {member?.role || "Member"}
                               </span>
                             </div>
@@ -637,11 +653,19 @@ function TaskCard({
               </div>
             )}
 
-            {activeWorkspace?.kpiEnabled && task.estimatedPoints !== undefined && task.estimatedPoints > 0 && (
-              <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded" title="KPI Points">
-                ⭐ {task.awardedPoints && task.awardedPoints > 0 ? task.awardedPoints : task.estimatedPoints}
-              </div>
-            )}
+            {activeWorkspace?.kpiEnabled &&
+              task.estimatedPoints !== undefined &&
+              task.estimatedPoints > 0 && (
+                <div
+                  className="flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-xs font-bold text-amber-500"
+                  title="KPI Points"
+                >
+                  ⭐{" "}
+                  {task.awardedPoints && task.awardedPoints > 0
+                    ? task.awardedPoints
+                    : task.estimatedPoints}
+                </div>
+              )}
 
             {task.estimate !== undefined && (
               <div className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-foreground">
@@ -656,7 +680,7 @@ function TaskCard({
         </div>
 
         {isSubtasksExpanded && task.subtasks && task.subtasks.length > 0 && (
-          <div className="mt-3 flex flex-col gap-1 rounded-md bg-muted/30 p-2 border border-border/50">
+          <div className="mt-3 flex flex-col gap-1 rounded-md border border-border/50 bg-muted/30 p-2">
             {task.subtasks.map((subtask) => (
               <SubtaskItem
                 key={subtask.id}
@@ -685,7 +709,12 @@ function SortableTaskCard({
 }: {
   task: Task
   projectId: string
-  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
+  statuses: {
+    id: string
+    name: string
+    color?: string
+    progressWeight?: number
+  }[]
   onSelectTask: (id: string) => void
   index: number
   projectLabels?: Label[]
@@ -738,7 +767,12 @@ function SortableTaskCard({
 
 interface BoardColumnProps {
   projectId: string
-  statuses: { id: string; name: string; color?: string; progressWeight?: number }[]
+  statuses: {
+    id: string
+    name: string
+    color?: string
+    progressWeight?: number
+  }[]
   status: { id: string; name: string; color?: string }
   tasks: Task[]
   quickAddStatusId: string | null
@@ -789,7 +823,10 @@ function BoardColumn({
             )}
             <span className="max-w-35 truncate text-left">{status.name}</span>
           </div>
-          <Badge variant="outline" className="flex items-center gap-1.5 px-1.5 py-0.5 text-2xs font-semibold text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="flex items-center gap-1.5 px-1.5 py-0.5 text-2xs font-semibold text-muted-foreground"
+          >
             <span className="h-1 w-1 rounded-full bg-current" />
             {tasks.length}
           </Badge>
@@ -815,7 +852,7 @@ function BoardColumn({
             placeholder="What needs to be done?"
             value={quickAddTitle}
             onChange={(e) => setQuickAddTitle(e.target.value)}
-            className="h-9 border border-border/50 bg-background px-2 py-1 text-xs text-foreground placeholder-muted-foreground/60 shadow-none focus-visible:ring-primary/20 focus-visible:ring-1"
+            className="h-9 border border-border/50 bg-background px-2 py-1 text-xs text-foreground placeholder-muted-foreground/60 shadow-none focus-visible:ring-1 focus-visible:ring-primary/20"
           />
           <div className="mt-2.5 flex justify-end gap-2">
             <Button
@@ -1132,7 +1169,7 @@ export function TaskBoard({
       </div>
       <DragOverlay dropAnimation={dropAnimation}>
         {activeTask ? (
-          <div className="scale-105 rotate-3 cursor-grabbing shadow-2xl transition-transform border-2 border-primary rounded-md">
+          <div className="scale-105 rotate-3 cursor-grabbing rounded-md border-2 border-primary shadow-2xl transition-transform">
             <TaskCard
               task={activeTask}
               projectId={projectId}

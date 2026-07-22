@@ -1,21 +1,22 @@
 /** @type {import('next').NextConfig} */
-const backendOrigin = process.env.API_BACKEND_URL ?? "https://api.veylo.com:4000"
+const backendOrigin =
+  process.env.API_BACKEND_URL ?? "https://api.veylo.com:4000"
 
 const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'api.veylo.com',
-        port: '4000',
+        protocol: "https",
+        hostname: "api.veylo.com",
+        port: "4000",
       },
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "https",
+        hostname: "**",
       },
       {
-        protocol: 'http',
-        hostname: '**',
+        protocol: "http",
+        hostname: "**",
       },
     ],
   },

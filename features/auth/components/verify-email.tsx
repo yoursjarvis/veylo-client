@@ -20,7 +20,9 @@ export function VerifyEmail() {
     token ? "loading" : "error"
   )
   const [message, setMessage] = useState(() =>
-    token ? "We are verifying your email address." : "Missing verification token"
+    token
+      ? "We are verifying your email address."
+      : "Missing verification token"
   )
 
   useEffect(() => {
@@ -38,7 +40,9 @@ export function VerifyEmail() {
         }
 
         setStatus("success")
-        setMessage("Your email has been successfully verified. You can now log in to your account.")
+        setMessage(
+          "Your email has been successfully verified. You can now log in to your account."
+        )
         toast.success("Email verified successfully")
       })
       .catch((err) => {
@@ -47,7 +51,11 @@ export function VerifyEmail() {
         }
 
         setStatus("error")
-        setMessage(err instanceof Error ? err.message : "The verification link is invalid or has expired.")
+        setMessage(
+          err instanceof Error
+            ? err.message
+            : "The verification link is invalid or has expired."
+        )
         toast.error("Email verification failed")
       })
 
@@ -61,13 +69,19 @@ export function VerifyEmail() {
       <div className="flex flex-col items-center space-y-4">
         <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           {status === "loading" && (
-            <HugeiconsIcon icon={Loading03Icon} className="size-8 animate-spin" />
+            <HugeiconsIcon
+              icon={Loading03Icon}
+              className="size-8 animate-spin"
+            />
           )}
           {status === "success" && (
             <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-8" />
           )}
           {status === "error" && (
-            <HugeiconsIcon icon={Alert02Icon} className="size-8 text-destructive" />
+            <HugeiconsIcon
+              icon={Alert02Icon}
+              className="size-8 text-destructive"
+            />
           )}
         </div>
         <div className="space-y-2">
@@ -76,9 +90,7 @@ export function VerifyEmail() {
             {status === "success" && "Email verified"}
             {status === "error" && "Verification failed"}
           </h1>
-          <p className="text-muted-foreground text-pretty">
-            {message}
-          </p>
+          <p className="text-pretty text-muted-foreground">{message}</p>
         </div>
       </div>
 
@@ -87,7 +99,7 @@ export function VerifyEmail() {
           <Button className="w-full" render={<Link href="/login" />}>
             {status === "success" ? "Continue to Login" : "Back to Login"}
           </Button>
-          
+
           {status === "error" && (
             <p className="text-sm text-muted-foreground">
               Didn&apos;t receive the email?{" "}

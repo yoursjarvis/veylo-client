@@ -37,14 +37,18 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
   const register = useRegister()
   const router = useRouter()
 
-  const { data: invitation, isPending: inviteLoading, error: inviteError } = useQuery({
+  const {
+    data: invitation,
+    isPending: inviteLoading,
+    error: inviteError,
+  } = useQuery({
     queryKey: ["invitation", invitationId],
     queryFn: async () => {
-      if (!invitationId) throw new Error("No invitation ID provided");
-      return orgService.getInvitation(invitationId);
+      if (!invitationId) throw new Error("No invitation ID provided")
+      return orgService.getInvitation(invitationId)
     },
     enabled: !!invitationId,
-  });
+  })
 
   const form = useAuthForm({
     defaultValues: {
@@ -74,9 +78,9 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
 
   useEffect(() => {
     if (invitation?.email) {
-      form.setFieldValue("email", invitation.email);
+      form.setFieldValue("email", invitation.email)
     }
-  }, [invitation, form]);
+  }, [invitation, form])
 
   const handleSocialLogin = async (provider: "google" | "github") => {
     try {
@@ -97,32 +101,39 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
         <div className="size-8 animate-spin rounded-full border-b-2 border-primary" />
         <p className="text-sm text-muted-foreground">Loading invitation...</p>
       </div>
-    );
+    )
   }
 
   if (invitationId && (inviteError || !invitation)) {
     return (
-      <div className="text-center space-y-4 py-8">
-        <h2 className="text-xl font-semibold text-destructive">Invalid Invitation</h2>
-        <p className="text-muted-foreground">This invitation link is invalid, expired, or has already been used.</p>
-        <Button render={<Link href="/login" />} variant="outline" className="w-full">
+      <div className="space-y-4 py-8 text-center">
+        <h2 className="text-xl font-semibold text-destructive">
+          Invalid Invitation
+        </h2>
+        <p className="text-muted-foreground">
+          This invitation link is invalid, expired, or has already been used.
+        </p>
+        <Button
+          render={<Link href="/login" />}
+          variant="outline"
+          className="w-full"
+        >
           Go to Login
         </Button>
       </div>
-    );
+    )
   }
 
-  const isInvited = !!(invitationId && invitation);
+  const isInvited = !!(invitationId && invitation)
 
   return (
     <div className="w-full max-w-sm animate-in space-y-8">
-
       <div className="flex flex-col space-y-1">
         <h1 className="text-2xl font-bold tracking-wide">
           {isInvited ? `Join ${invitation.organizationName}` : "Join Now!"}
         </h1>
         <p className="text-base text-muted-foreground">
-          {isInvited 
+          {isInvited
             ? `Create your account for ${invitation.email}.`
             : `Create your ${process.env.NEXT_PUBLIC_APP_NAME} account.`}
         </p>
@@ -150,8 +161,8 @@ export function RegisterForm({ callbackUrl, invitationId }: RegisterFormProps) {
         </div>
 
         <AuthDivider>OR</AuthDivider>
-        <form 
-          className="space-y-2" 
+        <form
+          className="space-y-2"
           noValidate
           method="POST"
           onSubmit={(e) => {

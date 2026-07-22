@@ -596,7 +596,7 @@ export function GanttChart({
 
       setDragAction(null)
       setDragVisualFeedback(null)
-      
+
       setTimeout(() => {
         isDraggingRef.current = false
       }, 50)
@@ -939,7 +939,10 @@ export function GanttChart({
                         return (
                           <HugeiconsIcon
                             icon={style.icon}
-                            className={cn(style.className, "h-3.5 w-3.5 shrink-0")}
+                            className={cn(
+                              style.className,
+                              "h-3.5 w-3.5 shrink-0"
+                            )}
                           />
                         )
                       })()}
@@ -1001,7 +1004,8 @@ export function GanttChart({
 
                       // Calculate Progress
                       const todayDate = startOfDay(new Date())
-                      const totalTaskDays = differenceInDays(taskEnd, taskStart) || 1
+                      const totalTaskDays =
+                        differenceInDays(taskEnd, taskStart) || 1
                       const passedDays = differenceInDays(todayDate, taskStart)
                       let progress = 0
                       if (passedDays >= totalTaskDays) {
@@ -1023,7 +1027,7 @@ export function GanttChart({
                                   top: "9px",
                                 }}
                                 className={cn(
-                                  "relative overflow-hidden flex cursor-grab items-center rounded-md border border-primary bg-primary/20 px-2 text-2xs font-bold text-primary-foreground shadow-2xs transition-shadow select-none group-hover:shadow-xs active:cursor-grabbing",
+                                  "relative flex cursor-grab items-center overflow-hidden rounded-md border border-primary bg-primary/20 px-2 text-2xs font-bold text-primary-foreground shadow-2xs transition-shadow select-none group-hover:shadow-xs active:cursor-grabbing",
                                   isDraggingThis &&
                                     "cursor-grabbing border-dashed opacity-80 shadow-md"
                                 )}
@@ -1049,13 +1053,13 @@ export function GanttChart({
                           >
                             {/* Progress Fill Background */}
                             <div
-                              className="absolute left-0 top-0 bottom-0 bg-primary/30"
+                              className="absolute top-0 bottom-0 left-0 bg-primary/30"
                               style={{ width: `${progress}%` }}
                             />
 
                             {/* Left Resize Handle */}
                             <div
-                              className="absolute top-0 bottom-0 left-0 w-1.5 z-20 cursor-col-resize rounded-l hover:bg-primary/40"
+                              className="absolute top-0 bottom-0 left-0 z-20 w-1.5 cursor-col-resize rounded-l hover:bg-primary/40"
                               onMouseDown={(e) =>
                                 handleMouseDown(
                                   e,
@@ -1071,9 +1075,17 @@ export function GanttChart({
                             <div className="pointer-events-none relative z-10 flex w-full items-center gap-1.5 overflow-hidden">
                               {rowItem.task?.assignee && (
                                 <Avatar className="h-4 w-4 shrink-0">
-                                  <AvatarImage src={rowItem.task.assignee.image || ""} alt={rowItem.task.assignee.name || "Assignee"} />
-                                  <AvatarFallback className="text-2xs uppercase bg-background/50">
-                                    {rowItem.task.assignee.name?.substring(0, 2) || "U"}
+                                  <AvatarImage
+                                    src={rowItem.task.assignee.image || ""}
+                                    alt={
+                                      rowItem.task.assignee.name || "Assignee"
+                                    }
+                                  />
+                                  <AvatarFallback className="bg-background/50 text-2xs uppercase">
+                                    {rowItem.task.assignee.name?.substring(
+                                      0,
+                                      2
+                                    ) || "U"}
                                   </AvatarFallback>
                                 </Avatar>
                               )}
@@ -1084,7 +1096,7 @@ export function GanttChart({
 
                             {/* Right Resize Handle */}
                             <div
-                              className="absolute top-0 right-0 bottom-0 w-1.5 z-20 cursor-col-resize rounded-r hover:bg-primary/40"
+                              className="absolute top-0 right-0 bottom-0 z-20 w-1.5 cursor-col-resize rounded-r hover:bg-primary/40"
                               onMouseDown={(e) =>
                                 handleMouseDown(
                                   e,

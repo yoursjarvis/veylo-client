@@ -1,20 +1,25 @@
-"use client";
+"use client"
 
-import { LogoIcon } from "@/components/shared/logo";
-import { cn } from "@/lib/utils";
+import { LogoIcon } from "@/components/shared/logo"
+import { cn } from "@/lib/utils"
 
 export function FullPageLoader({ className }: { className?: string }) {
   return (
-    <div className={cn("flex min-h-[400px] flex-1 flex-col items-center justify-center bg-background", className)}>
+    <div
+      className={cn(
+        "flex min-h-[400px] flex-1 flex-col items-center justify-center bg-background",
+        className
+      )}
+    >
       <div className="relative flex flex-col items-center">
         {/* Animated Glow Effect */}
         <div className="absolute -inset-4 animate-pulse rounded-full bg-primary/20 blur-2xl" />
-        
+
         {/* Logo with scaling animation */}
-        <div className="relative mb-8 animate-in fade-in zoom-in duration-500">
-           <div className="h-16 w-16 animate-bounce transition-transform duration-1000 ease-in-out">
+        <div className="relative mb-8 animate-in duration-500 fade-in zoom-in">
+          <div className="h-16 w-16 animate-bounce transition-transform duration-1000 ease-in-out">
             <LogoIcon className="h-full w-full" />
-           </div>
+          </div>
         </div>
 
         {/* Loading text and bar */}
@@ -29,23 +34,32 @@ export function FullPageLoader({ className }: { className?: string }) {
               <div className="h-1 w-1 animate-bounce rounded-full bg-primary delay-300" />
             </div>
           </div>
-          
+
           <div className="h-1 w-48 overflow-hidden rounded-full bg-muted">
-            <div className="h-full animate-progress rounded-full bg-primary" />
+            <div className="animate-progress h-full rounded-full bg-primary" />
           </div>
         </div>
       </div>
-      
+
       <style jsx>{`
         @keyframes progress {
-          0% { width: 0%; transform: translateX(-100%); }
-          50% { width: 50%; transform: translateX(0%); }
-          100% { width: 100%; transform: translateX(100%); }
+          0% {
+            width: 0%;
+            transform: translateX(-100%);
+          }
+          50% {
+            width: 50%;
+            transform: translateX(0%);
+          }
+          100% {
+            width: 100%;
+            transform: translateX(100%);
+          }
         }
         .animate-progress {
           animation: progress 2s infinite ease-in-out;
         }
       `}</style>
     </div>
-  );
+  )
 }

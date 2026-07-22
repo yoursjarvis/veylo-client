@@ -45,7 +45,7 @@ export function TaskDetailsDependencies({
   const blockedByDeps = task.blockedByDependencies || []
 
   const hasDependencies = blockingDeps.length > 0 || blockedByDeps.length > 0
-  
+
   const { hasPermission } = usePermissions()
   const canUpdateTask = hasPermission("task:update")
 

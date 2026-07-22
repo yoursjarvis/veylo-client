@@ -66,9 +66,7 @@ export function DeleteProjectDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="border-t border-border/40 pt-2">
-          <AlertDialogCancel className="h-9 text-xs">
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel className="h-9 text-xs">Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={handleDelete}

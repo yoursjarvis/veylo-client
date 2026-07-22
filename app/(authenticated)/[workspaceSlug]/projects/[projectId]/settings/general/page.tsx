@@ -33,8 +33,7 @@ const projectSettingsSchema = z.object({
 })
 
 export default function GeneralSettingsPage() {
-  const { projectId, workspaceSlug, selectedProject } =
-    useProject()
+  const { projectId, workspaceSlug, selectedProject } = useProject()
   const { activeWorkspace } = useWorkspaceContext()
   const { hasPermission } = usePermissions()
 
@@ -51,7 +50,11 @@ export default function GeneralSettingsPage() {
       description: selectedProject?.description || "",
     },
     validatorAdapter: zodValidator(),
-    onSubmit: async ({ value }: { value: { title: string; description: string } }) => {
+    onSubmit: async ({
+      value,
+    }: {
+      value: { title: string; description: string }
+    }) => {
       updateProjectMutation.mutate({
         title: value.title,
         description: value.description,
@@ -169,150 +172,168 @@ export default function GeneralSettingsPage() {
                 form.handleSubmit()
               }}
             >
-            <CardContent className="space-y-4">
-              <form.Field
-                name="title"
-                validators={{
-                  onChange: projectSettingsSchema.shape.title,
-                }}
-              >
-                {(field) => (
-                  <Field>
-                    <label htmlFor={field.name} className="text-xs font-medium">
-                      Project Name
-                    </label>
-                    <Input
-                      id={field.name}
-                      value={field.state.value as string}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    <FieldError errors={field.state.meta.errors} />
-                  </Field>
-                )}
-              </form.Field>
+              <CardContent className="space-y-4">
+                <form.Field
+                  name="title"
+                  validators={{
+                    onChange: projectSettingsSchema.shape.title,
+                  }}
+                >
+                  {(field) => (
+                    <Field>
+                      <label
+                        htmlFor={field.name}
+                        className="text-xs font-medium"
+                      >
+                        Project Name
+                      </label>
+                      <Input
+                        id={field.name}
+                        value={field.state.value as string}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                      <FieldError errors={field.state.meta.errors} />
+                    </Field>
+                  )}
+                </form.Field>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Project Key (Read-only)
-                </label>
-                <Input
-                  value={selectedProject?.projectKey || ""}
-                  readOnly
-                  disabled
-                  className="cursor-not-allowed bg-muted font-mono uppercase"
-                />
-              </div>
-
-              <form.Field name="description">
-                {(field) => (
-                  <Field>
-                    <label htmlFor={field.name} className="text-xs font-medium">
-                      Description
-                    </label>
-                    <Textarea
-                      id={field.name}
-                      value={field.state.value as string}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    <FieldError errors={field.state.meta.errors} />
-                  </Field>
-                )}
-              </form.Field>
-
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium">
-                  Project Brand Icon
-                </label>
-                <div className="flex w-fit items-center gap-4 rounded-lg border p-3">
-                  <IconPicker
-                    value={
-                      icon instanceof File
-                        ? URL.createObjectURL(icon)
-                        : (icon as string | null)
-                    }
-                    onChange={(val) => setIcon(val)}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Project Key (Read-only)
+                  </label>
+                  <Input
+                    value={selectedProject?.projectKey || ""}
+                    readOnly
+                    disabled
+                    className="cursor-not-allowed bg-muted font-mono uppercase"
                   />
-                  <div className="text-2xs">
-                    <p className="font-semibold">Select Emoji / Graphic</p>
-                    <p className="mt-0.5">
-                      Helps identify this project at a glance.
-                    </p>
+                </div>
+
+                <form.Field name="description">
+                  {(field) => (
+                    <Field>
+                      <label
+                        htmlFor={field.name}
+                        className="text-xs font-medium"
+                      >
+                        Description
+                      </label>
+                      <Textarea
+                        id={field.name}
+                        value={field.state.value as string}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                      <FieldError errors={field.state.meta.errors} />
+                    </Field>
+                  )}
+                </form.Field>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium">
+                    Project Brand Icon
+                  </label>
+                  <div className="flex w-fit items-center gap-4 rounded-lg border p-3">
+                    <IconPicker
+                      value={
+                        icon instanceof File
+                          ? URL.createObjectURL(icon)
+                          : (icon as string | null)
+                      }
+                      onChange={(val) => setIcon(val)}
+                    />
+                    <div className="text-2xs">
+                      <p className="font-semibold">Select Emoji / Graphic</p>
+                      <p className="mt-0.5">
+                        Helps identify this project at a glance.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end border-t pt-2">
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                >
-                  {([canSubmit, isSubmitting]) => (
-                    <Button
-                      type="submit"
-                      disabled={!canSubmit || isSubmitting || updateProjectMutation.isPending}
-                      variant="default"
-                    >
-                      {updateProjectMutation.isPending ? (
-                        "Saving..."
-                      ) : (
-                        <>
-                          <HugeiconsIcon icon={SaveIcon} className="mr-1.5 h-4 w-4" /> Save Changes
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </form.Subscribe>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
+                <div className="flex justify-end border-t pt-2">
+                  <form.Subscribe
+                    selector={(state) => [state.canSubmit, state.isSubmitting]}
+                  >
+                    {([canSubmit, isSubmitting]) => (
+                      <Button
+                        type="submit"
+                        disabled={
+                          !canSubmit ||
+                          isSubmitting ||
+                          updateProjectMutation.isPending
+                        }
+                        variant="default"
+                      >
+                        {updateProjectMutation.isPending ? (
+                          "Saving..."
+                        ) : (
+                          <>
+                            <HugeiconsIcon
+                              icon={SaveIcon}
+                              className="mr-1.5 h-4 w-4"
+                            />{" "}
+                            Save Changes
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </form.Subscribe>
+                </div>
+              </CardContent>
+            </form>
+          </Card>
         )}
 
         {/* Danger Zone */}
         {canDelete && (
           <Card className="shadow-md">
             <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-destructive">
-              <AlertTriangle className="h-4.5 w-4.5" /> Danger Zone
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Actions that are destructive and cannot be undone.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-0.5 text-xs">
-                <p className="font-semibold">Delete this Project</p>
-                <p className="max-w-sm">
-                  Permanently deletes tasks, secrets vault, custom fields, slack
-                  configs, and associated drive files.
-                </p>
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                <AlertTriangle className="h-4.5 w-4.5" /> Danger Zone
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Actions that are destructive and cannot be undone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-0.5 text-xs">
+                  <p className="font-semibold">Delete this Project</p>
+                  <p className="max-w-sm">
+                    Permanently deletes tasks, secrets vault, custom fields,
+                    slack configs, and associated drive files.
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        "Are you absolutely sure you want to delete this project? This will permanently delete its keys vault, members, and uploaded files."
+                      )
+                    ) {
+                      deleteProjectMutation.mutate()
+                    }
+                  }}
+                  disabled={deleteProjectMutation.isPending}
+                >
+                  {deleteProjectMutation.isPending ? (
+                    "Deleting..."
+                  ) : (
+                    <>
+                      <HugeiconsIcon
+                        icon={Delete01Icon}
+                        className="mr-1.5 h-4 w-4"
+                      />{" "}
+                      Delete Project
+                    </>
+                  )}
+                </Button>
               </div>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (
-                    confirm(
-                      "Are you absolutely sure you want to delete this project? This will permanently delete its keys vault, members, and uploaded files."
-                    )
-                  ) {
-                    deleteProjectMutation.mutate()
-                  }
-                }}
-                disabled={deleteProjectMutation.isPending}
-              >
-                {deleteProjectMutation.isPending ? (
-                  "Deleting..."
-                ) : (
-                  <>
-                    <HugeiconsIcon icon={Delete01Icon} className="mr-1.5 h-4 w-4" /> Delete Project
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

@@ -91,7 +91,10 @@ export function ComboboxSelect({
           }
         }
       }}
-      isItemEqualToValue={(a: { value?: string } | null, b: { value?: string } | null) => a?.value === b?.value}
+      isItemEqualToValue={(
+        a: { value?: string } | null,
+        b: { value?: string } | null
+      ) => a?.value === b?.value}
       getValueText={(val: { label?: string } | null) => val?.label || ""}
     >
       <div className="relative w-full">

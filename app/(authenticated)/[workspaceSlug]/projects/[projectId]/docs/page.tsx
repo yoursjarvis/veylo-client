@@ -113,7 +113,9 @@ export default function DocsPage() {
   const breadcrumbs = useMemo(() => {
     if (!effectiveDocId) return []
     const trail: { id: string; title: string; emoji?: string | null }[] = []
-    let current: ProjectDoc | undefined = docs.find((d) => d.id === effectiveDocId)
+    let current: ProjectDoc | undefined = docs.find(
+      (d) => d.id === effectiveDocId
+    )
     while (current) {
       const activeCurrent = current
       trail.unshift({

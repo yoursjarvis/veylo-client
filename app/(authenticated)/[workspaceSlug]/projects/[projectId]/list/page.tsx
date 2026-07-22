@@ -82,7 +82,13 @@ export default function ListPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearchQuery] = useDebounce(searchQuery, 400)
   const [groupBy, setGroupBy] = useState<
-    "status" | "assignee" | "type" | "priority" | "epics" | "milestones" | "sprints"
+    | "status"
+    | "assignee"
+    | "type"
+    | "priority"
+    | "epics"
+    | "milestones"
+    | "sprints"
   >("status")
   const [sortBy, setSortBy] = useState<
     "position" | "title" | "dueDate" | "priority" | "createdAt"
@@ -271,13 +277,27 @@ export default function ListPage() {
                     )
                   }
                 >
-                  <DropdownMenuRadioItem value="status">Status</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="assignee">Assignee</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="type">Type</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="priority">Priority</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="epics">Epics</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="milestones">Milestones</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="sprints">Sprints</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="status">
+                    Status
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="assignee">
+                    Assignee
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="type">
+                    Type
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="priority">
+                    Priority
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="epics">
+                    Epics
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="milestones">
+                    Milestones
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="sprints">
+                    Sprints
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -289,7 +309,15 @@ export default function ListPage() {
                   <Button variant="outline" size="sm" className="gap-1.5">
                     <ArrowUpDown className="h-3.5 w-3.5" />
                     <span className="capitalize">
-                      Sort: {sortBy === "position" ? "Default" : sortBy === "dueDate" ? "Due Date" : sortBy === "createdAt" ? "Created Date" : sortBy} ({sortOrder === "asc" ? "Asc" : "Desc"})
+                      Sort:{" "}
+                      {sortBy === "position"
+                        ? "Default"
+                        : sortBy === "dueDate"
+                          ? "Due Date"
+                          : sortBy === "createdAt"
+                            ? "Created Date"
+                            : sortBy}{" "}
+                      ({sortOrder === "asc" ? "Asc" : "Desc"})
                     </span>
                   </Button>
                 }
@@ -308,19 +336,33 @@ export default function ListPage() {
                     )
                   }
                 >
-                  <DropdownMenuRadioItem value="position">Default</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="title">Title</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="dueDate">Due Date</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="priority">Priority</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="createdAt">Created Date</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="position">
+                    Default
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="title">
+                    Title
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="dueDate">
+                    Due Date
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="priority">
+                    Priority
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="createdAt">
+                    Created Date
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
                   value={sortOrder}
                   onValueChange={(val) => setSortOrder(val as "asc" | "desc")}
                 >
-                  <DropdownMenuRadioItem value="asc">Ascending</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="desc">Descending</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="asc">
+                    Ascending
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="desc">
+                    Descending
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>

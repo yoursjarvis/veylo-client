@@ -11,7 +11,9 @@ export function ProjectIcon({ icon, className }: ProjectIconProps) {
   const baseClasses =
     "flex items-center justify-center rounded-lg border border-border bg-secondary/30 shadow-xs shrink-0"
   const sizeClasses = "h-8 w-8 text-sm"
-  const combinedClasses = className ? `${baseClasses} ${className}` : `${baseClasses} ${sizeClasses}`
+  const combinedClasses = className
+    ? `${baseClasses} ${className}`
+    : `${baseClasses} ${sizeClasses}`
 
   if (!icon) {
     return <span className={combinedClasses}>📁</span>
@@ -22,9 +24,7 @@ export function ProjectIcon({ icon, className }: ProjectIconProps) {
     icon.startsWith("/") ||
     icon.startsWith("blob:")
   ) {
-    const imageUrl = icon.startsWith("blob:")
-      ? icon
-      : getThumbUrl(icon) || icon
+    const imageUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon
     return (
       <div className={`${combinedClasses} relative overflow-hidden`}>
         <Image
@@ -38,9 +38,5 @@ export function ProjectIcon({ icon, className }: ProjectIconProps) {
     )
   }
 
-  return (
-    <span className={`${combinedClasses} leading-none`}>
-      {icon}
-    </span>
-  )
+  return <span className={`${combinedClasses} leading-none`}>{icon}</span>
 }

@@ -146,7 +146,13 @@ function MyTaskRow({
                   updateTaskMutation.mutate({
                     taskId: task.id,
                     data: {
-                      priority: val as "lowest" | "low" | "medium" | "high" | "highest" | "urgent",
+                      priority: val as
+                        | "lowest"
+                        | "low"
+                        | "medium"
+                        | "high"
+                        | "highest"
+                        | "urgent",
                     },
                   })
                 }

@@ -5,18 +5,16 @@ import { RegisterForm } from "@/features/auth/components/register-form"
 export default async function SingUpPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string | string[]; invitationId?: string | string[] }>
+  searchParams: Promise<{
+    callbackUrl?: string | string[]
+    invitationId?: string | string[]
+  }>
 }) {
   const params = await searchParams
   const callbackUrl =
-    typeof params.callbackUrl === "string"
-      ? params.callbackUrl
-      : undefined
+    typeof params.callbackUrl === "string" ? params.callbackUrl : undefined
   const invitationId =
-    typeof params.invitationId === "string"
-      ? params.invitationId
-      : undefined
-
+    typeof params.invitationId === "string" ? params.invitationId : undefined
 
   return (
     <div className="relative flex h-screen w-full items-center justify-center overflow-hidden px-6 md:px-8">

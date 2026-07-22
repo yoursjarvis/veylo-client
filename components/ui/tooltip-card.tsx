@@ -192,7 +192,7 @@ export const Tooltip = ({
               stiffness: 200,
               damping: 20,
             }}
-            className="absolute z-50 min-w-[15rem] overflow-hidden rounded-md border border-transparent bg-popover shadow-sm ring-1 ring-border/50 pointer-events-auto"
+            className="pointer-events-auto absolute z-50 min-w-[15rem] overflow-hidden rounded-md border border-transparent bg-popover shadow-sm ring-1 ring-border/50"
             style={{
               top: position.y,
               left: position.x,

@@ -65,7 +65,9 @@ export function NotificationCenter() {
       // Redirect to task drawer or project
       if (n.taskId && workspaceSlug) {
         if (n.projectId) {
-          router.push(`/${workspaceSlug}/projects/${n.projectId}?taskId=${n.taskId}`)
+          router.push(
+            `/${workspaceSlug}/projects/${n.projectId}?taskId=${n.taskId}`
+          )
         } else {
           router.push(`/${workspaceSlug}/tasks/${n.taskId}`)
         }

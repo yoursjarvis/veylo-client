@@ -5,8 +5,19 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import { Calendar } from "@/components/ui/calendar"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -14,12 +25,15 @@ import {
   UserAdd01Icon,
   Calendar01Icon,
   Delete01Icon,
-  Add01Icon
+  Add01Icon,
 } from "@hugeicons/core-free-icons"
 import { Task, ProjectMember, TaskStatus } from "@/types/models"
 import { format } from "date-fns"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
-import { useProjectChecklistTemplates, useApplyChecklistTemplate } from "@/features/tasks/hooks/use-tasks"
+import {
+  useProjectChecklistTemplates,
+  useApplyChecklistTemplate,
+} from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
 import { usePermissions } from "@/hooks/use-permissions"
 
@@ -47,10 +61,12 @@ export function TaskDetailsSubtasks({
   onAddSubtask,
 }: TaskDetailsSubtasksProps) {
   const { activeWorkspace } = useWorkspaceContext()
-  const { data: templates = [] } = useProjectChecklistTemplates(activeWorkspace?.id || null)
+  const { data: templates = [] } = useProjectChecklistTemplates(
+    activeWorkspace?.id || null
+  )
   const applyTemplateMutation = useApplyChecklistTemplate(taskId)
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("")
-  
+
   const { hasPermission } = usePermissions()
   const canCreateTask = hasPermission("task:create")
   const canUpdateTask = hasPermission("task:update")
@@ -65,42 +81,52 @@ export function TaskDetailsSubtasks({
   return (
     <div className="space-y-4 border-t border-border/50">
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-          <HugeiconsIcon icon={CircleCheckIcon} size={14} className="text-muted-foreground/70" />{" "}
+        <label className="flex items-center gap-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+          <HugeiconsIcon
+            icon={CircleCheckIcon}
+            size={14}
+            className="text-muted-foreground/70"
+          />{" "}
           Subtask Checklist
         </label>
         {templates.length > 0 && canCreateTask && (
           <Popover>
-            <PopoverTrigger render={
-              <Button
-                type="button"
-                variant="outline"
-                className="h-7 text-2xs font-semibold flex items-center gap-1.5"
-              />
-            }>
+            <PopoverTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex h-7 items-center gap-1.5 text-2xs font-semibold"
+                />
+              }
+            >
               <HugeiconsIcon icon={Add01Icon} size={10} />
               Load Template
             </PopoverTrigger>
             <PopoverContent align="end" className="w-56 p-1.5">
-              <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 border-b border-border/40 mb-1">
+              <div className="mb-1 border-b border-border/40 px-2 py-1 text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                 Apply Checklist Template
               </div>
-              {templates.map((tpl: { id: string; name: string; description?: string }) => (
-                <button
-                  key={tpl.id}
-                  type="button"
-                  onClick={() => {
-                    applyTemplateMutation.mutate(tpl.id)
-                  }}
-                  disabled={applyTemplateMutation.isPending}
-                  className="w-full text-left text-xs font-medium px-2 py-1.5 rounded-md hover:bg-muted/60 disabled:opacity-50 transition-colors flex flex-col gap-0.5"
-                >
-                  <span className="text-foreground">{tpl.name}</span>
-                  {tpl.description && (
-                    <span className="text-2xs text-muted-foreground line-clamp-1">{tpl.description}</span>
-                  )}
-                </button>
-              ))}
+              {templates.map(
+                (tpl: { id: string; name: string; description?: string }) => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => {
+                      applyTemplateMutation.mutate(tpl.id)
+                    }}
+                    disabled={applyTemplateMutation.isPending}
+                    className="flex w-full flex-col gap-0.5 rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors hover:bg-muted/60 disabled:opacity-50"
+                  >
+                    <span className="text-foreground">{tpl.name}</span>
+                    {tpl.description && (
+                      <span className="line-clamp-1 text-2xs text-muted-foreground">
+                        {tpl.description}
+                      </span>
+                    )}
+                  </button>
+                )
+              )}
             </PopoverContent>
           </Popover>
         )}
@@ -108,7 +134,9 @@ export function TaskDetailsSubtasks({
       <div className="space-y-1 pl-0.5">
         {subtasks.map((subtask) => {
           const isSubtaskCompleted = subtask.statusId === completedStatus?.id
-          const subtaskAssignee = projectMembers.find((m) => m.user?.id === subtask.assigneeId)?.user
+          const subtaskAssignee = projectMembers.find(
+            (m) => m.user?.id === subtask.assigneeId
+          )?.user
 
           return (
             <div
@@ -146,18 +174,21 @@ export function TaskDetailsSubtasks({
                 <div
                   className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [&:has([data-state=open])]:opacity-100"
                   style={{
-                    opacity: subtask.assigneeId || subtask.dueDate ? 1 : undefined,
+                    opacity:
+                      subtask.assigneeId || subtask.dueDate ? 1 : undefined,
                   }}
                 >
-                {/* Assignee Popover */}
-                <Popover>
-                  <PopoverTrigger render={
-                    <button
-                      type="button"
-                      className="flex h-6 w-6 items-center justify-center rounded-full border border-transparent transition-colors hover:border-border/50 hover:bg-muted"
-                      title="Assign to..."
-                    />
-                  }>
+                  {/* Assignee Popover */}
+                  <Popover>
+                    <PopoverTrigger
+                      render={
+                        <button
+                          type="button"
+                          className="flex h-6 w-6 items-center justify-center rounded-full border border-transparent transition-colors hover:border-border/50 hover:bg-muted"
+                          title="Assign to..."
+                        />
+                      }
+                    >
                       {subtaskAssignee ? (
                         <Avatar className="h-5 w-5">
                           <AvatarImage src={subtaskAssignee.image || ""} />
@@ -166,93 +197,134 @@ export function TaskDetailsSubtasks({
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <HugeiconsIcon icon={UserAdd01Icon} size={12} className="text-muted-foreground" />
+                        <HugeiconsIcon
+                          icon={UserAdd01Icon}
+                          size={12}
+                          className="text-muted-foreground"
+                        />
                       )}
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-[200px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Search team..." className="h-9" />
-                      <CommandList>
-                        <CommandEmpty>No member found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            onSelect={() => onUpdateSubtask(subtask.id, { assigneeId: null })}
-                            className="text-xs"
-                          >
-                            <div className="mr-2 flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-muted-foreground/50">
-                              <HugeiconsIcon icon={UserAdd01Icon} size={10} className="text-muted-foreground/70" />
-                            </div>
-                            Unassigned
-                            {subtask.assigneeId === null && (
-                              <HugeiconsIcon icon={CircleCheckIcon} size={12} className="ml-auto text-primary" />
-                            )}
-                          </CommandItem>
-                          {projectMembers
-                            .filter((m) => m.user)
-                            .map((member) => (
-                              <CommandItem
-                                key={member.id}
-                                onSelect={() => onUpdateSubtask(subtask.id, { assigneeId: member.user?.id })}
-                                className="text-xs"
-                              >
-                                <Avatar className="mr-2 h-5 w-5">
-                                  <AvatarImage src={member.user?.image || ""} />
-                                  <AvatarFallback className="text-2xs">
-                                    {member.user?.name?.charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                {member.user?.name}
-                                {subtask.assigneeId === member.user?.id && (
-                                  <HugeiconsIcon icon={CircleCheckIcon} size={12} className="ml-auto text-primary" />
-                                )}
-                              </CommandItem>
-                            ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-[200px] p-0">
+                      <Command>
+                        <CommandInput
+                          placeholder="Search team..."
+                          className="h-9"
+                        />
+                        <CommandList>
+                          <CommandEmpty>No member found.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              onSelect={() =>
+                                onUpdateSubtask(subtask.id, {
+                                  assigneeId: null,
+                                })
+                              }
+                              className="text-xs"
+                            >
+                              <div className="mr-2 flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-muted-foreground/50">
+                                <HugeiconsIcon
+                                  icon={UserAdd01Icon}
+                                  size={10}
+                                  className="text-muted-foreground/70"
+                                />
+                              </div>
+                              Unassigned
+                              {subtask.assigneeId === null && (
+                                <HugeiconsIcon
+                                  icon={CircleCheckIcon}
+                                  size={12}
+                                  className="ml-auto text-primary"
+                                />
+                              )}
+                            </CommandItem>
+                            {projectMembers
+                              .filter((m) => m.user)
+                              .map((member) => (
+                                <CommandItem
+                                  key={member.id}
+                                  onSelect={() =>
+                                    onUpdateSubtask(subtask.id, {
+                                      assigneeId: member.user?.id,
+                                    })
+                                  }
+                                  className="text-xs"
+                                >
+                                  <Avatar className="mr-2 h-5 w-5">
+                                    <AvatarImage
+                                      src={member.user?.image || ""}
+                                    />
+                                    <AvatarFallback className="text-2xs">
+                                      {member.user?.name
+                                        ?.charAt(0)
+                                        .toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  {member.user?.name}
+                                  {subtask.assigneeId === member.user?.id && (
+                                    <HugeiconsIcon
+                                      icon={CircleCheckIcon}
+                                      size={12}
+                                      className="ml-auto text-primary"
+                                    />
+                                  )}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
 
-                {/* Due Date Popover */}
-                <Popover>
-                  <PopoverTrigger render={
-                    <button
-                      type="button"
-                      className={cn(
-                        "flex items-center gap-1 rounded border border-transparent px-1.5 py-0.5 text-2xs font-medium transition-colors hover:border-border/50 hover:bg-muted",
-                        subtask.dueDate ? "text-foreground" : "text-muted-foreground"
-                      )}
-                      title="Set due date"
-                    />
-                  }>
+                  {/* Due Date Popover */}
+                  <Popover>
+                    <PopoverTrigger
+                      render={
+                        <button
+                          type="button"
+                          className={cn(
+                            "flex items-center gap-1 rounded border border-transparent px-1.5 py-0.5 text-2xs font-medium transition-colors hover:border-border/50 hover:bg-muted",
+                            subtask.dueDate
+                              ? "text-foreground"
+                              : "text-muted-foreground"
+                          )}
+                          title="Set due date"
+                        />
+                      }
+                    >
                       <HugeiconsIcon
                         icon={Calendar01Icon}
                         size={12}
                         className={subtask.dueDate ? "text-primary" : ""}
                       />
-                      {subtask.dueDate ? format(new Date(subtask.dueDate), "MMM d") : ""}
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={subtask.dueDate ? new Date(subtask.dueDate) : undefined}
-                      onSelect={(date) =>
-                        onUpdateSubtask(subtask.id, {
-                          dueDate: date?.toISOString() || null,
-                        })
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                      {subtask.dueDate
+                        ? format(new Date(subtask.dueDate), "MMM d")
+                        : ""}
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          subtask.dueDate
+                            ? new Date(subtask.dueDate)
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          onUpdateSubtask(subtask.id, {
+                            dueDate: date?.toISOString() || null,
+                          })
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-                <button
-                  onClick={() => onDeleteSubtask(subtask.id)}
-                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
-                  title="Delete Subtask"
-                >
-                  <HugeiconsIcon icon={Delete01Icon} size={12} />
-                </button>
+                  <button
+                    onClick={() => onDeleteSubtask(subtask.id)}
+                    className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                    title="Delete Subtask"
+                  >
+                    <HugeiconsIcon icon={Delete01Icon} size={12} />
+                  </button>
                 </div>
               )}
             </div>

@@ -5,18 +5,15 @@ import { LoginForm } from "@/features/auth/components/login-form"
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string | string[], error?: string | string[] }>
+  searchParams: Promise<{
+    callbackUrl?: string | string[]
+    error?: string | string[]
+  }>
 }) {
   const params = await searchParams
   const callbackUrl =
-    typeof params.callbackUrl === "string"
-      ? params.callbackUrl
-      : undefined
-  const error =
-    typeof params.error === "string"
-      ? params.error
-      : undefined
-
+    typeof params.callbackUrl === "string" ? params.callbackUrl : undefined
+  const error = typeof params.error === "string" ? params.error : undefined
 
   return (
     <div className="relative flex h-screen w-full items-center justify-center overflow-hidden px-6 md:px-8">

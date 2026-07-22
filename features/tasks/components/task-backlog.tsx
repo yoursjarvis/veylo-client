@@ -92,7 +92,7 @@ export function TaskBacklog({
     string | null
   >(null)
   const [quickAddTaskTitle, setQuickAddTaskTitle] = useState("")
-  
+
   const { hasPermission } = usePermissions()
   const canCreateSprint = hasPermission("sprint:create")
   const canUpdateSprint = hasPermission("sprint:update")
@@ -512,7 +512,7 @@ export function TaskBacklog({
                     Start Date
                   </Label>
                   <Popover>
-                    <PopoverTrigger 
+                    <PopoverTrigger
                       render={
                         <Button
                           variant={"outline"}
@@ -545,7 +545,7 @@ export function TaskBacklog({
                     End Date
                   </Label>
                   <Popover>
-                    <PopoverTrigger 
+                    <PopoverTrigger
                       render={
                         <Button
                           variant={"outline"}
@@ -616,13 +616,19 @@ export function TaskBacklog({
                 </Label>
                 <Select
                   value={completeDestSprintId || "backlog"}
-                  onValueChange={(val) => setCompleteDestSprintId(val === "backlog" ? "" : val ?? "")}
+                  onValueChange={(val) =>
+                    setCompleteDestSprintId(
+                      val === "backlog" ? "" : (val ?? "")
+                    )
+                  }
                 >
-                  <SelectTrigger className="w-full text-xs h-8">
+                  <SelectTrigger className="h-8 w-full text-xs">
                     <SelectValue placeholder="Product Backlog (Unscheduled)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="backlog">Product Backlog (Unscheduled)</SelectItem>
+                    <SelectItem value="backlog">
+                      Product Backlog (Unscheduled)
+                    </SelectItem>
                     {sprints
                       .filter(
                         (s) =>

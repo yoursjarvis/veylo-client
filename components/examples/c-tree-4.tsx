@@ -1,14 +1,14 @@
 "use client"
 
-import {
-  Tree,
-  TreeItem,
-  TreeItemLabel,
-} from "@/components/reui/tree"
+import { Tree, TreeItem, TreeItemLabel } from "@/components/reui/tree"
 import { hotkeysCoreFeature, syncDataLoaderFeature } from "@headless-tree/core"
 import { useTree } from "@headless-tree/react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { FolderOpenIcon, FolderIcon, FileEmpty02Icon } from "@hugeicons/core-free-icons"
+import {
+  FolderOpenIcon,
+  FolderIcon,
+  FileEmpty02Icon,
+} from "@hugeicons/core-free-icons"
 
 interface Item {
   name: string
@@ -105,16 +105,28 @@ export function Pattern() {
         {tree.getItems().map((item) => {
           return (
             <TreeItem key={item.getId()} item={item}>
-              <TreeItemLabel className="before:bg-background relative before:absolute before:inset-x-0 before:-inset-y-0.5 before:-z-10">
+              <TreeItemLabel className="relative before:absolute before:inset-x-0 before:-inset-y-0.5 before:-z-10 before:bg-background">
                 <span className="ms-1 flex items-center gap-2">
                   {item.isFolder() ? (
                     item.isExpanded() ? (
-                      <HugeiconsIcon icon={FolderOpenIcon} strokeWidth={2} className="text-muted-foreground pointer-events-none size-4" />
+                      <HugeiconsIcon
+                        icon={FolderOpenIcon}
+                        strokeWidth={2}
+                        className="pointer-events-none size-4 text-muted-foreground"
+                      />
                     ) : (
-                      <HugeiconsIcon icon={FolderIcon} strokeWidth={2} className="text-muted-foreground pointer-events-none size-4" />
+                      <HugeiconsIcon
+                        icon={FolderIcon}
+                        strokeWidth={2}
+                        className="pointer-events-none size-4 text-muted-foreground"
+                      />
                     )
                   ) : (
-                    <HugeiconsIcon icon={FileEmpty02Icon} strokeWidth={2} className="text-muted-foreground pointer-events-none size-4" />
+                    <HugeiconsIcon
+                      icon={FileEmpty02Icon}
+                      strokeWidth={2}
+                      className="pointer-events-none size-4 text-muted-foreground"
+                    />
                   )}
                   {item.getItemName()}
                 </span>

@@ -1,7 +1,7 @@
-"use client";
+"use client"
 /* eslint-disable react-hooks/set-state-in-effect */
-import { motion, useReducedMotion } from "motion/react";
-import { Search, type LucideIcon } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react"
+import { Search, type LucideIcon } from "lucide-react"
 import {
   type ReactNode,
   useCallback,
@@ -10,45 +10,45 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
-import { createPortal } from "react-dom";
-import { EASE_OUT } from "@/lib/ease";
-import { cn } from "@/lib/utils";
+} from "react"
+import { createPortal } from "react-dom"
+import { EASE_OUT } from "@/lib/ease"
+import { cn } from "@/lib/utils"
 
 export type CommandItem = {
-  id: string;
-  label: string;
-  group?: string;
-  hint?: string;
-  keywords?: string[];
-  icon?: LucideIcon;
-  badge?: ReactNode;
-  onSelect: () => void;
-};
+  id: string
+  label: string
+  group?: string
+  hint?: string
+  keywords?: string[]
+  icon?: LucideIcon
+  badge?: ReactNode
+  onSelect: () => void
+}
 
 export interface CommandPaletteProps {
-  items: CommandItem[];
+  items: CommandItem[]
   /** Opens with Cmd/Ctrl + this key. Default: "k" */
-  shortcut?: string;
-  placeholder?: string;
-  emptyMessage?: string;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  query?: string;
-  onQueryChange?: (query: string) => void;
-  shouldFilter?: boolean;
+  shortcut?: string
+  placeholder?: string
+  emptyMessage?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  query?: string
+  onQueryChange?: (query: string) => void
+  shouldFilter?: boolean
 }
 
 function fuzzyMatch(needle: string, hay: string) {
-  if (!needle) return true;
-  needle = needle.toLowerCase();
-  hay = hay.toLowerCase();
-  let i = 0;
+  if (!needle) return true
+  needle = needle.toLowerCase()
+  hay = hay.toLowerCase()
+  let i = 0
   for (const ch of hay) {
-    if (ch === needle[i]) i++;
-    if (i === needle.length) return true;
+    if (ch === needle[i]) i++
+    if (i === needle.length) return true
   }
-  return false;
+  return false
 }
 
 // Opened via a keyboard shortcut many times a day — entrance must read as
@@ -58,7 +58,7 @@ const PANEL_SPRING = {
   stiffness: 560,
   damping: 40,
   mass: 0.5,
-} as const;
+} as const
 
 export function CommandPalette({
   items,
@@ -71,35 +71,38 @@ export function CommandPalette({
   onQueryChange,
   shouldFilter = true,
 }: CommandPaletteProps) {
-  const [internalOpen, setInternalOpen] = useState(false);
-  const controlled = controlledOpen !== undefined;
-  const open = controlled ? controlledOpen : internalOpen;
+  const [internalOpen, setInternalOpen] = useState(false)
+  const controlled = controlledOpen !== undefined
+  const open = controlled ? controlledOpen : internalOpen
   const setOpen = useCallback(
     (v: boolean) => {
-      if (!controlled) setInternalOpen(v);
-      onOpenChange?.(v);
+      if (!controlled) setInternalOpen(v)
+      onOpenChange?.(v)
     },
-    [controlled, onOpenChange],
-  );
+    [controlled, onOpenChange]
+  )
 
-  const [internalQuery, setInternalQuery] = useState("");
-  const isQueryControlled = controlledQuery !== undefined;
-  const query = isQueryControlled ? controlledQuery : internalQuery;
+  const [internalQuery, setInternalQuery] = useState("")
+  const isQueryControlled = controlledQuery !== undefined
+  const query = isQueryControlled ? controlledQuery : internalQuery
 
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(0)
   // Portal target only exists client-side; render nothing during SSR/hydration.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const uid = useId();
-  const reduce = useReducedMotion();
-  
-  const updateQuery = useCallback((value: string) => {
-    if (!isQueryControlled) setInternalQuery(value);
-    onQueryChange?.(value);
-    setActive(0);
-  }, [isQueryControlled, onQueryChange]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const uid = useId()
+  const reduce = useReducedMotion()
+
+  const updateQuery = useCallback(
+    (value: string) => {
+      if (!isQueryControlled) setInternalQuery(value)
+      onQueryChange?.(value)
+      setActive(0)
+    },
+    [isQueryControlled, onQueryChange]
+  )
+  const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -107,87 +110,87 @@ export function CommandPalette({
         (e.metaKey || e.ctrlKey) &&
         e.key.toLowerCase() === shortcut.toLowerCase()
       ) {
-        e.preventDefault();
-        setOpen(!open);
-        return;
+        e.preventDefault()
+        setOpen(!open)
+        return
       }
       if (e.key === "Escape" && open) {
-        e.preventDefault();
-        setOpen(false);
+        e.preventDefault()
+        setOpen(false)
       }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, shortcut, setOpen]);
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [open, shortcut, setOpen])
 
   useEffect(() => {
     if (open) {
-      updateQuery("");
-      setActive(0);
-      requestAnimationFrame(() => inputRef.current?.focus());
+      updateQuery("")
+      setActive(0)
+      requestAnimationFrame(() => inputRef.current?.focus())
     }
-  }, [open, updateQuery]);
+  }, [open, updateQuery])
 
   useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
     return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
+      document.body.style.overflow = prev
+    }
+  }, [open])
 
   const filtered = useMemo(() => {
-    if (!query || !shouldFilter) return items;
+    if (!query || !shouldFilter) return items
     return items.filter((it) => {
-      const haystacks = [it.label, it.group ?? "", ...(it.keywords ?? [])];
-      return haystacks.some((h) => fuzzyMatch(query, h));
-    });
-  }, [items, query, shouldFilter]);
+      const haystacks = [it.label, it.group ?? "", ...(it.keywords ?? [])]
+      return haystacks.some((h) => fuzzyMatch(query, h))
+    })
+  }, [items, query, shouldFilter])
 
   // Reserve the icon column only when at least one item brings an icon, so
   // icon-less lists don't render a dead gap before every label.
-  const hasIcons = useMemo(() => items.some((it) => it.icon), [items]);
+  const hasIcons = useMemo(() => items.some((it) => it.icon), [items])
 
   const grouped = useMemo(() => {
-    const map = new Map<string, CommandItem[]>();
+    const map = new Map<string, CommandItem[]>()
     filtered.forEach((it) => {
-      const g = it.group ?? "Results";
-      const groupItems = map.get(g) ?? [];
-      groupItems.push(it);
-      map.set(g, groupItems);
-    });
-    return Array.from(map.entries());
-  }, [filtered]);
+      const g = it.group ?? "Results"
+      const groupItems = map.get(g) ?? []
+      groupItems.push(it)
+      map.set(g, groupItems)
+    })
+    return Array.from(map.entries())
+  }, [filtered])
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActive((a) => Math.min(filtered.length - 1, a + 1));
+      e.preventDefault()
+      setActive((a) => Math.min(filtered.length - 1, a + 1))
     } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActive((a) => Math.max(0, a - 1));
+      e.preventDefault()
+      setActive((a) => Math.max(0, a - 1))
     } else if (e.key === "Enter") {
-      e.preventDefault();
-      const it = filtered[active];
+      e.preventDefault()
+      const it = filtered[active]
       if (it) {
-        it.onSelect();
-        setOpen(false);
+        it.onSelect()
+        setOpen(false)
       }
     }
-  };
+  }
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return
     const el = listRef.current?.querySelector<HTMLButtonElement>(
-      `[data-index="${active}"]`,
-    );
-    el?.scrollIntoView({ block: "nearest" });
-  }, [active, open]);
+      `[data-index="${active}"]`
+    )
+    el?.scrollIntoView({ block: "nearest" })
+  }, [active, open])
 
-  let cursor = 0;
+  let cursor = 0
 
-  if (!mounted) return null;
+  if (!mounted) return null
 
   // Always-mounted container; pointer events fully disabled when closed so clicks
   // pass through to the page. Portaled to <body> so ancestors with transforms,
@@ -197,7 +200,7 @@ export function CommandPalette({
       aria-hidden={!open}
       className={cn(
         "fixed inset-0 z-[100]",
-        open ? "pointer-events-auto" : "pointer-events-none",
+        open ? "pointer-events-auto" : "pointer-events-none"
       )}
     >
       <motion.div
@@ -207,7 +210,7 @@ export function CommandPalette({
         onClick={() => setOpen(false)}
         className={cn(
           "absolute inset-0 bg-background/5 [backdrop-filter:blur(12px)_saturate(140%)] [-webkit-backdrop-filter:blur(12px)_saturate(140%)]",
-          open ? "pointer-events-auto" : "pointer-events-none",
+          open ? "pointer-events-auto" : "pointer-events-none"
         )}
       />
       <div className="pointer-events-none absolute inset-0 flex items-start justify-center p-4 pt-[18vh]">
@@ -231,7 +234,7 @@ export function CommandPalette({
           onKeyDown={onKeyDown}
           className={cn(
             "w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl will-change-transform",
-            open ? "pointer-events-auto" : "pointer-events-none",
+            open ? "pointer-events-auto" : "pointer-events-none"
           )}
         >
           <div className="flex items-center gap-3 border-b border-border px-4">
@@ -249,7 +252,7 @@ export function CommandPalette({
                 filtered.length > 0 ? `${uid}-opt-${active}` : undefined
               }
               aria-autocomplete="list"
-              className="h-12 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+              className="h-12 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
             <kbd className="hidden rounded border border-border bg-background px-1.5 py-0.5 text-2xs text-muted-foreground sm:inline-block">
               ESC
@@ -271,14 +274,14 @@ export function CommandPalette({
                 <div key={group} className="mb-1 last:mb-0">
                   <div
                     aria-hidden
-                    className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground"
+                    className="px-2 py-1.5 text-2xs font-semibold tracking-wider text-muted-foreground uppercase"
                   >
                     {group}
                   </div>
                   {list.map((it) => {
-                    const idx = cursor++;
-                    const isActive = idx === active;
-                    const Icon = it.icon;
+                    const idx = cursor++
+                    const isActive = idx === active
+                    const Icon = it.icon
                     return (
                       <button
                         key={it.id}
@@ -289,15 +292,13 @@ export function CommandPalette({
                         data-index={idx}
                         onMouseEnter={() => setActive(idx)}
                         onClick={() => {
-                          it.onSelect();
-                          setOpen(false);
+                          it.onSelect()
+                          setOpen(false)
                         }}
                         tabIndex={open ? 0 : -1}
                         className={cn(
                           "relative isolate flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors",
-                          isActive
-                            ? "text-foreground"
-                            : "text-muted-foreground",
+                          isActive ? "text-foreground" : "text-muted-foreground"
                         )}
                       >
                         {isActive ? (
@@ -336,7 +337,7 @@ export function CommandPalette({
                           </kbd>
                         ) : null}
                       </button>
-                    );
+                    )
                   })}
                 </div>
               ))
@@ -345,6 +346,6 @@ export function CommandPalette({
         </motion.div>
       </div>
     </div>,
-    document.body,
-  );
+    document.body
+  )
 }

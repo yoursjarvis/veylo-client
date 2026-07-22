@@ -130,10 +130,12 @@ interface TaskRowProps {
   }[]
 }
 
-const gridCols =
-  "grid-cols-[40px_80px_1fr_128px_112px_128px_112px_96px_40px]"
+const gridCols = "grid-cols-[40px_80px_1fr_128px_112px_128px_112px_96px_40px]"
 
-const getStatusProgress = (status?: { name: string; progressWeight?: number }) => {
+const getStatusProgress = (status?: {
+  name: string
+  progressWeight?: number
+}) => {
   if (status && typeof status.progressWeight === "number") {
     return status.progressWeight
   }
@@ -157,19 +159,19 @@ const getStatusProgress = (status?: { name: string; progressWeight?: number }) =
 const getTypeIcon = (type: string) => {
   switch (type.toLowerCase()) {
     case "bug":
-      return <Bug className="h-3.5 w-3.5 text-danger shrink-0" />
+      return <Bug className="text-danger h-3.5 w-3.5 shrink-0" />
     case "feature":
     case "story":
-      return <Sparkles className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+      return <Sparkles className="h-3.5 w-3.5 shrink-0 text-sky-500" />
     default:
-      return <CheckSquare className="h-3.5 w-3.5 text-primary shrink-0" />
+      return <CheckSquare className="h-3.5 w-3.5 shrink-0 text-primary" />
   }
 }
 
 import { getPriority, renderPriorityIcon, priorityList } from "@/lib/priority"
 
 const getPriorityIcon = (prio: string) => {
-  return renderPriorityIcon(prio, "h-3.5 w-3.5 shrink-0");
+  return renderPriorityIcon(prio, "h-3.5 w-3.5 shrink-0")
 }
 
 function UserSelect({
@@ -347,9 +349,7 @@ export function DatePicker({
                 <span className="italic opacity-70">No date</span>
               )}
             </span>
-            <CalendarIcon
-              className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50"
-            />
+            <CalendarIcon className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
           </button>
         }
       />
@@ -399,13 +399,13 @@ export function StatusSelect({
                 <div
                   className="h-2 w-2 shrink-0 rounded-full"
                   style={{
-                    backgroundColor: selectedStatus.color || "var(--primary)"
+                    backgroundColor: selectedStatus.color || "var(--primary)",
                   }}
                 />
                 <span
                   className="text-xs font-semibold"
                   style={{
-                    color: selectedStatus.color || "var(--primary)"
+                    color: selectedStatus.color || "var(--primary)",
                   }}
                 >
                   {selectedStatus.name}
@@ -413,8 +413,8 @@ export function StatusSelect({
               </div>
             ) : (
               <div className="flex items-center gap-1.5">
-                <div className="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />
-                <span className="text-xs text-muted-foreground italic truncate">
+                <div className="h-2 w-2 shrink-0 rounded-full bg-muted-foreground/40" />
+                <span className="truncate text-xs text-muted-foreground italic">
                   {placeholder}
                 </span>
               </div>
@@ -493,14 +493,19 @@ export function PrioritySelect({
             {value ? (
               <div className="flex items-center gap-1.5">
                 {getPriorityIcon(selectedPriority.value)}
-                <span className={cn("text-xs font-semibold", selectedPriority.color)}>
+                <span
+                  className={cn(
+                    "text-xs font-semibold",
+                    selectedPriority.color
+                  )}
+                >
                   {selectedPriority.label}
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Minus className="h-3.5 w-3.5" />
-                <span className="text-xs italic truncate">{placeholder}</span>
+                <span className="truncate text-xs italic">{placeholder}</span>
               </div>
             )}
           </button>
@@ -586,7 +591,7 @@ export function TaskRow({
           <div
             {...dragHandleProps}
             {...dragHandleListeners}
-            className="cursor-grab rounded p-0.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted active:cursor-grabbing shrink-0"
+            className="shrink-0 cursor-grab rounded p-0.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted active:cursor-grabbing"
             onClick={(e) => e.stopPropagation()}
           >
             <GripVertical className="h-3.5 w-3.5" />
@@ -601,7 +606,7 @@ export function TaskRow({
       </div>
 
       {/* ID (Column 2) */}
-      <div className="flex items-center gap-1.5 px-3 py-2 font-mono text-xs text-muted-foreground truncate">
+      <div className="flex items-center gap-1.5 truncate px-3 py-2 font-mono text-xs text-muted-foreground">
         {getTypeIcon(task.type)}
         <span title={taskKey}>{taskKey}</span>
       </div>
@@ -627,7 +632,7 @@ export function TaskRow({
                 }
               }
             }}
-            className="h-8 w-full px-2 py-0.5 text-xs bg-muted/40"
+            className="h-8 w-full bg-muted/40 px-2 py-0.5 text-xs"
             autoFocus
             onClick={(e) => e.stopPropagation()}
           />
@@ -637,7 +642,7 @@ export function TaskRow({
               e.stopPropagation()
               setIsEditingTitle(true)
             }}
-            className="block cursor-text truncate text-sm font-semibold text-foreground hover:underline decoration-primary/40"
+            className="block cursor-text truncate text-sm font-semibold text-foreground decoration-primary/40 hover:underline"
           >
             {task.title}
           </span>
@@ -721,7 +726,7 @@ export function TaskRow({
             e.stopPropagation()
             onSelectTask(task.id)
           }}
-          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <MoreHorizontal className="h-3.5 w-3.5" />
         </button>
@@ -840,15 +845,17 @@ export function StatusSection({
       <div
         className={cn(
           "mb-4 flex flex-col",
-          !isDragDisabled && isOver && "rounded-md bg-primary/5 outline-1 outline-primary/30"
+          !isDragDisabled &&
+            isOver &&
+            "rounded-md bg-primary/5 outline-1 outline-primary/30"
         )}
         ref={isDragDisabled ? undefined : setNodeRef}
       >
         <div
-          className="group sticky top-9 z-10 flex items-center gap-2 border-b border-border bg-card px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30"
+          className="group sticky top-9 z-10 flex cursor-pointer items-center gap-2 border-b border-border bg-card px-3 py-2 transition-colors hover:bg-muted/30"
           onClick={onToggle}
         >
-          <button className="text-muted-foreground hover:text-foreground transition-colors p-0.5">
+          <button className="p-0.5 text-muted-foreground transition-colors hover:text-foreground">
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4" />
             ) : (
@@ -865,7 +872,7 @@ export function StatusSection({
             <span className="text-sm font-semibold text-foreground">
               {status.name}
             </span>
-            <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground font-medium">
+            <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
               {tasks.length}
             </span>
           </div>
@@ -876,7 +883,7 @@ export function StatusSection({
                 e.stopPropagation()
                 setIsCreateTaskOpen?.(true)
               }}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add task</span>
@@ -887,7 +894,9 @@ export function StatusSection({
           <div
             className={cn(
               "mx-2 my-2 flex h-12 items-center justify-center rounded-md border-2 border-dashed border-border/45 text-xs font-medium text-muted-foreground/60 transition-colors",
-              !isDragDisabled && isOver && "border-primary/45 bg-primary/5 text-primary"
+              !isDragDisabled &&
+                isOver &&
+                "border-primary/45 bg-primary/5 text-primary"
             )}
           >
             {isDragDisabled ? "No tasks" : "Drop tasks here"}
@@ -961,10 +970,10 @@ export function StatusSection({
       ref={isDragDisabled ? undefined : setNodeRef}
     >
       <div
-        className="group sticky top-9 z-10 flex items-center gap-2 border-b border-border bg-card px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30"
+        className="group sticky top-9 z-10 flex cursor-pointer items-center gap-2 border-b border-border bg-card px-3 py-2 transition-colors hover:bg-muted/30"
         onClick={onToggle}
       >
-        <button className="text-muted-foreground hover:text-foreground transition-colors p-0.5">
+        <button className="p-0.5 text-muted-foreground transition-colors hover:text-foreground">
           {isCollapsed ? (
             <ChevronRight className="h-4 w-4" />
           ) : (
@@ -981,7 +990,7 @@ export function StatusSection({
           <span className="text-sm font-semibold text-foreground">
             {status.name}
           </span>
-          <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground font-medium">
+          <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
             {tasks.length}
           </span>
         </div>
@@ -992,7 +1001,7 @@ export function StatusSection({
               e.stopPropagation()
               setIsCreateTaskOpen?.(true)
             }}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Add task</span>
@@ -1043,7 +1052,14 @@ interface TaskListProps {
   onSelectTask: (taskId: string) => void
   projectLabels?: { id: string; name: string; color?: string }[]
   setIsCreateTaskOpen?: (open: boolean) => void
-  groupBy?: "status" | "assignee" | "type" | "priority" | "epics" | "milestones" | "sprints"
+  groupBy?:
+    | "status"
+    | "assignee"
+    | "type"
+    | "priority"
+    | "epics"
+    | "milestones"
+    | "sprints"
   epics?: Epic[]
   milestones?: Milestone[]
   sprints?: Sprint[]
@@ -1067,7 +1083,9 @@ export function TaskList({
   sortBy = "position",
   sortOrder = "asc",
 }: TaskListProps) {
-  const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null)
+  const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(
+    null
+  )
   const [collapsedSections, setCollapsedSections] = useState<
     Record<string, boolean>
   >({})
@@ -1105,18 +1123,21 @@ export function TaskList({
         if (!a.dueDate && !b.dueDate) return 0
         if (!a.dueDate) return 1
         if (!b.dueDate) return -1
-        const comp = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+        const comp =
+          new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
         return sortOrder === "asc" ? comp : -comp
       }
       if (sortBy === "priority") {
-        const comp = getPriorityWeight(a.priority) - getPriorityWeight(b.priority)
+        const comp =
+          getPriorityWeight(a.priority) - getPriorityWeight(b.priority)
         return sortOrder === "asc" ? comp : -comp
       }
       if (sortBy === "createdAt") {
         if (!a.createdAt && !b.createdAt) return 0
         if (!a.createdAt) return 1
         if (!b.createdAt) return -1
-        const comp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        const comp =
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         return sortOrder === "asc" ? comp : -comp
       }
       return (a.position || 0) - (b.position || 0)
@@ -1207,7 +1228,9 @@ export function TaskList({
       }
       case "status":
       default:
-        return statuses.length > 0 ? statuses : [{ id: "unknown", name: "Backlog", color: undefined }]
+        return statuses.length > 0
+          ? statuses
+          : [{ id: "unknown", name: "Backlog", color: undefined }]
     }
   }, [groupBy, projectMembers, epics, milestones, sprints, statuses])
 
@@ -1215,7 +1238,9 @@ export function TaskList({
     switch (groupBy) {
       case "assignee":
         if (groupId === "unassigned") {
-          return listTasks.filter((t) => !t.assigneeId || t.assigneeId === "null")
+          return listTasks.filter(
+            (t) => !t.assigneeId || t.assigneeId === "null"
+          )
         }
         return listTasks.filter((t) => t.assigneeId === groupId)
       case "type":
@@ -1229,7 +1254,9 @@ export function TaskList({
         return listTasks.filter((t) => t.epicId === groupId)
       case "milestones":
         if (groupId === "no-milestone") {
-          return listTasks.filter((t) => !t.milestoneId || t.milestoneId === "null")
+          return listTasks.filter(
+            (t) => !t.milestoneId || t.milestoneId === "null"
+          )
         }
         return listTasks.filter((t) => t.milestoneId === groupId)
       case "sprints":
@@ -1241,8 +1268,7 @@ export function TaskList({
       default:
         return listTasks.filter(
           (t) =>
-            t.statusId === groupId ||
-            (!t.statusId && groupId === groups[0].id)
+            t.statusId === groupId || (!t.statusId && groupId === groups[0].id)
         )
     }
   }
@@ -1382,9 +1408,7 @@ export function TaskList({
           <EmptyHeader>
             <EmptyMedia>
               <IconStack aria-hidden="true" className="h-24 w-22 text-primary">
-                <CheckSquare
-                  className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
-                />
+                <CheckSquare className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
               </IconStack>
             </EmptyMedia>
             <EmptyTitle>No task found.</EmptyTitle>
@@ -1405,7 +1429,7 @@ export function TaskList({
           {/* Header */}
           <div
             className={cn(
-              "sticky top-0 z-20 grid h-9 border-b border-border bg-card/95 text-xs font-semibold text-muted-foreground uppercase tracking-wider shadow-[0_1px_0_0_hsl(var(--border))] backdrop-blur-sm",
+              "sticky top-0 z-20 grid h-9 border-b border-border bg-card/95 text-xs font-semibold tracking-wider text-muted-foreground uppercase shadow-[0_1px_0_0_hsl(var(--border))] backdrop-blur-sm",
               gridCols
             )}
           >

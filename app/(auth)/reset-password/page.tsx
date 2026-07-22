@@ -1,5 +1,5 @@
-import { ResetPasswordForm } from "@/features/auth/components/reset-password-form";
-import { Suspense } from "react";
+import { ResetPasswordForm } from "@/features/auth/components/reset-password-form"
+import { Suspense } from "react"
 
 export default function ResetPasswordPage() {
   return (
@@ -8,5 +8,5 @@ export default function ResetPasswordPage() {
         <ResetPasswordForm />
       </Suspense>
     </div>
-  );
+  )
 }

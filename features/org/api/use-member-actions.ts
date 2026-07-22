@@ -5,7 +5,9 @@ export function useMemberSessions(memberId: string) {
   return useQuery({
     queryKey: ["member-sessions", memberId],
     queryFn: async () => {
-      const { data } = await axiosInstance.get(`/org/members/${memberId}/sessions`)
+      const { data } = await axiosInstance.get(
+        `/org/members/${memberId}/sessions`
+      )
       return data.data
     },
     enabled: !!memberId,
@@ -16,7 +18,9 @@ export function useRevokeSpecificSession(memberId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (sessionId: string) => {
-      const { data } = await axiosInstance.delete(`/org/members/${memberId}/sessions/${sessionId}`)
+      const { data } = await axiosInstance.delete(
+        `/org/members/${memberId}/sessions/${sessionId}`
+      )
       return data.data
     },
     onSuccess: () => {
@@ -28,7 +32,10 @@ export function useRevokeSpecificSession(memberId: string) {
 export function useChangeMemberPassword(memberId: string) {
   return useMutation({
     mutationFn: async (password: string) => {
-      const { data } = await axiosInstance.put(`/org/members/${memberId}/password`, { password })
+      const { data } = await axiosInstance.put(
+        `/org/members/${memberId}/password`,
+        { password }
+      )
       return data.data
     },
   })
@@ -40,11 +47,15 @@ export function useUpdateMemberPhoto(memberId: string) {
     mutationFn: async (file: File) => {
       const formData = new FormData()
       formData.append("photo", file)
-      const { data } = await axiosInstance.put(`/org/members/${memberId}/photo`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      const { data } = await axiosInstance.put(
+        `/org/members/${memberId}/photo`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       return data.data
     },
     onSuccess: () => {
@@ -56,7 +67,11 @@ export function useUpdateMemberPhoto(memberId: string) {
 export function useUpdateMemberProfile(memberId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (data: { firstName: string; lastName: string; email: string }) => {
+    mutationFn: async (data: {
+      firstName: string
+      lastName: string
+      email: string
+    }) => {
       const res = await axiosInstance.put(`/org/members/${memberId}`, data)
       return res.data.data
     },

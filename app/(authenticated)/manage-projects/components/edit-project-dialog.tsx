@@ -74,10 +74,16 @@ export function EditProjectDialog({
         description: payload.description,
         icon: !isFile ? (payload.icon as string | null) : undefined,
       }
-      const res = await axiosInstance.patch(`/projects/${payload.id}`, patchData)
+      const res = await axiosInstance.patch(
+        `/projects/${payload.id}`,
+        patchData
+      )
       const updatedProject = res.data.data
       if (isFile && payload.icon) {
-        const iconUrl = await uploadProjectIcon(payload.id, payload.icon as File)
+        const iconUrl = await uploadProjectIcon(
+          payload.id,
+          payload.icon as File
+        )
         updatedProject.icon = iconUrl
       }
       return updatedProject

@@ -1,33 +1,33 @@
-import * as React from 'react';
+import * as React from "react"
 
 interface CommonControlledStateProps<T> {
-  value?: T;
-  defaultValue?: T;
+  value?: T
+  defaultValue?: T
 }
 
 export function useControlledState<T, Rest extends unknown[] = []>(
   props: CommonControlledStateProps<T> & {
-    onChange?: (value: T, ...args: Rest) => void;
-  },
+    onChange?: (value: T, ...args: Rest) => void
+  }
 ): readonly [T, (next: T, ...args: Rest) => void] {
-  const { value, defaultValue, onChange } = props;
+  const { value, defaultValue, onChange } = props
 
   const [state, setInternalState] = React.useState<T>(
-    value !== undefined ? value : (defaultValue as T),
-  );
+    value !== undefined ? value : (defaultValue as T)
+  )
 
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- required to synchronize state when controlled value changes
-    if (value !== undefined) setInternalState(value);
-  }, [value]);
+    if (value !== undefined) setInternalState(value)
+  }, [value])
 
   const setState = React.useCallback(
     (next: T, ...args: Rest) => {
-      setInternalState(next);
-      onChange?.(next, ...args);
+      setInternalState(next)
+      onChange?.(next, ...args)
     },
-    [onChange],
-  );
+    [onChange]
+  )
 
-  return [state, setState] as const;
+  return [state, setState] as const
 }

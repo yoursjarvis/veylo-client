@@ -105,7 +105,9 @@ export const useDocs = (projectId: string) => {
     return useQuery<ProjectDoc[]>({
       queryKey: ["recent-docs", projectId],
       queryFn: async () => {
-        const response = await axiosInstance.get(`/projects/${projectId}/docs/recent?limit=5`)
+        const response = await axiosInstance.get(
+          `/projects/${projectId}/docs/recent?limit=5`
+        )
         return response.data.data
       },
       enabled: !!projectId,
@@ -116,7 +118,9 @@ export const useDocs = (projectId: string) => {
     return useQuery<ProjectDoc[]>({
       queryKey: ["favorite-docs", projectId],
       queryFn: async () => {
-        const response = await axiosInstance.get(`/projects/${projectId}/docs/favorites`)
+        const response = await axiosInstance.get(
+          `/projects/${projectId}/docs/favorites`
+        )
         return response.data.data
       },
       enabled: !!projectId,
@@ -180,8 +184,15 @@ export const useDocs = (projectId: string) => {
 
   // Mutations
   const createDocMutation = useMutation({
-    mutationFn: async (data: { title: string; parentId?: string | null; emoji?: string | null }) => {
-      const response = await axiosInstance.post(`/projects/${projectId}/docs`, data)
+    mutationFn: async (data: {
+      title: string
+      parentId?: string | null
+      emoji?: string | null
+    }) => {
+      const response = await axiosInstance.post(
+        `/projects/${projectId}/docs`,
+        data
+      )
       return response.data.data
     },
     onSuccess: (newDoc) => {
@@ -195,7 +206,13 @@ export const useDocs = (projectId: string) => {
   })
 
   const updateDocMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ProjectDoc> }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: Partial<ProjectDoc>
+    }) => {
       const response = await axiosInstance.patch(`/docs/${id}`, data)
       return response.data.data
     },
@@ -203,7 +220,9 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["project-docs", projectId] })
       queryClient.invalidateQueries({ queryKey: ["recent-docs", projectId] })
       queryClient.invalidateQueries({ queryKey: ["favorite-docs", projectId] })
-      queryClient.invalidateQueries({ queryKey: ["doc-details", updatedDoc.id] })
+      queryClient.invalidateQueries({
+        queryKey: ["doc-details", updatedDoc.id],
+      })
     },
     onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to update document")
@@ -255,7 +274,13 @@ export const useDocs = (projectId: string) => {
   })
 
   const toggleFavoriteMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { isFavorite?: boolean; isPinned?: boolean } }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: { isFavorite?: boolean; isPinned?: boolean }
+    }) => {
       const response = await axiosInstance.post(`/docs/${id}/favorite`, data)
       return response.data.data
     },
@@ -265,14 +290,27 @@ export const useDocs = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ["doc-details", id] })
     },
     onError: (err: AxiosError<{ message?: string }>) => {
-      toast.error(err.response?.data?.message || "Failed to update favorite status")
+      toast.error(
+        err.response?.data?.message || "Failed to update favorite status"
+      )
     },
   })
 
   // Comments mutations
   const createCommentMutation = useMutation({
-    mutationFn: async ({ docId, content, parentId }: { docId: string; content: string; parentId?: string | null }) => {
-      const response = await axiosInstance.post(`/docs/${docId}/comments`, { content, parentId })
+    mutationFn: async ({
+      docId,
+      content,
+      parentId,
+    }: {
+      docId: string
+      content: string
+      parentId?: string | null
+    }) => {
+      const response = await axiosInstance.post(`/docs/${docId}/comments`, {
+        content,
+        parentId,
+      })
       return response.data.data
     },
     onSuccess: (_, { docId }) => {
@@ -285,8 +323,19 @@ export const useDocs = (projectId: string) => {
   })
 
   const toggleCommentReactionMutation = useMutation({
-    mutationFn: async ({ commentId, emoji, docId }: { commentId: string; emoji: string; docId: string }) => {
-      const response = await axiosInstance.post(`/comments/${commentId}/reaction`, { emoji })
+    mutationFn: async ({
+      commentId,
+      emoji,
+      docId,
+    }: {
+      commentId: string
+      emoji: string
+      docId: string
+    }) => {
+      const response = await axiosInstance.post(
+        `/comments/${commentId}/reaction`,
+        { emoji }
+      )
       return response.data.data
     },
     onSuccess: (_, { docId }) => {
@@ -298,13 +347,23 @@ export const useDocs = (projectId: string) => {
   })
 
   const updateCommentMutation = useMutation({
-    mutationFn: async ({ commentId, data }: { commentId: string; data: { content?: string; resolved?: boolean } }) => {
+    mutationFn: async ({
+      commentId,
+      data,
+    }: {
+      commentId: string
+      data: { content?: string; resolved?: boolean }
+    }) => {
       const response = await axiosInstance.patch(`/comments/${commentId}`, data)
       return response.data.data
     },
     onSuccess: (comment) => {
-      queryClient.invalidateQueries({ queryKey: ["doc-comments", comment.docId] })
-      queryClient.invalidateQueries({ queryKey: ["doc-activities", comment.docId] })
+      queryClient.invalidateQueries({
+        queryKey: ["doc-comments", comment.docId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["doc-activities", comment.docId],
+      })
     },
     onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || "Failed to update comment")
@@ -326,8 +385,19 @@ export const useDocs = (projectId: string) => {
 
   // Permissions mutations
   const updatePermissionMutation = useMutation({
-    mutationFn: async ({ docId, userId, permission }: { docId: string; userId: string; permission: string }) => {
-      const response = await axiosInstance.post(`/docs/${docId}/permissions`, { userId, permission })
+    mutationFn: async ({
+      docId,
+      userId,
+      permission,
+    }: {
+      docId: string
+      userId: string
+      permission: string
+    }) => {
+      const response = await axiosInstance.post(`/docs/${docId}/permissions`, {
+        userId,
+        permission,
+      })
       return response.data.data
     },
     onSuccess: (_, { docId }) => {
@@ -341,7 +411,13 @@ export const useDocs = (projectId: string) => {
   })
 
   const deletePermissionMutation = useMutation({
-    mutationFn: async ({ docId, targetUserId }: { docId: string; targetUserId: string }) => {
+    mutationFn: async ({
+      docId,
+      targetUserId,
+    }: {
+      docId: string
+      targetUserId: string
+    }) => {
       await axiosInstance.delete(`/docs/${docId}/permissions/${targetUserId}`)
     },
     onSuccess: (_, { docId }) => {
@@ -356,8 +432,16 @@ export const useDocs = (projectId: string) => {
 
   // Restore version mutation
   const restoreVersionMutation = useMutation({
-    mutationFn: async ({ docId, versionId }: { docId: string; versionId: string }) => {
-      const response = await axiosInstance.post(`/docs/${docId}/versions/${versionId}/restore`)
+    mutationFn: async ({
+      docId,
+      versionId,
+    }: {
+      docId: string
+      versionId: string
+    }) => {
+      const response = await axiosInstance.post(
+        `/docs/${docId}/versions/${versionId}/restore`
+      )
       return response.data.data
     },
     onSuccess: (doc) => {

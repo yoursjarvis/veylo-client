@@ -155,7 +155,9 @@ export function MembersTable() {
                 <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-foreground">{user.name}</span>
+                <span className="text-sm font-semibold text-foreground">
+                  {user.name}
+                </span>
                 <span className="text-xs text-muted-foreground">
                   {user.email}
                 </span>
@@ -194,20 +196,12 @@ export function MembersTable() {
               {roles.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {roles.slice(0, 2).map((assignment, index) => (
-<Badge
-  key={index}
-  variant="default"
-  className="capitalize"
->
-  {assignment.role.name.replace(/_/g, " ")}
-</Badge>
+                    <Badge key={index} variant="default" className="capitalize">
+                      {assignment.role.name.replace(/_/g, " ")}
+                    </Badge>
                   ))}
                   {roles.length > 2 && (
-<Badge
-  variant="default"
->
-  +{roles.length - 2} more
-</Badge>
+                    <Badge variant="default">+{roles.length - 2} more</Badge>
                   )}
                 </div>
               )}
@@ -221,9 +215,9 @@ export function MembersTable() {
         cell: (info) => {
           const isBanned = info.getValue()
           return (
-<Badge variant={isBanned ? "destructive" : "secondary"}>
-  {isBanned ? "Banned" : "Active"}
-</Badge>
+            <Badge variant={isBanned ? "destructive" : "secondary"}>
+              {isBanned ? "Banned" : "Active"}
+            </Badge>
           )
         },
       }),
@@ -385,7 +379,11 @@ export function MembersTable() {
   const hasFilters = search || role || status
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+    <Tabs
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full space-y-6"
+    >
       <div className="flex flex-col items-start justify-between gap-4 border-b border-border pb-px sm:flex-row sm:items-center">
         <TabsList variant="line" className="gap-6 bg-transparent p-0">
           <TabsTrigger
@@ -421,159 +419,101 @@ export function MembersTable() {
         {activeTab === "members" && (
           <>
             <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Search users..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-64"
-            />
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Search users..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-64"
+                />
 
-            <Combobox
-              items={ROLES}
-              value={role}
-              onValueChange={(value) => setRole(value || "")}
-            >
-              <ComboboxInput placeholder="Select a role" className="w-full" />
+                <Combobox
+                  items={ROLES}
+                  value={role}
+                  onValueChange={(value) => setRole(value || "")}
+                >
+                  <ComboboxInput
+                    placeholder="Select a role"
+                    className="w-full"
+                  />
 
-              <ComboboxContent>
-                <ComboboxEmpty>No roles found.</ComboboxEmpty>
+                  <ComboboxContent>
+                    <ComboboxEmpty>No roles found.</ComboboxEmpty>
 
-                <ComboboxList>
-                  {(item) => (
-                    <ComboboxItem key={item.value} value={item.value}>
-                      {item.label}
-                    </ComboboxItem>
-                  )}
-                </ComboboxList>
-              </ComboboxContent>
-            </Combobox>
+                    <ComboboxList>
+                      {(item) => (
+                        <ComboboxItem key={item.value} value={item.value}>
+                          {item.label}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
 
-            <Select
-              value={status}
-              onValueChange={(value) => setStatus(value || "")}
-            >
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select a status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="banned">Banned</SelectItem>
-              </SelectContent>
-            </Select>
+                <Select
+                  value={status}
+                  onValueChange={(value) => setStatus(value || "")}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Select a status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Statuses</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="banned">Banned</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            {hasFilters && (
-              <Button
-                variant="ghost"
-                onClick={handleReset}
-                className="h-10 px-3"
-              >
-                <HugeiconsIcon icon={Cancel01Icon} className="mr-2 h-4 w-4" />
-                Reset
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {isLoading && flatData.length === 0 ? (
-          <div className="relative h-[calc(100vh-300px)] min-h-100 overflow-hidden rounded-md border">
-            <table className="w-full table-fixed text-left text-sm">
-              <thead className="bg-background border-b border-border/50">
-                <tr>
-                  <th className="h-10 px-4 align-middle" style={{ width: 350 }}>
-                    <Skeleton className="h-4 w-16" />
-                  </th>
-                  <th className="h-10 px-4 align-middle" style={{ width: 400 }}>
-                    <Skeleton className="h-4 w-16" />
-                  </th>
-                  <th className="h-10 px-4 align-middle" style={{ width: 150 }}>
-                    <Skeleton className="h-4 w-16" />
-                  </th>
-                  <th
-                    className="h-10 px-4 text-right align-middle"
-                    style={{ width: 80 }}
+                {hasFilters && (
+                  <Button
+                    variant="ghost"
+                    onClick={handleReset}
+                    className="h-10 px-3"
                   >
-                    <Skeleton className="ml-auto h-4 w-12" />
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i}>
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                        <div className="flex flex-col gap-1.5">
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-3 w-40" />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-8 w-24" />
-                        <Skeleton className="h-6 w-20 rounded-md" />
-                      </div>
-                    </td>
-                    <td className="p-4 align-middle">
-                      <Skeleton className="h-6 w-16 rounded-full" />
-                    </td>
-                    <td className="p-4 text-right align-middle">
-                      <Skeleton className="ml-auto h-8 w-8 rounded-md" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : flatData.length === 0 ? (
-          <Empty className="my-8">
-            <EmptyTitle>No members found</EmptyTitle>
-            <EmptyDescription>
-              There are no members matching your current filters.
-            </EmptyDescription>
-          </Empty>
-        ) : (
-          <div
-            ref={parentRef}
-            className="relative h-[calc(100vh-300px)] min-h-100 overflow-auto rounded-md border scrollbar-thin scrollbar-thumb-border/40 scrollbar-track-transparent"
-          >
-            <table className="w-full table-fixed min-w-[980px] text-left text-sm">
-              <thead className="sticky top-0 z-10 bg-background border-b border-border/50">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        style={{ width: header.getSize() }}
-                        className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {paddingTop > 0 && (
-                  <tr>
-                    <td
-                      style={{ height: `${paddingTop}px` }}
-                      colSpan={columns.length}
+                    <HugeiconsIcon
+                      icon={Cancel01Icon}
+                      className="mr-2 h-4 w-4"
                     />
-                  </tr>
+                    Reset
+                  </Button>
                 )}
-                {virtualItems.map((virtualRow) => {
-                  const isLoaderRow = virtualRow.index > rows.length - 1
-                  const row = rows[virtualRow.index]
+              </div>
+            </div>
 
-                  if (isLoaderRow) {
-                    return (
-                      <tr key={`loader-${virtualRow.index}`} className="h-14">
+            {isLoading && flatData.length === 0 ? (
+              <div className="relative h-[calc(100vh-300px)] min-h-100 overflow-hidden rounded-md border">
+                <table className="w-full table-fixed text-left text-sm">
+                  <thead className="border-b border-border/50 bg-background">
+                    <tr>
+                      <th
+                        className="h-10 px-4 align-middle"
+                        style={{ width: 350 }}
+                      >
+                        <Skeleton className="h-4 w-16" />
+                      </th>
+                      <th
+                        className="h-10 px-4 align-middle"
+                        style={{ width: 400 }}
+                      >
+                        <Skeleton className="h-4 w-16" />
+                      </th>
+                      <th
+                        className="h-10 px-4 align-middle"
+                        style={{ width: 150 }}
+                      >
+                        <Skeleton className="h-4 w-16" />
+                      </th>
+                      <th
+                        className="h-10 px-4 text-right align-middle"
+                        style={{ width: 80 }}
+                      >
+                        <Skeleton className="ml-auto h-4 w-12" />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i}>
                         <td className="p-4 align-middle">
                           <div className="flex items-center gap-3">
                             <Skeleton className="h-8 w-8 rounded-full" />
@@ -596,42 +536,118 @@ export function MembersTable() {
                           <Skeleton className="ml-auto h-8 w-8 rounded-md" />
                         </td>
                       </tr>
-                    )
-                  }
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : flatData.length === 0 ? (
+              <Empty className="my-8">
+                <EmptyTitle>No members found</EmptyTitle>
+                <EmptyDescription>
+                  There are no members matching your current filters.
+                </EmptyDescription>
+              </Empty>
+            ) : (
+              <div
+                ref={parentRef}
+                className="relative h-[calc(100vh-300px)] min-h-100 scrollbar-thin scrollbar-thumb-border/40 scrollbar-track-transparent overflow-auto rounded-md border"
+              >
+                <table className="w-full min-w-[980px] table-fixed text-left text-sm">
+                  <thead className="sticky top-0 z-10 border-b border-border/50 bg-background">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <th
+                            key={header.id}
+                            style={{ width: header.getSize() }}
+                            className="h-10 px-4 align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {paddingTop > 0 && (
+                      <tr>
+                        <td
+                          style={{ height: `${paddingTop}px` }}
+                          colSpan={columns.length}
+                        />
+                      </tr>
+                    )}
+                    {virtualItems.map((virtualRow) => {
+                      const isLoaderRow = virtualRow.index > rows.length - 1
+                      const row = rows[virtualRow.index]
 
-                  return (
-                    <tr
-                      key={row.id}
-                      data-index={virtualRow.index}
-                      ref={rowVirtualizer.measureElement}
-                      className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="p-4 align-middle">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  )
-                })}
-                {paddingBottom > 0 && (
-                  <tr>
-                    <td
-                      style={{ height: `${paddingBottom}px` }}
-                      colSpan={columns.length}
-                    />
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                      if (isLoaderRow) {
+                        return (
+                          <tr
+                            key={`loader-${virtualRow.index}`}
+                            className="h-14"
+                          >
+                            <td className="p-4 align-middle">
+                              <div className="flex items-center gap-3">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                                <div className="flex flex-col gap-1.5">
+                                  <Skeleton className="h-4 w-32" />
+                                  <Skeleton className="h-3 w-40" />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4 align-middle">
+                              <div className="flex items-center gap-3">
+                                <Skeleton className="h-8 w-24" />
+                                <Skeleton className="h-6 w-20 rounded-md" />
+                              </div>
+                            </td>
+                            <td className="p-4 align-middle">
+                              <Skeleton className="h-6 w-16 rounded-full" />
+                            </td>
+                            <td className="p-4 text-right align-middle">
+                              <Skeleton className="ml-auto h-8 w-8 rounded-md" />
+                            </td>
+                          </tr>
+                        )
+                      }
+
+                      return (
+                        <tr
+                          key={row.id}
+                          data-index={virtualRow.index}
+                          ref={rowVirtualizer.measureElement}
+                          className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <td key={cell.id} className="p-4 align-middle">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      )
+                    })}
+                    {paddingBottom > 0 && (
+                      <tr>
+                        <td
+                          style={{ height: `${paddingBottom}px` }}
+                          colSpan={columns.length}
+                        />
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
-      </>
-    )}
-  </TabsContent>
+      </TabsContent>
 
       <TabsContent value="invitations" className="space-y-4 outline-none">
         <PendingInvitationsList />
@@ -700,8 +716,8 @@ function PendingInvitationsList() {
   if (isLoading) {
     return (
       <div className="relative overflow-auto rounded-md border">
-        <table className="w-full table-fixed min-w-[600px] text-left text-sm">
-          <thead className="bg-background border-b border-border/50">
+        <table className="w-full min-w-[600px] table-fixed text-left text-sm">
+          <thead className="border-b border-border/50 bg-background">
             <tr>
               <th className="h-10 px-4 align-middle" style={{ width: "30%" }}>
                 <Skeleton className="h-4 w-16" />
@@ -763,34 +779,34 @@ function PendingInvitationsList() {
   return (
     <div className="rounded-md border">
       <table className="w-full table-fixed text-left text-sm">
-        <thead className="bg-background border-b border-border/50">
+        <thead className="border-b border-border/50 bg-background">
           <tr>
             <th
-              className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+              className="h-10 px-4 align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase"
               style={{ width: "30%" }}
             >
               Email
             </th>
             <th
-              className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+              className="h-10 px-4 align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase"
               style={{ width: "25%" }}
             >
               Role
             </th>
             <th
-              className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+              className="h-10 px-4 align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase"
               style={{ width: "20%" }}
             >
               Status
             </th>
             <th
-              className="h-10 px-4 align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+              className="h-10 px-4 align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase"
               style={{ width: "15%" }}
             >
               Sent At
             </th>
             <th
-              className="h-10 px-4 text-right align-middle text-xs uppercase tracking-wider text-muted-foreground font-semibold"
+              className="h-10 px-4 text-right align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase"
               style={{ width: "10%" }}
             >
               Actions
@@ -831,9 +847,14 @@ function PendingInvitationsList() {
                 <td className="p-4 text-right align-middle">
                   <DropdownMenu>
                     <DropdownMenuTrigger
-                      render={<Button variant="ghost" className="h-8 w-8 p-0" />}
+                      render={
+                        <Button variant="ghost" className="h-8 w-8 p-0" />
+                      }
                     >
-                      <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" />
+                      <HugeiconsIcon
+                        icon={MoreVerticalIcon}
+                        className="h-4 w-4"
+                      />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuGroup>

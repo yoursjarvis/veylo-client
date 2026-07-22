@@ -32,13 +32,12 @@ export type SidebarNavGroup = {
 }
 
 export function renderSidebarProjectIcon(icon?: string | null) {
-  const baseClasses = "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-border/40 text-2xs leading-none shadow-2xs font-normal"
-  
+  const baseClasses =
+    "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-border/40 text-2xs leading-none shadow-2xs font-normal"
+
   if (!icon) {
     return (
-      <span className={`${baseClasses} bg-secondary/50 text-[10px]`}>
-        📁
-      </span>
+      <span className={`${baseClasses} bg-secondary/50 text-[10px]`}>📁</span>
     )
   }
 
@@ -47,9 +46,7 @@ export function renderSidebarProjectIcon(icon?: string | null) {
     icon.startsWith("/") ||
     icon.startsWith("blob:")
   ) {
-    const imageUrl = icon.startsWith("blob:")
-      ? icon
-      : getThumbUrl(icon) || icon
+    const imageUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon
     return (
       <div className={`${baseClasses} relative overflow-hidden bg-background`}>
         <Image
@@ -65,9 +62,7 @@ export function renderSidebarProjectIcon(icon?: string | null) {
 
   // Emoji or single character
   return (
-    <span className={`${baseClasses} bg-secondary/50 text-[10px]`}>
-      {icon}
-    </span>
+    <span className={`${baseClasses} bg-secondary/50 text-[10px]`}>{icon}</span>
   )
 }
 
@@ -223,11 +218,15 @@ export const getNavGroups = (
         },
       ].filter((item) => {
         if (item.title === "KPIs") {
-          return !!kpiEnabled && (permissions.canViewAdminKpi || permissions.canViewMemberKpi)
+          return (
+            !!kpiEnabled &&
+            (permissions.canViewAdminKpi || permissions.canViewMemberKpi)
+          )
         }
         if (item.title === "Gamification & KPIs") return !!kpiEnabled
         if (item.title === "Audit Logs") return permissions.canReadAuditLogs
-        if (item.title === "Manage Projects") return permissions.isOwnerOrAdmin || permissions.canReadProjects
+        if (item.title === "Manage Projects")
+          return permissions.isOwnerOrAdmin || permissions.canReadProjects
         return true
       }),
     },
@@ -284,9 +283,11 @@ export const getNavGroups = (
         },
       ].filter((item) => {
         if (item.title === "Members") return permissions.isOwnerOrAdmin
-        if (item.title === "Organization Logs") return permissions.canReadAuditLogs
+        if (item.title === "Organization Logs")
+          return permissions.canReadAuditLogs
         if (item.title === "Workspaces") return permissions.canReadWorkspaces
-        if (item.title === "Roles & Permissions") return permissions.canReadRoles
+        if (item.title === "Roles & Permissions")
+          return permissions.canReadRoles
         if (item.title === "Gamification & KPIs") return !!kpiEnabled
         return true
       }),

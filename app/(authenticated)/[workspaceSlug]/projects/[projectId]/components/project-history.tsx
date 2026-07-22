@@ -61,7 +61,13 @@ interface HistoryEvent {
   }
 }
 
-function HistoryEventItem({ event, index }: { event: HistoryEvent; index: number }) {
+function HistoryEventItem({
+  event,
+  index,
+}: {
+  event: HistoryEvent
+  index: number
+}) {
   const [isOpen, setIsOpen] = useState(true)
 
   return (
@@ -90,9 +96,7 @@ function HistoryEventItem({ event, index }: { event: HistoryEvent; index: number
         >
           <HugeiconsIcon
             icon={
-              event.type === "initialization"
-                ? SparklesIcon
-                : UserAdd01Icon
+              event.type === "initialization" ? SparklesIcon : UserAdd01Icon
             }
             strokeWidth={2}
             className="size-3.5"
@@ -219,11 +223,7 @@ export function ProjectHistory({
         ) : (
           <Timeline defaultValue={events.length}>
             {events.map((event, index) => (
-              <HistoryEventItem
-                key={event.id}
-                event={event}
-                index={index}
-              />
+              <HistoryEventItem key={event.id} event={event} index={index} />
             ))}
           </Timeline>
         )}

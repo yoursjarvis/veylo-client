@@ -6,7 +6,11 @@ import { ItemInstance, TreeInstance } from "@headless-tree/core"
 import { createContext, useContext } from "react"
 
 import { cn } from "@/lib/utils"
-import { ArrowDown01Icon, MinusSignIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import {
+  ArrowDown01Icon,
+  MinusSignIcon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 type ToggleIconType = "chevron" | "plus-minus"
@@ -176,7 +180,7 @@ function TreeItemLabel<T = unknown>({
     <span
       data-slot="tree-item-label"
       className={cn(
-        "in-focus-visible:ring-ring/50 bg-background hover:bg-accent in-data-[selected=true]:bg-accent in-data-[selected=true]:text-accent-foreground in-data-[drag-target=true]:bg-accent flex items-center gap-1 transition-colors not-in-data-[folder=true]:ps-7 in-focus-visible:ring-[3px] in-data-[search-match=true]:bg-blue-50! [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "flex items-center gap-1 bg-background transition-colors not-in-data-[folder=true]:ps-7 hover:bg-accent in-focus-visible:ring-[3px] in-focus-visible:ring-ring/50 in-data-[drag-target=true]:bg-accent in-data-[search-match=true]:bg-blue-50! in-data-[selected=true]:bg-accent in-data-[selected=true]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
         "rounded-md",
         "py-1.5",
         "px-2",
@@ -196,16 +200,30 @@ function TreeItemLabel<T = unknown>({
               item.expand()
             }
           }}
-          className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-sm hover:bg-accent text-muted-foreground shrink-0"
+          className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-sm text-muted-foreground hover:bg-accent"
         >
           {toggleIconType === "plus-minus" ? (
             item.isExpanded() ? (
-              <HugeiconsIcon icon={MinusSignIcon} className="size-3" stroke="currentColor" strokeWidth={2} />
+              <HugeiconsIcon
+                icon={MinusSignIcon}
+                className="size-3"
+                stroke="currentColor"
+                strokeWidth={2}
+              />
             ) : (
-              <HugeiconsIcon icon={PlusSignIcon} className="size-3" stroke="currentColor" strokeWidth={2} />
+              <HugeiconsIcon
+                icon={PlusSignIcon}
+                className="size-3"
+                stroke="currentColor"
+                strokeWidth={2}
+              />
             )
           ) : (
-            <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="size-3.5 in-aria-[expanded=false]:-rotate-90 transition-transform" />
+            <HugeiconsIcon
+              icon={ArrowDown01Icon}
+              strokeWidth={2}
+              className="size-3.5 transition-transform in-aria-[expanded=false]:-rotate-90"
+            />
           )}
         </span>
       )}
@@ -233,7 +251,7 @@ function TreeDragLine({
     <div
       style={dragLine}
       className={cn(
-        "bg-primary before:bg-background before:border-primary absolute z-30 -mt-px h-0.5 w-[unset] before:absolute before:-top-[3px] before:left-0 before:size-2 before:border-2",
+        "absolute z-30 -mt-px h-0.5 w-[unset] bg-primary before:absolute before:-top-[3px] before:left-0 before:size-2 before:border-2 before:border-primary before:bg-background",
         "before:rounded-full",
         className
       )}

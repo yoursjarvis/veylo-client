@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import React, { useState, useRef, useEffect } from "react";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import React, { useState, useRef, useEffect } from "react"
+import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   Search,
   Download,
@@ -14,68 +14,77 @@ import {
   Globe,
   Database,
   CheckSquare,
-} from "lucide-react";
-import { format } from "date-fns";
-import { toast } from "sonner";
+} from "lucide-react"
+import { format } from "date-fns"
+import { toast } from "sonner"
 
-import { axiosInstance } from "@/lib/axios";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { axiosInstance } from "@/lib/axios"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select";
-import { cn } from "@/lib/utils";
-import { useQueryState, parseAsString, parseAsArrayOf, parseAsInteger } from "nuqs";
+} from "@/components/ui/dialog"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select"
+import { cn } from "@/lib/utils"
+import {
+  useQueryState,
+  parseAsString,
+  parseAsArrayOf,
+  parseAsInteger,
+} from "nuqs"
 
 interface OrgMember {
-  id: string;
-  userId: string;
-  role: string;
+  id: string
+  userId: string
+  role: string
   user: {
-    id: string;
-    name: string;
-    email: string;
-    image?: string | null;
-  };
+    id: string
+    name: string
+    email: string
+    image?: string | null
+  }
 }
 
 interface AuditLogEntry {
-  id: string;
-  action: string;
-  entityType: string;
-  entityId: string | null;
-  entityName: string | null;
-  description: string;
-  metadata: Record<string, unknown> | null;
-  ipAddress: string | null;
-  userAgent: string | null;
-  createdAt: string;
+  id: string
+  action: string
+  entityType: string
+  entityId: string | null
+  entityName: string | null
+  description: string
+  metadata: Record<string, unknown> | null
+  ipAddress: string | null
+  userAgent: string | null
+  createdAt: string
   user: {
-    name: string;
-    email: string;
-    image?: string | null;
-  };
+    name: string
+    email: string
+    image?: string | null
+  }
 }
 
 interface PaginatedAuditLogs {
-  data: AuditLogEntry[];
+  data: AuditLogEntry[]
   meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
 }
 
 const AVAILABLE_ACTIONS = [
@@ -136,67 +145,82 @@ const AVAILABLE_ACTIONS = [
   { value: "CREATE_VAULT_ITEM", label: "Create Vault Item" },
   { value: "UPDATE_VAULT_ITEM", label: "Update Vault Item" },
   { value: "DELETE_VAULT_ITEM", label: "Delete Vault Item" },
-];
+]
 
 export default function OrganizationAuditLogsPage() {
   // Filters State using nuqs for shareable URL query parameters
   const [search, setSearch] = useQueryState(
     "search",
-    parseAsString.withDefault("").withOptions({ clearOnDefault: true, shallow: true })
-  );
+    parseAsString
+      .withDefault("")
+      .withOptions({ clearOnDefault: true, shallow: true })
+  )
 
   const [selectedMembers, setSelectedMembers] = useQueryState(
     "members",
-    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ clearOnDefault: true, shallow: true })
-  );
+    parseAsArrayOf(parseAsString)
+      .withDefault([])
+      .withOptions({ clearOnDefault: true, shallow: true })
+  )
 
   const [selectedActions, setSelectedActions] = useQueryState(
     "actions",
-    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ clearOnDefault: true, shallow: true })
-  );
+    parseAsArrayOf(parseAsString)
+      .withDefault([])
+      .withOptions({ clearOnDefault: true, shallow: true })
+  )
 
   const [startDateStr, setStartDateStr] = useQueryState(
     "startDate",
-    parseAsString.withDefault("").withOptions({ clearOnDefault: true, shallow: true })
-  );
+    parseAsString
+      .withDefault("")
+      .withOptions({ clearOnDefault: true, shallow: true })
+  )
 
   const [endDateStr, setEndDateStr] = useQueryState(
     "endDate",
-    parseAsString.withDefault("").withOptions({ clearOnDefault: true, shallow: true })
-  );
+    parseAsString
+      .withDefault("")
+      .withOptions({ clearOnDefault: true, shallow: true })
+  )
 
   const [, setPage] = useQueryState(
     "page",
-    parseAsInteger.withDefault(1).withOptions({ clearOnDefault: true, shallow: true })
-  );
+    parseAsInteger
+      .withDefault(1)
+      .withOptions({ clearOnDefault: true, shallow: true })
+  )
 
-  const startDate = startDateStr ? new Date(startDateStr) : undefined;
-  const endDate = endDateStr ? new Date(endDateStr) : undefined;
+  const startDate = startDateStr ? new Date(startDateStr) : undefined
+  const endDate = endDateStr ? new Date(endDateStr) : undefined
 
   const setStartDate = (date: Date | undefined) => {
-    setStartDateStr(date ? format(date, "yyyy-MM-dd") : "");
-  };
+    setStartDateStr(date ? format(date, "yyyy-MM-dd") : "")
+  }
 
   const setEndDate = (date: Date | undefined) => {
-    setEndDateStr(date ? format(date, "yyyy-MM-dd") : "");
-  };
+    setEndDateStr(date ? format(date, "yyyy-MM-dd") : "")
+  }
 
-  const [limit] = useState(15);
+  const [limit] = useState(15)
 
   // Advanced Filters toggle
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(false)
 
   // Modal State for JSON Metadata View
-  const [selectedMetadata, setSelectedMetadata] = useState<Record<string, unknown> | null>(null);
+  const [selectedMetadata, setSelectedMetadata] = useState<Record<
+    string,
+    unknown
+  > | null>(null)
 
   // Fetch Org Members for filter list
   const { data: members = [] } = useQuery<OrgMember[]>({
     queryKey: ["org-members"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/org/members?limit=100");
-      return res.data.data.members || [];
+      const res = await axiosInstance.get("/org/members?limit=100")
+      return res.data.data.members || []
     },
-  });
+  })
 
   // Fetch Audit Logs with filters (using Infinite Query for virtual scrolling)
   const {
@@ -216,53 +240,61 @@ export default function OrganizationAuditLogsPage() {
       limit,
     ],
     queryFn: async ({ pageParam = 1 }) => {
-      const params = new URLSearchParams();
-      params.append("page", String(pageParam));
-      params.append("limit", String(limit));
+      const params = new URLSearchParams()
+      params.append("page", String(pageParam))
+      params.append("limit", String(limit))
 
-      if (search) params.append("search", search);
-      if (startDate) params.append("startDate", format(startDate, "yyyy-MM-dd"));
-      if (endDate) params.append("endDate", format(endDate, "yyyy-MM-dd"));
+      if (search) params.append("search", search)
+      if (startDate) params.append("startDate", format(startDate, "yyyy-MM-dd"))
+      if (endDate) params.append("endDate", format(endDate, "yyyy-MM-dd"))
 
-      selectedMembers.forEach((id) => params.append("memberIds", id));
-      selectedActions.forEach((action) => params.append("actions", action));
+      selectedMembers.forEach((id) => params.append("memberIds", id))
+      selectedActions.forEach((action) => params.append("actions", action))
 
-      const res = await axiosInstance.get(`/org/audit-logs?${params.toString()}`);
-      return res.data.data;
+      const res = await axiosInstance.get(
+        `/org/audit-logs?${params.toString()}`
+      )
+      return res.data.data
     },
     getNextPageParam: (lastPage) => {
-      const nextPage = lastPage.meta.page + 1;
-      return nextPage <= lastPage.meta.totalPages ? nextPage : undefined;
+      const nextPage = lastPage.meta.page + 1
+      return nextPage <= lastPage.meta.totalPages ? nextPage : undefined
     },
     initialPageParam: 1,
-  });
+  })
 
-  const parentRef = useRef<HTMLDivElement>(null);
+  const parentRef = useRef<HTMLDivElement>(null)
 
-  const allRows = logsData ? logsData.pages.flatMap((page) => page.data) : [];
+  const allRows = logsData ? logsData.pages.flatMap((page) => page.data) : []
 
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 64, // estimated row height
     overscan: 5,
-  });
+  })
 
-  const virtualRows = rowVirtualizer.getVirtualItems();
-  const totalSize = rowVirtualizer.getTotalSize();
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
 
   useEffect(() => {
-    const [lastItem] = [...virtualRows].reverse();
-    if (!lastItem) return;
+    const [lastItem] = [...virtualRows].reverse()
+    if (!lastItem) return
 
     if (
       lastItem.index >= allRows.length - 1 &&
       hasNextPage &&
       !isFetchingNextPage
     ) {
-      fetchNextPage();
+      fetchNextPage()
     }
-  }, [hasNextPage, fetchNextPage, allRows.length, isFetchingNextPage, virtualRows]);
+  }, [
+    hasNextPage,
+    fetchNextPage,
+    allRows.length,
+    isFetchingNextPage,
+    virtualRows,
+  ])
 
   // Export Mutation
   const exportMutation = useMutation({
@@ -273,67 +305,74 @@ export default function OrganizationAuditLogsPage() {
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined,
         memberIds: selectedMembers.length ? selectedMembers : undefined,
         actions: selectedActions.length ? selectedActions : undefined,
-      });
+      })
     },
     onSuccess: () => {
       toast.success(
         "Export started in the background. You will receive an email and in-app notification when the CSV file is ready.",
         { duration: 6000 }
-      );
+      )
     },
     onError: (err: unknown) => {
       const errorMsg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        "Failed to start export.";
-      toast.error(errorMsg);
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "Failed to start export."
+      toast.error(errorMsg)
     },
-  });
+  })
 
   // Clear all filters
   const handleResetFilters = () => {
-    setSearch("");
-    setSelectedMembers([]);
-    setSelectedActions([]);
-    setStartDateStr("");
-    setEndDateStr("");
-    setPage(1);
-  };
+    setSearch("")
+    setSelectedMembers([])
+    setSelectedActions([])
+    setStartDateStr("")
+    setEndDateStr("")
+    setPage(1)
+  }
 
   const getActionBadgeVariant = (
     action: string
   ): "default" | "secondary" | "destructive" | "outline" | "ghost" | "link" => {
-    if (action.startsWith("CREATE")) return "default";
-    if (action.startsWith("DELETE") || action.startsWith("FORCE") || action.startsWith("REMOVE")) return "destructive";
-    if (action.startsWith("RESTORE")) return "secondary";
-    if (action.includes("ROLE")) return "outline";
-    return "default";
-  };
+    if (action.startsWith("CREATE")) return "default"
+    if (
+      action.startsWith("DELETE") ||
+      action.startsWith("FORCE") ||
+      action.startsWith("REMOVE")
+    )
+      return "destructive"
+    if (action.startsWith("RESTORE")) return "secondary"
+    if (action.includes("ROLE")) return "outline"
+    return "default"
+  }
 
   const formatBrowser = (userAgent: string | null) => {
-    if (!userAgent) return "Unknown Browser";
-    if (userAgent.includes("Chrome")) return "Chrome";
-    if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) return "Safari";
-    if (userAgent.includes("Firefox")) return "Firefox";
-    if (userAgent.includes("Edge")) return "Edge";
-    return "Web Browser";
-  };
+    if (!userAgent) return "Unknown Browser"
+    if (userAgent.includes("Chrome")) return "Chrome"
+    if (userAgent.includes("Safari") && !userAgent.includes("Chrome"))
+      return "Safari"
+    if (userAgent.includes("Firefox")) return "Firefox"
+    if (userAgent.includes("Edge")) return "Edge"
+    return "Web Browser"
+  }
 
   const memberOptions = members.map((m) => ({
     value: m.userId,
     label: `${m.user.name} (${m.user.email})`,
-  }));
+  }))
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <div className="flex-1 px-8 py-8 space-y-6 max-w-7xl mx-auto w-full">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <div className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-8 py-8">
         {/* Header Section */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b pb-6 border-border">
+        <div className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            <h1 className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               Organization Audit Logs
             </h1>
-            <p className="text-muted-foreground text-sm">
-              Immutable ledger of administrative and configuration events across all workspaces.
+            <p className="text-sm text-muted-foreground">
+              Immutable ledger of administrative and configuration events across
+              all workspaces.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -350,7 +389,7 @@ export default function OrganizationAuditLogsPage() {
               size="sm"
               onClick={() => exportMutation.mutate()}
               disabled={exportMutation.isPending}
-              className="flex items-center gap-2 shadow-sm font-semibold"
+              className="flex items-center gap-2 font-semibold shadow-sm"
             >
               <Download className="h-4 w-4" />
               {exportMutation.isPending ? "Exporting..." : "Export CSV"}
@@ -359,66 +398,78 @@ export default function OrganizationAuditLogsPage() {
         </div>
 
         {/* Filters Panel */}
-        {(showFilters || search || selectedMembers.length > 0 || selectedActions.length > 0 || startDate || endDate) && (
+        {(showFilters ||
+          search ||
+          selectedMembers.length > 0 ||
+          selectedActions.length > 0 ||
+          startDate ||
+          endDate) && (
           <Card className="border border-border/80 bg-card shadow-sm transition-all duration-200">
-            <CardHeader className="py-4 border-b border-border/50 bg-muted/20">
+            <CardHeader className="border-b border-border/50 bg-muted/20 py-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
                   <Filter className="h-4 w-4 text-primary" /> Filter Options
                 </CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleResetFilters}
-                  className="h-8 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5"
+                  className="flex h-8 items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                 >
                   <RotateCcw className="h-3 w-3" /> Clear All Filters
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="space-y-6 p-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 {/* Search Input */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     Search Ledger
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search descriptions, entities..."
                       value={search}
                       onChange={(e) => {
-                        setSearch(e.target.value);
-                        setPage(1);
+                        setSearch(e.target.value)
+                        setPage(1)
                       }}
-                      className="pl-9 h-10 border-input bg-background focus-visible:ring-1"
+                      className="h-10 border-input bg-background pl-9 focus-visible:ring-1"
                     />
                   </div>
                 </div>
 
                 {/* Date Picker Start */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     Start Date
                   </label>
                   <Popover>
                     <PopoverTrigger
                       className={cn(
-                        "w-full h-10 pl-3 pr-8 text-left font-normal border border-input rounded-lg bg-transparent hover:bg-muted/10 relative transition-colors outline-hidden focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                        "relative h-10 w-full rounded-lg border border-input bg-transparent pr-8 pl-3 text-left font-normal outline-hidden transition-colors hover:bg-muted/10 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
                         !startDate && "text-muted-foreground"
                       )}
                     >
-                      {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                      <CalendarIcon className="absolute right-3 top-2.5 h-4 w-4 opacity-50 pointer-events-none shrink-0" />
+                      {startDate ? (
+                        format(startDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="pointer-events-none absolute top-2.5 right-3 h-4 w-4 shrink-0 opacity-50" />
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-50 bg-card border border-border" align="start">
+                    <PopoverContent
+                      className="z-50 w-auto border border-border bg-card p-0"
+                      align="start"
+                    >
                       <Calendar
                         mode="single"
                         selected={startDate}
                         onSelect={(date) => {
-                          setStartDate(date);
-                          setPage(1);
+                          setStartDate(date)
+                          setPage(1)
                         }}
                         initialFocus
                       />
@@ -428,26 +479,33 @@ export default function OrganizationAuditLogsPage() {
 
                 {/* Date Picker End */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     End Date
                   </label>
                   <Popover>
                     <PopoverTrigger
                       className={cn(
-                        "w-full h-10 pl-3 pr-8 text-left font-normal border border-input rounded-lg bg-transparent hover:bg-muted/10 relative transition-colors outline-hidden focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                        "relative h-10 w-full rounded-lg border border-input bg-transparent pr-8 pl-3 text-left font-normal outline-hidden transition-colors hover:bg-muted/10 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
                         !endDate && "text-muted-foreground"
                       )}
                     >
-                      {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                      <CalendarIcon className="absolute right-3 top-2.5 h-4 w-4 opacity-50 pointer-events-none shrink-0" />
+                      {endDate ? (
+                        format(endDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="pointer-events-none absolute top-2.5 right-3 h-4 w-4 shrink-0 opacity-50" />
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-50 bg-card border border-border" align="start">
+                    <PopoverContent
+                      className="z-50 w-auto border border-border bg-card p-0"
+                      align="start"
+                    >
                       <Calendar
                         mode="single"
                         selected={endDate}
                         onSelect={(date) => {
-                          setEndDate(date);
-                          setPage(1);
+                          setEndDate(date)
+                          setPage(1)
                         }}
                         initialFocus
                       />
@@ -457,17 +515,17 @@ export default function OrganizationAuditLogsPage() {
               </div>
 
               {/* Members Selection & Action Selection */}
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pt-4 border-t border-border/50">
+              <div className="grid grid-cols-1 gap-6 border-t border-border/50 pt-4 md:grid-cols-2">
                 {/* Members Selection */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     Filter by Members
                   </label>
                   <MultiSearchableSelect
                     value={selectedMembers}
                     onValueChange={(val) => {
-                      setSelectedMembers(val);
-                      setPage(1);
+                      setSelectedMembers(val)
+                      setPage(1)
                     }}
                     options={memberOptions}
                     placeholder="Select organization members..."
@@ -477,14 +535,14 @@ export default function OrganizationAuditLogsPage() {
 
                 {/* Actions Selection */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     Filter by Actions
                   </label>
                   <MultiSearchableSelect
                     value={selectedActions}
                     onValueChange={(val) => {
-                      setSelectedActions(val);
-                      setPage(1);
+                      setSelectedActions(val)
+                      setPage(1)
                     }}
                     options={AVAILABLE_ACTIONS}
                     placeholder="Select actions..."
@@ -497,13 +555,13 @@ export default function OrganizationAuditLogsPage() {
         )}
 
         {/* Ledger Table Section */}
-        <Card className="border border-border/80 bg-card shadow-sm overflow-hidden">
+        <Card className="overflow-hidden border border-border/80 bg-card shadow-sm">
           <CardContent className="p-0">
             {isLogsLoading ? (
               <div className="w-full overflow-x-auto">
-                <div className="min-w-[1100px] flex flex-col">
+                <div className="flex min-w-[1100px] flex-col">
                   {/* Skeleton Header */}
-                  <div className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border bg-muted/30 py-3 px-4 text-sm font-semibold text-muted-foreground">
+                  <div className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border bg-muted/30 px-4 py-3 text-sm font-semibold text-muted-foreground">
                     <div>Timestamp</div>
                     <div>Actor</div>
                     <div>Action</div>
@@ -517,16 +575,16 @@ export default function OrganizationAuditLogsPage() {
                     {Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
-                        className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center py-4 px-4 min-h-[64px]"
+                        className="grid min-h-[64px] grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center px-4 py-4"
                       >
                         {/* Timestamp */}
                         <div className="pr-2">
                           <Skeleton className="h-4 w-28" />
                         </div>
                         {/* Actor */}
-                        <div className="pr-2 flex items-center gap-2">
+                        <div className="flex items-center gap-2 pr-2">
                           <Skeleton className="h-6 w-6 rounded-full" />
-                          <div className="space-y-1 flex-1">
+                          <div className="flex-1 space-y-1">
                             <Skeleton className="h-3 w-20" />
                             <Skeleton className="h-2 w-28" />
                           </div>
@@ -536,7 +594,7 @@ export default function OrganizationAuditLogsPage() {
                           <Skeleton className="h-5 w-24 rounded-full" />
                         </div>
                         {/* Entity */}
-                        <div className="pr-2 space-y-1">
+                        <div className="space-y-1 pr-2">
                           <Skeleton className="h-2 w-12" />
                           <Skeleton className="h-3 w-16" />
                         </div>
@@ -545,7 +603,7 @@ export default function OrganizationAuditLogsPage() {
                           <Skeleton className="h-4 w-full max-w-[200px]" />
                         </div>
                         {/* Origin IP */}
-                        <div className="pr-2 space-y-1">
+                        <div className="space-y-1 pr-2">
                           <Skeleton className="h-3 w-16" />
                           <Skeleton className="h-2 w-20" />
                         </div>
@@ -559,18 +617,21 @@ export default function OrganizationAuditLogsPage() {
                 </div>
               </div>
             ) : !allRows.length ? (
-              <div className="py-20 flex flex-col items-center justify-center text-center px-4">
-                <Info className="h-10 w-10 text-muted-foreground mb-4" />
-                <h3 className="text-base font-semibold text-foreground">No Logs Found</h3>
-                <p className="text-sm text-muted-foreground max-w-xs mt-1">
-                  Try adjusting search parameters or selection filters to display ledger data.
+              <div className="flex flex-col items-center justify-center px-4 py-20 text-center">
+                <Info className="mb-4 h-10 w-10 text-muted-foreground" />
+                <h3 className="text-base font-semibold text-foreground">
+                  No Logs Found
+                </h3>
+                <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+                  Try adjusting search parameters or selection filters to
+                  display ledger data.
                 </p>
               </div>
             ) : (
               <div className="w-full overflow-x-auto">
-                <div className="min-w-[1100px] flex flex-col">
+                <div className="flex min-w-[1100px] flex-col">
                   {/* Header */}
-                  <div className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border bg-muted/30 py-3 px-4 text-sm font-semibold text-muted-foreground">
+                  <div className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border bg-muted/30 px-4 py-3 text-sm font-semibold text-muted-foreground">
                     <div>Timestamp</div>
                     <div>Actor</div>
                     <div>Action</div>
@@ -583,12 +644,16 @@ export default function OrganizationAuditLogsPage() {
                   {/* Scrollable Container */}
                   <div
                     ref={parentRef}
-                    className="overflow-y-auto max-h-[600px] relative w-full"
+                    className="relative max-h-[600px] w-full overflow-y-auto"
                   >
-                    <div style={{ height: `${totalSize}px`, position: "relative" }} className="w-full">
+                    <div
+                      style={{ height: `${totalSize}px`, position: "relative" }}
+                      className="w-full"
+                    >
                       {virtualRows.map((virtualRow) => {
-                        const isLoaderRow = virtualRow.index > allRows.length - 1;
-                        const log = allRows[virtualRow.index];
+                        const isLoaderRow =
+                          virtualRow.index > allRows.length - 1
+                        const log = allRows[virtualRow.index]
 
                         return (
                           <div
@@ -602,7 +667,7 @@ export default function OrganizationAuditLogsPage() {
                               width: "100%",
                               transform: `translateY(${virtualRow.start}px)`,
                             }}
-                            className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border/40 hover:bg-muted/10 transition-colors py-3 px-4 min-h-[64px]"
+                            className="grid min-h-[64px] grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border/40 px-4 py-3 transition-colors hover:bg-muted/10"
                           >
                             {isLoaderRow ? (
                               isFetchingNextPage ? (
@@ -610,9 +675,9 @@ export default function OrganizationAuditLogsPage() {
                                   <div className="pr-2">
                                     <Skeleton className="h-4 w-28" />
                                   </div>
-                                  <div className="pr-2 flex items-center gap-2">
+                                  <div className="flex items-center gap-2 pr-2">
                                     <Skeleton className="h-6 w-6 rounded-full" />
-                                    <div className="space-y-1 flex-1">
+                                    <div className="flex-1 space-y-1">
                                       <Skeleton className="h-3 w-20" />
                                       <Skeleton className="h-2 w-28" />
                                     </div>
@@ -620,14 +685,14 @@ export default function OrganizationAuditLogsPage() {
                                   <div className="pr-2">
                                     <Skeleton className="h-5 w-24 rounded-full" />
                                   </div>
-                                  <div className="pr-2 space-y-1">
+                                  <div className="space-y-1 pr-2">
                                     <Skeleton className="h-2 w-12" />
                                     <Skeleton className="h-3 w-16" />
                                   </div>
                                   <div className="pr-2">
                                     <Skeleton className="h-4 w-full max-w-[200px]" />
                                   </div>
-                                  <div className="pr-2 space-y-1">
+                                  <div className="space-y-1 pr-2">
                                     <Skeleton className="h-3 w-16" />
                                     <Skeleton className="h-2 w-20" />
                                   </div>
@@ -636,58 +701,64 @@ export default function OrganizationAuditLogsPage() {
                                   </div>
                                 </>
                               ) : (
-                                <div className="col-span-7 text-center py-4 text-sm text-muted-foreground w-full">
+                                <div className="col-span-7 w-full py-4 text-center text-sm text-muted-foreground">
                                   No more logs to load
                                 </div>
                               )
                             ) : (
                               <>
-                                <div className="text-xs font-mono text-muted-foreground pr-2">
-                                  {format(new Date(log.createdAt), "yyyy-MM-dd hh:mm a")}
+                                <div className="pr-2 font-mono text-xs text-muted-foreground">
+                                  {format(
+                                    new Date(log.createdAt),
+                                    "yyyy-MM-dd hh:mm a"
+                                  )}
                                 </div>
                                 <div className="pr-2">
-                                  <div className="flex items-center gap-2 min-w-0">
+                                  <div className="flex min-w-0 items-center gap-2">
                                     <Avatar className="h-6 w-6 shrink-0 border border-border">
                                       <AvatarImage src={log.user.image || ""} />
-                                      <AvatarFallback className="text-2xs bg-muted font-bold text-foreground">
+                                      <AvatarFallback className="bg-muted text-2xs font-bold text-foreground">
                                         {log.user.name.charAt(0).toUpperCase()}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <div className="flex flex-col min-w-0">
-                                      <span className="text-sm font-medium truncate text-foreground">
+                                    <div className="flex min-w-0 flex-col">
+                                      <span className="truncate text-sm font-medium text-foreground">
                                         {log.user.name}
                                       </span>
-                                      <span className="text-2xs text-muted-foreground truncate">
+                                      <span className="truncate text-2xs text-muted-foreground">
                                         {log.user.email}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
                                 <div className="pr-2">
-                                  <Badge variant={getActionBadgeVariant(log.action)} className="text-2xs px-2 py-0.5">
+                                  <Badge
+                                    variant={getActionBadgeVariant(log.action)}
+                                    className="px-2 py-0.5 text-2xs"
+                                  >
                                     {log.action}
                                   </Badge>
                                 </div>
                                 <div className="pr-2">
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  <div className="flex min-w-0 flex-col">
+                                    <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                       {log.entityType}
                                     </span>
-                                    <span className="text-xs font-mono font-medium text-foreground truncate max-w-[150px]">
+                                    <span className="max-w-[150px] truncate font-mono text-xs font-medium text-foreground">
                                       {log.entityName || log.entityId || "N/A"}
                                     </span>
                                   </div>
                                 </div>
-                                <div className="text-sm text-foreground max-w-xs break-words font-medium pr-2">
+                                <div className="max-w-xs pr-2 text-sm font-medium break-words text-foreground">
                                   {log.description}
                                 </div>
                                 <div className="pr-2">
-                                  <div className="flex flex-col text-xs space-y-0.5 text-muted-foreground">
+                                  <div className="flex flex-col space-y-0.5 text-xs text-muted-foreground">
                                     <span className="flex items-center gap-1">
                                       <Globe className="h-3 w-3 shrink-0" />
                                       {log.ipAddress || "Unknown"}
                                     </span>
-                                    <span className="flex items-center gap-1 font-medium text-2xs">
+                                    <span className="flex items-center gap-1 text-2xs font-medium">
                                       <Laptop className="h-3 w-3 shrink-0" />
                                       {formatBrowser(log.userAgent)}
                                     </span>
@@ -698,19 +769,23 @@ export default function OrganizationAuditLogsPage() {
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      onClick={() => setSelectedMetadata(log.metadata)}
-                                      className="h-8 w-8 hover:bg-muted text-primary hover:text-primary-foreground"
+                                      onClick={() =>
+                                        setSelectedMetadata(log.metadata)
+                                      }
+                                      className="h-8 w-8 text-primary hover:bg-muted hover:text-primary-foreground"
                                     >
                                       <Database className="h-4 w-4" />
                                     </Button>
                                   ) : (
-                                    <span className="text-xs text-muted-foreground font-mono">—</span>
+                                    <span className="font-mono text-xs text-muted-foreground">
+                                      —
+                                    </span>
                                   )}
                                 </div>
                               </>
                             )}
                           </div>
-                        );
+                        )
                       })}
                     </div>
                   </div>
@@ -722,18 +797,22 @@ export default function OrganizationAuditLogsPage() {
       </div>
 
       {/* JSON Metadata View Dialog */}
-      <Dialog open={selectedMetadata !== null} onOpenChange={() => setSelectedMetadata(null)}>
+      <Dialog
+        open={selectedMetadata !== null}
+        onOpenChange={() => setSelectedMetadata(null)}
+      >
         <DialogContent className="max-w-md border border-border bg-card">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <CheckSquare className="h-5 w-5 text-primary" /> Event Payload Metadata
+            <DialogTitle className="flex items-center gap-2 text-base font-bold">
+              <CheckSquare className="h-5 w-5 text-primary" /> Event Payload
+              Metadata
             </DialogTitle>
             <DialogDescription className="text-xs">
               Direct state attributes captured when the action was logged.
             </DialogDescription>
           </DialogHeader>
-          <div className="bg-muted p-4 rounded-lg overflow-x-auto max-h-96 border border-border/50">
-            <pre className="text-xs font-mono text-foreground leading-relaxed whitespace-pre-wrap">
+          <div className="max-h-96 overflow-x-auto rounded-lg border border-border/50 bg-muted p-4">
+            <pre className="font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground">
               {JSON.stringify(selectedMetadata, null, 2)}
             </pre>
           </div>
@@ -745,5 +824,5 @@ export default function OrganizationAuditLogsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

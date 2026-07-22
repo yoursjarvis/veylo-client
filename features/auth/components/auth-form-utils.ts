@@ -1,6 +1,6 @@
-import { useForm } from "@tanstack/react-form";
-import type { FormOptions, FormValidateOrFn } from "@tanstack/form-core";
-import { zodValidator } from "@tanstack/zod-form-adapter";
+import { useForm } from "@tanstack/react-form"
+import type { FormOptions, FormValidateOrFn } from "@tanstack/form-core"
+import { zodValidator } from "@tanstack/zod-form-adapter"
 
 export type FieldErrorMessage = {
   message: string
@@ -59,7 +59,9 @@ function extractMessages(error: unknown): string[] {
   return [String(error)]
 }
 
-export function toFieldErrors(errors: ReadonlyArray<unknown> | undefined): FieldErrorMessage[] {
+export function toFieldErrors(
+  errors: ReadonlyArray<unknown> | undefined
+): FieldErrorMessage[] {
   return errors?.flatMap(extractMessages).map((message) => ({ message })) ?? []
 }
 

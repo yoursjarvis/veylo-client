@@ -1,7 +1,7 @@
-import { cva, type VariantProps } from "class-variance-authority";
-import type * as React from "react";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
+import { cva, type VariantProps } from "class-variance-authority"
+import type * as React from "react"
+import { cn } from "@/lib/utils"
+import { Separator } from "@/components/ui/separator"
 
 function Stat({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -12,21 +12,21 @@ function Stat({ className, ...props }: React.ComponentProps<"div">) {
         "**:data-[slot=stat-label]:col-span-1 **:data-[slot=stat-value]:col-span-1",
         "**:data-[slot=stat-indicator]:col-start-2 **:data-[slot=stat-indicator]:row-span-2 **:data-[slot=stat-indicator]:row-start-1 **:data-[slot=stat-indicator]:self-start",
         "**:data-[slot=stat-description]:col-span-2 **:data-[slot=stat-separator]:col-span-2 **:data-[slot=stat-trend]:col-span-2",
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 function StatLabel({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="stat-label"
-      className={cn("font-medium text-muted-foreground text-sm", className)}
+      className={cn("text-sm font-medium text-muted-foreground", className)}
       {...props}
     />
-  );
+  )
 }
 
 const statIndicatorVariants = cva(
@@ -37,17 +37,15 @@ const statIndicatorVariants = cva(
         default: "text-muted-foreground [&_svg:not([class*='size-'])]:size-5",
         icon: "size-8 rounded-md border [&_svg:not([class*='size-'])]:size-3.5",
         badge:
-          "h-6 min-w-6 rounded-sm border px-1.5 font-medium text-xs [&_svg:not([class*='size-'])]:size-3",
+          "h-6 min-w-6 rounded-sm border px-1.5 text-xs font-medium [&_svg:not([class*='size-'])]:size-3",
         action:
           "size-8 cursor-pointer rounded-md transition-colors hover:bg-muted/50 [&_svg:not([class*='size-'])]:size-4",
       },
       color: {
         default: "bg-muted text-muted-foreground",
-        success:
-          "border-success/20 bg-success/10 text-success",
+        success: "border-success/20 bg-success/10 text-success",
         info: "border-info/20 bg-info/10 text-info",
-        warning:
-          "border-warning/20 bg-warning/10 text-warning",
+        warning: "border-warning/20 bg-warning/10 text-warning",
         error: "border-destructive/20 bg-destructive/10 text-destructive",
       },
     },
@@ -55,11 +53,12 @@ const statIndicatorVariants = cva(
       variant: "default",
       color: "default",
     },
-  },
-);
+  }
+)
 
 interface StatIndicatorProps
-  extends Omit<React.ComponentProps<"div">, "color">,
+  extends
+    Omit<React.ComponentProps<"div">, "color">,
     VariantProps<typeof statIndicatorVariants> {}
 
 function StatIndicator({
@@ -76,17 +75,17 @@ function StatIndicator({
       className={cn(statIndicatorVariants({ variant, color, className }))}
       {...props}
     />
-  );
+  )
 }
 
 function StatValue({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="stat-value"
-      className={cn("font-semibold text-2xl tracking-tight", className)}
+      className={cn("text-2xl font-semibold tracking-tight", className)}
       {...props}
     />
-  );
+  )
 }
 
 function StatTrend({
@@ -99,31 +98,31 @@ function StatTrend({
       data-slot="stat-trend"
       data-trend={trend}
       className={cn(
-        "inline-flex items-center gap-1 font-medium text-xs [&_svg:not([class*='size-'])]:size-3 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "inline-flex items-center gap-1 text-xs font-medium [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
         {
           "text-success": trend === "up",
           "text-destructive": trend === "down",
           "text-muted-foreground": trend === "neutral" || !trend,
         },
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 function StatSeparator({ ...props }: React.ComponentProps<typeof Separator>) {
-  return <Separator data-slot="stat-separator" className="my-2" {...props} />;
+  return <Separator data-slot="stat-separator" className="my-2" {...props} />
 }
 
 function StatDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="stat-description"
-      className={cn("text-muted-foreground text-xs", className)}
+      className={cn("text-xs text-muted-foreground", className)}
       {...props}
     />
-  );
+  )
 }
 
 export {
@@ -134,4 +133,4 @@ export {
   StatSeparator,
   StatTrend,
   StatValue,
-};
+}

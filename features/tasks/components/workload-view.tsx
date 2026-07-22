@@ -22,7 +22,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { AlertDiamondIcon, Clock01Icon, UserGroupIcon } from "@hugeicons/core-free-icons"
+import {
+  AlertDiamondIcon,
+  Clock01Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   endOfWeek,
@@ -172,11 +176,7 @@ export function WorkloadView() {
             return (
               <Card
                 key={member.id}
-                className={
-                  isOverAllocated
-                    ? "border-destructive/50"
-                    : ""
-                }
+                className={isOverAllocated ? "border-destructive/50" : ""}
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">

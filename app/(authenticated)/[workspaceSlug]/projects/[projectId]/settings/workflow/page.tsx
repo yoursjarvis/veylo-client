@@ -14,13 +14,7 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card"
-import { 
-  Plus, 
-  Trash2, 
-  ArrowRight, 
-  GitBranch, 
-  ShieldAlert, 
-} from "lucide-react"
+import { Plus, Trash2, ArrowRight, GitBranch, ShieldAlert } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -51,11 +45,11 @@ export default function WorkflowSettingsPage() {
   const [transitions, setTransitions] = useState<Transition[]>([])
   const [statuses, setStatuses] = useState<{ id: string; name: string }[]>([])
   const [roles, setRoles] = useState<{ id: string; name: string }[]>([])
-  
+
   const [newTransition, setNewTransition] = useState({
     fromStatusId: "",
     toStatusId: "",
-    requiredRoleId: ""
+    requiredRoleId: "",
   })
 
   const { data: projectData } = useQuery({
@@ -63,7 +57,7 @@ export default function WorkflowSettingsPage() {
     queryFn: async () => {
       const res = await axiosInstance.get(`/projects/${projectId}/statuses`)
       return res.data.data
-    }
+    },
   })
 
   const { data: projectRoles } = useQuery({
@@ -72,7 +66,7 @@ export default function WorkflowSettingsPage() {
       // This endpoint might need to be created, assuming generic role fetch for now
       const res = await axiosInstance.get(`/projects/${projectId}/roles`)
       return res.data.data
-    }
+    },
   })
 
   const { data: workflowData } = useQuery({
@@ -80,7 +74,7 @@ export default function WorkflowSettingsPage() {
     queryFn: async () => {
       const res = await axiosInstance.get(`/projects/${projectId}/workflow`)
       return res.data.data
-    }
+    },
   })
 
   useEffect(() => {
@@ -103,12 +97,14 @@ export default function WorkflowSettingsPage() {
       return res.data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project-workflow", projectId] })
+      queryClient.invalidateQueries({
+        queryKey: ["project-workflow", projectId],
+      })
       toast.success("Transition added successfully")
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to add transition")
-    }
+    },
   })
 
   const deleteTransitionMutation = useMutation({
@@ -116,12 +112,14 @@ export default function WorkflowSettingsPage() {
       await axiosInstance.delete(`/workflow/transitions/${id}`)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project-workflow", projectId] })
+      queryClient.invalidateQueries({
+        queryKey: ["project-workflow", projectId],
+      })
       toast.success("Transition removed")
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to remove transition")
-    }
+    },
   })
 
   if (!canRead) {
@@ -140,8 +138,8 @@ export default function WorkflowSettingsPage() {
             <GitBranch className="h-5 w-5 text-primary" /> Workflow Engine
           </h3>
           <p className="mt-1 text-xs">
-            Define valid state transitions for tasks in this project. If no rules
-            are defined, all transitions are permitted.
+            Define valid state transitions for tasks in this project. If no
+            rules are defined, all transitions are permitted.
           </p>
         </div>
       </div>
@@ -150,82 +148,126 @@ export default function WorkflowSettingsPage() {
         {canCreate && (
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold">Create New Transition</CardTitle>
+              <CardTitle className="text-sm font-semibold">
+                Create New Transition
+              </CardTitle>
               <CardDescription className="text-xs">
                 Specify which status change is allowed and who can perform it.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-4 items-end">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium">From Status</label>
-              <Select 
-                value={newTransition.fromStatusId} 
-                onValueChange={(v) => setNewTransition(p => ({ ...p, fromStatusId: v || "" }))}
+            <CardContent className="grid grid-cols-1 items-end gap-4 sm:grid-cols-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">From Status</label>
+                <Select
+                  value={newTransition.fromStatusId}
+                  onValueChange={(v) =>
+                    setNewTransition((p) => ({ ...p, fromStatusId: v || "" }))
+                  }
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statuses.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end justify-center pb-3">
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">To Status</label>
+                <Select
+                  value={newTransition.toStatusId}
+                  onValueChange={(v) =>
+                    setNewTransition((p) => ({ ...p, toStatusId: v || "" }))
+                  }
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statuses.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">
+                  Required Role (Optional)
+                </label>
+                <Select
+                  value={newTransition.requiredRoleId}
+                  onValueChange={(v) =>
+                    setNewTransition((p) => ({ ...p, requiredRoleId: v || "" }))
+                  }
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Any Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                className="mt-2 w-fit sm:col-span-4"
+                disabled={
+                  !newTransition.fromStatusId ||
+                  !newTransition.toStatusId ||
+                  addTransitionMutation.isPending
+                }
+                onClick={() => {
+                  addTransitionMutation.mutate({
+                    projectId,
+                    organizationId: projectData?.[0]?.organizationId || "", // Fallback
+                    fromStatusId: newTransition.fromStatusId,
+                    toStatusId: newTransition.toStatusId,
+                    requiredRoleId: newTransition.requiredRoleId || null,
+                  })
+                  setNewTransition({
+                    fromStatusId: "",
+                    toStatusId: "",
+                    requiredRoleId: "",
+                  })
+                }}
               >
-                <SelectTrigger className="h-9"><SelectValue placeholder="Select status" /></SelectTrigger>
-                <SelectContent>
-                  {statuses.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end justify-center pb-3">
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium">To Status</label>
-              <Select 
-                value={newTransition.toStatusId} 
-                onValueChange={(v) => setNewTransition(p => ({ ...p, toStatusId: v || "" }))}
-              >
-                <SelectTrigger className="h-9"><SelectValue placeholder="Select status" /></SelectTrigger>
-                <SelectContent>
-                  {statuses.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium">Required Role (Optional)</label>
-              <Select 
-                value={newTransition.requiredRoleId} 
-                onValueChange={(v) => setNewTransition(p => ({ ...p, requiredRoleId: v || "" }))}
-              >
-                <SelectTrigger className="h-9"><SelectValue placeholder="Any Role" /></SelectTrigger>
-                <SelectContent>
-                  {roles.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button 
-              className="sm:col-span-4 mt-2 w-fit" 
-              disabled={!newTransition.fromStatusId || !newTransition.toStatusId || addTransitionMutation.isPending}
-              onClick={() => {
-                addTransitionMutation.mutate({
-                  projectId,
-                  organizationId: projectData?.[0]?.organizationId || "", // Fallback
-                  fromStatusId: newTransition.fromStatusId,
-                  toStatusId: newTransition.toStatusId,
-                  requiredRoleId: newTransition.requiredRoleId || null
-                })
-                setNewTransition({ fromStatusId: "", toStatusId: "", requiredRoleId: "" })
-              }}
-            >
-              {addTransitionMutation.isPending ? "Adding..." : <><Plus className="mr-2 h-4 w-4" /> Add Transition</>}
-            </Button>
-          </CardContent>
-        </Card>
+                {addTransitionMutation.isPending ? (
+                  "Adding..."
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" /> Add Transition
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-sm font-semibold">Active Transitions</CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              Active Transitions
+            </CardTitle>
             <CardDescription className="text-xs">
-              The following rules are currently enforced. Tasks cannot move between
-              statuses unless a transition is defined here (when the system is in
-              Strict Mode).
+              The following rules are currently enforced. Tasks cannot move
+              between statuses unless a transition is defined here (when the
+              system is in Strict Mode).
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -233,22 +275,37 @@ export default function WorkflowSettingsPage() {
               <table className="w-full text-left text-sm">
                 <thead className="border-b bg-muted/50">
                   <tr>
-                    <th className="h-10 px-4 font-medium text-muted-foreground">From</th>
-                    <th className="h-10 px-4 font-medium text-muted-foreground">To</th>
-                    <th className="h-10 px-4 font-medium text-muted-foreground">Required Role</th>
-                    <th className="h-10 px-4 text-right font-medium text-muted-foreground">Actions</th>
+                    <th className="h-10 px-4 font-medium text-muted-foreground">
+                      From
+                    </th>
+                    <th className="h-10 px-4 font-medium text-muted-foreground">
+                      To
+                    </th>
+                    <th className="h-10 px-4 font-medium text-muted-foreground">
+                      Required Role
+                    </th>
+                    <th className="h-10 px-4 text-right font-medium text-muted-foreground">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {transitions.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="h-20 text-center text-muted-foreground">
-                        No transition rules defined. All moves are currently allowed.
+                      <td
+                        colSpan={4}
+                        className="h-20 text-center text-muted-foreground"
+                      >
+                        No transition rules defined. All moves are currently
+                        allowed.
                       </td>
                     </tr>
                   ) : (
                     transitions.map((t) => (
-                      <tr key={t.id} className="transition-colors hover:bg-muted/50">
+                      <tr
+                        key={t.id}
+                        className="transition-colors hover:bg-muted/50"
+                      >
                         <td className="p-4 font-medium">{t.fromStatus.name}</td>
                         <td className="p-4 font-medium">{t.toStatus.name}</td>
                         <td className="p-4">
@@ -258,16 +315,20 @@ export default function WorkflowSettingsPage() {
                               {t.requiredRole.name}
                             </div>
                           ) : (
-                            <span className="text-xs text-muted-foreground italic">Any Role</span>
+                            <span className="text-xs text-muted-foreground italic">
+                              Any Role
+                            </span>
                           )}
                         </td>
                         <td className="p-4 text-right">
                           {canDelete && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
-                              onClick={() => deleteTransitionMutation.mutate(t.id)}
+                              onClick={() =>
+                                deleteTransitionMutation.mutate(t.id)
+                              }
                               disabled={deleteTransitionMutation.isPending}
                             >
                               <Trash2 className="h-4 w-4" />

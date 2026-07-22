@@ -51,7 +51,12 @@ export function useForgotPassword() {
 
 export function useResetPassword() {
   return useMutation({
-    mutationFn: ({ token, data }: { token: string; data: ResetPasswordInput }) =>
-      authService.resetPassword(token, data),
+    mutationFn: ({
+      token,
+      data,
+    }: {
+      token: string
+      data: ResetPasswordInput
+    }) => authService.resetPassword(token, data),
   })
 }

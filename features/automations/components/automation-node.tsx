@@ -12,7 +12,12 @@ interface AutomationNodeProps {
   onClick: () => void
 }
 
-export function AutomationNode({ type, data, isSelected, onClick }: AutomationNodeProps) {
+export function AutomationNode({
+  type,
+  data,
+  isSelected,
+  onClick,
+}: AutomationNodeProps) {
   let title = ""
   let description = ""
   let icon = <Zap className="h-4 w-4" />

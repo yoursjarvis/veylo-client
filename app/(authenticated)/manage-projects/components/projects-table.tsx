@@ -336,7 +336,7 @@ export function ProjectsTable({
                     <DropdownMenuItem
                       onClick={() => restoreProjectMutation.mutate(project.id)}
                       disabled={restoreProjectMutation.isPending}
-                      className="text-xs font-medium text-green-600 hover:bg-green-50!"
+                      className="text-xs font-medium text-green-600 hover:bg-green-800!"
                     >
                       <HugeiconsIcon
                         icon={Refresh04Icon}
@@ -346,25 +346,27 @@ export function ProjectsTable({
                     </DropdownMenuItem>
                   ) : (
                     <>
-                      {!project.startDate && canCreateProject && canUpdateProject && (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            updateProjectMutation.mutate({
-                              id: project.id,
-                              startDate: new Date().toISOString(),
-                              status: "on_track",
-                            })
-                          }
-                          disabled={updateProjectMutation.isPending}
-                          className="text-xs font-medium text-primary"
-                        >
-                          <HugeiconsIcon
-                            icon={Refresh04Icon}
-                            className="mr-2 h-3.5 w-3.5"
-                          />
-                          Start Project
-                        </DropdownMenuItem>
-                      )}
+                      {!project.startDate &&
+                        canCreateProject &&
+                        canUpdateProject && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              updateProjectMutation.mutate({
+                                id: project.id,
+                                startDate: new Date().toISOString(),
+                                status: "on_track",
+                              })
+                            }
+                            disabled={updateProjectMutation.isPending}
+                            className="text-xs font-medium text-primary"
+                          >
+                            <HugeiconsIcon
+                              icon={Refresh04Icon}
+                              className="mr-2 h-3.5 w-3.5"
+                            />
+                            Start Project
+                          </DropdownMenuItem>
+                        )}
                       <DropdownMenuItem
                         onClick={() => onMembersClick(project)}
                         className="text-xs font-medium"

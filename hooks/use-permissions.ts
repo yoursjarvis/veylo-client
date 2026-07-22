@@ -23,7 +23,11 @@ export function usePermissions(context?: PermissionContext) {
       queryClient.invalidateQueries({ queryKey: ["permissions"] })
     }
     window.addEventListener("permissions-version-changed", handleVersionChange)
-    return () => window.removeEventListener("permissions-version-changed", handleVersionChange)
+    return () =>
+      window.removeEventListener(
+        "permissions-version-changed",
+        handleVersionChange
+      )
   }, [queryClient])
 
   // Auto-resolve context if not provided
@@ -63,11 +67,11 @@ export function usePermissions(context?: PermissionContext) {
         `/rbac/permissions/me?${searchParams.toString()}`
       )
       const data = res.data.data as string[]
-      
+
       if (typeof window !== "undefined") {
         localStorage.setItem(getStorageKey(), JSON.stringify(data))
       }
-      
+
       return data
     },
     enabled: !!session?.user,
@@ -84,7 +88,7 @@ export function usePermissions(context?: PermissionContext) {
         }
       }
       return undefined
-    }
+    },
   })
 
   const hasPermission = (permission: string) => {

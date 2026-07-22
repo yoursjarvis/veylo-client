@@ -32,7 +32,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { Delete01Icon, LabelIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import {
+  Delete01Icon,
+  LabelIcon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 const COLOR_PRESETS = [
@@ -53,7 +57,7 @@ const COLOR_PRESETS = [
 export default function LabelsSettingsPage() {
   const { projectId } = useProject()
   const { hasPermission } = usePermissions()
-  
+
   const canRead = hasPermission("project-label:read")
   const canCreate = hasPermission("project-label:create")
   const canDelete = hasPermission("project-label:delete")
@@ -231,7 +235,10 @@ export default function LabelsSettingsPage() {
                           disabled={deleteLabelMutation.isPending}
                           className="h-8 w-8"
                         >
-                          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                          <HugeiconsIcon
+                            icon={Delete01Icon}
+                            className="h-4 w-4"
+                          />
                         </Button>
                       )}
                     </div>
@@ -245,141 +252,147 @@ export default function LabelsSettingsPage() {
           {canCreate && (
             <Card className="h-fit shadow-md">
               <CardHeader>
-              <CardTitle className="text-sm font-semibold">
-                Create Project Label
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Define a new label with a name and custom color.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  form.handleSubmit()
-                }}
-                className="space-y-4 text-xs"
-              >
-                <form.Field
-                  name="name"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value.trim()) return "Label name is required"
-                      return undefined
-                    },
+                <CardTitle className="text-sm font-semibold">
+                  Create Project Label
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Define a new label with a name and custom color.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    form.handleSubmit()
                   }}
+                  className="space-y-4 text-xs"
                 >
-                  {(field) => {
-                    const fieldErrors: string[] = []
-                    field.state.meta.errors.forEach((err) => {
-                      if (err) fieldErrors.push(String(err))
-                    })
-                    if (labelValidationErrors.name)
-                      fieldErrors.push(labelValidationErrors.name)
-                    const hasError =
-                      field.state.meta.isTouched && !!fieldErrors.length
-                    return (
-                      <div className="space-y-1.5">
-                        <label className="font-semibold">Label Name</label>
-                        <Input
-                          placeholder="e.g. Bug, Feature, Urgent"
-                          value={field.state.value}
-                          onChange={(e) => {
-                            field.handleChange(e.target.value)
-                            setLabelValidationErrors((prev) => ({
-                              ...prev,
-                              name: "",
-                            }))
-                          }}
-                          aria-invalid={hasError}
-                        />
-                        {hasError && (
-                          <p className="mt-1 text-2xs font-medium text-destructive">
-                            {fieldErrors.join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    )
-                  }}
-                </form.Field>
-
-                <form.Field name="color">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <label className="font-semibold">Label Color</label>
-
-                      {/* Presets Grid */}
-                      <div className="grid grid-cols-6 gap-2">
-                        {COLOR_PRESETS.map((preset) => (
-                          <button
-                            key={preset.hex}
-                            type="button"
-                            onClick={() => field.handleChange(preset.hex)}
-                            className={cn(
-                              "flex h-8 w-full items-center justify-center rounded-md border text-2xs font-semibold text-primary-foreground transition-all hover:scale-105",
-                              field.state.value === preset.hex
-                                ? "scale-100 border-primary-foreground ring-2 ring-primary"
-                                : "border-transparent"
-                            )}
-                            style={{ backgroundColor: preset.hex }}
-                            title={preset.name}
-                          >
-                            {field.state.value === preset.hex && "✓"}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Custom Color Input */}
-                      <div className="flex items-center gap-2 pt-2">
-                        <div className="relative flex-1">
+                  <form.Field
+                    name="name"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value.trim()) return "Label name is required"
+                        return undefined
+                      },
+                    }}
+                  >
+                    {(field) => {
+                      const fieldErrors: string[] = []
+                      field.state.meta.errors.forEach((err) => {
+                        if (err) fieldErrors.push(String(err))
+                      })
+                      if (labelValidationErrors.name)
+                        fieldErrors.push(labelValidationErrors.name)
+                      const hasError =
+                        field.state.meta.isTouched && !!fieldErrors.length
+                      return (
+                        <div className="space-y-1.5">
+                          <label className="font-semibold">Label Name</label>
                           <Input
-                            type="text"
-                            placeholder="#ffffff"
+                            placeholder="e.g. Bug, Feature, Urgent"
+                            value={field.state.value}
+                            onChange={(e) => {
+                              field.handleChange(e.target.value)
+                              setLabelValidationErrors((prev) => ({
+                                ...prev,
+                                name: "",
+                              }))
+                            }}
+                            aria-invalid={hasError}
+                          />
+                          {hasError && (
+                            <p className="mt-1 text-2xs font-medium text-destructive">
+                              {fieldErrors.join(", ")}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    }}
+                  </form.Field>
+
+                  <form.Field name="color">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <label className="font-semibold">Label Color</label>
+
+                        {/* Presets Grid */}
+                        <div className="grid grid-cols-6 gap-2">
+                          {COLOR_PRESETS.map((preset) => (
+                            <button
+                              key={preset.hex}
+                              type="button"
+                              onClick={() => field.handleChange(preset.hex)}
+                              className={cn(
+                                "flex h-8 w-full items-center justify-center rounded-md border text-2xs font-semibold text-primary-foreground transition-all hover:scale-105",
+                                field.state.value === preset.hex
+                                  ? "scale-100 border-primary-foreground ring-2 ring-primary"
+                                  : "border-transparent"
+                              )}
+                              style={{ backgroundColor: preset.hex }}
+                              title={preset.name}
+                            >
+                              {field.state.value === preset.hex && "✓"}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Custom Color Input */}
+                        <div className="flex items-center gap-2 pt-2">
+                          <div className="relative flex-1">
+                            <Input
+                              type="text"
+                              placeholder="#ffffff"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              className="pl-9 font-mono"
+                            />
+                            <span
+                              className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 rounded-full border border-border/20"
+                              style={{ backgroundColor: field.state.value }}
+                            />
+                          </div>
+                          <input
+                            type="color"
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            className="pl-9 font-mono"
-                          />
-                          <span
-                            className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 rounded-full border border-border/20"
-                            style={{ backgroundColor: field.state.value }}
+                            className="h-9 w-9 cursor-pointer rounded border border-border bg-transparent p-0.5"
                           />
                         </div>
-                        <input
-                          type="color"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          className="h-9 w-9 cursor-pointer rounded border border-border bg-transparent p-0.5"
-                        />
                       </div>
-                    </div>
-                  )}
-                </form.Field>
-
-                {/* Form Actions */}
-                <div className="flex justify-end border-t border-border/80 pt-4">
-                  <form.Subscribe
-                    selector={(state) =>
-                      [state.values.name, state.canSubmit] as const
-                    }
-                  >
-                    {([nameVal, canSubmit]) => (
-                      <Button
-                        type="submit"
-                        disabled={
-                          !nameVal.trim() ||
-                          !canSubmit ||
-                          createLabelMutation.isPending
-                        }
-                      >
-                        <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" /> Create Label
-                      </Button>
                     )}
-                  </form.Subscribe>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                  </form.Field>
+
+                  {/* Form Actions */}
+                  <div className="flex justify-end border-t border-border/80 pt-4">
+                    <form.Subscribe
+                      selector={(state) =>
+                        [state.values.name, state.canSubmit] as const
+                      }
+                    >
+                      {([nameVal, canSubmit]) => (
+                        <Button
+                          type="submit"
+                          disabled={
+                            !nameVal.trim() ||
+                            !canSubmit ||
+                            createLabelMutation.isPending
+                          }
+                        >
+                          <HugeiconsIcon
+                            icon={PlusSignIcon}
+                            className="mr-1.5 h-4 w-4"
+                          />{" "}
+                          Create Label
+                        </Button>
+                      )}
+                    </form.Subscribe>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
           )}
         </div>
       )}

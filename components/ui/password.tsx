@@ -90,37 +90,27 @@ const PasswordInput = () => {
       <div className="mt-2 flex w-full justify-between gap-2">
         <span
           className={`${
-            calculateStrength.score >= 1
-              ? "bg-success/20"
-              : "bg-background"
+            calculateStrength.score >= 1 ? "bg-success/20" : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
         <span
           className={`${
-            calculateStrength.score >= 2
-              ? "bg-success/30"
-              : "bg-background"
+            calculateStrength.score >= 2 ? "bg-success/30" : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
         <span
           className={`${
-            calculateStrength.score >= 3
-              ? "bg-success/40"
-              : "bg-background"
+            calculateStrength.score >= 3 ? "bg-success/40" : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
         <span
           className={`${
-            calculateStrength.score >= 4
-              ? "bg-success/50"
-              : "bg-background"
+            calculateStrength.score >= 4 ? "bg-success/50" : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
         <span
           className={`${
-            calculateStrength.score >= 5
-              ? "bg-success"
-              : "bg-background"
+            calculateStrength.score >= 5 ? "bg-success" : "bg-background"
           } w-full rounded-full p-1`}
         ></span>
       </div>

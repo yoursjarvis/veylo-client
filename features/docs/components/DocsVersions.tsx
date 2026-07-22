@@ -8,13 +8,20 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Clock01Icon, RotateLeft01Icon } from "@hugeicons/core-free-icons"
 import { DocVersion, useDocs } from "../hooks/useDocs"
 
-const resolveAvatarUrl = (avatarUrl: string | null | undefined): string | undefined => {
+const resolveAvatarUrl = (
+  avatarUrl: string | null | undefined
+): string | undefined => {
   if (!avatarUrl) return undefined
-  if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://") || avatarUrl.startsWith("blob:")) {
+  if (
+    avatarUrl.startsWith("http://") ||
+    avatarUrl.startsWith("https://") ||
+    avatarUrl.startsWith("blob:")
+  ) {
     return avatarUrl
   }
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
     const origin = new URL(apiUrl).origin
     const relativePath = avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`
     return `${origin}${relativePath}`
@@ -40,18 +47,29 @@ export function DocsVersions({
   const { data: versions = [], isLoading } = useDocVersionsQuery(docId)
 
   const handleRestore = async (versionId: string) => {
-    if (confirm("Are you sure you want to restore the document to this version? This will create a new version snapshot.")) {
+    if (
+      confirm(
+        "Are you sure you want to restore the document to this version? This will create a new version snapshot."
+      )
+    ) {
       await restoreVersion({ docId, versionId })
       onSelectVersion(null)
     }
   }
 
   return (
-    <div className="flex h-full w-72 flex-col border-l border-border bg-card/40 shrink-0 select-none">
-      <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
+    <div className="flex h-full w-72 shrink-0 flex-col border-l border-border bg-card/40 select-none">
+      <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
         <div className="flex items-center gap-2">
-          <HugeiconsIcon icon={Clock01Icon} size={14} strokeWidth={2} className="text-primary" />
-          <span className="text-sm font-semibold tracking-tight text-foreground/90">Version History</span>
+          <HugeiconsIcon
+            icon={Clock01Icon}
+            size={14}
+            strokeWidth={2}
+            className="text-primary"
+          />
+          <span className="text-sm font-semibold tracking-tight text-foreground/90">
+            Version History
+          </span>
         </div>
         {selectedVersionId && (
           <Button
@@ -65,11 +83,14 @@ export function DocsVersions({
         )}
       </div>
 
-      <ScrollArea className="flex-1 min-h-0 p-3">
+      <ScrollArea className="min-h-0 flex-1 p-3">
         {isLoading ? (
           <div className="space-y-3 p-1">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 w-full animate-pulse rounded bg-muted/40" />
+              <div
+                key={i}
+                className="h-16 w-full animate-pulse rounded bg-muted/40"
+              />
             ))}
           </div>
         ) : versions.length === 0 ? (
@@ -84,10 +105,10 @@ export function DocsVersions({
                 <div
                   key={ver.id}
                   onClick={() => onSelectVersion(isSelected ? null : ver)}
-                  className={`flex flex-col gap-2 rounded-lg border p-3 cursor-pointer transition-all ${
+                  className={`flex cursor-pointer flex-col gap-2 rounded-lg border p-3 transition-all ${
                     isSelected
                       ? "border-primary bg-primary/5 shadow-sm"
-                      : "border-border/50 hover:bg-muted/80 bg-background/35"
+                      : "border-border/50 bg-background/35 hover:bg-muted/80"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -95,21 +116,25 @@ export function DocsVersions({
                       Version v{ver.version}
                     </span>
                     <span className="text-2xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(ver.createdAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(ver.createdAt), {
+                        addSuffix: true,
+                      })}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
                       <Avatar className="h-6 w-6 shrink-0">
                         {resolveAvatarUrl(ver.creator.image) && (
-                          <AvatarImage src={resolveAvatarUrl(ver.creator.image)} />
+                          <AvatarImage
+                            src={resolveAvatarUrl(ver.creator.image)}
+                          />
                         )}
                         <AvatarFallback className="text-[10px]">
                           {ver.creator.name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs font-medium truncate text-foreground/80">
+                      <span className="truncate text-xs font-medium text-foreground/80">
                         {ver.creator.name}
                       </span>
                     </div>
@@ -120,9 +145,14 @@ export function DocsVersions({
                         e.stopPropagation()
                         handleRestore(ver.id)
                       }}
-                      className="h-6 gap-1 px-2 text-[10px] rounded-md font-semibold"
+                      className="h-6 gap-1 rounded-md px-2 text-[10px] font-semibold"
                     >
-                      <HugeiconsIcon icon={RotateLeft01Icon} size={14} strokeWidth={2} /> Restore
+                      <HugeiconsIcon
+                        icon={RotateLeft01Icon}
+                        size={14}
+                        strokeWidth={2}
+                      />{" "}
+                      Restore
                     </Button>
                   </div>
                 </div>

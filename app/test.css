@@ -3,15 +3,12 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  
 }
 
 .dark {
-  
 }
 
 @theme inline {
- 
 }
 
 @layer base {

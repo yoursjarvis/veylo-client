@@ -81,7 +81,7 @@ export function ResetPasswordForm() {
         <CardTitle className="text-2xl">Reset Password</CardTitle>
         <CardDescription>Enter your new password below.</CardDescription>
       </CardHeader>
-      <form 
+      <form
         onSubmit={(e) => {
           e.preventDefault()
           e.stopPropagation()

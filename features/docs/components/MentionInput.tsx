@@ -20,9 +20,7 @@ const resolveAvatarUrl = (
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "https://api.veylo.com:4000/api/v1"
     const origin = new URL(apiUrl).origin
-    const relativePath = avatarUrl.startsWith("/")
-      ? avatarUrl
-      : `/${avatarUrl}`
+    const relativePath = avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`
     return `${origin}${relativePath}`
   } catch {
     return avatarUrl
@@ -203,7 +201,7 @@ export function MentionInput({
       )}
 
       {showDropdown && filteredMembers.length > 0 && (
-        <div className="absolute left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border border-border/80 bg-popover p-1 shadow-lg ring-1 ring-black/5 scrollbar-thin">
+        <div className="absolute right-0 left-0 z-50 mt-1 max-h-48 scrollbar-thin overflow-y-auto rounded-lg border border-border/80 bg-popover p-1 shadow-lg ring-1 ring-black/5">
           {filteredMembers.map((member, index) => (
             <button
               key={member.id}
@@ -212,7 +210,7 @@ export function MentionInput({
               onMouseEnter={() => setHighlightedIndex(index)}
               className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
                 index === highlightedIndex
-                  ? "bg-primary/10 text-primary-foreground font-medium"
+                  ? "bg-primary/10 font-medium text-primary-foreground"
                   : "text-foreground hover:bg-muted"
               }`}
             >

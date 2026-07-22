@@ -23,7 +23,12 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { axiosInstance } from "@/lib/axios"
-import { Add01Icon, Delete01Icon, LockIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import {
+  Add01Icon,
+  Delete01Icon,
+  LockIcon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Check, Copy, Eye, EyeOff, Shield } from "lucide-react"
@@ -264,7 +269,10 @@ export default function VaultSettingsPage() {
                   onClick={() => setIsAddServiceOpen(true)}
                   className="h-8 text-2xs font-bold uppercase"
                 >
-                  <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
+                  <HugeiconsIcon
+                    icon={Add01Icon}
+                    className="mr-1 h-3.5 w-3.5"
+                  />{" "}
                   Add First Service
                 </Button>
               </EmptyContent>
@@ -292,7 +300,11 @@ export default function VaultSettingsPage() {
                         setIsAddItemOpen(true)
                       }}
                     >
-                      <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-3.5 w-3.5" /> Add Secret
+                      <HugeiconsIcon
+                        icon={PlusSignIcon}
+                        className="mr-1.5 h-3.5 w-3.5"
+                      />{" "}
+                      Add Secret
                     </Button>
                   )}
                   {canDelete && (
@@ -393,11 +405,16 @@ export default function VaultSettingsPage() {
                                             "Delete this secret credential?"
                                           )
                                         ) {
-                                          deleteVaultItemMutation.mutate(item.id)
+                                          deleteVaultItemMutation.mutate(
+                                            item.id
+                                          )
                                         }
                                       }}
                                     >
-                                      <HugeiconsIcon icon={Delete01Icon} className="h-3.5 w-3.5" />
+                                      <HugeiconsIcon
+                                        icon={Delete01Icon}
+                                        className="h-3.5 w-3.5"
+                                      />
                                     </Button>
                                   )}
                                 </div>

@@ -1,77 +1,93 @@
-"use client";
+"use client"
 
-import { authClient } from "@/lib/auth-client";
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { LogoUpload } from "@/components/shared/logo-upload";
-import { useForm } from "@tanstack/react-form";
-import { usePermissions } from "@/hooks/use-permissions";
+import { authClient } from "@/lib/auth-client"
+import Image from "next/image"
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
+import { LogoUpload } from "@/components/shared/logo-upload"
+import { useForm } from "@tanstack/react-form"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function OrganizationTab() {
-  const { data: activeOrg, isPending, refetch } = authClient.useActiveOrganization();
-  const { hasPermission } = usePermissions();
-  const [loading, setLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const {
+    data: activeOrg,
+    isPending,
+    refetch,
+  } = authClient.useActiveOrganization()
+  const { hasPermission } = usePermissions()
+  const [loading, setLoading] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({})
 
   const form = useForm({
     defaultValues: {
       name: activeOrg?.name || "",
     },
     onSubmit: async ({ value }) => {
-      if (!activeOrg) return;
+      if (!activeOrg) return
 
-      setLoading(true);
-      setValidationErrors({});
+      setLoading(true)
+      setValidationErrors({})
       try {
         const { error } = await authClient.organization.update({
           organizationId: activeOrg.id,
           data: {
             name: value.name.trim(),
           },
-        });
+        })
 
         if (error) {
-          toast.error(error.message || "Failed to update organization");
-          return;
+          toast.error(error.message || "Failed to update organization")
+          return
         }
 
-        toast.success("Organization updated successfully");
-        refetch();
+        toast.success("Organization updated successfully")
+        refetch()
       } catch {
-        toast.error("An unexpected error occurred");
+        toast.error("An unexpected error occurred")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     },
-  });
+  })
 
   useEffect(() => {
     if (activeOrg) {
-      form.setFieldValue("name", activeOrg.name || "");
+      form.setFieldValue("name", activeOrg.name || "")
     }
-  }, [activeOrg, form]);
+  }, [activeOrg, form])
 
   if (isPending) {
-    return <div className="text-sm text-muted-foreground animate-pulse">Loading organization details...</div>;
+    return (
+      <div className="animate-pulse text-sm text-muted-foreground">
+        Loading organization details...
+      </div>
+    )
   }
 
   if (!activeOrg) {
-    return <div className="text-sm text-muted-foreground">No active organization found.</div>;
+    return (
+      <div className="text-sm text-muted-foreground">
+        No active organization found.
+      </div>
+    )
   }
 
   // Determine user role
-  const isOwnerOrAdmin = hasPermission("organization:update");
+  const isOwnerOrAdmin = hasPermission("organization:update")
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="animate-in space-y-8 duration-300 fade-in slide-in-from-bottom-2">
       <div>
         <h3 className="text-lg font-medium">Organization Settings</h3>
         <p className="text-sm text-muted-foreground">
-          {isOwnerOrAdmin ? "Manage your organization's details and branding." : "View your organization's details."}
+          {isOwnerOrAdmin
+            ? "Manage your organization's details and branding."
+            : "View your organization's details."}
         </p>
       </div>
 
@@ -81,27 +97,37 @@ export function OrganizationTab() {
           <div className="flex items-center gap-6">
             {isOwnerOrAdmin ? (
               <LogoUpload
-                 initialUrl={activeOrg.logo}
-                 onUploadSuccess={(url) => {
-                   authClient.organization.update({
+                initialUrl={activeOrg.logo}
+                onUploadSuccess={(url) => {
+                  authClient.organization
+                    .update({
                       organizationId: activeOrg.id,
-                      data: { logo: url }
-                   }).then(() => refetch());
-                 }}
+                      data: { logo: url },
+                    })
+                    .then(() => refetch())
+                }}
               />
             ) : (
-              <div className="h-24 w-24 rounded-lg bg-muted flex items-center justify-center border-2 border-border overflow-hidden">
+              <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border-2 border-border bg-muted">
                 {activeOrg.logo ? (
-                   <Image src={activeOrg.logo} alt="Org Logo" width={96} height={96} className="object-contain h-full w-full" />
+                  <Image
+                    src={activeOrg.logo}
+                    alt="Org Logo"
+                    width={96}
+                    height={96}
+                    className="h-full w-full object-contain"
+                  />
                 ) : (
-                  <span className="text-muted-foreground text-xs">No Logo</span>
+                  <span className="text-xs text-muted-foreground">No Logo</span>
                 )}
               </div>
             )}
             <div className="space-y-1">
               <p className="text-sm font-medium">Your Logo</p>
               <p className="text-xs text-muted-foreground">
-                {isOwnerOrAdmin ? "Click the logo to upload a new one. Recommended size: 256x256px." : "Organization branding logo."}
+                {isOwnerOrAdmin
+                  ? "Click the logo to upload a new one. Recommended size: 256x256px."
+                  : "Organization branding logo."}
               </p>
             </div>
           </div>
@@ -109,28 +135,29 @@ export function OrganizationTab() {
 
         <form
           onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
+            e.preventDefault()
+            e.stopPropagation()
+            form.handleSubmit()
           }}
-          className="space-y-4 max-w-md"
+          className="max-w-md space-y-4"
         >
           <form.Field
             name="name"
             validators={{
               onChange: ({ value }) => {
-                if (!value.trim()) return "Organization name is required";
-                return undefined;
+                if (!value.trim()) return "Organization name is required"
+                return undefined
               },
             }}
           >
             {(field) => {
-              const fieldErrors: string[] = [];
+              const fieldErrors: string[] = []
               field.state.meta.errors.forEach((err) => {
-                if (err) fieldErrors.push(String(err));
-              });
-              if (validationErrors.name) fieldErrors.push(validationErrors.name);
-              const hasError = field.state.meta.isTouched && !!fieldErrors.length;
+                if (err) fieldErrors.push(String(err))
+              })
+              if (validationErrors.name) fieldErrors.push(validationErrors.name)
+              const hasError =
+                field.state.meta.isTouched && !!fieldErrors.length
               return (
                 <div className="space-y-2">
                   <Label htmlFor="orgName">Organization Name</Label>
@@ -138,32 +165,29 @@ export function OrganizationTab() {
                     id="orgName"
                     value={field.state.value}
                     onChange={(e) => {
-                      field.handleChange(e.target.value);
-                      setValidationErrors((prev) => ({ ...prev, name: "" }));
+                      field.handleChange(e.target.value)
+                      setValidationErrors((prev) => ({ ...prev, name: "" }))
                     }}
                     placeholder="Acme Corp"
                     disabled={!isOwnerOrAdmin}
                     aria-invalid={hasError}
                   />
                   {hasError && (
-                    <p className="text-2xs text-destructive font-medium mt-1">
+                    <p className="mt-1 text-2xs font-medium text-destructive">
                       {fieldErrors.join(", ")}
                     </p>
                   )}
                 </div>
-              );
+              )
             }}
           </form.Field>
 
           <div className="space-y-2">
             <Label htmlFor="orgSlug">URL Slug</Label>
-            <Input
-              id="orgSlug"
-              value={activeOrg.slug || ""}
-              disabled
-            />
+            <Input id="orgSlug" value={activeOrg.slug || ""} disabled />
             <p className="text-xs text-muted-foreground">
-              The URL slug is used for your organization&apos;s custom domain. It cannot be changed here.
+              The URL slug is used for your organization&apos;s custom domain.
+              It cannot be changed here.
             </p>
           </div>
 
@@ -175,5 +199,5 @@ export function OrganizationTab() {
         </form>
       </div>
     </div>
-  );
+  )
 }

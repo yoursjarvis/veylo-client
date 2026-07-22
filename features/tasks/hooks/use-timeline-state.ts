@@ -45,7 +45,9 @@ export interface FlatRow {
 
 export function useTimelineState() {
   const [activeLayout, setActiveLayout] = useState<TaskGroupType>("standard")
-  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({})
+  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>(
+    {}
+  )
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
 
   const toggleExpand = useCallback((id: string) => {
@@ -127,10 +129,7 @@ export function useTimelineState() {
 
   // Helper to group tasks by a field / virtual parents
   const buildGroupedHierarchy = useCallback(
-    (
-      tasks: TimelineTask[],
-      groupType: TaskGroupType
-    ): FlatRow[] => {
+    (tasks: TimelineTask[], groupType: TaskGroupType): FlatRow[] => {
       const flatList: FlatRow[] = []
 
       // Helper to recursively add a task and its subtasks
@@ -162,7 +161,10 @@ export function useTimelineState() {
       }
 
       // Helper to build parent-child map and get root tasks for a group
-      const buildTreeForGroup = (groupTasks: TimelineTask[], baseDepth: number) => {
+      const buildTreeForGroup = (
+        groupTasks: TimelineTask[],
+        baseDepth: number
+      ) => {
         // Build a set of task IDs within this group for fast lookup
         const groupTaskIds = new Set(groupTasks.map((t) => t.id))
         const childMap = new Map<string, TimelineTask[]>()
@@ -190,7 +192,10 @@ export function useTimelineState() {
         getKey: (t: TimelineTask) => string,
         getLabel: (t: TimelineTask) => string
       ) => {
-        const groups = new Map<string, { label: string; tasks: TimelineTask[] }>()
+        const groups = new Map<
+          string,
+          { label: string; tasks: TimelineTask[] }
+        >()
         tasks.forEach((t) => {
           const key = getKey(t)
           if (!groups.has(key)) {
@@ -241,7 +246,10 @@ export function useTimelineState() {
       } else if (groupType === "priority") {
         groupByField(
           (t) => `priority-${t.priority || "medium"}`,
-          (t) => t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : "Medium"
+          (t) =>
+            t.priority
+              ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1)
+              : "Medium"
         )
       } else if (groupType === "project") {
         groupByField(

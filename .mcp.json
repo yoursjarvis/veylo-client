@@ -2,20 +2,12 @@
   "mcpServers": {
     "shadcn": {
       "command": "npx",
-      "args": [
-        "shadcn@latest",
-        "mcp",
-        "-y",
-        "next-devtools-mcp@latest"
-      ]
+      "args": ["shadcn@latest", "mcp", "-y", "next-devtools-mcp@latest"]
     },
     "codegraph": {
       "type": "stdio",
       "command": "codegraph",
-      "args": [
-        "serve",
-        "--mcp"
-      ]
+      "args": ["serve", "--mcp"]
     }
   }
 }

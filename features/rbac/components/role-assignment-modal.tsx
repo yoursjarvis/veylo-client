@@ -93,12 +93,20 @@ export function RoleAssignmentModal({
           ])
         } else {
           setRows(
-            userAssignments.map((a: { id?: string; roleId: string; scopeType: string; scopeId: string }) => ({
-              id: a.id || Math.random().toString(36),
-              roleId: a.roleId,
-              scopeType: a.scopeType as "ORGANIZATION" | "PROJECT" | "WORKSPACE",
-              scopeId: a.scopeId,
-            }))
+            userAssignments.map(
+              (a: {
+                id?: string
+                roleId: string
+                scopeType: string
+                scopeId: string
+              }) => ({
+                id: a.id || Math.random().toString(36),
+                roleId: a.roleId,
+                scopeType: a.scopeType as
+                  "ORGANIZATION" | "PROJECT" | "WORKSPACE",
+                scopeId: a.scopeId,
+              })
+            )
           )
         }
       }, 0)
@@ -177,7 +185,8 @@ export function RoleAssignmentModal({
         assignRole({
           userId,
           roleIds: scope.roleIds,
-          scopeType: scope.scopeType as "ORGANIZATION" | "PROJECT" | "WORKSPACE",
+          scopeType: scope.scopeType as
+            "ORGANIZATION" | "PROJECT" | "WORKSPACE",
           scopeId: scope.scopeId,
         })
       )
@@ -233,13 +242,19 @@ export function RoleAssignmentModal({
         <TooltipProvider>
           <div className="space-y-4 py-4">
             <div className="mb-2 flex items-center gap-3 px-1">
-              <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Role</Label>
-              <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Scope</Label>
-              <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Project/Workspace</Label>
+              <Label className="flex-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Role
+              </Label>
+              <Label className="flex-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Scope
+              </Label>
+              <Label className="flex-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Project/Workspace
+              </Label>
               <div className="w-[80px]"></div>
             </div>
 
-            <div className="border border-border/50 rounded-md overflow-hidden">
+            <div className="overflow-hidden rounded-md border border-border/50">
               {rows.map((row, index) => (
                 <AssignmentRowItem
                   key={row.id}
@@ -257,7 +272,6 @@ export function RoleAssignmentModal({
             </div>
           </div>
         </TooltipProvider>
-
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -302,28 +316,30 @@ function AssignmentRowItem({
   const [workspaceOpen, setWorkspaceOpen] = useState(false)
 
   return (
-    <div className="flex w-full animate-in items-center gap-3 py-2 border-b border-border/50 last:border-b-0 duration-200 fade-in zoom-in group">
+    <div className="group flex w-full animate-in items-center gap-3 border-b border-border/50 py-2 duration-200 fade-in zoom-in last:border-b-0">
       <div className="min-w-0 flex-1">
         <Popover open={roleOpen} onOpenChange={setRoleOpen}>
-          <PopoverTrigger render={
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={roleOpen}
-              className="w-full justify-between font-normal text-xs h-8 border-border/50 bg-background hover:bg-muted/50 transition-colors"
-            >
-              <span className="truncate">
-                {row.roleId
-                  ? roles?.find((r) => r.id === row.roleId)?.name ||
-                    "Select role..."
-                  : "Select role..."}
-              </span>
-              <HugeiconsIcon
-                icon={ArrowDown01Icon}
-                className="ml-2 h-3 w-3 shrink-0 opacity-50"
-              />
-            </Button>
-          } />
+          <PopoverTrigger
+            render={
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={roleOpen}
+                className="h-8 w-full justify-between border-border/50 bg-background text-xs font-normal transition-colors hover:bg-muted/50"
+              >
+                <span className="truncate">
+                  {row.roleId
+                    ? roles?.find((r) => r.id === row.roleId)?.name ||
+                      "Select role..."
+                    : "Select role..."}
+                </span>
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  className="ml-2 h-3 w-3 shrink-0 opacity-50"
+                />
+              </Button>
+            }
+          />
           <PopoverContent
             className="w-[--radix-popover-trigger-width] p-0"
             align="start"
@@ -341,7 +357,7 @@ function AssignmentRowItem({
                         updateRow(row.id, { roleId: role.id })
                         setRoleOpen(false)
                       }}
-                      className="text-xs py-1.5"
+                      className="py-1.5 text-xs"
                     >
                       <HugeiconsIcon
                         icon={Tick02Icon}
@@ -362,24 +378,26 @@ function AssignmentRowItem({
 
       <div className="min-w-0 flex-1">
         <Popover open={scopeOpen} onOpenChange={setScopeOpen}>
-          <PopoverTrigger render={
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={scopeOpen}
-              className="w-full justify-between font-normal text-xs h-8 border-border/50 bg-background hover:bg-muted/50 transition-colors"
-            >
-              <span className="truncate">
-                {row.scopeType === "ORGANIZATION" && "Organization Wide"}
-                {row.scopeType === "WORKSPACE" && "Specific Workspace"}
-                {row.scopeType === "PROJECT" && "Specific Project"}
-              </span>
-              <HugeiconsIcon
-                icon={ArrowDown01Icon}
-                className="ml-2 h-3 w-3 shrink-0 opacity-50"
-              />
-            </Button>
-          } />
+          <PopoverTrigger
+            render={
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={scopeOpen}
+                className="h-8 w-full justify-between border-border/50 bg-background text-xs font-normal transition-colors hover:bg-muted/50"
+              >
+                <span className="truncate">
+                  {row.scopeType === "ORGANIZATION" && "Organization Wide"}
+                  {row.scopeType === "WORKSPACE" && "Specific Workspace"}
+                  {row.scopeType === "PROJECT" && "Specific Project"}
+                </span>
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  className="ml-2 h-3 w-3 shrink-0 opacity-50"
+                />
+              </Button>
+            }
+          />
           <PopoverContent
             className="w-[--radix-popover-trigger-width] p-0"
             align="start"
@@ -399,13 +417,14 @@ function AssignmentRowItem({
                       value={item.label}
                       onSelect={() => {
                         updateRow(row.id, {
-                          scopeType: item.value as "ORGANIZATION" | "PROJECT" | "WORKSPACE",
+                          scopeType: item.value as
+                            "ORGANIZATION" | "PROJECT" | "WORKSPACE",
                           scopeId:
                             item.value === "ORGANIZATION" ? organizationId : "",
                         })
                         setScopeOpen(false)
                       }}
-                      className="text-xs py-1.5"
+                      className="py-1.5 text-xs"
                     >
                       <HugeiconsIcon
                         icon={Tick02Icon}
@@ -429,26 +448,28 @@ function AssignmentRowItem({
       <div className="min-w-0 flex-1">
         {row.scopeType === "PROJECT" && (
           <Popover open={projectOpen} onOpenChange={setProjectOpen}>
-            <PopoverTrigger render={
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={projectOpen}
-                className="w-full justify-between font-normal text-xs h-8 border-border/50 bg-background hover:bg-muted/50 transition-colors"
-              >
-                <span className="truncate">
-                  {row.scopeId && projects?.length
-                    ? projects.find((p) => p.id === row.scopeId)?.title ||
-                      projects.find((p) => p.id === row.scopeId)?.name ||
-                      "Select project..."
-                    : "Select project..."}
-                </span>
-                <HugeiconsIcon
-                  icon={ArrowDown01Icon}
-                  className="ml-2 h-3 w-3 shrink-0 opacity-50"
-                />
-              </Button>
-            } />
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={projectOpen}
+                  className="h-8 w-full justify-between border-border/50 bg-background text-xs font-normal transition-colors hover:bg-muted/50"
+                >
+                  <span className="truncate">
+                    {row.scopeId && projects?.length
+                      ? projects.find((p) => p.id === row.scopeId)?.title ||
+                        projects.find((p) => p.id === row.scopeId)?.name ||
+                        "Select project..."
+                      : "Select project..."}
+                  </span>
+                  <HugeiconsIcon
+                    icon={ArrowDown01Icon}
+                    className="ml-2 h-3 w-3 shrink-0 opacity-50"
+                  />
+                </Button>
+              }
+            />
             <PopoverContent
               className="w-[--radix-popover-trigger-width] p-0"
               align="start"
@@ -488,26 +509,28 @@ function AssignmentRowItem({
 
         {row.scopeType === "WORKSPACE" && (
           <Popover open={workspaceOpen} onOpenChange={setWorkspaceOpen}>
-            <PopoverTrigger render={
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={workspaceOpen}
-                className="w-full justify-between font-normal text-xs h-8 border-border/50 bg-background hover:bg-muted/50 transition-colors"
-              >
-                <span className="truncate">
-                  {row.scopeId && workspaces?.length
-                    ? workspaces.find((w) => w.id === row.scopeId)?.title ||
-                      workspaces.find((w) => w.id === row.scopeId)?.name ||
-                      "Select workspace..."
-                    : "Select workspace..."}
-                </span>
-                <HugeiconsIcon
-                  icon={ArrowDown01Icon}
-                  className="ml-2 h-3 w-3 shrink-0 opacity-50"
-                />
-              </Button>
-            } />
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={workspaceOpen}
+                  className="h-8 w-full justify-between border-border/50 bg-background text-xs font-normal transition-colors hover:bg-muted/50"
+                >
+                  <span className="truncate">
+                    {row.scopeId && workspaces?.length
+                      ? workspaces.find((w) => w.id === row.scopeId)?.title ||
+                        workspaces.find((w) => w.id === row.scopeId)?.name ||
+                        "Select workspace..."
+                      : "Select workspace..."}
+                  </span>
+                  <HugeiconsIcon
+                    icon={ArrowDown01Icon}
+                    className="ml-2 h-3 w-3 shrink-0 opacity-50"
+                  />
+                </Button>
+              }
+            />
             <PopoverContent
               className="w-[--radix-popover-trigger-width] p-0"
               align="start"
@@ -548,16 +571,18 @@ function AssignmentRowItem({
 
       <div className="flex w-[80px] items-center gap-2">
         <Tooltip>
-          <TooltipTrigger render={
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => removeRow(row.id)}
-              className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
-              <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" />
-            </Button>
-          } />
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => removeRow(row.id)}
+                className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              >
+                <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" />
+              </Button>
+            }
+          />
           <TooltipContent>
             <p>Remove Assignment</p>
           </TooltipContent>
@@ -565,16 +590,18 @@ function AssignmentRowItem({
 
         {isLast && (
           <Tooltip>
-            <TooltipTrigger render={
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={addRow}
-                className="shrink-0 text-primary hover:bg-primary/10 hover:text-primary"
-              >
-                <HugeiconsIcon icon={PlusSignIcon} className="h-3 w-3" />
-              </Button>
-            } />
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={addRow}
+                  className="shrink-0 text-primary hover:bg-primary/10 hover:text-primary"
+                >
+                  <HugeiconsIcon icon={PlusSignIcon} className="h-3 w-3" />
+                </Button>
+              }
+            />
             <TooltipContent>
               <p>Add Assignment</p>
             </TooltipContent>

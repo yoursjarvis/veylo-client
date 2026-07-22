@@ -78,17 +78,18 @@ export function WorkspaceMemberManagement({
   })
 
   // Fetch Organization Members for invitation
-  const { data: orgMembersData, isLoading: isLoadingOrgMembers } =
-    useQuery<{ members: OrgMember[] }>({
-      queryKey: ["org-members", searchTerm],
-      queryFn: async () => {
-        const response = await axiosInstance.get(`/org/members`, {
-          params: { search: searchTerm, limit: 50 },
-        })
-        return response.data.data
-      },
-      enabled: isInviteModalOpen,
-    })
+  const { data: orgMembersData, isLoading: isLoadingOrgMembers } = useQuery<{
+    members: OrgMember[]
+  }>({
+    queryKey: ["org-members", searchTerm],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/org/members`, {
+        params: { search: searchTerm, limit: 50 },
+      })
+      return response.data.data
+    },
+    enabled: isInviteModalOpen,
+  })
 
   const inviteMembers = useMutation({
     mutationFn: async (userIds: string[]) => {
@@ -106,7 +107,7 @@ export function WorkspaceMemberManagement({
       toast.success("Members added successfully")
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
+      const err = error as { response?: { data?: { message?: string } } }
       toast.error(err.response?.data?.message || "Failed to add members")
     },
   })
@@ -123,7 +124,7 @@ export function WorkspaceMemberManagement({
       toast.success("Member removed successfully")
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
+      const err = error as { response?: { data?: { message?: string } } }
       toast.error(err.response?.data?.message || "Failed to remove member")
     },
   })

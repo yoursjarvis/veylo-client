@@ -21,8 +21,12 @@ export function TaskDetailsDescription({
 }: TaskDetailsDescriptionProps) {
   return (
     <div className="space-y-3">
-      <label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-        <HugeiconsIcon icon={File02Icon} size={14} className="text-muted-foreground/70" />{" "}
+      <label className="flex items-center gap-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+        <HugeiconsIcon
+          icon={File02Icon}
+          size={14}
+          className="text-muted-foreground/70"
+        />{" "}
         Description
       </label>
       <div className="px-0.5">
@@ -31,7 +35,16 @@ export function TaskDetailsDescription({
           value={value}
           onChange={onChange}
           onBlur={onBlur}
-          projectMembers={projectMembers as unknown as Array<{ user: { id: string; name?: string; image?: string | null; email?: string } }>}
+          projectMembers={
+            projectMembers as unknown as Array<{
+              user: {
+                id: string
+                name?: string
+                image?: string | null
+                email?: string
+              }
+            }>
+          }
           minHeight="150px"
         />
       </div>

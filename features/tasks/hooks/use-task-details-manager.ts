@@ -19,13 +19,18 @@ interface UseTaskDetailsManagerProps {
   projectId: string
 }
 
-export function useTaskDetailsManager({ taskId, projectId }: UseTaskDetailsManagerProps) {
+export function useTaskDetailsManager({
+  taskId,
+  projectId,
+}: UseTaskDetailsManagerProps) {
   const [localTitle, setLocalTitle] = useState("")
   const [localDesc, setLocalDesc] = useState("")
   const [newComment, setNewComment] = useState("")
   const [replyContent, setReplyContent] = useState("")
   const [editingContent, setEditingContent] = useState("")
-  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null)
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(
+    null
+  )
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
 
   const updateTaskMutation = useUpdateTask(projectId, taskId)
@@ -41,12 +46,15 @@ export function useTaskDetailsManager({ taskId, projectId }: UseTaskDetailsManag
   const createDependencyMutation = useCreateTaskDependency(taskId)
   const deleteDependencyMutation = useDeleteTaskDependency(taskId)
 
-
   const handleFieldChange = (field: string, value: unknown) => {
     updateTaskMutation.mutate({ [field]: value })
   }
 
-  const handleCustomFieldChange = (fieldKey: string, value: unknown, currentCustomFields: Record<string, unknown> = {}) => {
+  const handleCustomFieldChange = (
+    fieldKey: string,
+    value: unknown,
+    currentCustomFields: Record<string, unknown> = {}
+  ) => {
     const updated = { ...currentCustomFields, [fieldKey]: value }
     handleFieldChange("customFields", updated)
   }

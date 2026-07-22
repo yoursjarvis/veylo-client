@@ -402,7 +402,7 @@ export function DocsComments({
             }}
             stacked
           >
-            <Card className="flex flex-col gap-2 p-3 border border-border/50 bg-card hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-200">
+            <Card className="flex flex-col gap-2 border border-border/50 bg-card p-3 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-md">
               {/* Header info */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
@@ -515,7 +515,9 @@ export function DocsComments({
                                   >
                                     <Avatar className="h-6 w-6">
                                       {reaction.user?.image &&
-                                        resolveAvatarUrl(reaction.user.image) && (
+                                        resolveAvatarUrl(
+                                          reaction.user.image
+                                        ) && (
                                           <AvatarImage
                                             src={resolveAvatarUrl(
                                               reaction.user.image
@@ -734,7 +736,11 @@ export function DocsComments({
                     onClick={() => handleToggleResolve(comment)}
                     className="h-6 gap-1 px-1.5 text-2xs font-semibold text-success hover:bg-success/10"
                   >
-                    <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} size={13} />
+                    <HugeiconsIcon
+                      icon={Tick02Icon}
+                      strokeWidth={2}
+                      size={13}
+                    />
                     Resolve
                   </Button>
 

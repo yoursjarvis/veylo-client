@@ -11,7 +11,11 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
-import { Delete01Icon, PlusSignIcon, WebhookIcon } from "@hugeicons/core-free-icons"
+import {
+  Delete01Icon,
+  PlusSignIcon,
+  WebhookIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Loader2 } from "lucide-react"
 import React, { useState } from "react"
@@ -71,60 +75,65 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
         {canCreate && (
           <Card className="border-border bg-card lg:col-span-1">
             <CardHeader>
-            <CardTitle className="text-sm font-bold">Add Webhook</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label
-                  htmlFor="webhook-url"
-                  className="text-xs font-semibold text-muted-foreground"
+              <CardTitle className="text-sm font-bold">Add Webhook</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1">
+                  <label
+                    htmlFor="webhook-url"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
+                    Webhook URL
+                  </label>
+                  <Input
+                    id="webhook-url"
+                    placeholder="https://hooks.slack.com/services/..."
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    className="text-sm"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label
+                    htmlFor="webhook-channel"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
+                    Channel Name (Optional)
+                  </label>
+                  <Input
+                    id="webhook-channel"
+                    placeholder="#project-updates"
+                    value={channel}
+                    onChange={(e) => setChannel(e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full text-xs font-semibold"
+                  disabled={createWebhookMutation.isPending || !url}
                 >
-                  Webhook URL
-                </label>
-                <Input
-                  id="webhook-url"
-                  placeholder="https://hooks.slack.com/services/..."
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="text-sm"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <label
-                  htmlFor="webhook-channel"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Channel Name (Optional)
-                </label>
-                <Input
-                  id="webhook-channel"
-                  placeholder="#project-updates"
-                  value={channel}
-                  onChange={(e) => setChannel(e.target.value)}
-                  className="text-sm"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full text-xs font-semibold"
-                disabled={createWebhookMutation.isPending || !url}
-              >
-                {createWebhookMutation.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <HugeiconsIcon icon={PlusSignIcon} className="mr-2 h-4 w-4" />
-                )}
-                Connect Slack Channel
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                  {createWebhookMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <HugeiconsIcon
+                      icon={PlusSignIcon}
+                      className="mr-2 h-4 w-4"
+                    />
+                  )}
+                  Connect Slack Channel
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         )}
 
         {/* Existing integrations list */}
-        <Card className={`border-border bg-card ${canCreate ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
+        <Card
+          className={`border-border bg-card ${canCreate ? "lg:col-span-2" : "lg:col-span-3"}`}
+        >
           <CardHeader>
             <CardTitle className="text-sm font-bold">
               Active Integrations
@@ -199,7 +208,10 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                           }}
                           disabled={deleteWebhookMutation.isPending}
                         >
-                          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                          <HugeiconsIcon
+                            icon={Delete01Icon}
+                            className="h-4 w-4"
+                          />
                         </Button>
                       )}
                     </div>

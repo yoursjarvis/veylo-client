@@ -79,13 +79,13 @@ export default function CalendarPage() {
   }, [tasks])
 
   const getPriorityColor = (priority: string) => {
-    const info = getPriority(priority);
-    return `${info.bgColor} ${info.color} border ${info.borderColor}`;
+    const info = getPriority(priority)
+    return `${info.bgColor} ${info.color} border ${info.borderColor}`
   }
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full space-y-6 p-6 w-full">
+      <div className="flex h-full w-full flex-col space-y-6 p-6">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
           <div className="flex gap-2">
@@ -93,7 +93,7 @@ export default function CalendarPage() {
             <Skeleton className="h-10 w-24" />
           </div>
         </div>
-        <Skeleton className="flex-1 w-full rounded-lg min-h-[500px]" />
+        <Skeleton className="min-h-[500px] w-full flex-1 rounded-lg" />
       </div>
     )
   }

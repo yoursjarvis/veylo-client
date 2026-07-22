@@ -38,7 +38,12 @@ import { addDays, format } from "date-fns"
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { useQueryState, parseAsString, parseAsJson } from "nuqs"
-import { Filters, Filter, FilterFieldConfig, FiltersContent } from "@/components/reui/filters"
+import {
+  Filters,
+  Filter,
+  FilterFieldConfig,
+  FiltersContent,
+} from "@/components/reui/filters"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,7 +58,9 @@ import { useTimelineState, TaskGroupType } from "../hooks/use-timeline-state"
 interface ProjectTimelineProps {
   workspaceId: string
   projectId?: string
-  selectedProject?: { members?: { userId: string; user?: { name: string } }[] } | null
+  selectedProject?: {
+    members?: { userId: string; user?: { name: string } }[]
+  } | null
   onSelectTask: (taskId: string) => void
 }
 
@@ -84,23 +91,35 @@ export function ProjectTimeline({
   selectedProject,
   onSelectTask,
 }: ProjectTimelineProps) {
-  const [zoom, setZoom] = useQueryState("zoom", parseAsString.withDefault("Month"))
-  const [searchQuery, setSearchQuery] = useQueryState("search", parseAsString.withDefault(""))
-  const [activeLayoutUrl, setActiveLayoutUrl] = useQueryState("layout", parseAsString.withDefault("standard"))
+  const [zoom, setZoom] = useQueryState(
+    "zoom",
+    parseAsString.withDefault("Month")
+  )
+  const [searchQuery, setSearchQuery] = useQueryState(
+    "search",
+    parseAsString.withDefault("")
+  )
+  const [activeLayoutUrl, setActiveLayoutUrl] = useQueryState(
+    "layout",
+    parseAsString.withDefault("standard")
+  )
   const [activeFilters, setActiveFilters] = useQueryState<Filter[]>(
     "filters",
     parseAsJson<Filter[]>((val) => val as Filter[]).withDefault([])
   )
   const [todayScrollCount, setTodayScrollCount] = useState(0)
 
-  const zoomTabs = useMemo(() => [
-    { id: "Day", label: "Day", icon: null },
-    { id: "Week", label: "Week", icon: null },
-    { id: "Month", label: "Month", icon: null },
-    { id: "Quarter", label: "Quarter", icon: null },
-    { id: "HalfYear", label: "Half Year", icon: null },
-    { id: "Year", label: "Year", icon: null },
-  ], [])
+  const zoomTabs = useMemo(
+    () => [
+      { id: "Day", label: "Day", icon: null },
+      { id: "Week", label: "Week", icon: null },
+      { id: "Month", label: "Month", icon: null },
+      { id: "Quarter", label: "Quarter", icon: null },
+      { id: "HalfYear", label: "Half Year", icon: null },
+      { id: "Year", label: "Year", icon: null },
+    ],
+    []
+  )
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768
@@ -140,10 +159,12 @@ export function ProjectTimeline({
         key: "assignee",
         label: "Assignee",
         type: "multiselect",
-        options: (selectedProject?.members || []).map((m: { userId: string; user?: { name: string } }) => ({
-          value: m.userId,
-          label: m.user?.name || "Unknown User",
-        })),
+        options: (selectedProject?.members || []).map(
+          (m: { userId: string; user?: { name: string } }) => ({
+            value: m.userId,
+            label: m.user?.name || "Unknown User",
+          })
+        ),
       },
       {
         key: "sprint",
@@ -277,11 +298,9 @@ export function ProjectTimeline({
       )
       const projectTitle = project?.title || ""
       const list: TimelineTask[] = []
-      ;(singleProjectTasks || []).forEach(
-        (t: Record<string, unknown>) => {
-          list.push(...flattenTask(t, projectId, projectTitle))
-        }
-      )
+      ;(singleProjectTasks || []).forEach((t: Record<string, unknown>) => {
+        list.push(...flattenTask(t, projectId, projectTitle))
+      })
       return list
     }
 
@@ -296,11 +315,9 @@ export function ProjectTimeline({
         | undefined
       if (data) {
         const { projectId: pid, projectTitle, tasks } = data
-        tasks?.forEach(
-          (t: Record<string, unknown>) => {
-            list.push(...flattenTask(t, pid, projectTitle))
-          }
-        )
+        tasks?.forEach((t: Record<string, unknown>) => {
+          list.push(...flattenTask(t, pid, projectTitle))
+        })
       }
     })
     return list
@@ -334,19 +351,23 @@ export function ProjectTimeline({
         } else if (field === "priority") {
           result = result.filter((t) => values.includes(t.priority))
         } else if (field === "assignee") {
-          result = result.filter((t) => t.assignee?.id && values.includes(t.assignee.id))
+          result = result.filter(
+            (t) => t.assignee?.id && values.includes(t.assignee.id)
+          )
         } else if (field === "sprint") {
-          result = result.filter((t) => t.sprint?.id && values.includes(t.sprint.id))
+          result = result.filter(
+            (t) => t.sprint?.id && values.includes(t.sprint.id)
+          )
         } else if (field === "milestone") {
-          result = result.filter((t) => t.milestone?.id && values.includes(t.milestone.id))
+          result = result.filter(
+            (t) => t.milestone?.id && values.includes(t.milestone.id)
+          )
         }
       })
     }
 
     return result
   }, [allProjectsTasks, searchQuery, activeFilters])
-
-
 
   const {
     activeLayout,
@@ -457,89 +478,114 @@ export function ProjectTimeline({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-          {/* Today Button */}
-          <button
-            onClick={handleToday}
-            className="h-9 cursor-pointer rounded-lg border border-border bg-background px-3 text-xs font-semibold text-muted-foreground transition-all hover:bg-muted/30 hover:text-foreground"
-          >
-            Today
-          </button>
-
-          {/* Layout Switcher */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 gap-2 border-border bg-background px-3 text-xs font-semibold text-muted-foreground transition-all hover:bg-muted/30 hover:text-foreground"
-                />
-              }
+            {/* Today Button */}
+            <button
+              onClick={handleToday}
+              className="h-9 cursor-pointer rounded-lg border border-border bg-background px-3 text-xs font-semibold text-muted-foreground transition-all hover:bg-muted/30 hover:text-foreground"
             >
-              <span>Layout: {activeLayout.charAt(0).toUpperCase() + activeLayout.slice(1)}</span>
-              <HugeiconsIcon icon={ChevronDownIcon} className="h-3.5 w-3.5 opacity-60" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-card border border-border">
-              {[
-                { value: "standard", label: "Standard Hierarchy", icon: CheckmarkSquare03Icon },
-                { value: "assignee", label: "Assignee View", icon: UserIcon },
-                { value: "sprint", label: "Sprint View", icon: CalendarIcon },
-                { value: "milestone", label: "Milestone View", icon: CalendarIcon },
-                { value: "status", label: "Status View", icon: CheckmarkSquare03Icon },
-                { value: "priority", label: "Priority View", icon: CheckmarkSquare03Icon },
-              ].map((item) => (
-                <DropdownMenuItem
-                  key={item.value}
-                  onClick={() => handleLayoutChange(item.value)}
-                  className={`flex items-center gap-2 cursor-pointer text-xs ${
-                    activeLayout === item.value
-                      ? "font-bold text-foreground bg-muted/50"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <HugeiconsIcon icon={item.icon} className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+              Today
+            </button>
 
-          {/* Zoom Switcher */}
-          <div className="overflow-x-auto whitespace-nowrap scrollbar-none max-w-full shrink-0">
-            <FluidTabs
-              tabs={zoomTabs}
-              active={zoom || "Month"}
-              onChange={(id) => setZoom(id as ZoomLevel)}
-            />
+            {/* Layout Switcher */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 gap-2 border-border bg-background px-3 text-xs font-semibold text-muted-foreground transition-all hover:bg-muted/30 hover:text-foreground"
+                  />
+                }
+              >
+                <span>
+                  Layout:{" "}
+                  {activeLayout.charAt(0).toUpperCase() + activeLayout.slice(1)}
+                </span>
+                <HugeiconsIcon
+                  icon={ChevronDownIcon}
+                  className="h-3.5 w-3.5 opacity-60"
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-48 border border-border bg-card"
+              >
+                {[
+                  {
+                    value: "standard",
+                    label: "Standard Hierarchy",
+                    icon: CheckmarkSquare03Icon,
+                  },
+                  { value: "assignee", label: "Assignee View", icon: UserIcon },
+                  { value: "sprint", label: "Sprint View", icon: CalendarIcon },
+                  {
+                    value: "milestone",
+                    label: "Milestone View",
+                    icon: CalendarIcon,
+                  },
+                  {
+                    value: "status",
+                    label: "Status View",
+                    icon: CheckmarkSquare03Icon,
+                  },
+                  {
+                    value: "priority",
+                    label: "Priority View",
+                    icon: CheckmarkSquare03Icon,
+                  },
+                ].map((item) => (
+                  <DropdownMenuItem
+                    key={item.value}
+                    onClick={() => handleLayoutChange(item.value)}
+                    className={`flex cursor-pointer items-center gap-2 text-xs ${
+                      activeLayout === item.value
+                        ? "bg-muted/50 font-bold text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <HugeiconsIcon icon={item.icon} className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Zoom Switcher */}
+            <div className="max-w-full shrink-0 scrollbar-none overflow-x-auto whitespace-nowrap">
+              <FluidTabs
+                tabs={zoomTabs}
+                active={zoom || "Month"}
+                onChange={(id) => setZoom(id as ZoomLevel)}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Filter UX Pills & Clear All */}
-      {(activeFilters || []).length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/40 bg-muted/20 px-1 py-1">
-          <span className="mr-1 pl-2 text-2xs font-bold tracking-wider text-muted-foreground uppercase">
-            Active Filters ({(activeFilters || []).length}):
-          </span>
-          <FiltersContent
-            filters={activeFilters || []}
-            fields={filterFields}
-            onChange={(newFilters) => setActiveFilters(newFilters)}
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveFilters([])}
-            className="h-7 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-          >
-            Clear all
-          </Button>
-        </div>
-      )}
+        {/* Filter UX Pills & Clear All */}
+        {(activeFilters || []).length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/40 bg-muted/20 px-1 py-1">
+            <span className="mr-1 pl-2 text-2xs font-bold tracking-wider text-muted-foreground uppercase">
+              Active Filters ({(activeFilters || []).length}):
+            </span>
+            <FiltersContent
+              filters={activeFilters || []}
+              fields={filterFields}
+              onChange={(newFilters) => setActiveFilters(newFilters)}
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveFilters([])}
+              className="h-7 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            >
+              Clear all
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Custom Virtual Gantt Board */}
-      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs h-150 pt-0">
+      <Card className="h-150 overflow-hidden rounded-xl border border-border bg-card pt-0 shadow-xs">
         <GanttChart
           tasks={filteredTasks}
           visibleRows={visibleRows}

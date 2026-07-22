@@ -82,4 +82,3 @@ export async function fetchKpiAllProjects(
   )
   return response.data.data
 }
-

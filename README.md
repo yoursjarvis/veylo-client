@@ -12,13 +12,17 @@ Modern, high-performance frontend for Veylo, built with Next.js 15, TanStack Que
 To support multi-tenancy and subdomains (e.g., `org1.veylo.local`), you need to update your hosts file.
 
 ### Linux / macOS
+
 Add the following to `/etc/hosts`:
+
 ```bash
 127.0.0.1 veylo.local
 ```
 
 ### Windows
+
 Add the following to `C:\Windows\System32\drivers\etc\hosts` (Run Notepad as Administrator):
+
 ```text
 127.0.0.1 veylo.local
 ```
@@ -44,6 +48,7 @@ NEXT_PUBLIC_APP_URL="http://veylo.local:3000"
 ## Getting Started
 
 1. **Install dependencies:**
+
    ```bash
    pnpm i
    ```
@@ -63,6 +68,7 @@ npx shadcn@latest add [component-name]
 ```
 
 Example:
+
 ```bash
 npx shadcn@latest add button
 ```
@@ -70,7 +76,7 @@ npx shadcn@latest add button
 Components are located in the `components/ui` directory. Use them as follows:
 
 ```tsx
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 ```
 
 ## Project Structure
@@ -81,4 +87,3 @@ import { Button } from "@/components/ui/button";
 - `hooks/`: Custom React hooks.
 - `lib/`: Shared utility functions and configurations (axios, auth-client, etc.).
 - `public/`: Static assets.
-

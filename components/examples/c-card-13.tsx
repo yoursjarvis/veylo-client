@@ -35,8 +35,8 @@ export function Pattern() {
         )}
       >
         {/* Usage Details */}
-        <div className="bg-muted/60 rounded-lg space-y-3 p-4">
-          <div className="text-muted-foreground flex justify-between text-xs font-medium">
+        <div className="space-y-3 rounded-lg bg-muted/60 p-4">
+          <div className="flex justify-between text-xs font-medium text-muted-foreground">
             <span>Included Credit</span>
             <span>On-Demand Charges</span>
           </div>
@@ -50,23 +50,23 @@ export function Pattern() {
         {/* Additional Usage Details */}
         <div className="flex flex-col gap-4">
           <div className="flex justify-between text-sm">
-            <span className="text-foreground font-medium">Requests</span>
+            <span className="font-medium text-foreground">Requests</span>
             <span className="text-muted-foreground">$210.84</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-foreground font-medium">Active CPU</span>
+            <span className="font-medium text-foreground">Active CPU</span>
             <span className="text-muted-foreground">$21.95</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-foreground font-medium">Events</span>
+            <span className="font-medium text-foreground">Events</span>
             <span className="text-muted-foreground">$21.20</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-foreground font-medium">Storage Usage</span>
+            <span className="font-medium text-foreground">Storage Usage</span>
             <span className="text-muted-foreground">$20.45</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-foreground font-medium">Bandwidth</span>
+            <span className="font-medium text-foreground">Bandwidth</span>
             <span className="text-muted-foreground">$0.00</span>
           </div>
         </div>
@@ -74,7 +74,7 @@ export function Pattern() {
         {/* Faded background effect for collapsed state */}
         <div
           className={cn(
-            "from-background pointer-events-none absolute inset-x-0 bottom-0 h-20 rounded-b-lg bg-linear-to-t to-transparent transition-opacity duration-300",
+            "pointer-events-none absolute inset-x-0 bottom-0 h-20 rounded-b-lg bg-linear-to-t from-background to-transparent transition-opacity duration-300",
             isOpen ? "opacity-0" : "opacity-100"
           )}
         />
@@ -85,13 +85,18 @@ export function Pattern() {
         <Button
           variant="outline"
           size="icon-sm"
-          className="bg-background hover:bg-background rounded-full shadow-sm"
+          className="rounded-full bg-background shadow-sm hover:bg-background"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} aria-hidden="true" className={cn(
-                                "transition-transform duration-300",
-                                isOpen && "rotate-180"
-                              )} />
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            strokeWidth={2}
+            aria-hidden="true"
+            className={cn(
+              "transition-transform duration-300",
+              isOpen && "rotate-180"
+            )}
+          />
           <span className="sr-only">Toggle card</span>
         </Button>
       </div>

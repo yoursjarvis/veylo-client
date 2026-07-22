@@ -66,21 +66,26 @@ export function LoginForm({ callbackUrl, error }: LoginFormProps) {
 
   const handleSocialLogin = async (provider: "google" | "github") => {
     try {
-      await authClient.signIn.social({
-        provider,
-        callbackURL: callbackUrl || `${window.location.origin}/org-setup`,
-      }, {
-        onError: (ctx) => {
-          toast.error(ctx.error.message || "Social login failed")
+      await authClient.signIn.social(
+        {
+          provider,
+          callbackURL: callbackUrl || `${window.location.origin}/org-setup`,
+        },
+        {
+          onError: (ctx) => {
+            toast.error(ctx.error.message || "Social login failed")
+          },
         }
-      })
+      )
     } catch (error: unknown) {
       const err = error as { message?: string }
       toast.error(err?.message || "Social login failed")
     }
   }
 
-  const [lastMethod] = useState<string | null>(() => authClient.getLastUsedLoginMethod())
+  const [lastMethod] = useState<string | null>(() =>
+    authClient.getLastUsedLoginMethod()
+  )
 
   return (
     <div className="w-full max-w-sm animate-in space-y-8">
@@ -101,10 +106,12 @@ export function LoginForm({ callbackUrl, error }: LoginFormProps) {
             <div className="flex flex-1 items-center justify-start">
               <HugeiconsIcon icon={GoogleIcon} />
             </div>
-            <span className="whitespace-nowrap font-medium">Continue with Google</span>
+            <span className="font-medium whitespace-nowrap">
+              Continue with Google
+            </span>
             <div className="flex flex-1 items-center justify-end overflow-hidden pl-2">
               {lastMethod === "google" && (
-                <span className="hidden whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-2xs font-medium text-secondary-foreground sm:inline-block">
+                <span className="hidden rounded-full bg-secondary px-2 py-0.5 text-2xs font-medium whitespace-nowrap text-secondary-foreground sm:inline-block">
                   Last used
                 </span>
               )}
@@ -119,10 +126,12 @@ export function LoginForm({ callbackUrl, error }: LoginFormProps) {
             <div className="flex flex-1 items-center justify-start">
               <HugeiconsIcon icon={Github} />
             </div>
-            <span className="whitespace-nowrap font-medium">Continue with GitHub</span>
+            <span className="font-medium whitespace-nowrap">
+              Continue with GitHub
+            </span>
             <div className="flex flex-1 items-center justify-end overflow-hidden pl-2">
               {lastMethod === "github" && (
-                <span className="hidden whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-2xs font-medium text-secondary-foreground sm:inline-block">
+                <span className="hidden rounded-full bg-secondary px-2 py-0.5 text-2xs font-medium whitespace-nowrap text-secondary-foreground sm:inline-block">
                   Last used
                 </span>
               )}

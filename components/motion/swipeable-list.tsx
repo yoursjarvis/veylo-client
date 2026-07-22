@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   animate,
@@ -6,80 +6,70 @@ import {
   useMotionValue,
   useReducedMotion,
   type PanInfo,
-} from "motion/react";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import { cn } from "@/lib/utils";
+} from "motion/react"
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
+import { cn } from "@/lib/utils"
 
-export type SwipeSide = "left" | "right";
+export type SwipeSide = "left" | "right"
 
 export type SwipeableListValue = {
-  id: string;
-  side: SwipeSide;
-};
+  id: string
+  side: SwipeSide
+}
 
 export type SwipeActionTone =
-  | "neutral"
-  | "primary"
-  | "success"
-  | "warning"
-  | "danger";
+  "neutral" | "primary" | "success" | "warning" | "danger"
 
 export type SwipeAction = {
-  id: string;
-  label: ReactNode;
-  icon: ReactNode;
-  tone?: SwipeActionTone;
-  disabled?: boolean;
-  onClick?: (item: SwipeableListItem) => void;
-};
+  id: string
+  label: ReactNode
+  icon: ReactNode
+  tone?: SwipeActionTone
+  disabled?: boolean
+  onClick?: (item: SwipeableListItem) => void
+}
 
 export type SwipeableListItem = {
-  id: string;
-  title?: ReactNode;
-  description?: ReactNode;
-  meta?: ReactNode;
-  leading?: ReactNode;
-  content?: ReactNode;
-  leftActions?: SwipeAction[];
-  rightActions?: SwipeAction[];
-  disabled?: boolean;
-};
+  id: string
+  title?: ReactNode
+  description?: ReactNode
+  meta?: ReactNode
+  leading?: ReactNode
+  content?: ReactNode
+  leftActions?: SwipeAction[]
+  rightActions?: SwipeAction[]
+  disabled?: boolean
+}
 
 export type SwipeableListClassNames = {
-  root?: string;
-  item?: string;
-  rail?: string;
-  action?: string;
-  surface?: string;
-  leading?: string;
-  content?: string;
-  title?: string;
-  description?: string;
-  meta?: string;
-};
+  root?: string
+  item?: string
+  rail?: string
+  action?: string
+  surface?: string
+  leading?: string
+  content?: string
+  title?: string
+  description?: string
+  meta?: string
+}
 
 export interface SwipeableListProps {
-  items: SwipeableListItem[];
-  value?: SwipeableListValue | null;
-  defaultValue?: SwipeableListValue | null;
-  onValueChange?: (value: SwipeableListValue | null) => void;
+  items: SwipeableListItem[]
+  value?: SwipeableListValue | null
+  defaultValue?: SwipeableListValue | null
+  onValueChange?: (value: SwipeableListValue | null) => void
   onAction?: (payload: {
-    item: SwipeableListItem;
-    action: SwipeAction;
-    side: SwipeSide;
-  }) => void;
-  actionWidth?: number;
-  revealThreshold?: number;
-  closeOnAction?: boolean;
-  className?: string;
-  classNames?: SwipeableListClassNames;
-  renderItem?: (item: SwipeableListItem) => ReactNode;
+    item: SwipeableListItem
+    action: SwipeAction
+    side: SwipeSide
+  }) => void
+  actionWidth?: number
+  revealThreshold?: number
+  closeOnAction?: boolean
+  className?: string
+  classNames?: SwipeableListClassNames
+  renderItem?: (item: SwipeableListItem) => ReactNode
 }
 
 // Distance-based release spring keeps short rebounds and full reveals feeling
@@ -91,13 +81,13 @@ const ROW_SETTLE = {
   mass: 0.82,
   restDelta: 0.5,
   restSpeed: 8,
-} as const;
-const OPEN_DISTANCE_RATIO = 0.46;
-const CLOSE_DISTANCE_RATIO = 0.72;
-const OPEN_VELOCITY = 720;
-const CLOSE_VELOCITY = 320;
-const FLING_DISTANCE = 14;
-const RELEASE_VELOCITY_LIMIT = 1500;
+} as const
+const OPEN_DISTANCE_RATIO = 0.46
+const CLOSE_DISTANCE_RATIO = 0.72
+const OPEN_VELOCITY = 720
+const CLOSE_VELOCITY = 320
+const FLING_DISTANCE = 14
+const RELEASE_VELOCITY_LIMIT = 1500
 
 const ACTION_TONE_CLASS: Record<SwipeActionTone, string> = {
   neutral: "text-muted-foreground group-hover:text-foreground",
@@ -105,44 +95,44 @@ const ACTION_TONE_CLASS: Record<SwipeActionTone, string> = {
   success: "text-success",
   warning: "text-warning",
   danger: "text-destructive",
-};
+}
 
 function useControllableSwipeValue({
   value,
   defaultValue,
   onValueChange,
 }: {
-  value?: SwipeableListValue | null;
-  defaultValue?: SwipeableListValue | null;
-  onValueChange?: (value: SwipeableListValue | null) => void;
+  value?: SwipeableListValue | null
+  defaultValue?: SwipeableListValue | null
+  onValueChange?: (value: SwipeableListValue | null) => void
 }) {
-  const [internalValue, setInternalValue] = useState(defaultValue ?? null);
-  const isControlled = value !== undefined;
-  const currentValue = value ?? internalValue;
+  const [internalValue, setInternalValue] = useState(defaultValue ?? null)
+  const isControlled = value !== undefined
+  const currentValue = value ?? internalValue
 
   const setValue = useCallback(
     (next: SwipeableListValue | null) => {
       if (!isControlled) {
-        setInternalValue(next);
+        setInternalValue(next)
       }
 
-      onValueChange?.(next);
+      onValueChange?.(next)
     },
-    [isControlled, onValueChange],
-  );
+    [isControlled, onValueChange]
+  )
 
-  return [currentValue, setValue] as const;
+  return [currentValue, setValue] as const
 }
 
 function isActionableSide(value: number, sideWidth: number) {
-  return sideWidth > 0 && Math.abs(value) > 0;
+  return sideWidth > 0 && Math.abs(value) > 0
 }
 
 function clampReleaseVelocity(velocity: number) {
   return Math.max(
     -RELEASE_VELOCITY_LIMIT,
-    Math.min(RELEASE_VELOCITY_LIMIT, velocity),
-  );
+    Math.min(RELEASE_VELOCITY_LIMIT, velocity)
+  )
 }
 
 function SwipeActionButton({
@@ -153,12 +143,12 @@ function SwipeActionButton({
   onAction,
   className,
 }: {
-  action: SwipeAction;
-  actionWidth: number;
-  side: SwipeSide;
-  focusable: boolean;
-  onAction: (action: SwipeAction, side: SwipeSide) => void;
-  className?: string;
+  action: SwipeAction
+  actionWidth: number
+  side: SwipeSide
+  focusable: boolean
+  onAction: (action: SwipeAction, side: SwipeSide) => void
+  className?: string
 }) {
   return (
     <button
@@ -171,21 +161,21 @@ function SwipeActionButton({
         "group flex h-full shrink-0 items-center justify-center outline-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "disabled:pointer-events-none disabled:opacity-50",
-        className,
+        className
       )}
       style={{ width: actionWidth }}
     >
       <span
         className={cn(
           "grid h-9 w-9 place-items-center rounded-full transition-[background-color,color,transform] duration-150 group-hover:bg-background group-active:scale-95",
-          ACTION_TONE_CLASS[action.tone ?? "neutral"],
+          ACTION_TONE_CLASS[action.tone ?? "neutral"]
         )}
       >
         {action.icon}
       </span>
       <span className="sr-only">{action.label}</span>
     </button>
-  );
+  )
 }
 
 function SwipeableListRow({
@@ -199,105 +189,105 @@ function SwipeableListRow({
   classNames,
   renderItem,
 }: {
-  item: SwipeableListItem;
-  actionWidth: number;
-  revealThreshold: number;
-  openValue: SwipeableListValue | null;
-  setOpenValue: (value: SwipeableListValue | null) => void;
-  closeOnAction: boolean;
-  onAction?: SwipeableListProps["onAction"];
-  classNames?: SwipeableListClassNames;
-  renderItem?: (item: SwipeableListItem) => ReactNode;
+  item: SwipeableListItem
+  actionWidth: number
+  revealThreshold: number
+  openValue: SwipeableListValue | null
+  setOpenValue: (value: SwipeableListValue | null) => void
+  closeOnAction: boolean
+  onAction?: SwipeableListProps["onAction"]
+  classNames?: SwipeableListClassNames
+  renderItem?: (item: SwipeableListItem) => ReactNode
 }) {
-  const reduce = useReducedMotion();
-  const x = useMotionValue(0);
-  const animationRef = useRef<{ stop: () => void } | null>(null);
-  const commandedTargetRef = useRef(0);
-  const leftActions = item.leftActions ?? [];
-  const rightActions = item.rightActions ?? [];
-  const leftWidth = leftActions.length * actionWidth;
-  const rightWidth = rightActions.length * actionWidth;
-  const openSide = openValue?.id === item.id ? openValue.side : null;
+  const reduce = useReducedMotion()
+  const x = useMotionValue(0)
+  const animationRef = useRef<{ stop: () => void } | null>(null)
+  const commandedTargetRef = useRef(0)
+  const leftActions = item.leftActions ?? []
+  const rightActions = item.rightActions ?? []
+  const leftWidth = leftActions.length * actionWidth
+  const rightWidth = rightActions.length * actionWidth
+  const openSide = openValue?.id === item.id ? openValue.side : null
   const targetX =
-    openSide === "left" ? leftWidth : openSide === "right" ? -rightWidth : 0;
+    openSide === "left" ? leftWidth : openSide === "right" ? -rightWidth : 0
 
   const settleX = useCallback(
     (nextX: number, velocity = 0) => {
-      commandedTargetRef.current = nextX;
-      animationRef.current?.stop();
+      commandedTargetRef.current = nextX
+      animationRef.current?.stop()
 
       if (reduce) {
-        x.set(nextX);
-        return;
+        x.set(nextX)
+        return
       }
 
       animationRef.current = animate(x, nextX, {
         ...ROW_SETTLE,
         velocity: clampReleaseVelocity(velocity),
         onComplete: () => x.set(nextX),
-      });
+      })
     },
-    [reduce, x],
-  );
+    [reduce, x]
+  )
 
   useEffect(() => {
-    return () => animationRef.current?.stop();
-  }, []);
+    return () => animationRef.current?.stop()
+  }, [])
 
   useEffect(() => {
     if (commandedTargetRef.current === targetX) {
-      return;
+      return
     }
 
-    settleX(targetX);
-  }, [settleX, targetX]);
+    settleX(targetX)
+  }, [settleX, targetX])
 
   const getTargetX = useCallback(
     (side: SwipeSide | null) =>
       side === "left" ? leftWidth : side === "right" ? -rightWidth : 0,
-    [leftWidth, rightWidth],
-  );
+    [leftWidth, rightWidth]
+  )
 
   const snapTo = useCallback(
     (side: SwipeSide | null, velocity = 0) => {
-      setOpenValue(side ? { id: item.id, side } : null);
-      settleX(getTargetX(side), velocity);
+      setOpenValue(side ? { id: item.id, side } : null)
+      settleX(getTargetX(side), velocity)
     },
-    [getTargetX, item.id, setOpenValue, settleX],
-  );
+    [getTargetX, item.id, setOpenValue, settleX]
+  )
 
   const onDragStart = useCallback(() => {
-    animationRef.current?.stop();
+    animationRef.current?.stop()
 
     if (openValue && openValue.id !== item.id) {
-      setOpenValue(null);
+      setOpenValue(null)
     }
-  }, [item.id, openValue, setOpenValue]);
+  }, [item.id, openValue, setOpenValue])
 
   const onDragEnd = useCallback(
     (_: PointerEvent, info: PanInfo) => {
-      const velocity = info.velocity.x;
-      const latest = x.get();
+      const velocity = info.velocity.x
+      const latest = x.get()
       const leftOpenThreshold = Math.max(
         revealThreshold,
-        leftWidth * OPEN_DISTANCE_RATIO,
-      );
+        leftWidth * OPEN_DISTANCE_RATIO
+      )
       const rightOpenThreshold = Math.max(
         revealThreshold,
-        rightWidth * OPEN_DISTANCE_RATIO,
-      );
+        rightWidth * OPEN_DISTANCE_RATIO
+      )
 
       if (openSide === "left") {
         if (
           latest < leftWidth * CLOSE_DISTANCE_RATIO ||
           velocity < -CLOSE_VELOCITY
         ) {
-          snapTo(null, velocity);
-          return;
+          snapTo(null, velocity)
+          return
         }
 
-        snapTo("left", velocity);
-        return;
+        snapTo("left", velocity)
+        return
       }
 
       if (openSide === "right") {
@@ -305,12 +295,12 @@ function SwipeableListRow({
           Math.abs(latest) < rightWidth * CLOSE_DISTANCE_RATIO ||
           velocity > CLOSE_VELOCITY
         ) {
-          snapTo(null, velocity);
-          return;
+          snapTo(null, velocity)
+          return
         }
 
-        snapTo("right", velocity);
-        return;
+        snapTo("right", velocity)
+        return
       }
 
       if (
@@ -318,8 +308,8 @@ function SwipeableListRow({
         (latest > leftOpenThreshold ||
           (velocity > OPEN_VELOCITY && latest > FLING_DISTANCE))
       ) {
-        snapTo("left", velocity);
-        return;
+        snapTo("left", velocity)
+        return
       }
 
       if (
@@ -327,33 +317,26 @@ function SwipeableListRow({
         (latest < -rightOpenThreshold ||
           (velocity < -OPEN_VELOCITY && latest < -FLING_DISTANCE))
       ) {
-        snapTo("right", velocity);
-        return;
+        snapTo("right", velocity)
+        return
       }
 
-      snapTo(null, velocity);
+      snapTo(null, velocity)
     },
-    [
-      leftWidth,
-      openSide,
-      revealThreshold,
-      rightWidth,
-      snapTo,
-      x,
-    ],
-  );
+    [leftWidth, openSide, revealThreshold, rightWidth, snapTo, x]
+  )
 
   const handleAction = useCallback(
     (action: SwipeAction, side: SwipeSide) => {
-      action.onClick?.(item);
-      onAction?.({ item, action, side });
+      action.onClick?.(item)
+      onAction?.({ item, action, side })
 
       if (closeOnAction) {
-        snapTo(null);
+        snapTo(null)
       }
     },
-    [closeOnAction, item, onAction, snapTo],
-  );
+    [closeOnAction, item, onAction, snapTo]
+  )
 
   const defaultContent = (
     <div className="flex min-w-0 items-center gap-3">
@@ -367,7 +350,7 @@ function SwipeableListRow({
           <div
             className={cn(
               "truncate text-sm font-medium text-foreground",
-              classNames?.title,
+              classNames?.title
             )}
           >
             {item.title}
@@ -377,7 +360,7 @@ function SwipeableListRow({
           <div
             className={cn(
               "mt-0.5 truncate text-xs text-muted-foreground",
-              classNames?.description,
+              classNames?.description
             )}
           >
             {item.description}
@@ -388,28 +371,28 @@ function SwipeableListRow({
         <div
           className={cn(
             "shrink-0 text-xs font-medium text-muted-foreground",
-            classNames?.meta,
+            classNames?.meta
           )}
         >
           {item.meta}
         </div>
       ) : null}
     </div>
-  );
+  )
 
   return (
     <div
       className={cn(
         "relative isolate overflow-hidden rounded-2xl bg-muted",
         item.disabled && "opacity-60",
-        classNames?.item,
+        classNames?.item
       )}
     >
       <div
         aria-hidden={!openSide}
         className={cn(
           "absolute inset-0 z-0 flex overflow-hidden rounded-2xl",
-          classNames?.rail,
+          classNames?.rail
         )}
       >
         <div className="flex h-full overflow-hidden rounded-l-2xl">
@@ -449,14 +432,14 @@ function SwipeableListRow({
         onDragEnd={onDragEnd}
         style={{ x }}
         className={cn(
-          "relative z-10 min-h-[72px] cursor-grab touch-pan-y select-none rounded-2xl border border-border bg-card px-4 py-3 shadow-sm active:cursor-grabbing",
-          classNames?.surface,
+          "relative z-10 min-h-[72px] cursor-grab touch-pan-y rounded-2xl border border-border bg-card px-4 py-3 shadow-sm select-none active:cursor-grabbing",
+          classNames?.surface
         )}
       >
-        {renderItem ? renderItem(item) : item.content ?? defaultContent}
+        {renderItem ? renderItem(item) : (item.content ?? defaultContent)}
       </motion.div>
     </div>
-  );
+  )
 }
 
 export function SwipeableList({
@@ -476,10 +459,12 @@ export function SwipeableList({
     value,
     defaultValue,
     onValueChange,
-  });
+  })
 
   return (
-    <div className={cn("flex w-full flex-col gap-2", className, classNames?.root)}>
+    <div
+      className={cn("flex w-full flex-col gap-2", className, classNames?.root)}
+    >
       {items.map((item) => (
         <SwipeableListRow
           key={item.id}
@@ -495,5 +480,5 @@ export function SwipeableList({
         />
       ))}
     </div>
-  );
+  )
 }

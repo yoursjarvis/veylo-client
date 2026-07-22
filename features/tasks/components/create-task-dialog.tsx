@@ -395,8 +395,13 @@ export function CreateTaskDialog({
                       value={priority}
                       onValueChange={(val) =>
                         setPriority(
-                          (val as "lowest" | "low" | "medium" | "high" | "highest" | "urgent") ||
-                            "medium"
+                          (val as
+                            | "lowest"
+                            | "low"
+                            | "medium"
+                            | "high"
+                            | "highest"
+                            | "urgent") || "medium"
                         )
                       }
                       options={priorityOptions}
@@ -444,7 +449,9 @@ export function CreateTaskDialog({
                 </h3>
 
                 {/* Due Date & Estimate */}
-                <div className={`grid grid-cols-1 gap-4 ${activeWorkspace?.kpiEnabled ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                <div
+                  className={`grid grid-cols-1 gap-4 ${activeWorkspace?.kpiEnabled ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}
+                >
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">
                       Due Date
@@ -455,7 +462,7 @@ export function CreateTaskDialog({
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left text-xs font-normal border-border bg-background h-9 text-foreground hover:bg-muted/50",
+                              "h-9 w-full justify-start border-border bg-background text-left text-xs font-normal text-foreground hover:bg-muted/50",
                               !dueDate && "text-muted-foreground"
                             )}
                           >

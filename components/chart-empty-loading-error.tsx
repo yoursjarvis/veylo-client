@@ -70,12 +70,16 @@ export function ChartStateFrame({
 
   if (state === "empty") {
     return (
-      <div className={cn("grid min-w-0 place-items-center", className)} style={style}>
+      <div
+        className={cn("grid min-w-0 place-items-center", className)}
+        style={style}
+      >
         <EmptyState
           icon={<BarChart3Icon className="size-4" />}
           title={title ?? "No chart data"}
           description={
-            description ?? "There is no data available for this reporting period."
+            description ??
+            "There is no data available for this reporting period."
           }
           action={action}
           variant="bordered"

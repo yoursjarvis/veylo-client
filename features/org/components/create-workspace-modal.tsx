@@ -22,14 +22,20 @@ import { useForm } from "@tanstack/react-form"
 export function CreateWorkspaceModal() {
   const { isCreateModalOpen, setIsCreateModalOpen } = useWorkspaceContext()
   const { createWorkspace } = useWorkspaces()
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({})
 
   const uploadIcon = async (workspaceId: string, file: File) => {
     const formData = new FormData()
     formData.append("icon", file)
-    const response = await axiosInstance.post(`/media/workspace/${workspaceId}/icon`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
+    const response = await axiosInstance.post(
+      `/media/workspace/${workspaceId}/icon`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    )
     return response.data.data.url
   }
 
@@ -57,7 +63,14 @@ export function CreateWorkspaceModal() {
         form.reset()
         toast.success("Workspace created successfully")
       } catch (error) {
-        const axiosError = error as { response?: { data?: { details?: Array<{ field: string; message: string }>; message?: string } } }
+        const axiosError = error as {
+          response?: {
+            data?: {
+              details?: Array<{ field: string; message: string }>
+              message?: string
+            }
+          }
+        }
         const errorDetails = axiosError.response?.data?.details
         if (Array.isArray(errorDetails)) {
           const errors: Record<string, string> = {}
@@ -66,7 +79,9 @@ export function CreateWorkspaceModal() {
           })
           setValidationErrors(errors)
         } else {
-          toast.error(axiosError.response?.data?.message || "Failed to create workspace")
+          toast.error(
+            axiosError.response?.data?.message || "Failed to create workspace"
+          )
         }
       }
     },
@@ -98,9 +113,13 @@ export function CreateWorkspaceModal() {
             <div className="pt-6">
               <form.Field name="icon">
                 {(field) => (
-                  <IconPicker 
-                    value={field.state.value instanceof File ? URL.createObjectURL(field.state.value) : (field.state.value ?? undefined)} 
-                    onChange={(val) => field.handleChange(val)} 
+                  <IconPicker
+                    value={
+                      field.state.value instanceof File
+                        ? URL.createObjectURL(field.state.value)
+                        : (field.state.value ?? undefined)
+                    }
+                    onChange={(val) => field.handleChange(val)}
                   />
                 )}
               </form.Field>
@@ -120,8 +139,10 @@ export function CreateWorkspaceModal() {
                   field.state.meta.errors.forEach((err) => {
                     if (err) fieldErrors.push(String(err))
                   })
-                  if (validationErrors.name) fieldErrors.push(validationErrors.name)
-                  const hasError = field.state.meta.isTouched && !!fieldErrors.length
+                  if (validationErrors.name)
+                    fieldErrors.push(validationErrors.name)
+                  const hasError =
+                    field.state.meta.isTouched && !!fieldErrors.length
                   return (
                     <div className="grid gap-2">
                       <Label htmlFor="name">Workspace Name</Label>
@@ -144,7 +165,7 @@ export function CreateWorkspaceModal() {
                         aria-invalid={hasError}
                       />
                       {hasError && (
-                        <p className="text-2xs text-destructive font-medium mt-1">
+                        <p className="mt-1 text-2xs font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}
@@ -158,7 +179,8 @@ export function CreateWorkspaceModal() {
                 validators={{
                   onChange: ({ value }) => {
                     if (!value.trim()) return "Workspace slug is required"
-                    if (!/^[a-z0-9-]+$/.test(value)) return "Slug can only contain lowercase letters, numbers, and hyphens"
+                    if (!/^[a-z0-9-]+$/.test(value))
+                      return "Slug can only contain lowercase letters, numbers, and hyphens"
                     return undefined
                   },
                 }}
@@ -168,8 +190,10 @@ export function CreateWorkspaceModal() {
                   field.state.meta.errors.forEach((err) => {
                     if (err) fieldErrors.push(String(err))
                   })
-                  if (validationErrors.slug) fieldErrors.push(validationErrors.slug)
-                  const hasError = field.state.meta.isTouched && !!fieldErrors.length
+                  if (validationErrors.slug)
+                    fieldErrors.push(validationErrors.slug)
+                  const hasError =
+                    field.state.meta.isTouched && !!fieldErrors.length
                   return (
                     <div className="grid gap-2">
                       <Label htmlFor="slug">Workspace Slug</Label>
@@ -184,7 +208,7 @@ export function CreateWorkspaceModal() {
                         aria-invalid={hasError}
                       />
                       {hasError && (
-                        <p className="text-2xs text-destructive font-medium mt-1">
+                        <p className="mt-1 text-2xs font-medium text-destructive">
                           {fieldErrors.join(", ")}
                         </p>
                       )}

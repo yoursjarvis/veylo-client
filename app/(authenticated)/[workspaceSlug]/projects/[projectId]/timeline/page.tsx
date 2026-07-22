@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import React from "react";
-import { useProject } from "../layout";
-import { ProjectTimeline } from "@/features/tasks/components/project-timeline";
+import React from "react"
+import { useProject } from "../layout"
+import { ProjectTimeline } from "@/features/tasks/components/project-timeline"
 
 export default function TimelinePage() {
-  const { handleSelectTask, projectId, selectedProject } = useProject();
+  const { handleSelectTask, projectId, selectedProject } = useProject()
 
   return (
     <ProjectTimeline
@@ -15,5 +15,5 @@ export default function TimelinePage() {
       selectedProject={selectedProject}
       onSelectTask={handleSelectTask}
     />
-  );
+  )
 }

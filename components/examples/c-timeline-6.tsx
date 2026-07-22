@@ -1,9 +1,5 @@
 import { Badge } from "@/components/reui/badge"
-import {
-  Frame,
-  FrameHeader,
-  FramePanel,
-} from "@/components/reui/frame"
+import { Frame, FrameHeader, FramePanel } from "@/components/reui/frame"
 import {
   Timeline,
   TimelineContent,
@@ -15,11 +11,7 @@ import {
 } from "@/components/reui/timeline"
 
 import { cn } from "@/lib/utils"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Collapsible,
   CollapsibleContent,
@@ -27,7 +19,11 @@ import {
 } from "@/components/ui/collapsible"
 import { Spinner } from "@/components/ui/spinner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Tick02Icon, CircleIcon, ArrowRightIcon } from "@hugeicons/core-free-icons"
+import {
+  Tick02Icon,
+  CircleIcon,
+  ArrowRightIcon,
+} from "@hugeicons/core-free-icons"
 
 const pipelineSteps = [
   {
@@ -128,8 +124,8 @@ export function Pattern() {
               </div>
               <TimelineIndicator
                 className={cn(
-                  "bg-muted text-muted-foreground group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground flex size-6 items-center justify-center border-none group-data-[orientation=vertical]/timeline:-left-7",
-                  step.status === "active" && "ring-primary/20 ring-2"
+                  "flex size-6 items-center justify-center border-none bg-muted text-muted-foreground group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground group-data-[orientation=vertical]/timeline:-left-7",
+                  step.status === "active" && "ring-2 ring-primary/20"
                 )}
               >
                 <StatusIcon status={step.status} />
@@ -150,16 +146,20 @@ export function Pattern() {
                             {step.user.name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-muted-foreground text-xs font-medium">
+                        <span className="text-xs font-medium text-muted-foreground">
                           {step.user.name}
                         </span>
                       </div>
-                      <HugeiconsIcon icon={ArrowRightIcon} strokeWidth={2} className="text-muted-foreground size-4 transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+                      <HugeiconsIcon
+                        icon={ArrowRightIcon}
+                        strokeWidth={2}
+                        className="size-4 text-muted-foreground transition-transform duration-200 group-data-open/collapsible:rotate-90"
+                      />
                     </FrameHeader>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <FramePanel>
-                      <p className="text-muted-foreground text-sm leading-relaxed">
+                      <p className="text-sm leading-relaxed text-muted-foreground">
                         {step.description}
                       </p>
                     </FramePanel>

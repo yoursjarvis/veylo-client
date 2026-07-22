@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import { mergeProps } from "@base-ui/react/merge-props";
-import type { Popover as PopoverPrimitive } from "@base-ui/react/popover";
-import { useRender } from "@base-ui/react/use-render";
-import { Check, ChevronDown } from "lucide-react";
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { VisuallyHiddenInput } from "@/components/visually-hidden-input";
-import { useAsRef } from "@/hooks/use-as-ref";
-import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect";
-import { useLazyRef } from "@/hooks/use-lazy-ref";
-import { useComposedRefs } from "@/lib/compose-refs";
+import { mergeProps } from "@base-ui/react/merge-props"
+import type { Popover as PopoverPrimitive } from "@base-ui/react/popover"
+import { useRender } from "@base-ui/react/use-render"
+import { Check, ChevronDown } from "lucide-react"
+import * as React from "react"
+import { cn } from "@/lib/utils"
+import { VisuallyHiddenInput } from "@/components/visually-hidden-input"
+import { useAsRef } from "@/hooks/use-as-ref"
+import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect"
+import { useLazyRef } from "@/hooks/use-lazy-ref"
+import { useComposedRefs } from "@/lib/compose-refs"
 import {
   Command,
   CommandEmpty,
@@ -18,17 +18,17 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/command"
+import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover"
 
-const ROOT_NAME = "PhoneInput";
-const COUNTRY_SELECT_NAME = "PhoneInputCountrySelect";
-const FIELD_NAME = "PhoneInputField";
+const ROOT_NAME = "PhoneInput"
+const COUNTRY_SELECT_NAME = "PhoneInputCountrySelect"
+const FIELD_NAME = "PhoneInputField"
 
 /**
  * @see https://github.com/mukeshsoni/country-telephone-data/blob/master/country_telephone_data.js
@@ -274,21 +274,21 @@ const COUNTRY_DATA: [string, string][] = [
   ["ye", "967"],
   ["zm", "260"],
   ["zw", "263"],
-];
+]
 
 interface Country {
-  code: string;
-  name: string;
-  dialCode: string;
-  flag?: string;
+  code: string
+  name: string
+  dialCode: string
+  flag?: string
 }
 
 function getCountryName(countryCode: string, locale = "en"): string {
   try {
-    const regionNames = new Intl.DisplayNames([locale], { type: "region" });
-    return regionNames.of(countryCode) ?? countryCode;
+    const regionNames = new Intl.DisplayNames([locale], { type: "region" })
+    return regionNames.of(countryCode) ?? countryCode
   } catch {
-    return countryCode;
+    return countryCode
   }
 }
 
@@ -296,171 +296,170 @@ function getFlagEmoji(countryCode: string): string {
   const codePoints = countryCode
     .toUpperCase()
     .split("")
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
+    .map((char) => 127397 + char.charCodeAt(0))
+  return String.fromCodePoint(...codePoints)
 }
 
 function getCountries(): Country[] {
   return COUNTRY_DATA.map(([iso2, dialCode]): Country => {
-    const code = iso2.toUpperCase();
+    const code = iso2.toUpperCase()
     return {
       code,
       name: getCountryName(code),
       dialCode: `+${dialCode}`,
       flag: getFlagEmoji(code),
-    };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+    }
+  }).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 function detectCountryFromNumber(
   value: string,
-  countries: Country[],
+  countries: Country[]
 ): Country | undefined {
-  if (!value?.startsWith("+")) return undefined;
+  if (!value?.startsWith("+")) return undefined
 
-  const digits = value.slice(1).replace(/\D/g, "");
-  if (!digits) return undefined;
+  const digits = value.slice(1).replace(/\D/g, "")
+  if (!digits) return undefined
 
   const sorted = [...countries].sort(
-    (a, b) => b.dialCode.length - a.dialCode.length,
-  );
+    (a, b) => b.dialCode.length - a.dialCode.length
+  )
 
-  const matches: Country[] = [];
+  const matches: Country[] = []
   for (const country of sorted) {
-    const dialCode = country.dialCode.slice(1);
+    const dialCode = country.dialCode.slice(1)
     if (digits.startsWith(dialCode)) {
-      matches.push(country);
+      matches.push(country)
     }
   }
 
-  if (matches.length === 0) return undefined;
+  if (matches.length === 0) return undefined
 
   if (matches.length > 1 && matches[0]?.dialCode === "+1") {
-    const usCountry = matches.find((c) => c.code === "US");
-    if (usCountry) return usCountry;
+    const usCountry = matches.find((c) => c.code === "US")
+    if (usCountry) return usCountry
   }
 
-  return matches[0];
+  return matches[0]
 }
 
 function formatPhoneNumber(value: string, countries: Country[]): string {
-  if (!value) return "";
+  if (!value) return ""
 
-  const normalized = value.startsWith("+") ? value : `+${value}`;
+  const normalized = value.startsWith("+") ? value : `+${value}`
 
-  const digits = normalized.slice(1).replace(/\D/g, "");
-  if (!digits) return "+";
+  const digits = normalized.slice(1).replace(/\D/g, "")
+  if (!digits) return "+"
 
-  const detected = detectCountryFromNumber(`+${digits}`, countries);
+  const detected = detectCountryFromNumber(`+${digits}`, countries)
   const dialCodeLength = detected
     ? detected.dialCode.slice(1).length
-    : Math.min(digits.length, 3);
+    : Math.min(digits.length, 3)
 
-  const countryCode = digits.slice(0, dialCodeLength);
-  const rest = digits.slice(dialCodeLength);
+  const countryCode = digits.slice(0, dialCodeLength)
+  const rest = digits.slice(dialCodeLength)
 
-  let formatted = `+${countryCode}`;
+  let formatted = `+${countryCode}`
 
   if (rest) {
-    formatted += " ";
+    formatted += " "
     for (let i = 0; i < rest.length; i++) {
       if (i > 0 && i % 3 === 0) {
-        formatted += " ";
+        formatted += " "
       }
-      formatted += rest[i];
+      formatted += rest[i]
     }
   }
 
-  return formatted;
+  return formatted
 }
 
-type RootElement = React.ComponentRef<typeof PhoneInput>;
+type RootElement = React.ComponentRef<typeof PhoneInput>
 
 interface StoreState {
-  value: string;
-  country: string;
-  open: boolean;
-  startsWithPlus: boolean;
+  value: string
+  country: string
+  open: boolean
+  startsWithPlus: boolean
 }
 
 interface Store {
-  subscribe: (callback: () => void) => () => void;
-  getState: () => StoreState;
-  setState: <K extends keyof StoreState>(key: K, value: StoreState[K]) => void;
-  notify: () => void;
+  subscribe: (callback: () => void) => () => void
+  getState: () => StoreState
+  setState: <K extends keyof StoreState>(key: K, value: StoreState[K]) => void
+  notify: () => void
 }
 
-const StoreContext = React.createContext<Store | null>(null);
+const StoreContext = React.createContext<Store | null>(null)
 
 function useStoreContext(consumerName: string) {
-  const context = React.useContext(StoreContext);
+  const context = React.useContext(StoreContext)
   if (!context) {
-    throw new Error(`\`${consumerName}\` must be used within \`${ROOT_NAME}\``);
+    throw new Error(`\`${consumerName}\` must be used within \`${ROOT_NAME}\``)
   }
-  return context;
+  return context
 }
 
 function useStore<T>(
   selector: (state: StoreState) => T,
-  ogStore?: Store | null,
+  ogStore?: Store | null
 ): T {
-  const contextStore = React.useContext(StoreContext);
+  const contextStore = React.useContext(StoreContext)
 
-  const store = ogStore ?? contextStore;
+  const store = ogStore ?? contextStore
 
   if (!store) {
-    throw new Error(`\`useStore\` must be used within \`${ROOT_NAME}\``);
+    throw new Error(`\`useStore\` must be used within \`${ROOT_NAME}\``)
   }
 
   const getSnapshot = React.useCallback(
     () => selector(store.getState()),
-    [store, selector],
-  );
+    [store, selector]
+  )
 
-  return React.useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
+  return React.useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot)
 }
 
 interface PhoneInputContextValue {
-  rootId: string;
-  countries: Country[];
-  placeholder: string;
-  disabled?: boolean;
-  readOnly?: boolean;
-  required?: boolean;
-  invalid?: boolean;
-  showFlag: boolean;
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  rootId: string
+  countries: Country[]
+  placeholder: string
+  disabled?: boolean
+  readOnly?: boolean
+  required?: boolean
+  invalid?: boolean
+  showFlag: boolean
+  inputRef: React.RefObject<HTMLInputElement | null>
 }
 
 const PhoneInputContext = React.createContext<PhoneInputContextValue | null>(
-  null,
-);
+  null
+)
 
 function usePhoneInputContext(consumerName: string) {
-  const context = React.useContext(PhoneInputContext);
+  const context = React.useContext(PhoneInputContext)
   if (!context) {
-    throw new Error(`\`${consumerName}\` must be used within \`${ROOT_NAME}\``);
+    throw new Error(`\`${consumerName}\` must be used within \`${ROOT_NAME}\``)
   }
-  return context;
+  return context
 }
 
 interface PhoneInputProps
-  extends React.ComponentProps<"div">,
-    useRender.ComponentProps<"div"> {
-  defaultValue?: string;
-  value?: string;
-  onValueChange?: (value: string) => void;
-  defaultCountry?: string;
-  country?: string;
-  onCountryChange?: (country: string) => void;
-  countries?: Country[];
-  name?: string;
-  placeholder?: string;
-  disabled?: boolean;
-  readOnly?: boolean;
-  required?: boolean;
-  invalid?: boolean;
-  showFlag?: boolean;
+  extends React.ComponentProps<"div">, useRender.ComponentProps<"div"> {
+  defaultValue?: string
+  value?: string
+  onValueChange?: (value: string) => void
+  defaultCountry?: string
+  country?: string
+  onCountryChange?: (country: string) => void
+  countries?: Country[]
+  name?: string
+  placeholder?: string
+  disabled?: boolean
+  readOnly?: boolean
+  required?: boolean
+  invalid?: boolean
+  showFlag?: boolean
 }
 
 function PhoneInput(props: PhoneInputProps) {
@@ -484,97 +483,95 @@ function PhoneInput(props: PhoneInputProps) {
     id,
     ref,
     ...rootProps
-  } = props;
+  } = props
 
-  const instanceId = React.useId();
-  const rootId = id ?? instanceId;
+  const instanceId = React.useId()
+  const rootId = id ?? instanceId
 
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null)
 
-  const [formTrigger, setFormTrigger] = React.useState<RootElement | null>(
-    null,
-  );
-  const composedRef = useComposedRefs(ref, (node) => setFormTrigger(node));
-  const isFormControl = formTrigger ? !!formTrigger.closest("form") : true;
+  const [formTrigger, setFormTrigger] = React.useState<RootElement | null>(null)
+  const composedRef = useComposedRefs(ref, (node) => setFormTrigger(node))
+  const isFormControl = formTrigger ? !!formTrigger.closest("form") : true
 
-  const listenersRef = useLazyRef(() => new Set<() => void>());
+  const listenersRef = useLazyRef(() => new Set<() => void>())
   const stateRef = useLazyRef<StoreState>(() => {
-    const initialValue = valueProp ?? defaultValue ?? "";
-    const initialCountry = countryProp ?? defaultCountry ?? "";
+    const initialValue = valueProp ?? defaultValue ?? ""
+    const initialCountry = countryProp ?? defaultCountry ?? ""
 
     return {
       value: initialValue,
       country: initialCountry,
       open: false,
       startsWithPlus: initialValue.startsWith("+"),
-    };
-  });
+    }
+  })
 
   const propsRef = useAsRef({
     onValueChange,
     onCountryChange,
-  });
+  })
 
   const store = React.useMemo<Store>(() => {
     return {
       subscribe: (cb) => {
-        listenersRef.current.add(cb);
-        return () => listenersRef.current.delete(cb);
+        listenersRef.current.add(cb)
+        return () => listenersRef.current.delete(cb)
       },
       getState: () => stateRef.current,
       setState: (key, value) => {
-        if (Object.is(stateRef.current[key], value)) return;
+        if (Object.is(stateRef.current[key], value)) return
 
         if (key === "value" && typeof value === "string") {
-          stateRef.current.value = value;
-          propsRef.current.onValueChange?.(value);
+          stateRef.current.value = value
+          propsRef.current.onValueChange?.(value)
         } else if (key === "country" && typeof value === "string") {
-          stateRef.current.country = value;
-          propsRef.current.onCountryChange?.(value);
+          stateRef.current.country = value
+          propsRef.current.onCountryChange?.(value)
         } else {
-          stateRef.current[key] = value;
+          stateRef.current[key] = value
         }
 
-        store.notify();
+        store.notify()
       },
       notify: () => {
         for (const cb of listenersRef.current) {
-          cb();
+          cb()
         }
       },
-    };
-  }, [listenersRef, stateRef, propsRef]);
+    }
+  }, [listenersRef, stateRef, propsRef])
 
-  const value = useStore((state) => state.value, store);
-  const country = useStore((state) => state.country, store);
+  const value = useStore((state) => state.value, store)
+  const country = useStore((state) => state.country, store)
 
   useIsomorphicLayoutEffect(() => {
     if (valueProp !== undefined) {
-      store.setState("value", valueProp);
+      store.setState("value", valueProp)
     }
-  }, [valueProp]);
+  }, [valueProp])
 
   useIsomorphicLayoutEffect(() => {
     if (countryProp !== undefined) {
-      store.setState("country", countryProp);
+      store.setState("country", countryProp)
     }
-  }, [countryProp]);
+  }, [countryProp])
 
-  const startsWithPlus = useStore((state) => state.startsWithPlus, store);
+  const startsWithPlus = useStore((state) => state.startsWithPlus, store)
 
   React.useEffect(() => {
-    if (!value) return;
+    if (!value) return
 
-    const digits = value.slice(1).replace(/\D/g, "");
-    const shouldDetect = startsWithPlus || digits.length >= 10;
+    const digits = value.slice(1).replace(/\D/g, "")
+    const shouldDetect = startsWithPlus || digits.length >= 10
 
-    if (!shouldDetect) return;
+    if (!shouldDetect) return
 
-    const detected = detectCountryFromNumber(value, countries);
+    const detected = detectCountryFromNumber(value, countries)
     if (detected && detected.code !== country) {
-      store.setState("country", detected.code);
+      store.setState("country", detected.code)
     }
-  }, [value, countries, country, store, startsWithPlus]);
+  }, [value, countries, country, store, startsWithPlus])
 
   const contextValue = React.useMemo<PhoneInputContextValue>(
     () => ({
@@ -597,8 +594,8 @@ function PhoneInput(props: PhoneInputProps) {
       readOnly,
       invalid,
       showFlag,
-    ],
-  );
+    ]
+  )
 
   const element = useRender({
     defaultTagName: "div",
@@ -608,11 +605,11 @@ function PhoneInput(props: PhoneInputProps) {
         id: rootId,
         ref: composedRef,
         className: cn(
-          "relative flex h-10 w-full items-center rounded-md border border-input bg-background transition-colors has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot=input-group-control]:focus-visible]:ring-[3px] has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50 has-[[data-slot][aria-invalid=true]]:ring-[3px] has-[[data-slot][aria-invalid=true]]:ring-destructive/20 data-disabled:cursor-not-allowed data-disabled:opacity-50 dark:bg-input/30 dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40",
-          className,
+          "relative flex h-10 w-full items-center rounded-md border border-input bg-background transition-colors has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-[3px] has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50 has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-[3px] has-[[data-slot][aria-invalid=true]]:ring-destructive/20 dark:bg-input/30 dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40 data-disabled:cursor-not-allowed data-disabled:opacity-50",
+          className
         ),
       },
-      rootProps,
+      rootProps
     ),
     render,
     state: {
@@ -621,7 +618,7 @@ function PhoneInput(props: PhoneInputProps) {
       invalid: invalid ? "" : undefined,
       readonly: readOnly ? "" : undefined,
     },
-  });
+  })
 
   return (
     <StoreContext.Provider value={store}>
@@ -640,11 +637,12 @@ function PhoneInput(props: PhoneInputProps) {
         )}
       </PhoneInputContext.Provider>
     </StoreContext.Provider>
-  );
+  )
 }
 
 interface PhoneInputCountrySelectProps
-  extends React.ComponentProps<typeof Popover>,
+  extends
+    React.ComponentProps<typeof Popover>,
     Pick<
       React.ComponentProps<typeof PopoverTrigger>,
       "disabled" | "className"
@@ -656,27 +654,27 @@ function PhoneInputCountrySelect(props: PhoneInputCountrySelectProps) {
     className,
     onOpenChange: onOpenChangeProp,
     ...popoverProps
-  } = props;
+  } = props
 
   const { countries, inputRef, disabled, showFlag } =
-    usePhoneInputContext(COUNTRY_SELECT_NAME);
-  const store = useStoreContext(COUNTRY_SELECT_NAME);
-  const country = useStore((state) => state.country);
-  const open = useStore((state) => state.open);
-  const onOpenChangeRef = useAsRef(onOpenChangeProp);
+    usePhoneInputContext(COUNTRY_SELECT_NAME)
+  const store = useStoreContext(COUNTRY_SELECT_NAME)
+  const country = useStore((state) => state.country)
+  const open = useStore((state) => state.open)
+  const onOpenChangeRef = useAsRef(onOpenChangeProp)
 
-  const isDisabled = disabledProp || disabled;
+  const isDisabled = disabledProp || disabled
 
-  const countryContext = countries.find((c) => c.code === country);
+  const countryContext = countries.find((c) => c.code === country)
 
   const onOpenChange: NonNullable<PopoverPrimitive.Root.Props["onOpenChange"]> =
     React.useCallback(
       (open, eventDetails) => {
-        store.setState("open", open);
-        onOpenChangeRef.current?.(open, eventDetails);
+        store.setState("open", open)
+        onOpenChangeRef.current?.(open, eventDetails)
       },
-      [store, onOpenChangeRef],
-    );
+      [store, onOpenChangeRef]
+    )
 
   return (
     <Popover open={open} onOpenChange={onOpenChange} {...popoverProps}>
@@ -684,8 +682,8 @@ function PhoneInputCountrySelect(props: PhoneInputCountrySelectProps) {
         data-slot="phone-input-country-select"
         disabled={isDisabled}
         className={cn(
-          "flex h-full shrink-0 items-center gap-2 rounded-l-md border-input border-r bg-transparent px-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:z-10 focus-visible:border-ring focus-visible:outline-hidden focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
-          className,
+          "flex h-full shrink-0 items-center gap-2 rounded-l-md border-r border-input bg-transparent px-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
+          className
         )}
       >
         {!countryContext ? (
@@ -711,11 +709,11 @@ function PhoneInputCountrySelect(props: PhoneInputCountrySelectProps) {
                   key={c.code}
                   value={`${c.name} ${c.dialCode} ${c.code}`}
                   onSelect={() => {
-                    store.setState("country", c.code);
-                    store.setState("open", false);
+                    store.setState("country", c.code)
+                    store.setState("open", false)
                     requestAnimationFrame(() => {
-                      inputRef.current?.focus();
-                    });
+                      inputRef.current?.focus()
+                    })
                   }}
                 >
                   {showFlag && c.flag && (
@@ -726,7 +724,7 @@ function PhoneInputCountrySelect(props: PhoneInputCountrySelectProps) {
                   <Check
                     className={cn(
                       "size-4",
-                      country === c.code ? "opacity-100" : "opacity-0",
+                      country === c.code ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>
@@ -736,7 +734,7 @@ function PhoneInputCountrySelect(props: PhoneInputCountrySelectProps) {
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 function PhoneInputField(props: React.ComponentProps<"input">) {
@@ -748,7 +746,7 @@ function PhoneInputField(props: React.ComponentProps<"input">) {
     required: requiredProp,
     ref,
     ...inputProps
-  } = props;
+  } = props
 
   const {
     inputRef,
@@ -758,39 +756,39 @@ function PhoneInputField(props: React.ComponentProps<"input">) {
     required,
     placeholder,
     countries,
-  } = usePhoneInputContext(FIELD_NAME);
-  const store = useStoreContext(FIELD_NAME);
-  const value = useStore((state) => state.value);
+  } = usePhoneInputContext(FIELD_NAME)
+  const store = useStoreContext(FIELD_NAME)
+  const value = useStore((state) => state.value)
 
-  const composedRef = useComposedRefs(ref, inputRef);
+  const composedRef = useComposedRefs(ref, inputRef)
 
-  const onChangeRef = useAsRef(onChangeProp);
+  const onChangeRef = useAsRef(onChangeProp)
 
-  const isDisabled = disabledProp || disabled;
-  const isReadOnly = readOnlyProp || readOnly;
-  const isRequired = requiredProp || required;
+  const isDisabled = disabledProp || disabled
+  const isReadOnly = readOnlyProp || readOnly
+  const isRequired = requiredProp || required
 
   const onChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (isDisabled || isReadOnly) return;
+      if (isDisabled || isReadOnly) return
 
-      onChangeRef.current?.(event);
-      if (event.defaultPrevented) return;
+      onChangeRef.current?.(event)
+      if (event.defaultPrevented) return
 
-      const inputValue = event.target.value;
+      const inputValue = event.target.value
 
-      const startsWithPlus = inputValue.startsWith("+");
-      const digits = inputValue.replace(/\D/g, "");
-      const newValue = digits ? `+${digits}` : startsWithPlus ? "+" : "";
-      store.setState("startsWithPlus", startsWithPlus);
-      store.setState("value", newValue);
+      const startsWithPlus = inputValue.startsWith("+")
+      const digits = inputValue.replace(/\D/g, "")
+      const newValue = digits ? `+${digits}` : startsWithPlus ? "+" : ""
+      store.setState("startsWithPlus", startsWithPlus)
+      store.setState("value", newValue)
     },
-    [store, onChangeRef, isDisabled, isReadOnly],
-  );
+    [store, onChangeRef, isDisabled, isReadOnly]
+  )
 
   const displayValue = React.useMemo(() => {
-    return formatPhoneNumber(value, countries);
-  }, [value, countries]);
+    return formatPhoneNumber(value, countries)
+  }, [value, countries])
 
   return (
     <Input
@@ -805,14 +803,14 @@ function PhoneInputField(props: React.ComponentProps<"input">) {
       {...inputProps}
       ref={composedRef}
       className={cn(
-        "h-full flex-1 rounded-r-md rounded-l-none border-0 bg-transparent shadow-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:bg-transparent aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:bg-transparent dark:aria-invalid:ring-destructive/40 dark:disabled:bg-transparent",
-        className,
+        "h-full flex-1 rounded-l-none rounded-r-md border-0 bg-transparent shadow-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:bg-transparent aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:bg-transparent dark:disabled:bg-transparent dark:aria-invalid:ring-destructive/40",
+        className
       )}
       placeholder={placeholder}
       value={displayValue}
       onChange={onChange}
     />
-  );
+  )
 }
 
 export {
@@ -821,4 +819,4 @@ export {
   PhoneInputField,
   type PhoneInputProps,
   useStore as usePhoneInput,
-};
+}

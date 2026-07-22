@@ -6,11 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 
 export type NoticeAlertTone =
-  | "primary"
-  | "info"
-  | "success"
-  | "warning"
-  | "destructive"
+  "primary" | "info" | "success" | "warning" | "destructive"
 
 export function NoticeAlert({
   title,
@@ -23,7 +19,8 @@ export function NoticeAlert({
   tone?: NoticeAlertTone
   className?: string
 }) {
-  const isInfo = tone !== "success" && tone !== "warning" && tone !== "destructive"
+  const isInfo =
+    tone !== "success" && tone !== "warning" && tone !== "destructive"
   const Icon =
     tone === "success"
       ? CheckCircle2
@@ -37,19 +34,19 @@ export function NoticeAlert({
       className={cn(
         "items-start gap-3 rounded-md border bg-background py-2.5 pb-2 shadow-none",
         tone === "primary" && "border-primary/25 bg-primary/10 text-primary",
-        tone === "success" &&
-          "border-success/25 bg-success/10 text-success",
-        tone === "warning" &&
-          "border-warning/25 bg-warning/10 text-warning",
-        tone === "info" &&
-          "border-info/25 bg-info/10 text-info",
+        tone === "success" && "border-success/25 bg-success/10 text-success",
+        tone === "warning" && "border-warning/25 bg-warning/10 text-warning",
+        tone === "info" && "border-info/25 bg-info/10 text-info",
         tone === "destructive" &&
           "border-destructive/35 bg-destructive/10 text-destructive dark:bg-destructive/15",
         className
       )}
     >
       {isInfo ? (
-        <HugeiconsIcon icon={InformationCircleIcon} className="size-4 shrink-0" />
+        <HugeiconsIcon
+          icon={InformationCircleIcon}
+          className="size-4 shrink-0"
+        />
       ) : (
         <Icon className="size-4 shrink-0" />
       )}

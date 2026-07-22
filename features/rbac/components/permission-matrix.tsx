@@ -1,58 +1,67 @@
-"use client";
+"use client"
 
-import { Permission } from "../services/rbac.service";
-import { useMemo } from "react";
-import { cn } from "@/lib/utils";
+import { Permission } from "../services/rbac.service"
+import { useMemo } from "react"
+import { cn } from "@/lib/utils"
 
 interface PermissionMatrixProps {
-  permissions: Permission[];
-  selectedPermissionIds: string[];
-  onChange: (permissionIds: string[]) => void;
-  disabled?: boolean;
+  permissions: Permission[]
+  selectedPermissionIds: string[]
+  onChange: (permissionIds: string[]) => void
+  disabled?: boolean
 }
 
-export function PermissionMatrix({ permissions, selectedPermissionIds, onChange, disabled = false }: PermissionMatrixProps) {
+export function PermissionMatrix({
+  permissions,
+  selectedPermissionIds,
+  onChange,
+  disabled = false,
+}: PermissionMatrixProps) {
   const groupedPermissions = useMemo(() => {
-    const grouped: Record<string, Record<string, Permission[]>> = {};
+    const grouped: Record<string, Record<string, Permission[]>> = {}
 
-    permissions.forEach(p => {
-      if (!p.module || !p.resource) return;
+    permissions.forEach((p) => {
+      if (!p.module || !p.resource) return
       if (!grouped[p.module]) {
-        grouped[p.module] = {};
+        grouped[p.module] = {}
       }
       if (!grouped[p.module][p.resource]) {
-        grouped[p.module][p.resource] = [];
+        grouped[p.module][p.resource] = []
       }
-      grouped[p.module][p.resource].push(p);
-    });
+      grouped[p.module][p.resource].push(p)
+    })
 
-    return grouped;
-  }, [permissions]);
+    return grouped
+  }, [permissions])
 
   const togglePermission = (id: string, checked: boolean) => {
     if (checked) {
-      onChange([...selectedPermissionIds, id]);
+      onChange([...selectedPermissionIds, id])
     } else {
-      onChange(selectedPermissionIds.filter(pid => pid !== id));
+      onChange(selectedPermissionIds.filter((pid) => pid !== id))
     }
-  };
+  }
 
   if (permissions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 text-center border rounded-lg border-dashed">
-        <p className="text-sm text-muted-foreground">No permissions available to assign.</p>
+      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed px-4 py-12 text-center">
+        <p className="text-sm text-muted-foreground">
+          No permissions available to assign.
+        </p>
       </div>
-    );
+    )
   }
 
-  const modules = Object.keys(groupedPermissions);
+  const modules = Object.keys(groupedPermissions)
 
   if (modules.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 text-center border rounded-lg border-dashed">
-        <p className="text-sm text-muted-foreground">No categorized permissions found.</p>
+      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed px-4 py-12 text-center">
+        <p className="text-sm text-muted-foreground">
+          No categorized permissions found.
+        </p>
       </div>
-    );
+    )
   }
 
   return (
@@ -68,7 +77,7 @@ export function PermissionMatrix({ permissions, selectedPermissionIds, onChange,
         />
       ))}
     </div>
-  );
+  )
 }
 
 function ModuleRow({
@@ -85,74 +94,89 @@ function ModuleRow({
   disabled: boolean
 }) {
   const allActions = useMemo(() => {
-    const actions = new Set<string>();
-    Object.values(resources).forEach(resPerms => {
-      resPerms.forEach(p => actions.add(p.action));
-    });
-    return Array.from(actions).sort();
-  }, [resources]);
+    const actions = new Set<string>()
+    Object.values(resources).forEach((resPerms) => {
+      resPerms.forEach((p) => actions.add(p.action))
+    })
+    return Array.from(actions).sort()
+  }, [resources])
 
   return (
     <div className="space-y-3">
-      <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold px-1">
+      <div className="px-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
         {moduleName.replace(/_/g, " ")}
       </div>
 
-      <div className="overflow-hidden border border-border/50 rounded-md bg-background/50">
-        <div className="grid grid-cols-1" style={{ gridTemplateColumns: `minmax(200px, 1fr) repeat(${allActions.length}, minmax(100px, 1fr))` }}>
+      <div className="overflow-hidden rounded-md border border-border/50 bg-background/50">
+        <div
+          className="grid grid-cols-1"
+          style={{
+            gridTemplateColumns: `minmax(200px, 1fr) repeat(${allActions.length}, minmax(100px, 1fr))`,
+          }}
+        >
           {/* Header */}
-          <div className="flex items-center px-3 py-2 border-b border-border/50 bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+          <div className="flex items-center border-b border-border/50 bg-muted/30 px-3 py-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
             Resource
           </div>
-          {allActions.map(action => (
-            <div key={action} className="flex items-center justify-center px-3 py-2 border-b border-border/50 border-l border-border/50 bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground font-semibold text-center">
+          {allActions.map((action) => (
+            <div
+              key={action}
+              className="flex items-center justify-center border-b border-l border-border/50 bg-muted/30 px-3 py-2 text-center text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+            >
               {action.replace(/_/g, " ")}
             </div>
           ))}
 
           {/* Rows */}
-          {Object.entries(resources).map(([resourceName, resourcePermissions]) => (
-            <div key={resourceName} className="contents">
-              <div className="flex items-center px-3 py-2 border-b border-border/50 text-xs uppercase tracking-wider text-muted-foreground font-semibold bg-background">
-                {resourceName.replace(/_/g, " ")}
-              </div>
-              {allActions.map(action => {
-                const permission = resourcePermissions.find(p => p.action === action);
-                const isSelected = permission && selectedPermissionIds.includes(permission.id);
+          {Object.entries(resources).map(
+            ([resourceName, resourcePermissions]) => (
+              <div key={resourceName} className="contents">
+                <div className="flex items-center border-b border-border/50 bg-background px-3 py-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                  {resourceName.replace(/_/g, " ")}
+                </div>
+                {allActions.map((action) => {
+                  const permission = resourcePermissions.find(
+                    (p) => p.action === action
+                  )
+                  const isSelected =
+                    permission && selectedPermissionIds.includes(permission.id)
 
-                return (
-                  <div
-                    key={action}
-                    className="flex items-center justify-center px-3 py-2 border-b border-border/50 border-l border-border/50 bg-background transition-colors hover:bg-muted/20 group"
-                  >
-                    {permission ? (
-                      <button
-                        onClick={() => togglePermission(permission.id, !isSelected)}
-                        disabled={disabled}
-                        className="relative flex items-center justify-center w-4 h-4 transition-all"
-                      >
-                        <div
-                          className={cn(
-                            "w-1.5 h-1.5 rounded-full transition-all",
-                            isSelected
-                              ? "bg-primary scale-100 shadow-primary/60"
-                              : "bg-muted-foreground/30 scale-75"
+                  return (
+                    <div
+                      key={action}
+                      className="group flex items-center justify-center border-b border-l border-border/50 bg-background px-3 py-2 transition-colors hover:bg-muted/20"
+                    >
+                      {permission ? (
+                        <button
+                          onClick={() =>
+                            togglePermission(permission.id, !isSelected)
+                          }
+                          disabled={disabled}
+                          className="relative flex h-4 w-4 items-center justify-center transition-all"
+                        >
+                          <div
+                            className={cn(
+                              "h-1.5 w-1.5 rounded-full transition-all",
+                              isSelected
+                                ? "scale-100 bg-primary shadow-primary/60"
+                                : "scale-75 bg-muted-foreground/30"
+                            )}
+                          />
+                          {isSelected && (
+                            <div className="absolute inset-0 animate-pulse rounded-full border border-primary/30" />
                           )}
-                        />
-                        {isSelected && (
-                          <div className="absolute inset-0 rounded-full border border-primary/30 animate-pulse" />
-                        )}
-                      </button>
-                    ) : (
-                      <div className="w-1.5 h-1.5 rounded-full bg-muted/20" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+                        </button>
+                      ) : (
+                        <div className="h-1.5 w-1.5 rounded-full bg-muted/20" />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   CardContent,
@@ -38,7 +38,11 @@ export function BillingHealth() {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button render={<Link href="/#" />} variant="ghost" nativeButton={false}>
+            <Button
+              render={<Link href="/#" />}
+              variant="ghost"
+              nativeButton={false}
+            >
               Review open invoices
               <ArrowRightIcon aria-hidden="true" />
             </Button>

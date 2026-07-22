@@ -1,8 +1,5 @@
 export type AutomationTriggerType =
-  | "TASK_CREATED"
-  | "STATUS_UPDATED"
-  | "FIELD_UPDATED"
-  | "ASSIGNEE_CHANGED"
+  "TASK_CREATED" | "STATUS_UPDATED" | "FIELD_UPDATED" | "ASSIGNEE_CHANGED"
 
 export interface AutomationTrigger {
   id: string
@@ -11,10 +8,7 @@ export interface AutomationTrigger {
 }
 
 export type AutomationActionType =
-  | "ASSIGN_USER"
-  | "ADD_COMMENT"
-  | "CHANGE_STATUS"
-  | "SEND_EMAIL"
+  "ASSIGN_USER" | "ADD_COMMENT" | "CHANGE_STATUS" | "SEND_EMAIL"
 
 export interface AutomationAction {
   id: string
@@ -23,11 +17,7 @@ export interface AutomationAction {
 }
 
 export type AutomationConditionOperator =
-  | "EQUALS"
-  | "NOT_EQUALS"
-  | "CONTAINS"
-  | "IS_EMPTY"
-  | "IS_NOT_EMPTY"
+  "EQUALS" | "NOT_EQUALS" | "CONTAINS" | "IS_EMPTY" | "IS_NOT_EMPTY"
 
 export interface AutomationCondition {
   id: string

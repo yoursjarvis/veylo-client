@@ -56,7 +56,10 @@ interface ProgressUploadProps {
   onFilesChange?: (files: FileWithPreview[]) => void
   simulateUpload?: boolean
   initialFiles?: FileMetadata[]
-  onUpload?: (file: File, onProgress: (progress: number) => void) => Promise<unknown>
+  onUpload?: (
+    file: File,
+    onProgress: (progress: number) => void
+  ) => Promise<unknown>
 }
 
 export function Pattern({
@@ -155,7 +158,9 @@ export function Pattern({
               )
               // Automatically clear completed items from queue after a short delay
               setTimeout(() => {
-                setUploadFiles((prev) => prev.filter((item) => item.id !== fileItem.id))
+                setUploadFiles((prev) =>
+                  prev.filter((item) => item.id !== fileItem.id)
+                )
                 removeFile(fileItem.id)
               }, 1500)
             })
@@ -166,7 +171,8 @@ export function Pattern({
                     ? {
                         ...item,
                         status: "error" as const,
-                        error: err?.message || "Upload failed. Please try again.",
+                        error:
+                          err?.message || "Upload failed. Please try again.",
                       }
                     : item
                 )
@@ -309,7 +315,7 @@ export function Pattern({
       {/* Upload Area */}
       <div
         className={cn(
-          "rounded-lg relative border border-dashed p-8 text-center transition-colors",
+          "relative rounded-lg border border-dashed p-8 text-center transition-colors",
           isDragging
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/25 hover:border-muted-foreground/50"
@@ -339,10 +345,10 @@ export function Pattern({
 
           <div className="space-y-2">
             <h3 className="text-lg font-semibold">Upload your files</h3>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Drag and drop files here or click to browse
             </p>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               Support for multiple file types up to {formatBytes(maxSize)} each
             </p>
           </div>
@@ -390,7 +396,7 @@ export function Pattern({
           {uploadFiles.map((fileItem: FileUploadItem) => (
             <div
               key={fileItem.id}
-              className="border-border bg-card rounded-lg border p-2.5"
+              className="rounded-lg border border-border bg-card p-2.5"
             >
               <div className="flex items-start gap-2.5">
                 {/* File Icon */}
@@ -402,11 +408,11 @@ export function Pattern({
                       alt={fileItem.file.name}
                       width={48}
                       height={48}
-                      className="rounded-lg h-12 w-12 border object-cover"
+                      className="h-12 w-12 rounded-lg border object-cover"
                       unoptimized
                     />
                   ) : (
-                    <div className="border-border text-muted-foreground rounded-lg flex h-12 w-12 items-center justify-center border">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border text-muted-foreground">
                       {getFileIcon(fileItem.file)}
                     </div>
                   )}
@@ -417,7 +423,7 @@ export function Pattern({
                   <div className="mt-0.75 flex items-center justify-between">
                     <p className="inline-flex flex-col justify-center gap-1 truncate font-medium">
                       <span className="text-sm">{fileItem.file.name}</span>
-                      <span className="text-muted-foreground text-xs">
+                      <span className="text-xs text-muted-foreground">
                         {formatBytes(fileItem.file.size)}
                       </span>
                     </p>
@@ -431,7 +437,7 @@ export function Pattern({
                           }}
                           variant="ghost"
                           size="icon"
-                          className="text-muted-foreground size-6 hover:bg-transparent hover:opacity-100"
+                          className="size-6 text-muted-foreground hover:bg-transparent hover:opacity-100"
                         >
                           <HugeiconsIcon icon={EyeIcon} className="size-4" />
                         </Button>
@@ -441,7 +447,7 @@ export function Pattern({
                         onClick={() => removeUploadFile(fileItem.id)}
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground size-6 hover:bg-transparent hover:opacity-100"
+                        className="size-6 text-muted-foreground hover:bg-transparent hover:opacity-100"
                       >
                         <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
                       </Button>
@@ -458,7 +464,10 @@ export function Pattern({
                   {/* Error Message */}
                   {fileItem.status === "error" && fileItem.error && (
                     <Alert variant="destructive" className="mt-2 px-2 py-1">
-                      <HugeiconsIcon icon={AlertCircleIcon} className="size-4" />
+                      <HugeiconsIcon
+                        icon={AlertCircleIcon}
+                        className="size-4"
+                      />
                       <AlertTitle className="text-xs">
                         {fileItem.error}
                       </AlertTitle>
@@ -467,9 +476,12 @@ export function Pattern({
                           onClick={() => retryUpload(fileItem.id)}
                           variant="ghost"
                           size="icon"
-                          className="text-muted-foreground size-6 hover:bg-transparent hover:opacity-100"
+                          className="size-6 text-muted-foreground hover:bg-transparent hover:opacity-100"
                         >
-                          <HugeiconsIcon icon={Refresh03Icon} className="size-3.5" />
+                          <HugeiconsIcon
+                            icon={Refresh03Icon}
+                            className="size-3.5"
+                          />
                         </Button>
                       </AlertAction>
                     </Alert>
@@ -505,7 +517,7 @@ export function Pattern({
           <DialogHeader className="sr-only">
             <DialogTitle>Image Preview</DialogTitle>
           </DialogHeader>
-          <div className="relative flex items-center justify-center min-h-[300px]">
+          <div className="relative flex min-h-[300px] items-center justify-center">
             {selectedImage && (
               <>
                 {isPreviewLoading && (

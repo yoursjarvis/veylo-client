@@ -424,7 +424,10 @@ export function OkrsDashboard() {
                                 }}
                                 className="gap-2"
                               >
-                                <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
+                                <HugeiconsIcon
+                                  icon={Edit02Icon}
+                                  className="h-4 w-4"
+                                />
                                 Edit
                               </DropdownMenuItem>
                             )}
@@ -435,7 +438,10 @@ export function OkrsDashboard() {
                                 }}
                                 className="gap-2"
                               >
-                                <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                                <HugeiconsIcon
+                                  icon={Delete01Icon}
+                                  className="h-4 w-4"
+                                />
                                 Delete
                               </DropdownMenuItem>
                             )}
@@ -464,7 +470,10 @@ export function OkrsDashboard() {
                                 className="gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20"
                                 variant="destructive"
                               >
-                                <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4 text-destructive" />
+                                <HugeiconsIcon
+                                  icon={Delete01Icon}
+                                  className="h-4 w-4 text-destructive"
+                                />
                                 Force Delete
                               </DropdownMenuItem>
                             )}

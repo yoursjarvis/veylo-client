@@ -40,7 +40,12 @@ import {
   useUpdateEpic,
 } from "@/features/tasks/hooks/use-tasks"
 import { cn } from "@/lib/utils"
-import { Delete01Icon, Edit02Icon, PlusSignIcon, Target03Icon } from "@hugeicons/core-free-icons"
+import {
+  Delete01Icon,
+  Edit02Icon,
+  PlusSignIcon,
+  Target03Icon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useForm } from "@tanstack/react-form"
 import { format, isBefore, startOfDay } from "date-fns"
@@ -226,12 +231,14 @@ export default function EpicsPage() {
             goals.
           </p>
         </div>
-        {canCreate && (!epics ||
-          (epics.length !== 0 && (
-            <Button onClick={handleOpenCreate}>
-              <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" /> Add Epic
-            </Button>
-          )))}
+        {canCreate &&
+          (!epics ||
+            (epics.length !== 0 && (
+              <Button onClick={handleOpenCreate}>
+                <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-4 w-4" />{" "}
+                Add Epic
+              </Button>
+            )))}
       </div>
 
       {!epics || epics.length === 0 ? (
@@ -331,7 +338,10 @@ export default function EpicsPage() {
                           className="t h-7 w-7"
                           onClick={() => handleOpenEdit(epic)}
                         >
-                          <HugeiconsIcon icon={Edit02Icon} className="h-3.5 w-3.5" />
+                          <HugeiconsIcon
+                            icon={Edit02Icon}
+                            className="h-3.5 w-3.5"
+                          />
                         </Button>
                       )}
                       {canDelete && (
@@ -341,7 +351,10 @@ export default function EpicsPage() {
                           className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => handleDelete(epic.id, epic.title)}
                         >
-                          <HugeiconsIcon icon={Delete01Icon} className="h-3.5 w-3.5" />
+                          <HugeiconsIcon
+                            icon={Delete01Icon}
+                            className="h-3.5 w-3.5"
+                          />
                         </Button>
                       )}
                     </div>

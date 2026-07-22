@@ -75,7 +75,12 @@ export function InviteMemberModal({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Email Address</Label>
+            <Label
+              htmlFor="email"
+              className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+            >
+              Email Address
+            </Label>
             <Input
               id="email"
               type="email"
@@ -85,7 +90,12 @@ export function InviteMemberModal({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="role" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Role</Label>
+            <Label
+              htmlFor="role"
+              className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+            >
+              Role
+            </Label>
             <Combobox
               items={ROLES}
               value={role}

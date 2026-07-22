@@ -8,7 +8,11 @@ const getBaseURL = () => {
     return window.location.origin
   }
 
-  return process.env.API_BACKEND_URL ?? process.env.NEXT_PUBLIC_BETTER_AUTH_URL ?? "http://localhost:4000"
+  return (
+    process.env.API_BACKEND_URL ??
+    process.env.NEXT_PUBLIC_BETTER_AUTH_URL ??
+    "http://localhost:4000"
+  )
 }
 
 export const authClient = createAuthClient({

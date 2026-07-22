@@ -3,16 +3,34 @@
 import React, { useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
-import { useTaskDetails, useProjectCustomFields, useProjectStatuses, useProjectSprints, useProjectEpics, useProjectMilestones, useProjectLabels } from "@/features/tasks/hooks/use-tasks"
+import {
+  useTaskDetails,
+  useProjectCustomFields,
+  useProjectStatuses,
+  useProjectSprints,
+  useProjectEpics,
+  useProjectMilestones,
+  useProjectLabels,
+} from "@/features/tasks/hooks/use-tasks"
 import { axiosInstance } from "@/lib/axios"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowLeftIcon, CircleCheckIcon, CopyIcon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"
+import {
+  ArrowLeftIcon,
+  CircleCheckIcon,
+  CopyIcon,
+  MoreHorizontalIcon,
+} from "@hugeicons/core-free-icons"
 import { Project, ProjectMember, TaskStatus, User } from "@/types/models"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { TaskDetailsHeader } from "@/features/tasks/components/task-details/task-details-header"
 import { TaskDetailsMainContent } from "@/features/tasks/components/task-details/task-details-main-content"
 import { TaskDetailsSidebar } from "@/features/tasks/components/task-details/task-details-sidebar"
@@ -28,7 +46,9 @@ export default function TaskDetailPage() {
   const { data: task, isLoading: isTaskLoading } = useTaskDetails(taskId)
   const projectId = task?.projectId
 
-  const { data: selectedProject } = useQuery<Project & { members?: ProjectMember[]; template?: string }>({
+  const { data: selectedProject } = useQuery<
+    Project & { members?: ProjectMember[]; template?: string }
+  >({
     queryKey: ["project", projectId],
     queryFn: async () => {
       const response = await axiosInstance.get(`/projects/${projectId}`)
@@ -37,7 +57,9 @@ export default function TaskDetailPage() {
     enabled: !!projectId,
   })
 
-  const { data: customFieldDefinitions } = useProjectCustomFields(projectId || "")
+  const { data: customFieldDefinitions } = useProjectCustomFields(
+    projectId || ""
+  )
   const { data: projectStatuses = [] } = useProjectStatuses(projectId || "")
   const { data: projectSprints = [] } = useProjectSprints(projectId || "")
   const { data: projectEpics = [] } = useProjectEpics(projectId || "")
@@ -60,7 +82,7 @@ export default function TaskDetailPage() {
 
   const isCompleted = task?.statusId === completedStatus?.id
 
-  const { setLocalTitle, setLocalDesc } = manager.state;
+  const { setLocalTitle, setLocalDesc } = manager.state
 
   useEffect(() => {
     if (task) {
@@ -84,9 +106,16 @@ export default function TaskDetailPage() {
   const canDeleteAttachment = () => {
     if (!currentUser?.user || !task) return false
     if (task.creatorId === String(currentUser.user.id)) return true
-    const member = projectMembers.find(m => m.user?.id === currentUser.user?.id)
+    const member = projectMembers.find(
+      (m) => m.user?.id === currentUser.user?.id
+    )
     const role = member?.role
-    const adminRoles = ["org_owner", "org_admin", "workspace_admin", "project_admin"]
+    const adminRoles = [
+      "org_owner",
+      "org_admin",
+      "workspace_admin",
+      "project_admin",
+    ]
     if (role && adminRoles.includes(role)) return true
     return false
   }
@@ -108,7 +137,10 @@ export default function TaskDetailPage() {
   if (!task) {
     return (
       <div className="flex min-h-[400px] flex-1 flex-col items-center justify-center space-y-4 bg-background text-foreground">
-        <HugeiconsIcon icon={MoreHorizontalIcon} className="h-12 w-12 text-destructive" />
+        <HugeiconsIcon
+          icon={MoreHorizontalIcon}
+          className="h-12 w-12 text-destructive"
+        />
         <h3 className="text-lg font-bold">Task not found</h3>
         <p className="text-sm text-muted-foreground">
           The task you are looking for does not exist or has been deleted.
@@ -158,9 +190,7 @@ export default function TaskDetailPage() {
               <HugeiconsIcon
                 icon={CircleCheckIcon}
                 size={13}
-                className={cn(
-                  isCompleted && "fill-success/10 text-success"
-                )}
+                className={cn(isCompleted && "fill-success/10 text-success")}
               />
               {isCompleted ? "Completed" : "Mark Complete"}
             </Button>
@@ -181,7 +211,10 @@ export default function TaskDetailPage() {
               />
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem onClick={copyTaskUrl} className="text-xs">
-                  <HugeiconsIcon icon={CopyIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <HugeiconsIcon
+                    icon={CopyIcon}
+                    className="mr-2 h-3.5 w-3.5 text-muted-foreground"
+                  />
                   Copy Link
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -190,7 +223,10 @@ export default function TaskDetailPage() {
                   }
                   className="text-xs"
                 >
-                  <HugeiconsIcon icon={ArrowLeftIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <HugeiconsIcon
+                    icon={ArrowLeftIcon}
+                    className="mr-2 h-3.5 w-3.5 text-muted-foreground"
+                  />
                   Back to Project
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -206,7 +242,9 @@ export default function TaskDetailPage() {
               task={task}
               isCompleted={isCompleted}
               onTitleChange={manager.state.setLocalTitle}
-              onTitleBlur={() => manager.handlers.handleTitleBlur(task.title || "")}
+              onTitleBlur={() =>
+                manager.handlers.handleTitleBlur(task.title || "")
+              }
               workspaceSlug={workspaceSlug}
               onToggleCompletion={handleToggleCompletion}
             />
@@ -216,22 +254,41 @@ export default function TaskDetailPage() {
               projectMembers={projectMembers}
               completedStatus={completedStatus}
               projectStatuses={projectStatuses}
-              onUpdateSubtask={(id, data) => manager.mutations.updateSubtaskMutation.mutate({ id, data: data as import("@/types/api-types").TaskUpdateRequest })}
-              onDeleteSubtask={(id) => manager.mutations.deleteSubtaskMutation.mutate(id)}
-              onNavigateToSubtask={(id) => router.push(`/${workspaceSlug}/tasks/${id}`)}
-              onAddSubtask={(title) => manager.mutations.createSubtaskMutation.mutate({
-                title,
-                statusId: projectStatuses[0]?.id || "",
-                type: "subtask",
-                priority: "medium",
-              })}
-              onUploadAttachment={manager.mutations.uploadAttachmentMutation.mutateAsync}
-              onDeleteAttachment={manager.mutations.deleteAttachmentMutation.mutate}
+              onUpdateSubtask={(id, data) =>
+                manager.mutations.updateSubtaskMutation.mutate({
+                  id,
+                  data: data as import("@/types/api-types").TaskUpdateRequest,
+                })
+              }
+              onDeleteSubtask={(id) =>
+                manager.mutations.deleteSubtaskMutation.mutate(id)
+              }
+              onNavigateToSubtask={(id) =>
+                router.push(`/${workspaceSlug}/tasks/${id}`)
+              }
+              onAddSubtask={(title) =>
+                manager.mutations.createSubtaskMutation.mutate({
+                  title,
+                  statusId: projectStatuses[0]?.id || "",
+                  type: "subtask",
+                  priority: "medium",
+                })
+              }
+              onUploadAttachment={
+                manager.mutations.uploadAttachmentMutation.mutateAsync
+              }
+              onDeleteAttachment={
+                manager.mutations.deleteAttachmentMutation.mutate
+              }
               canDeleteAttachment={canDeleteAttachment}
-              isUploadingAttachment={manager.mutations.uploadAttachmentMutation.isPending}
+              isUploadingAttachment={
+                manager.mutations.uploadAttachmentMutation.isPending
+              }
               descriptionValue={manager.state.localDesc}
               setDescriptionValue={manager.state.setLocalDesc}
-              onDescriptionBlur={() => manager.handlers.handleDescBlur(task.description || "")}
+              onDescriptionBlur={() =>
+                manager.handlers.handleDescBlur(task.description || "")
+              }
               commentValue={manager.state.newComment}
               setCommentValue={manager.state.setNewComment}
               handleAddComment={manager.handlers.handleAddComment}
@@ -248,8 +305,12 @@ export default function TaskDetailPage() {
               handleUpdateComment={manager.handlers.handleUpdateComment}
               toggleReactionMutation={manager.mutations.toggleReactionMutation}
               deleteCommentMutation={manager.mutations.deleteCommentMutation}
-              onCreateDependency={manager.mutations.createDependencyMutation.mutate}
-              onDeleteDependency={manager.mutations.deleteDependencyMutation.mutate}
+              onCreateDependency={
+                manager.mutations.createDependencyMutation.mutate
+              }
+              onDeleteDependency={
+                manager.mutations.deleteDependencyMutation.mutate
+              }
             />
           </div>
 

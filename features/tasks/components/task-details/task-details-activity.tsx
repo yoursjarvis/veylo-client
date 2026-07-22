@@ -15,7 +15,7 @@ export function TaskDetailsActivity({
 }: TaskDetailsActivityProps) {
   return (
     <div className="relative space-y-6">
-      <div className="absolute left-2 top-0 bottom-0 w-px bg-border/50" />
+      <div className="absolute top-0 bottom-0 left-2 w-px bg-border/50" />
       <div className="space-y-6 pl-6">
         {activityLogs.length > 0 ? (
           activityLogs.map((activity) => (
@@ -39,7 +39,9 @@ export function TaskDetailsActivity({
             </div>
           ))
         ) : (
-          <div className="text-xs text-muted-foreground italic">No activity recorded for this task.</div>
+          <div className="text-xs text-muted-foreground italic">
+            No activity recorded for this task.
+          </div>
         )}
       </div>
     </div>

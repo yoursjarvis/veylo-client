@@ -13,7 +13,12 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { AutomationBuilder } from "@/features/automations/components/automation-builder"
 import { AutomationRule } from "@/features/automations/types/automation"
-import { Delete01Icon, Edit02Icon, PlusSignIcon, WorkflowSquare01Icon } from "@hugeicons/core-free-icons"
+import {
+  Delete01Icon,
+  Edit02Icon,
+  PlusSignIcon,
+  WorkflowSquare01Icon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Archive } from "lucide-react"
 import { useParams } from "next/navigation"
@@ -146,7 +151,7 @@ export default function AutomationsPage() {
                       checked={rule.isActive}
                       disabled={!canUpdate}
                       onCheckedChange={() => {
-                        if (!canUpdate) return;
+                        if (!canUpdate) return
                         setAutomations(
                           automations.map((r) =>
                             r.id === rule.id
@@ -198,7 +203,10 @@ export default function AutomationsPage() {
                           )
                         }}
                       >
-                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                        <HugeiconsIcon
+                          icon={Delete01Icon}
+                          className="h-4 w-4"
+                        />
                       </Button>
                     )}
                   </div>

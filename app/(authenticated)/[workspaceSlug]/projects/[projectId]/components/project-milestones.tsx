@@ -58,7 +58,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
   const [milestoneValidationErrors, setMilestoneValidationErrors] = useState<
     Record<string, string>
   >({})
-  
+
   const { hasPermission } = usePermissions()
   const canCreate = hasPermission("project-milestone:create")
   const canDelete = hasPermission("project-milestone:delete")

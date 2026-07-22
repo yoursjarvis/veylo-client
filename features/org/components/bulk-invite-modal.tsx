@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useState } from "react";
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -8,38 +8,50 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { useBulkInvite } from "../hooks/use-org";
-import { toast } from "sonner";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { CloudUploadIcon } from "@hugeicons/core-free-icons";
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { useBulkInvite } from "../hooks/use-org"
+import { toast } from "sonner"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { CloudUploadIcon } from "@hugeicons/core-free-icons"
 
-export function BulkInviteModal({ open, onOpenChange, onSuccess }: { open: boolean; onOpenChange: (open: boolean) => void; onSuccess: () => void }) {
-  const [file, setFile] = useState<File | null>(null);
-  const bulkInviteMutation = useBulkInvite();
+export function BulkInviteModal({
+  open,
+  onOpenChange,
+  onSuccess,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess: () => void
+}) {
+  const [file, setFile] = useState<File | null>(null)
+  const bulkInviteMutation = useBulkInvite()
 
   const handleUpload = () => {
-    if (!file) return;
+    if (!file) return
 
     bulkInviteMutation.mutate(file, {
       onSuccess: (data) => {
-        toast.success(`Successfully invited ${data.data.successful} users.`);
+        toast.success(`Successfully invited ${data.data.successful} users.`)
         if (data.data.failed > 0) {
-          toast.error(`Failed to invite ${data.data.failed} users. Check console for details.`);
-          console.error(data.data.errors);
+          toast.error(
+            `Failed to invite ${data.data.failed} users. Check console for details.`
+          )
+          console.error(data.data.errors)
         }
-        setFile(null);
-        onOpenChange(false);
-        onSuccess();
+        setFile(null)
+        onOpenChange(false)
+        onSuccess()
       },
       onError: (err) => {
-        const axiosError = err as { response?: { data?: { message?: string } } };
-        toast.error(axiosError.response?.data?.message || "Failed to process bulk invite.");
-      }
-    });
-  };
+        const axiosError = err as { response?: { data?: { message?: string } } }
+        toast.error(
+          axiosError.response?.data?.message || "Failed to process bulk invite."
+        )
+      },
+    })
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -47,16 +59,22 @@ export function BulkInviteModal({ open, onOpenChange, onSuccess }: { open: boole
         <DialogHeader>
           <DialogTitle>Bulk Invite Members</DialogTitle>
           <DialogDescription>
-            Upload a CSV or Excel file to invite multiple members at once.
-            The file should contain at least two columns: <strong>email</strong> and <strong>role</strong>.
+            Upload a CSV or Excel file to invite multiple members at once. The
+            file should contain at least two columns: <strong>email</strong> and{" "}
+            <strong>role</strong>.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Invitation File</Label>
-            <div className="flex flex-col items-center justify-center space-y-4 py-8 border-2 border-dashed border-border/50 rounded-lg">
-              <HugeiconsIcon icon={CloudUploadIcon} className="h-10 w-10 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground text-center px-4">
+            <Label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              Invitation File
+            </Label>
+            <div className="flex flex-col items-center justify-center space-y-4 rounded-lg border-2 border-dashed border-border/50 py-8">
+              <HugeiconsIcon
+                icon={CloudUploadIcon}
+                className="h-10 w-10 text-muted-foreground"
+              />
+              <p className="px-4 text-center text-sm text-muted-foreground">
                 Drag and drop your file here, or click below to select a file.
               </p>
               <label htmlFor="file-upload">
@@ -72,13 +90,17 @@ export function BulkInviteModal({ open, onOpenChange, onSuccess }: { open: boole
                 />
               </label>
               {file && (
-                <p className="text-sm font-medium text-primary">Selected: {file.name}</p>
+                <p className="text-sm font-medium text-primary">
+                  Selected: {file.name}
+                </p>
               )}
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button
             onClick={handleUpload}
             disabled={!file || bulkInviteMutation.isPending}
@@ -88,5 +110,5 @@ export function BulkInviteModal({ open, onOpenChange, onSuccess }: { open: boole
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
