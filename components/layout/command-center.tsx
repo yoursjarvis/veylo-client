@@ -27,6 +27,27 @@ import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useDebounce } from "use-debounce"
 
+export interface SearchWorkspace {
+  id: string
+  name: string
+  slug: string
+}
+
+export interface SearchProject {
+  id: string
+  title: string
+  projectKey: string
+  workspace?: { slug: string }
+}
+
+export interface SearchTask {
+  id: string
+  title: string
+  taskKey: string
+  project?: { id: string; workspace?: { slug: string } }
+  workspace?: { slug: string }
+}
+
 export function CommandCenter({
   open,
   onOpenChange,
@@ -95,9 +116,15 @@ export function CommandCenter({
     enabled: !!debouncedQuery && isOpen,
   })
 
-  const canCreateTask = !!activeWorkspace
+  const canCreateTask = hasPermission("task:create") && !!activeWorkspace
   const canCreateProject = hasPermission("project:create")
   const canCreateWorkspace = hasPermission("workspace:create")
+  const canReadProjects = hasPermission("project:read")
+  const canReadTasks = hasPermission("task:read")
+  const canReadOkrs = hasPermission("goal-okrs:read")
+  const canReadTimesheets = hasPermission("timesheet:read")
+  const canReadPortfolio = hasPermission("portfolio:read")
+  const canReadWorkspaces = hasPermission("workspace:read")
 
   const items = useMemo(() => {
     // Wrap original onSelect to save history
@@ -169,51 +196,61 @@ export function CommandCenter({
             router.push(`/${activeWorkspace.slug}/dashboard`)
           ),
         })
-        defaultActions.push({
-          id: "nav-projects",
-          label: "Go to Projects",
-          group: "Navigation",
-          icon: Briefcase,
-          onSelect: wrapOnSelect("Projects", () =>
-            router.push(`/${activeWorkspace.slug}/projects`)
-          ),
-        })
-        defaultActions.push({
-          id: "nav-tasks",
-          label: "Go to My Tasks",
-          group: "Navigation",
-          icon: CheckSquare,
-          onSelect: wrapOnSelect("My Tasks", () =>
-            router.push(`/${activeWorkspace.slug}/tasks`)
-          ),
-        })
-        defaultActions.push({
-          id: "nav-okrs",
-          label: "Go to Goals & OKRs",
-          group: "Navigation",
-          icon: Target,
-          onSelect: wrapOnSelect("Goals & OKRs", () =>
-            router.push(`/${activeWorkspace.slug}/okrs`)
-          ),
-        })
-        defaultActions.push({
-          id: "nav-timesheets",
-          label: "Go to Timesheets",
-          group: "Navigation",
-          icon: Clock,
-          onSelect: wrapOnSelect("Timesheets", () =>
-            router.push(`/${activeWorkspace.slug}/timesheets`)
-          ),
-        })
-        defaultActions.push({
-          id: "nav-portfolio",
-          label: "Go to Portfolio",
-          group: "Navigation",
-          icon: Activity,
-          onSelect: wrapOnSelect("Portfolio", () =>
-            router.push(`/${activeWorkspace.slug}/portfolio`)
-          ),
-        })
+        if (canReadProjects) {
+          defaultActions.push({
+            id: "nav-projects",
+            label: "Go to Projects",
+            group: "Navigation",
+            icon: Briefcase,
+            onSelect: wrapOnSelect("Projects", () =>
+              router.push(`/${activeWorkspace.slug}/projects`)
+            ),
+          })
+        }
+        if (canReadTasks) {
+          defaultActions.push({
+            id: "nav-tasks",
+            label: "Go to My Tasks",
+            group: "Navigation",
+            icon: CheckSquare,
+            onSelect: wrapOnSelect("My Tasks", () =>
+              router.push(`/${activeWorkspace.slug}/tasks`)
+            ),
+          })
+        }
+        if (canReadOkrs) {
+          defaultActions.push({
+            id: "nav-okrs",
+            label: "Go to Goals & OKRs",
+            group: "Navigation",
+            icon: Target,
+            onSelect: wrapOnSelect("Goals & OKRs", () =>
+              router.push(`/${activeWorkspace.slug}/okrs`)
+            ),
+          })
+        }
+        if (canReadTimesheets) {
+          defaultActions.push({
+            id: "nav-timesheets",
+            label: "Go to Timesheets",
+            group: "Navigation",
+            icon: Clock,
+            onSelect: wrapOnSelect("Timesheets", () =>
+              router.push(`/${activeWorkspace.slug}/timesheets`)
+            ),
+          })
+        }
+        if (canReadPortfolio) {
+          defaultActions.push({
+            id: "nav-portfolio",
+            label: "Go to Portfolio",
+            group: "Navigation",
+            icon: Activity,
+            onSelect: wrapOnSelect("Portfolio", () =>
+              router.push(`/${activeWorkspace.slug}/portfolio`)
+            ),
+          })
+        }
       }
 
       defaultActions.push({
@@ -243,9 +280,8 @@ export function CommandCenter({
 
     const results: CommandItem[] = []
 
-    if (searchResults?.workspaces) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      searchResults.workspaces.forEach((w: any) => {
+    if (canReadWorkspaces && searchResults?.workspaces) {
+      searchResults.workspaces.forEach((w: SearchWorkspace) => {
         results.push({
           id: `workspace-${w.id}`,
           label: w.name,
@@ -256,9 +292,8 @@ export function CommandCenter({
       })
     }
 
-    if (searchResults?.projects) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      searchResults.projects.forEach((p: any) => {
+    if (canReadProjects && searchResults?.projects) {
+      searchResults.projects.forEach((p: SearchProject) => {
         results.push({
           id: `project-${p.id}`,
           label: p.title,
@@ -273,9 +308,8 @@ export function CommandCenter({
       })
     }
 
-    if (searchResults?.tasks) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      searchResults.tasks.forEach((t: any) => {
+    if (canReadTasks && searchResults?.tasks) {
+      searchResults.tasks.forEach((t: SearchTask) => {
         results.push({
           id: `task-${t.id}`,
           label: t.title,
@@ -299,6 +333,12 @@ export function CommandCenter({
     canCreateTask,
     canCreateProject,
     canCreateWorkspace,
+    canReadProjects,
+    canReadTasks,
+    canReadOkrs,
+    canReadTimesheets,
+    canReadPortfolio,
+    canReadWorkspaces,
     activeWorkspace,
     router,
     setTheme,

@@ -200,14 +200,32 @@ export default function ProjectLayout({
     isScrum &&
     (sprints || []).some((s: { status?: string }) => s.status === "active")
 
+  // Permissions Check
+  const { hasPermission } = usePermissions()
+  const isWorkspaceAdmin = hasPermission("project:update") // Leaving this intact for backward compatibility if needed elsewhere
+  const canCreateTask = hasPermission("task:create")
+  const canUpdateProject = hasPermission("project:update")
+  const canReadMembers = hasPermission("project-member:read")
+  const canReadVault = hasPermission("project-vault:read")
+  const canReadFields = hasPermission("project-custom-field:read")
+  const canReadStatuses = hasPermission("project-status:read")
+  const canReadLabels = hasPermission("project-label:read")
+  const canReadWebhooks = hasPermission("project-webhook:read")
+  const canReadAutomation = hasPermission("project-automation:read")
+  const canReadEpics = hasPermission("project-epic:read")
+
   const onboardingSteps = [
-    {
-      id: "task",
-      label: "Add your first task",
-      completed: hasTasks,
-      href: null,
-      action: () => setIsCreateTaskOpen(true),
-    },
+    ...(canCreateTask
+      ? [
+          {
+            id: "task",
+            label: "Add your first task",
+            completed: hasTasks,
+            href: null,
+            action: () => setIsCreateTaskOpen(true),
+          },
+        ]
+      : []),
     {
       id: "member",
       label: "Invite a team member",
@@ -261,10 +279,6 @@ export default function ProjectLayout({
   const totalCount = onboardingSteps.length
   const progressPercent =
     totalCount > 0 ? (completedCount / totalCount) * 100 : 0
-
-  // Permissions Check
-  const { hasPermission } = usePermissions()
-  const isWorkspaceAdmin = hasPermission("project:update")
 
   // Upload project icon helper
   const uploadProjectIcon = async (projId: string, file: File) => {
@@ -399,34 +413,36 @@ export default function ProjectLayout({
       ? [{ name: "Backlog", path: `${basePath}/backlog` }]
       : []),
     { name: "Timeline", path: `${basePath}/timeline` },
-    ...(isSoftware || isHybrid
+    ...((isSoftware || isHybrid) && canReadEpics
       ? [{ name: "Epics", path: `${basePath}/epics` }]
       : []),
     { name: "Workload", path: `${basePath}/workload` },
     { name: "Reports", path: `${basePath}/reports` },
     { name: "Files", path: `${basePath}/files` },
     { name: "Docs", path: `${basePath}/docs` },
-    ...(isWorkspaceAdmin
-      ? [{ name: "Settings", path: `${basePath}/settings/general` }]
-      : []),
+    // Settings tab will be appended dynamically below based on settingsLinks
   ]
 
   const settingsLinks = [
-    { name: "General", path: `${basePath}/settings/general` },
-    { name: "Members", path: `${basePath}/settings/members` },
-    { name: "Vault", path: `${basePath}/settings/vault` },
-    { name: "Fields", path: `${basePath}/settings/fields` },
-    { name: "Statuses", path: `${basePath}/settings/statuses` },
-    { name: "Labels", path: `${basePath}/settings/labels` },
-    { name: "Webhooks", path: `${basePath}/settings/webhooks` },
-    { name: "Automation", path: `${basePath}/settings/automation` },
+    ...(canUpdateProject ? [{ name: "General", path: `${basePath}/settings/general` }] : []),
+    ...(canReadMembers ? [{ name: "Members", path: `${basePath}/settings/members` }] : []),
+    ...(canReadVault ? [{ name: "Vault", path: `${basePath}/settings/vault` }] : []),
+    ...(canReadFields ? [{ name: "Fields", path: `${basePath}/settings/fields` }] : []),
+    ...(canReadStatuses ? [{ name: "Statuses", path: `${basePath}/settings/statuses` }] : []),
+    ...(canReadLabels ? [{ name: "Labels", path: `${basePath}/settings/labels` }] : []),
+    ...(canReadWebhooks ? [{ name: "Webhooks", path: `${basePath}/settings/webhooks` }] : []),
+    ...(canReadAutomation ? [{ name: "Automation", path: `${basePath}/settings/automation` }] : []),
   ]
+
+  if (settingsLinks.length > 0) {
+    navLinks.push({ name: "Settings", path: settingsLinks[0].path })
+  }
 
   const isLinkActive = (linkPath: string) => {
     if (linkPath === basePath) {
       return pathname === basePath
     }
-    if (linkPath.includes("/settings/general")) {
+    if (linkPath.includes("/settings")) {
       return pathname.includes("/settings")
     }
     return pathname === linkPath
@@ -651,16 +667,18 @@ export default function ProjectLayout({
                       </div>
                     )}
                   </div>
-                  <Button
-                    onClick={() => setIsCreateTaskOpen(true)}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/95"
-                  >
-                    <HugeiconsIcon
-                      icon={PlusSignIcon}
-                      className="size-3.5 shrink-0"
-                    />
-                    <span>New Task</span>
-                  </Button>
+                  {canCreateTask && (
+                    <Button
+                      onClick={() => setIsCreateTaskOpen(true)}
+                      className="flex cursor-pointer items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/95"
+                    >
+                      <HugeiconsIcon
+                        icon={PlusSignIcon}
+                        className="size-3.5 shrink-0"
+                      />
+                      <span>New Task</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

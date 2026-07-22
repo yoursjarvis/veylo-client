@@ -22,6 +22,7 @@ import { Tag } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
+import { usePermissions } from "@/hooks/use-permissions"
 
 import { IconStack } from "@/components/reui/icon-stack"
 import {
@@ -50,7 +51,12 @@ const COLOR_PRESETS = [
 ]
 
 export default function LabelsSettingsPage() {
-  const { projectId, isWorkspaceAdmin } = useProject()
+  const { projectId } = useProject()
+  const { hasPermission } = usePermissions()
+  
+  const canRead = hasPermission("project-label:read")
+  const canCreate = hasPermission("project-label:create")
+  const canDelete = hasPermission("project-label:delete")
 
   const [labelValidationErrors, setLabelValidationErrors] = useState<
     Record<string, string>
@@ -106,10 +112,10 @@ export default function LabelsSettingsPage() {
     },
   })
 
-  if (!isWorkspaceAdmin) {
+  if (!canRead) {
     return (
-      <div className="p-8 text-center">
-        You do not have administrative permissions to view settings.
+      <div className="p-8 text-center text-muted-foreground">
+        You do not have permission to view project labels.
       </div>
     )
   }
@@ -217,15 +223,17 @@ export default function LabelsSettingsPage() {
                           {lbl.color}
                         </span>
                       </div>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => handleDeleteLabel(lbl.id)}
-                        disabled={deleteLabelMutation.isPending}
-                        className="h-8 w-8"
-                      >
-                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
-                      </Button>
+                      {canDelete && (
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => handleDeleteLabel(lbl.id)}
+                          disabled={deleteLabelMutation.isPending}
+                          className="h-8 w-8"
+                        >
+                          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -234,8 +242,9 @@ export default function LabelsSettingsPage() {
           </Card>
 
           {/* Form to Add Label */}
-          <Card className="h-fit shadow-md">
-            <CardHeader>
+          {canCreate && (
+            <Card className="h-fit shadow-md">
+              <CardHeader>
               <CardTitle className="text-sm font-semibold">
                 Create Project Label
               </CardTitle>
@@ -371,6 +380,7 @@ export default function LabelsSettingsPage() {
               </form>
             </CardContent>
           </Card>
+          )}
         </div>
       )}
     </div>

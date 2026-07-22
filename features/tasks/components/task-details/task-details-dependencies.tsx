@@ -21,6 +21,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { AlertCircle, Link as LinkIcon, X } from "lucide-react"
 import React, { useState } from "react"
 import { useProjectTasks } from "../../hooks/use-tasks"
+import { usePermissions } from "@/hooks/use-permissions"
 
 interface TaskDetailsDependenciesProps {
   task: Task
@@ -44,6 +45,9 @@ export function TaskDetailsDependencies({
   const blockedByDeps = task.blockedByDependencies || []
 
   const hasDependencies = blockingDeps.length > 0 || blockedByDeps.length > 0
+  
+  const { hasPermission } = usePermissions()
+  const canUpdateTask = hasPermission("task:update")
 
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [addingType, setAddingType] = useState<
@@ -177,36 +181,38 @@ export function TaskDetailsDependencies({
           <p className="mt-1 mb-4 text-xs text-muted-foreground">
             Link tasks to show what needs to be done first.
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {renderAddDependencyButton(
-              "blocked_by",
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 text-xs font-medium"
-              >
-                <HugeiconsIcon
-                  icon={PlusSignIcon}
-                  className="mr-1.5 h-3.5 w-3.5"
-                />
-                Add Blocked By
-              </Button>
-            )}
-            {renderAddDependencyButton(
-              "blocking",
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 text-xs font-medium"
-              >
-                <HugeiconsIcon
-                  icon={PlusSignIcon}
-                  className="mr-1.5 h-3.5 w-3.5"
-                />
-                Add Blocking
-              </Button>
-            )}
-          </div>
+          {canUpdateTask && (
+            <div className="flex flex-wrap justify-center gap-3">
+              {renderAddDependencyButton(
+                "blocked_by",
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 text-xs font-medium"
+                >
+                  <HugeiconsIcon
+                    icon={PlusSignIcon}
+                    className="mr-1.5 h-3.5 w-3.5"
+                  />
+                  Add Blocked By
+                </Button>
+              )}
+              {renderAddDependencyButton(
+                "blocking",
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 text-xs font-medium"
+                >
+                  <HugeiconsIcon
+                    icon={PlusSignIcon}
+                    className="mr-1.5 h-3.5 w-3.5"
+                  />
+                  Add Blocking
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-4 rounded-lg border bg-muted/10 p-4">
@@ -217,7 +223,7 @@ export function TaskDetailsDependencies({
                 <AlertCircle className="h-3.5 w-3.5 text-warning" />
                 Blocked By
               </h4>
-              {renderAddDependencyButton("blocked_by")}
+              {canUpdateTask && renderAddDependencyButton("blocked_by")}
             </div>
             {blockedByDeps.length === 0 ? (
               <p className="pl-5 text-xs text-muted-foreground italic">
@@ -250,17 +256,19 @@ export function TaskDetailsDependencies({
                           {getStatusName(linkedTask.statusId)}
                         </Badge>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        className="ml-2 h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onRemoveDependency?.(dep.id)
-                        }}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
+                      {canUpdateTask && (
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          className="ml-2 h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onRemoveDependency?.(dep.id)
+                          }}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   )
                 })}
@@ -277,7 +285,7 @@ export function TaskDetailsDependencies({
                 <LinkIcon className="h-3.5 w-3.5 text-success" />
                 Blocks
               </h4>
-              {renderAddDependencyButton("blocking")}
+              {canUpdateTask && renderAddDependencyButton("blocking")}
             </div>
             {blockingDeps.length === 0 ? (
               <p className="pl-5 text-xs text-muted-foreground italic">

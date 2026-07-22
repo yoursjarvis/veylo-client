@@ -16,9 +16,7 @@ export default async function UnauthorizedPage({
 }) {
   const params = await searchParams
   const callbackUrl =
-    typeof params.callbackUrl === "string"
-      ? params.callbackUrl
-      : "/dashboard"
+    typeof params.callbackUrl === "string" ? params.callbackUrl : "/dashboard"
 
   const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
 
@@ -32,14 +30,26 @@ export default async function UnauthorizedPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>If you already have access, sign in again and we&apos;ll send you back.</p>
+          <p>
+            If you already have access, sign in again and we&apos;ll send you
+            back.
+          </p>
           <p className="break-all">Destination: {callbackUrl}</p>
         </CardContent>
         <CardFooter className="flex gap-3">
-          <Button className="flex-1" nativeButton={false} render={<Link href={loginHref} />}>
+          <Button
+            className="flex-1"
+            nativeButton={false}
+            render={<Link href={loginHref} />}
+          >
             Go to Login
           </Button>
-          <Button variant="outline" className="flex-1" nativeButton={false} render={<Link href="/" />}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            nativeButton={false}
+            render={<Link href="/" />}
+          >
             Home
           </Button>
         </CardFooter>

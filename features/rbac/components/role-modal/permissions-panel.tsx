@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PermissionCategory } from "./permission-category";
-import { Search, Maximize2, Minimize2 } from "lucide-react";
+import { Search, Maximize2, Minimize2, CheckSquare, Square } from "lucide-react";
 
 interface PermissionsPanelProps {
   permissions: { id: string; module: string; resource: string; action: string; description: string }[];
@@ -16,7 +16,11 @@ interface PermissionsPanelProps {
 
 export function PermissionsPanel({ permissions, selectedPermissionIds, onChange, disabled }: PermissionsPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+
+  const handleToggleExpand = (moduleName: string) => {
+    setExpandedCategories(prev => ({ ...prev, [moduleName]: !prev[moduleName] }));
+  };
 
   const groupedPermissions = useMemo(() => {
     const grouped: Record<string, { description: string, permissions: { id: string; module: string; resource: string; action: string; description: string }[] }> = {};
@@ -60,6 +64,7 @@ export function PermissionsPanel({ permissions, selectedPermissionIds, onChange,
             <Button 
               variant="ghost" 
               size="sm" 
+              type="button"
               className="h-8 text-xs gap-1.5" 
               onClick={() => toggleAllCategories(true)}
             >
@@ -68,10 +73,35 @@ export function PermissionsPanel({ permissions, selectedPermissionIds, onChange,
             <Button 
               variant="ghost" 
               size="sm" 
+              type="button"
               className="h-8 text-xs gap-1.5" 
               onClick={() => toggleAllCategories(false)}
             >
               <Minimize2 className="w-3 h-3" /> Collapse All
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              type="button" 
+              className="h-8 text-xs gap-1.5" 
+              disabled={disabled}
+              onClick={() => {
+                permissions.forEach(p => onChange(p.id, true));
+              }}
+            >
+              <CheckSquare className="w-3 h-3" /> Select All
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              type="button" 
+              className="h-8 text-xs gap-1.5" 
+              disabled={disabled}
+              onClick={() => {
+                permissions.forEach(p => onChange(p.id, false));
+              }}
+            >
+              <Square className="w-3 h-3" /> Deselect All
             </Button>
           </div>
         </div>
@@ -105,6 +135,8 @@ export function PermissionsPanel({ permissions, selectedPermissionIds, onChange,
               selectedPermissionIds={selectedPermissionIds}
               onChange={onChange}
               disabled={disabled}
+              isExpanded={!!expandedCategories[moduleName]}
+              onToggleExpand={() => handleToggleExpand(moduleName)}
             />
           ))
         )}

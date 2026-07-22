@@ -36,6 +36,7 @@ import { useTaskWorkLogs, useCreateWorkLog, useDeleteWorkLog } from "@/features/
 import { priorityList, renderPriorityIcon } from "@/lib/priority"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { useWorkspaces } from "@/hooks/use-workspaces"
+import { usePermissions } from "@/hooks/use-permissions"
 
 interface TaskDetailsSidebarProps {
   task: Task
@@ -70,6 +71,10 @@ export function TaskDetailsSidebar({
   const createWorkLogMutation = useCreateWorkLog(task.id)
   const deleteWorkLogMutation = useDeleteWorkLog(task.id)
   const { activeWorkspace } = useWorkspaces()
+  
+  const { hasPermission } = usePermissions()
+  const canCreateTimesheet = hasPermission("timesheet:create")
+  const canReadTimesheet = hasPermission("timesheet:read")
 
   const [isLogWorkOpen, setIsLogWorkOpen] = React.useState(false)
   const [hours, setHours] = React.useState("")
@@ -525,7 +530,7 @@ export function TaskDetailsSidebar({
                     >
                       <HugeiconsIcon icon={isTimerRunning ? StopIcon : PlayIcon} size={12} />
                     </Button>
-                    {timerSeconds > 0 && !isTimerRunning && (
+                    {timerSeconds > 0 && !isTimerRunning && canCreateTimesheet && (
                       <Button
                         type="button"
                         variant="outline"
@@ -549,15 +554,17 @@ export function TaskDetailsSidebar({
                 </div >
               </div >
 
-              <Button
-                type="button"
-                variant="outline"
-                className="h-7 w-full text-2xs font-medium flex items-center justify-center gap-1 mt-1"
-                onClick={() => setIsLogWorkOpen(true)}
-              >
-                <HugeiconsIcon icon={Add01Icon} size={11} />
-                Manual Log Work
-              </Button>
+              {canCreateTimesheet && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-7 w-full text-2xs font-medium flex items-center justify-center gap-1 mt-1"
+                  onClick={() => setIsLogWorkOpen(true)}
+                >
+                  <HugeiconsIcon icon={Add01Icon} size={11} />
+                  Manual Log Work
+                </Button>
+              )}
 
               <Dialog open={isLogWorkOpen} onOpenChange={setIsLogWorkOpen}>
                 <DialogContent className="sm:max-w-[500px]">
@@ -669,7 +676,7 @@ export function TaskDetailsSidebar({
                 </DialogContent>
               </Dialog>
 
-              {workLogs.length > 0 && (
+              {canReadTimesheet && workLogs.length > 0 && (
                 <Popover>
                   <PopoverTrigger render={
                     <Button
@@ -693,18 +700,20 @@ export function TaskDetailsSidebar({
                             {log.loggedAt ? format(new Date(log.loggedAt), "MMM d, yyyy h:mm a") : ""}
                           </div >
                         </div >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 text-muted-foreground hover:text-destructive shrink-0"
-                          onClick={() => {
-                            if (confirm("Delete this log?")) {
-                              deleteWorkLogMutation.mutate(log.id)
-                            }
-                          }}
-                        >
-                          ×
-                        </Button>
+                        {canCreateTimesheet && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-muted-foreground hover:text-destructive shrink-0"
+                            onClick={() => {
+                              if (confirm("Delete this log?")) {
+                                deleteWorkLogMutation.mutate(log.id)
+                              }
+                            }}
+                          >
+                            ×
+                          </Button>
+                        )}
                       </div >
                     ))}
                   </PopoverContent>

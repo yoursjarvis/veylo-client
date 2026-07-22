@@ -20,6 +20,7 @@ import {
   useDeleteSlackWebhook,
   useProjectSlackWebhooks,
 } from "../hooks/use-tasks"
+import { usePermissions } from "@/hooks/use-permissions"
 
 interface SlackWebhooksConfigProps {
   projectId: string
@@ -29,6 +30,10 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
   const { data: webhooks = [], isLoading } = useProjectSlackWebhooks(projectId)
   const createWebhookMutation = useCreateSlackWebhook(projectId)
   const deleteWebhookMutation = useDeleteSlackWebhook(projectId)
+
+  const { hasPermission } = usePermissions()
+  const canCreate = hasPermission("project-webhook:create")
+  const canDelete = hasPermission("project-webhook:delete")
 
   const [url, setUrl] = useState("")
   const [channel, setChannel] = useState("")
@@ -63,8 +68,9 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Registration Form */}
-        <Card className="border-border bg-card lg:col-span-1">
-          <CardHeader>
+        {canCreate && (
+          <Card className="border-border bg-card lg:col-span-1">
+            <CardHeader>
             <CardTitle className="text-sm font-bold">Add Webhook</CardTitle>
           </CardHeader>
           <CardContent>
@@ -115,9 +121,10 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
             </form>
           </CardContent>
         </Card>
+        )}
 
         {/* Existing integrations list */}
-        <Card className="border-border bg-card lg:col-span-2">
+        <Card className={`border-border bg-card ${canCreate ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
           <CardHeader>
             <CardTitle className="text-sm font-bold">
               Active Integrations
@@ -178,21 +185,23 @@ export function SlackWebhooksConfig({ projectId }: SlackWebhooksConfigProps) {
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                        onClick={() => {
-                          if (
-                            confirm("Remove this Slack webhook integration?")
-                          ) {
-                            deleteWebhookMutation.mutate(webhook.id)
-                          }
-                        }}
-                        disabled={deleteWebhookMutation.isPending}
-                      >
-                        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
-                      </Button>
+                      {canDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            if (
+                              confirm("Remove this Slack webhook integration?")
+                            ) {
+                              deleteWebhookMutation.mutate(webhook.id)
+                            }
+                          }}
+                          disabled={deleteWebhookMutation.isPending}
+                        >
+                          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   )
                 )}

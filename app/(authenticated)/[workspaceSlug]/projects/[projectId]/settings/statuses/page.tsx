@@ -32,6 +32,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
+import { usePermissions } from "@/hooks/use-permissions"
 
 import {
   DndContext,
@@ -76,9 +77,13 @@ const CATEGORY_OPTIONS = [
 function StatusRow({
   status,
   projectId,
+  canUpdate,
+  canDelete,
 }: {
   status: { id: string; name: string; color?: string; progressWeight?: number; category: string }
   projectId: string
+  canUpdate: boolean
+  canDelete: boolean
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedName, setEditedName] = useState(status.name)
@@ -213,7 +218,8 @@ function StatusRow({
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab text-muted-foreground hover:text-foreground touch-none focus:outline-none"
+          disabled={!canUpdate}
+          className="cursor-grab text-muted-foreground hover:text-foreground touch-none focus:outline-none disabled:opacity-50 disabled:cursor-default"
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -240,30 +246,40 @@ function StatusRow({
         )}
       </div>
       <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsEditing(true)}
-          className="h-8 w-8"
-        >
-          <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleDelete}
-          disabled={deleteStatusMutation.isPending}
-          className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-        >
-          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
-        </Button>
+        {canUpdate && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsEditing(true)}
+            className="h-8 w-8"
+          >
+            <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
+          </Button>
+        )}
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDelete}
+            disabled={deleteStatusMutation.isPending}
+            className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   )
 }
 
 export default function StatusesSettingsPage() {
-  const { projectId, isWorkspaceAdmin } = useProject()
+  const { projectId } = useProject()
+  const { hasPermission } = usePermissions()
+
+  const canRead = hasPermission("project-status:read")
+  const canCreate = hasPermission("project-status:create")
+  const canUpdate = hasPermission("project-status:update")
+  const canDelete = hasPermission("project-status:delete")
 
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
@@ -362,10 +378,10 @@ export default function StatusesSettingsPage() {
     },
   })
 
-  if (!isWorkspaceAdmin) {
+  if (!canRead) {
     return (
-      <div className="p-8 text-center">
-        You do not have administrative permissions to view settings.
+      <div className="p-8 text-center text-muted-foreground">
+        You do not have permission to view project statuses.
       </div>
     )
   }
@@ -439,6 +455,8 @@ export default function StatusesSettingsPage() {
                           key={st.id} 
                           status={st} 
                           projectId={projectId}
+                          canUpdate={canUpdate}
+                          canDelete={canDelete}
                         />
                       ))}
                     </SortableContext>
@@ -449,8 +467,9 @@ export default function StatusesSettingsPage() {
           </Card>
 
           {/* Form to Add Status */}
-          <Card className="h-fit shadow-md">
-            <CardHeader>
+          {canCreate && (
+            <Card className="h-fit shadow-md">
+              <CardHeader>
               <CardTitle className="text-sm font-semibold">
                 Create Project Status
               </CardTitle>
@@ -642,6 +661,7 @@ export default function StatusesSettingsPage() {
               </form>
             </CardContent>
           </Card>
+          )}
         </div>
       )}
     </div>

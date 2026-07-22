@@ -30,6 +30,7 @@ import { Check, Copy, Eye, EyeOff, Shield } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { useProject } from "../../layout"
+import { usePermissions } from "@/hooks/use-permissions"
 
 interface VaultItem {
   id: string
@@ -54,8 +55,13 @@ interface Vault {
 }
 
 export default function VaultSettingsPage() {
-  const { projectId, isWorkspaceAdmin } = useProject()
+  const { projectId } = useProject()
   const queryClient = useQueryClient()
+  const { hasPermission } = usePermissions()
+
+  const canRead = hasPermission("project-vault:read")
+  const canCreate = hasPermission("project-vault:create")
+  const canDelete = hasPermission("project-vault:delete")
 
   // Add Service State
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false)
@@ -173,10 +179,10 @@ export default function VaultSettingsPage() {
     }))
   }
 
-  if (!isWorkspaceAdmin) {
+  if (!canRead) {
     return (
-      <div className="p-8 text-center">
-        You do not have administrative permissions to view settings.
+      <div className="p-8 text-center text-muted-foreground">
+        You do not have permission to view project vault credentials.
       </div>
     )
   }
@@ -193,7 +199,7 @@ export default function VaultSettingsPage() {
             decrypted only when requested.
           </p>
         </div>
-        {vault?.services && vault.services.length !== 0 && (
+        {canCreate && vault?.services && vault.services.length !== 0 && (
           <Button onClick={() => setIsAddServiceOpen(true)}>
             <HugeiconsIcon icon={Add01Icon} className="mr-1.5 h-4 w-4" /> Add
             Service
@@ -250,17 +256,19 @@ export default function VaultSettingsPage() {
               </EmptyDescription>
             </EmptyHeader>
 
-            <EmptyContent className="flex-row justify-center gap-2">
-              <Button
-                variant="outline-default"
-                size="sm"
-                onClick={() => setIsAddServiceOpen(true)}
-                className="h-8 text-2xs font-bold uppercase"
-              >
-                <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
-                Add First Service
-              </Button>
-            </EmptyContent>
+            {canCreate && (
+              <EmptyContent className="flex-row justify-center gap-2">
+                <Button
+                  variant="outline-default"
+                  size="sm"
+                  onClick={() => setIsAddServiceOpen(true)}
+                  className="h-8 text-2xs font-bold uppercase"
+                >
+                  <HugeiconsIcon icon={Add01Icon} className="mr-1 h-3.5 w-3.5" />{" "}
+                  Add First Service
+                </Button>
+              </EmptyContent>
+            )}
           </Empty>
         </Card>
       ) : (
@@ -275,32 +283,36 @@ export default function VaultSettingsPage() {
                   {service.name}
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      setActiveServiceId(service.id)
-                      setIsAddItemOpen(true)
-                    }}
-                  >
-                    <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-3.5 w-3.5" /> Add Secret
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          `Delete the service "${service.name}" and all of its secrets permanently?`
-                        )
-                      ) {
-                        deleteServiceMutation.mutate(service.id)
-                      }
-                    }}
-                  >
-                    <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
-                  </Button>
+                  {canCreate && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setActiveServiceId(service.id)
+                        setIsAddItemOpen(true)
+                      }}
+                    >
+                      <HugeiconsIcon icon={PlusSignIcon} className="mr-1.5 h-3.5 w-3.5" /> Add Secret
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => {
+                        if (
+                          confirm(
+                            `Delete the service "${service.name}" and all of its secrets permanently?`
+                          )
+                        ) {
+                          deleteServiceMutation.mutate(service.id)
+                        }
+                      }}
+                    >
+                      <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="p-0">
@@ -371,21 +383,23 @@ export default function VaultSettingsPage() {
                                       <Copy className="h-3.5 w-3.5" />
                                     )}
                                   </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                      if (
-                                        confirm(
-                                          "Delete this secret credential?"
-                                        )
-                                      ) {
-                                        deleteVaultItemMutation.mutate(item.id)
-                                      }
-                                    }}
-                                  >
-                                    <HugeiconsIcon icon={Delete01Icon} className="h-3.5 w-3.5" />
-                                  </Button>
+                                  {canDelete && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        if (
+                                          confirm(
+                                            "Delete this secret credential?"
+                                          )
+                                        ) {
+                                          deleteVaultItemMutation.mutate(item.id)
+                                        }
+                                      }}
+                                    >
+                                      <HugeiconsIcon icon={Delete01Icon} className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
                                 </div>
                               </td>
                             </tr>

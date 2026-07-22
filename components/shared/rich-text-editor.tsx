@@ -1080,8 +1080,7 @@ export function RichTextEditor({
               <EmojiPicker
                 onEmojiClick={onEmojiClick}
                 theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                defaultSkinTone={skinTone as any}
+                defaultSkinTone={skinTone as SkinTones}
                 onSkinToneChange={(newSkinTone) => {
                   setSkinTone(newSkinTone)
                   if (typeof window !== "undefined") {

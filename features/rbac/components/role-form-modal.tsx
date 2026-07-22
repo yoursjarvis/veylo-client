@@ -23,7 +23,8 @@ interface RoleFormModalProps {
 export function RoleFormModal({ organizationId, roleId, open, onOpenChange }: RoleFormModalProps) {
   const { data: permissionsCatalog } = useCatalogPermissions();
   const { permissions: userPermissions } = useUserPermissions({ organizationId });
-  const { data: roles } = useOrganizationRoles(organizationId);
+  const { data } = useOrganizationRoles(organizationId);
+  const roles = data?.pages.flatMap((page) => page.data) ?? [];
   
   const createRole = useCreateRole(organizationId);
   const updateRole = useUpdateRolePermissions(organizationId);

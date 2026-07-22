@@ -29,6 +29,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import React, { useState, useMemo } from "react"
 import type { Epic, Milestone, Sprint } from "@/types/models"
+import { usePermissions } from "@/hooks/use-permissions"
 
 import { IconStack } from "@/components/reui/icon-stack"
 import { Card } from "@/components/ui/card"
@@ -816,6 +817,9 @@ export function StatusSection({
   setIsCreateTaskOpen,
   isDragDisabled = false,
 }: StatusSectionProps) {
+  const { hasPermission } = usePermissions()
+  const canCreateTask = hasPermission("task:create")
+
   const rowVirtualizer = useVirtualizer({
     count: tasks.length,
     getScrollElement: () => scrollElement,
@@ -866,16 +870,18 @@ export function StatusSection({
             </span>
           </div>
           <div className="flex-1" />
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsCreateTaskOpen?.(true)
-            }}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Add task</span>
-          </button>
+          {canCreateTask && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsCreateTaskOpen?.(true)
+              }}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add task</span>
+            </button>
+          )}
         </div>
         {!isCollapsed && (
           <div
@@ -980,16 +986,18 @@ export function StatusSection({
           </span>
         </div>
         <div className="flex-1" />
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            setIsCreateTaskOpen?.(true)
-          }}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          <span>Add task</span>
-        </button>
+        {canCreateTask && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsCreateTaskOpen?.(true)
+            }}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add task</span>
+          </button>
+        )}
       </div>
 
       <AnimatePresence initial={false}>

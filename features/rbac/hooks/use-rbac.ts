@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { rbacService } from "../services/rbac.service";
 
 export const rbacKeys = {
   all: ["rbac"] as const,
   permissions: () => [...rbacKeys.all, "permissions"] as const,
-  roles: (orgId: string) => [...rbacKeys.all, "roles", orgId] as const,
+  roles: (orgId: string, search?: string) => [...rbacKeys.all, "roles", orgId, { search }] as const,
   assignments: (orgId: string) => [...rbacKeys.all, "assignments", orgId] as const,
 };
 
@@ -15,10 +15,12 @@ export const usePermissions = () => {
   });
 };
 
-export const useOrganizationRoles = (orgId: string) => {
-  return useQuery({
-    queryKey: rbacKeys.roles(orgId),
-    queryFn: () => rbacService.getOrganizationRoles(orgId),
+export const useOrganizationRoles = (orgId: string, search?: string) => {
+  return useInfiniteQuery({
+    queryKey: rbacKeys.roles(orgId, search),
+    queryFn: ({ pageParam }) => rbacService.getOrganizationRoles(orgId, { search, limit: 10, cursor: pageParam }),
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: undefined as string | undefined,
     enabled: !!orgId,
   });
 };
@@ -37,7 +39,7 @@ export const useCreateRole = (orgId: string) => {
   return useMutation({
     mutationFn: rbacService.createRole,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: rbacKeys.roles(orgId) });
+      queryClient.invalidateQueries({ queryKey: ["rbac", "roles", orgId] });
     },
   });
 };
@@ -49,7 +51,7 @@ export const useUpdateRolePermissions = (orgId: string) => {
     mutationFn: ({ roleId, name, permissionIds, bypassPermissions }: { roleId: string; name?: string; permissionIds?: string[]; bypassPermissions?: boolean }) =>
       rbacService.updateRolePermissions(roleId, { name, permissionIds, bypassPermissions }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: rbacKeys.roles(orgId) });
+      queryClient.invalidateQueries({ queryKey: ["rbac", "roles", orgId] });
     },
   });
 };
@@ -60,7 +62,18 @@ export const useDeleteRole = (orgId: string) => {
   return useMutation({
     mutationFn: rbacService.deleteRole,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: rbacKeys.roles(orgId) });
+      queryClient.invalidateQueries({ queryKey: ["rbac", "roles", orgId] });
+    },
+  });
+};
+
+export const useUpdateRoleHierarchy = (orgId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (roleIds: string[]) => rbacService.updateRoleHierarchy({ roleIds, organizationId: orgId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rbac", "roles", orgId] });
     },
   });
 };

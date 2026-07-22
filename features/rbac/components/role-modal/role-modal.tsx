@@ -38,12 +38,13 @@ export function RoleModal({
   onOpenChange,
 }: RoleModalProps) {
   const { data: permissions } = usePermissions()
-  const { data: roles } = useOrganizationRoles(organizationId)
+  const { data } = useOrganizationRoles(organizationId)
+  const rolesList = data?.pages.flatMap((page) => page.data) ?? []
 
   const createRole = useCreateRole(organizationId)
   const updateRole = useUpdateRolePermissions(organizationId)
 
-  const roleToEdit = roles?.find((r) => r.id === roleId)
+  const roleToEdit = rolesList.find((r) => r.id === roleId)
   const isEditing = !!roleId
   const isSystemDefault = roleToEdit?.isSystemDefault
 
@@ -178,7 +179,7 @@ export function RoleModal({
                 selectedPermissionIds={selectedPermissionIds}
                 onChange={(id, checked) => {
                   if (checked) {
-                    setSelectedPermissionIds((prev) => [...prev, id])
+                    setSelectedPermissionIds((prev) => prev.includes(id) ? prev : [...prev, id])
                   } else {
                     setSelectedPermissionIds((prev) =>
                       prev.filter((pid) => pid !== id)
