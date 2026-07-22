@@ -824,13 +824,13 @@ export default function KpiPage() {
           </Card>
 
           {/* Total Points */}
-          <Card className="relative overflow-hidden border-amber-500/20 bg-linear-to-br from-amber-500/10 via-background to-background">
+          <Card className="relative overflow-hidden border-indigo-500/20 bg-linear-to-br from-indigo-500/10 via-background to-background hover:border-indigo-500/40">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 <HugeiconsIcon
                   icon={Award01Icon}
                   size={14}
-                  className="text-amber-500"
+                  className="text-indigo-500"
                 />
                 Total KPI Score
               </CardTitle>
@@ -844,7 +844,7 @@ export default function KpiPage() {
               ) : (
                 <>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-black text-amber-500">
+                    <span className="text-5xl font-black text-indigo-500">
                       {statsData?.totalPoints ?? 0}
                     </span>
                     <span className="text-sm text-muted-foreground">
@@ -852,7 +852,7 @@ export default function KpiPage() {
                     </span>
                   </div>
                   <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
-                    <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                    <span className="inline-block h-2 w-2 rounded-full bg-indigo-500" />
                     Keep resolving tasks to maintain rank!
                   </div>
                 </>
@@ -861,7 +861,7 @@ export default function KpiPage() {
           </Card>
 
           {/* Weekly Trend */}
-          <Card className="md:col-span-1">
+          <Card className="relative overflow-hidden border-amber-500/20 bg-linear-to-br from-amber-500/10 via-background to-background hover:border-amber-500/40 md:col-span-1">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 <HugeiconsIcon icon={Time02Icon} size={14} />

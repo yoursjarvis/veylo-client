@@ -137,7 +137,7 @@ export interface UpdateRoleRequest {
 export interface AssignRoleRequest {
   userId: string;
   roleIds: string[];
-  scopeType: "ORGANIZATION" | "PROJECT";
+  scopeType: "ORGANIZATION" | "PROJECT" | "WORKSPACE" | "DEPARTMENT";
   scopeId: string;
 }
 

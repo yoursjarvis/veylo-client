@@ -58,7 +58,7 @@ interface RoleAssignmentModalProps {
 type AssignmentRow = {
   id: string
   roleId: string
-  scopeType: "ORGANIZATION" | "PROJECT" | "DEPARTMENT"
+  scopeType: "ORGANIZATION" | "PROJECT" | "WORKSPACE"
   scopeId: string
 }
 
@@ -96,7 +96,7 @@ export function RoleAssignmentModal({
             userAssignments.map((a: { id?: string; roleId: string; scopeType: string; scopeId: string }) => ({
               id: a.id || Math.random().toString(36),
               roleId: a.roleId,
-              scopeType: a.scopeType as "ORGANIZATION" | "PROJECT" | "DEPARTMENT",
+              scopeType: a.scopeType as "ORGANIZATION" | "PROJECT" | "WORKSPACE",
               scopeId: a.scopeId,
             }))
           )
@@ -115,6 +115,18 @@ export function RoleAssignmentModal({
     queryFn: async () => {
       const { data } = await axiosInstance.get(
         `/organizations/${organizationId}/projects`
+      )
+      return data.data
+    },
+    enabled: open,
+  })
+
+  // Fetch workspaces unconditionally because any row could switch to WORKSPACE
+  const { data: workspaces } = useQuery({
+    queryKey: ["workspaces", organizationId],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get(
+        `/organizations/${organizationId}/workspaces`
       )
       return data.data
     },
@@ -165,7 +177,7 @@ export function RoleAssignmentModal({
         assignRole({
           userId,
           roleIds: scope.roleIds,
-          scopeType: scope.scopeType as "ORGANIZATION" | "PROJECT",
+          scopeType: scope.scopeType as "ORGANIZATION" | "PROJECT" | "WORKSPACE",
           scopeId: scope.scopeId,
         })
       )
@@ -223,7 +235,7 @@ export function RoleAssignmentModal({
             <div className="mb-2 flex items-center gap-3 px-1">
               <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Role</Label>
               <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Scope</Label>
-              <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Project/Department</Label>
+              <Label className="flex-1 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Project/Workspace</Label>
               <div className="w-[80px]"></div>
             </div>
 
@@ -235,6 +247,7 @@ export function RoleAssignmentModal({
                   isLast={index === rows.length - 1}
                   roles={roles || []}
                   projects={projects || []}
+                  workspaces={workspaces || []}
                   organizationId={organizationId}
                   updateRow={updateRow}
                   removeRow={removeRow}
@@ -267,6 +280,7 @@ function AssignmentRowItem({
   isLast,
   roles,
   projects,
+  workspaces,
   organizationId,
   updateRow,
   removeRow,
@@ -276,6 +290,7 @@ function AssignmentRowItem({
   isLast: boolean
   roles: { id: string; name: string }[]
   projects: { id: string; name?: string; title?: string }[]
+  workspaces: { id: string; name?: string; title?: string }[]
   organizationId: string
   updateRow: (id: string, updates: Partial<AssignmentRow>) => void
   removeRow: (id: string) => void
@@ -284,6 +299,7 @@ function AssignmentRowItem({
   const [roleOpen, setRoleOpen] = useState(false)
   const [scopeOpen, setScopeOpen] = useState(false)
   const [projectOpen, setProjectOpen] = useState(false)
+  const [workspaceOpen, setWorkspaceOpen] = useState(false)
 
   return (
     <div className="flex w-full animate-in items-center gap-3 py-2 border-b border-border/50 last:border-b-0 duration-200 fade-in zoom-in group">
@@ -355,8 +371,8 @@ function AssignmentRowItem({
             >
               <span className="truncate">
                 {row.scopeType === "ORGANIZATION" && "Organization Wide"}
+                {row.scopeType === "WORKSPACE" && "Specific Workspace"}
                 {row.scopeType === "PROJECT" && "Specific Project"}
-                {row.scopeType === "DEPARTMENT" && "Specific Department"}
               </span>
               <HugeiconsIcon
                 icon={ArrowDown01Icon}
@@ -375,15 +391,15 @@ function AssignmentRowItem({
                 <CommandGroup>
                   {[
                     { value: "ORGANIZATION", label: "Organization Wide" },
+                    { value: "WORKSPACE", label: "Specific Workspace" },
                     { value: "PROJECT", label: "Specific Project" },
-                    { value: "DEPARTMENT", label: "Specific Department" },
                   ].map((item) => (
                     <CommandItem
                       key={item.value}
                       value={item.label}
                       onSelect={() => {
                         updateRow(row.id, {
-                          scopeType: item.value as "ORGANIZATION" | "PROJECT" | "DEPARTMENT",
+                          scopeType: item.value as "ORGANIZATION" | "PROJECT" | "WORKSPACE",
                           scopeId:
                             item.value === "ORGANIZATION" ? organizationId : "",
                         })
@@ -461,6 +477,65 @@ function AssignmentRowItem({
                           )}
                         />
                         {project.title || project.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        )}
+
+        {row.scopeType === "WORKSPACE" && (
+          <Popover open={workspaceOpen} onOpenChange={setWorkspaceOpen}>
+            <PopoverTrigger render={
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={workspaceOpen}
+                className="w-full justify-between font-normal text-xs h-8 border-border/50 bg-background hover:bg-muted/50 transition-colors"
+              >
+                <span className="truncate">
+                  {row.scopeId && workspaces?.length
+                    ? workspaces.find((w) => w.id === row.scopeId)?.title ||
+                      workspaces.find((w) => w.id === row.scopeId)?.name ||
+                      "Select workspace..."
+                    : "Select workspace..."}
+                </span>
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  className="ml-2 h-3 w-3 shrink-0 opacity-50"
+                />
+              </Button>
+            } />
+            <PopoverContent
+              className="w-[--radix-popover-trigger-width] p-0"
+              align="start"
+            >
+              <Command>
+                <CommandInput placeholder="Search workspace..." />
+                <CommandList>
+                  <CommandEmpty>No workspaces found.</CommandEmpty>
+                  <CommandGroup>
+                    {workspaces?.map((workspace) => (
+                      <CommandItem
+                        key={workspace.id}
+                        value={workspace.title || workspace.name}
+                        onSelect={() => {
+                          updateRow(row.id, { scopeId: workspace.id })
+                          setWorkspaceOpen(false)
+                        }}
+                      >
+                        <HugeiconsIcon
+                          icon={Tick02Icon}
+                          className={cn(
+                            "mr-2 h-3 w-3",
+                            row.scopeId === workspace.id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {workspace.title || workspace.name}
                       </CommandItem>
                     ))}
                   </CommandGroup>

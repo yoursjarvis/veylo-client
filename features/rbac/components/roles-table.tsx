@@ -31,6 +31,23 @@ import {
 } from "@/components/ui/table"
 import { usePermissions } from "@/hooks/use-permissions"
 import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import {
   Delete01Icon,
   Edit02Icon,
   PlusSignIcon,
@@ -45,6 +62,7 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   AlertTriangle,
+  GripVertical,
   MoreHorizontal,
   Search,
   ShieldAlert,
@@ -52,13 +70,108 @@ import {
 import { useQueryState } from "nuqs"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
-import { useDeleteRole, useOrganizationRoles } from "../hooks/use-rbac"
+
+import {
+  useDeleteRole,
+  useOrganizationRoles,
+  useUpdateRoleHierarchy,
+} from "../hooks/use-rbac"
 import type { Role } from "../services/rbac.service"
 import { RoleModal } from "./role-modal/role-modal"
 import { RoleUsersAvatarStack } from "./role-users-avatar-stack"
 
+import * as React from "react"
+
+import { motion } from "framer-motion"
+
+interface SortableContextType {
+  attributes: ReturnType<typeof useSortable>["attributes"]
+  listeners: ReturnType<typeof useSortable>["listeners"]
+}
+const SortableContextValue = React.createContext<SortableContextType | null>(
+  null
+)
+
+const SortableRow = React.forwardRef<
+  HTMLTableRowElement,
+  Omit<
+    React.HTMLAttributes<HTMLTableRowElement>,
+    "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart"
+  > & { id: string }
+>(({ children, id, className, ...props }, ref) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id,
+    transition: {
+      duration: 150,
+      easing: "cubic-bezier(0.2, 0, 0, 1)",
+    },
+  })
+
+  const combinedRef = React.useCallback(
+    (node: HTMLTableRowElement | null) => {
+      setNodeRef(node)
+      if (typeof ref === "function") {
+        ref(node)
+      } else if (ref) {
+        ref.current = node
+      }
+    },
+    [setNodeRef, ref]
+  )
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.7 : 1,
+    zIndex: isDragging ? 50 : 0,
+    position: isDragging ? ("relative" as const) : undefined,
+    backgroundColor: isDragging ? "hsl(var(--muted))" : undefined,
+    boxShadow: isDragging
+      ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
+      : undefined,
+  }
+
+  return (
+    <SortableContextValue.Provider value={{ attributes, listeners }}>
+      <motion.tr
+        layout={!isDragging}
+        initial={false}
+        transition={{ type: "spring", bounce: 0.1, duration: 0.4 }}
+        ref={combinedRef}
+        style={style}
+        className={className}
+        {...props}
+      >
+        {children}
+      </motion.tr>
+    </SortableContextValue.Provider>
+  )
+})
+SortableRow.displayName = "SortableRow"
+
 interface RolesTableProps {
   organizationId: string
+}
+
+const DragHandleCell = () => {
+  const context = React.useContext(SortableContextValue)
+  if (!context?.attributes) return null
+  return (
+    <button
+      className="cursor-grab text-muted-foreground transition-colors outline-none hover:text-foreground"
+      {...context.attributes}
+      {...context.listeners}
+    >
+      <GripVertical className="h-4 w-4" />
+    </button>
+  )
 }
 
 export function RolesTable({ organizationId }: RolesTableProps) {
@@ -88,6 +201,8 @@ export function RolesTable({ organizationId }: RolesTableProps) {
   const canCreateRole = hasPermission("role:create")
   const canUpdateRole = hasPermission("role:update")
   const canDeleteRole = hasPermission("role:delete")
+  const canUpdateHierarchy = hasPermission("role:update-hierarchy")
+  const updateHierarchy = useUpdateRoleHierarchy(organizationId)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
@@ -100,6 +215,45 @@ export function RolesTable({ organizationId }: RolesTableProps) {
     () => data?.pages.flatMap((page) => page.data) ?? [],
     [data]
   )
+
+  const [orderedRoles, setOrderedRoles] = useState<Role[]>([])
+
+  useEffect(() => {
+    setOrderedRoles(roles)
+  }, [roles])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      const oldIndex = orderedRoles.findIndex((r) => r.id === active.id)
+      const newIndex = orderedRoles.findIndex((r) => r.id === over.id)
+
+      const newRoles = arrayMove(orderedRoles, oldIndex, newIndex)
+      setOrderedRoles(newRoles)
+
+      try {
+        await updateHierarchy.mutateAsync(newRoles.map((r) => r.id))
+        toast.success("Role hierarchy updated")
+      } catch (err: unknown) {
+        setOrderedRoles(roles)
+        const error = err as { response?: { data?: { message?: string } } }
+        toast.error(
+          error.response?.data?.message || "Failed to update hierarchy"
+        )
+      }
+    }
+  }
 
   const handleDelete = async () => {
     if (!roleToDelete) return
@@ -114,6 +268,11 @@ export function RolesTable({ organizationId }: RolesTableProps) {
 
   const columns = useMemo<ColumnDef<Role>[]>(
     () => [
+      {
+        id: "drag",
+        header: "",
+        cell: DragHandleCell,
+      },
       {
         accessorKey: "name",
         header: "Role Name",
@@ -197,7 +356,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
   )
 
   const table = useReactTable({
-    data: roles,
+    data: orderedRoles,
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
@@ -223,7 +382,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
   }, [fetchMoreOnBottomReached])
 
   const rowVirtualizer = useVirtualizer({
-    count: hasNextPage ? roles.length + 1 : roles.length,
+    count: hasNextPage ? orderedRoles.length + 1 : orderedRoles.length,
     getScrollElement: () => tableContainerRef.current,
     estimateSize: () => 64,
     overscan: 5,
@@ -291,7 +450,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
             <div
               ref={tableContainerRef}
               onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
-              className="relative h-[600px] overflow-auto"
+              className="relative h-150 overflow-auto"
             >
               <Table>
                 <TableHeader className="sticky top-0 z-20 bg-muted/50">
@@ -317,62 +476,97 @@ export function RolesTable({ organizationId }: RolesTableProps) {
                   ))}
                 </TableHeader>
                 <TableBody>
-                  {rowVirtualizer.getVirtualItems().length > 0 && (
-                    <TableRow>
-                      <TableCell
-                        style={{
-                          height: `${rowVirtualizer.getVirtualItems()[0]?.start || 0}px`,
-                        }}
-                        className="border-0 p-0"
-                        colSpan={columns.length}
-                      />
-                    </TableRow>
-                  )}
-                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const isLoaderRow = virtualRow.index > roles.length - 1
-                    const row = table.getRowModel().rows[virtualRow.index]
-
-                    return (
-                      <TableRow
-                        key={virtualRow.index}
-                        data-index={virtualRow.index}
-                        ref={rowVirtualizer.measureElement}
-                        className="group transition-colors hover:bg-muted/30"
-                      >
-                        {isLoaderRow ? (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={orderedRoles.map((r) => r.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {rowVirtualizer.getVirtualItems().length > 0 && (
+                        <TableRow>
                           <TableCell
+                            style={{
+                              height: `${rowVirtualizer.getVirtualItems()[0]?.start || 0}px`,
+                            }}
+                            className="border-0 p-0"
                             colSpan={columns.length}
-                            className="h-[64px] px-4 py-4"
+                          />
+                        </TableRow>
+                      )}
+                      {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                        const isLoaderRow = virtualRow.index > roles.length - 1
+                        const row = table.getRowModel().rows[virtualRow.index]
+
+                        return isLoaderRow ||
+                          !!searchQuery ||
+                          !canUpdateHierarchy ? (
+                          <TableRow
+                            key={virtualRow.index}
+                            data-index={virtualRow.index}
+                            ref={rowVirtualizer.measureElement}
+                            className="group transition-colors hover:bg-muted/30"
                           >
-                            <Skeleton className="h-6 w-full" />
-                          </TableCell>
-                        ) : row ? (
-                          row.getVisibleCells().map((cell) => (
-                            <TableCell
-                              key={cell.id}
-                              className="h-[64px] border-b px-4 py-4"
-                            >
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
-                            </TableCell>
-                          ))
-                        ) : null}
-                      </TableRow>
-                    )
-                  })}
-                  {rowVirtualizer.getVirtualItems().length > 0 && (
-                    <TableRow>
-                      <TableCell
-                        style={{
-                          height: `${rowVirtualizer.getTotalSize() - (rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1]?.end || 0)}px`,
-                        }}
-                        className="border-0 p-0"
-                        colSpan={columns.length}
-                      />
-                    </TableRow>
-                  )}
+                            {isLoaderRow ? (
+                              <TableCell
+                                colSpan={columns.length}
+                                className="h-16 px-4 py-4"
+                              >
+                                <Skeleton className="h-6 w-full" />
+                              </TableCell>
+                            ) : row ? (
+                              row.getVisibleCells().map((cell) => (
+                                <TableCell
+                                  key={cell.id}
+                                  className="h-16 border-b px-4 py-4"
+                                >
+                                  {flexRender(
+                                    cell.column.columnDef.cell,
+                                    cell.getContext()
+                                  )}
+                                </TableCell>
+                              ))
+                            ) : null}
+                          </TableRow>
+                        ) : (
+                          <SortableRow
+                            id={row.original.id}
+                            key={virtualRow.index}
+                            data-index={virtualRow.index}
+                            ref={rowVirtualizer.measureElement}
+                            className="group transition-colors hover:bg-muted/30"
+                          >
+                            {row
+                              ? row.getVisibleCells().map((cell) => (
+                                  <TableCell
+                                    key={cell.id}
+                                    className="h-16 border-b px-4 py-4"
+                                  >
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext()
+                                    )}
+                                  </TableCell>
+                                ))
+                              : null}
+                          </SortableRow>
+                        )
+                      })}
+                      {rowVirtualizer.getVirtualItems().length > 0 && (
+                        <TableRow>
+                          <TableCell
+                            style={{
+                              height: `${rowVirtualizer.getTotalSize() - (rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1]?.end || 0)}px`,
+                            }}
+                            className="border-0 p-0"
+                            colSpan={columns.length}
+                          />
+                        </TableRow>
+                      )}
+                    </SortableContext>
+                  </DndContext>
                 </TableBody>
               </Table>
             </div>
@@ -391,7 +585,7 @@ export function RolesTable({ organizationId }: RolesTableProps) {
         open={!!roleToDelete}
         onOpenChange={(open) => !open && setRoleToDelete(null)}
       >
-        <AlertDialogContent className="sm:max-w-[450px]">
+        <AlertDialogContent className="sm:max-w-112.5">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />

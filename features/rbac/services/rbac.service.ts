@@ -144,6 +144,10 @@ export const rbacService = {
     await axiosInstance.delete(`/rbac/roles/${roleId}`);
   },
 
+  updateRoleHierarchy: async (payload: { roleIds: string[]; organizationId: string }): Promise<void> => {
+    await axiosInstance.put("/rbac/roles/hierarchy", payload);
+  },
+
   assignRoleToUser: async (payload: AssignRoleRequest): Promise<RoleAssignment[]> => {
     const { data } = await axiosInstance.post("/rbac/assignments", payload);
     return data.data;

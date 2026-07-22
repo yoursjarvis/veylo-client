@@ -67,6 +67,17 @@ export const useDeleteRole = (orgId: string) => {
   });
 };
 
+export const useUpdateRoleHierarchy = (orgId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (roleIds: string[]) => rbacService.updateRoleHierarchy({ roleIds, organizationId: orgId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rbac", "roles", orgId] });
+    },
+  });
+};
+
 export const useAssignRole = () => {
   const queryClient = useQueryClient();
 
