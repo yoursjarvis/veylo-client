@@ -19,6 +19,8 @@ export interface User {
   updatedAt: string
   createdAt: string
   twoFactorEnabled?: boolean | null
+  timezone?: string | null
+  dateTimeFormat?: string | null
 }
 
 export interface Session {

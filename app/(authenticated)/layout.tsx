@@ -8,6 +8,7 @@ import { authClient } from "@/lib/auth-client"
 import { WorkspaceProvider } from "@/components/providers/workspace-provider"
 
 import { CreateWorkspaceModal } from "@/features/org/components/create-workspace-modal"
+import { useDateTimeInitializer } from "@/lib/datetime-formatter"
 
 export default function AuthenticatedLayout({
   children,
@@ -16,6 +17,7 @@ export default function AuthenticatedLayout({
 }) {
   const { data: auth, isLoading } = useCurrentUser()
   const [orgCheckComplete, setOrgCheckComplete] = useState(false)
+  useDateTimeInitializer()
 
   useEffect(() => {
     async function checkOrganization() {

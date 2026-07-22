@@ -2,6 +2,7 @@
 
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { format } from "date-fns"
+import { formatDateTime } from "@/lib/datetime-formatter"
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useDebounce } from "use-debounce"
@@ -475,7 +476,7 @@ export default function KpiPage() {
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <HugeiconsIcon icon={Calendar01Icon} size={18} />
-                {format(new Date(tx.createdAt), "MMM d, h:mm a")}
+                {formatDateTime(tx.createdAt)}
               </span>
             </div>
           )

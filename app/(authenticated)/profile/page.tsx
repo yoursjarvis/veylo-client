@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCurrentUser } from "@/features/auth/hooks/use-auth"
 import { useRouter } from "next/navigation"
+import { formatDateTime } from "@/lib/datetime-formatter"
 
 export default function ProfilePage() {
   const { data: auth } = useCurrentUser()
@@ -63,7 +64,7 @@ export default function ProfilePage() {
             </p>
             <p>
               {user?.createdAt
-                ? new Date(user.createdAt).toLocaleDateString()
+                ? formatDateTime(user.createdAt)
                 : "N/A"}
             </p>
           </div>

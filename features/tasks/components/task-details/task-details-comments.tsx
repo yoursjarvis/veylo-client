@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils"
 import { Comment, CommentReaction, ProjectMember, User } from "@/types/models"
 import { Message01Icon, SmilePlusIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { format } from "date-fns"
+import { formatDateTime } from "@/lib/datetime-formatter"
 import EmojiPicker, { Theme } from "emoji-picker-react"
 import { useTheme } from "next-themes"
 import React, { useState } from "react"
@@ -257,7 +257,7 @@ const CommentNode = ({
             </span>
             <div className="flex items-center gap-2">
               <span className="text-2xs font-medium text-muted-foreground">
-                {format(new Date(comment.createdAt), "MMM d, h:mm a")}
+                {formatDateTime(comment.createdAt)}
               </span>
             </div>
           </div>

@@ -23,6 +23,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
 import React from "react"
 import { toast } from "sonner"
+import { formatDateTime } from "@/lib/datetime-formatter"
 import { useProject } from "../layout"
 
 interface ProjectFile {
@@ -249,7 +250,7 @@ export default function FilesPage() {
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </td>
                     <td className="p-4">
-                      {new Date(file.createdAt).toLocaleDateString()}
+                      {formatDateTime(file.createdAt)}
                     </td>
                     <td className="p-4 pr-6 text-right">
                       <div className="flex items-center justify-end gap-2">

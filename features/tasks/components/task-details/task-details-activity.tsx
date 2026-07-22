@@ -2,7 +2,7 @@
 
 import React from "react"
 import { TaskActivity } from "@/types/models"
-import { format } from "date-fns"
+import { formatDateTime } from "@/lib/datetime-formatter"
 
 interface TaskDetailsActivityProps {
   activityLogs: TaskActivity[]
@@ -33,7 +33,7 @@ export function TaskDetailsActivity({
                   </span>
                 </div>
                 <span className="text-2xs text-muted-foreground/60">
-                  {format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}
+                  {formatDateTime(activity.createdAt)}
                 </span>
               </div>
             </div>

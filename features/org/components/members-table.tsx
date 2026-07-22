@@ -1,9 +1,11 @@
 "use client"
 "use no memo"
 
+import { IconStack } from "@/components/reui/icon-stack"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   Combobox,
   ComboboxContent,
@@ -20,7 +22,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -33,8 +41,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ROLES } from "@/constants/roles"
 import { RoleAssignmentModal } from "@/features/rbac/components/role-assignment-modal"
+import { usePermissions } from "@/hooks/use-permissions"
 import { authClient } from "@/lib/auth-client"
+import { formatDateTime } from "@/lib/datetime-formatter"
 import {
+  AddTeamIcon,
   Cancel01Icon,
   Key01Icon,
   LeftToRightListBulletIcon,
@@ -47,12 +58,12 @@ import {
   UserEdit01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import * as TanStackTable from "@tanstack/react-table"
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
 } from "@tanstack/react-table"
-import * as TanStackTable from "@tanstack/react-table"
 import * as TanStackVirtual from "@tanstack/react-virtual"
 import { useQueryState } from "nuqs"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -101,6 +112,9 @@ export function MembersTable() {
   const [isBulkInviteOpen, setIsBulkInviteOpen] = useState(false)
   const [isInviteOpen, setIsInviteOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("members")
+
+  const { hasPermission } = usePermissions()
+  const canInviteMembers = hasPermission("member:invite")
 
   // State for Role Assignment Modal
   const [assignmentModal, setAssignmentModal] = useState<{
@@ -400,19 +414,21 @@ export function MembersTable() {
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex items-center gap-2 pb-2 sm:pb-0">
-          <Button variant="outline" onClick={() => setIsBulkInviteOpen(true)}>
-            <HugeiconsIcon
-              icon={LeftToRightListBulletIcon}
-              className="mr-2 h-4 w-4"
-            />
-            Bulk Invite
-          </Button>
-          <Button onClick={() => setIsInviteOpen(true)}>
-            <HugeiconsIcon icon={UserAdd01Icon} className="mr-2 h-4 w-4" />
-            Invite Member
-          </Button>
-        </div>
+        {canInviteMembers && (
+          <div className="flex items-center gap-2 pb-2 sm:pb-0">
+            <Button variant="outline" onClick={() => setIsBulkInviteOpen(true)}>
+              <HugeiconsIcon
+                icon={LeftToRightListBulletIcon}
+                className="mr-2 h-4 w-4"
+              />
+              Bulk Invite
+            </Button>
+            <Button onClick={() => setIsInviteOpen(true)}>
+              <HugeiconsIcon icon={UserAdd01Icon} className="mr-2 h-4 w-4" />
+              Invite Member
+            </Button>
+          </div>
+        )}
       </div>
 
       <TabsContent value="members" className="space-y-4 outline-none">
@@ -650,7 +666,10 @@ export function MembersTable() {
       </TabsContent>
 
       <TabsContent value="invitations" className="space-y-4 outline-none">
-        <PendingInvitationsList />
+        <PendingInvitationsList
+          canInviteMembers={canInviteMembers}
+          onInviteClick={() => setIsInviteOpen(true)}
+        />
       </TabsContent>
 
       <BulkInviteModal
@@ -684,7 +703,13 @@ export function MembersTable() {
   )
 }
 
-function PendingInvitationsList() {
+function PendingInvitationsList({
+  canInviteMembers,
+  onInviteClick,
+}: {
+  canInviteMembers: boolean
+  onInviteClick: () => void
+}) {
   const { data: invitations, isLoading } = usePendingInvitations()
   const revokeMutation = useRevokeInvitation()
   const resendMutation = useResendInvitation()
@@ -767,12 +792,36 @@ function PendingInvitationsList() {
 
   if (!invitations || invitations.length === 0) {
     return (
-      <Empty className="my-8">
-        <EmptyTitle>No pending invitations</EmptyTitle>
-        <EmptyDescription>
-          There are no members matching your current filters.
-        </EmptyDescription>
-      </Empty>
+      <Card className="flex flex-col items-center justify-center border-dashed p-12 text-center shadow-none">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia>
+              <IconStack aria-hidden="true" className="h-24 w-22 text-primary">
+                <HugeiconsIcon
+                  icon={AddTeamIcon}
+                  className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                />
+              </IconStack>
+            </EmptyMedia>
+            <EmptyTitle>No pending invitations.</EmptyTitle>
+            <EmptyDescription>
+              There are no members matching your current filters.
+            </EmptyDescription>
+          </EmptyHeader>
+
+          {canInviteMembers && (
+            <EmptyDescription>
+              <Button
+                variant="outline-default"
+                className="mt-4 h-8 text-xs font-semibold"
+                onClick={onInviteClick}
+              >
+                Invite Members
+              </Button>
+            </EmptyDescription>
+          )}
+        </Empty>
+      </Card>
     )
   }
 
@@ -838,11 +887,7 @@ function PendingInvitationsList() {
                   </Badge>
                 </td>
                 <td className="p-4 align-middle text-muted-foreground">
-                  {new Date(invite.createdAt).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {formatDateTime(invite.createdAt)}
                 </td>
                 <td className="p-4 text-right align-middle">
                   <DropdownMenu>

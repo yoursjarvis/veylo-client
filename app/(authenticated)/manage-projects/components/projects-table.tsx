@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/axios"
+import { formatDateTime } from "@/lib/datetime-formatter"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   ColumnDef,
@@ -340,11 +341,7 @@ export function ProjectsTable({
           const project = row.original
           const formatDate = (dateStr?: string | null) => {
             if (!dateStr) return null
-            return new Date(dateStr).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "2-digit",
-            })
+            return formatDateTime(dateStr)
           }
           return (
             <div className="flex flex-col text-2xs">
@@ -365,11 +362,7 @@ export function ProjectsTable({
         header: "Created At",
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground">
-            {new Date(row.original.createdAt).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
+            {formatDateTime(row.original.createdAt)}
           </span>
         ),
       },

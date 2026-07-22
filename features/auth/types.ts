@@ -47,6 +47,8 @@ export interface User {
   twoFactorEnabled?: boolean
   hasPassword?: boolean
   notificationPreferences?: string
+  timezone?: string
+  dateTimeFormat?: string
 }
 
 export interface Session {

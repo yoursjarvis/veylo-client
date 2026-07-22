@@ -39,6 +39,8 @@ import {
   useProjectTasks,
   useUpdateEpic,
 } from "@/features/tasks/hooks/use-tasks"
+import { usePermissions } from "@/hooks/use-permissions"
+import { formatDateTime } from "@/lib/datetime-formatter"
 import { cn } from "@/lib/utils"
 import {
   Delete01Icon,
@@ -51,7 +53,6 @@ import { useForm } from "@tanstack/react-form"
 import { format, isBefore, startOfDay } from "date-fns"
 import { Calendar, Target } from "lucide-react"
 import { toast } from "sonner"
-import { usePermissions } from "@/hooks/use-permissions"
 
 const PRESET_COLORS = [
   { name: "Indigo", value: "#6366f1" },
@@ -372,12 +373,10 @@ export default function EpicsPage() {
                       <Calendar className="h-3.5 w-3.5" />
                       <span>
                         {epic.startDate
-                          ? new Date(epic.startDate).toLocaleDateString()
+                          ? formatDateTime(epic.startDate)
                           : "No start"}
                         {" - "}
-                        {epic.endDate
-                          ? new Date(epic.endDate).toLocaleDateString()
-                          : "No end"}
+                        {epic.endDate ? formatDateTime(epic.endDate) : "No end"}
                       </span>
                     </div>
 

@@ -1,31 +1,29 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { format } from "date-fns"
 import {
-  Search,
+  Calendar as CalendarIcon,
+  CheckSquare,
+  Database,
   Download,
   Filter,
-  RotateCcw,
-  Calendar as CalendarIcon,
+  Globe,
   Info,
   Laptop,
-  Globe,
-  Database,
-  CheckSquare,
+  RotateCcw,
+  Search,
 } from "lucide-react"
-import { format } from "date-fns"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
-import { axiosInstance } from "@/lib/axios"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -33,19 +31,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Calendar } from "@/components/ui/calendar"
+import { Input } from "@/components/ui/input"
+import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { axiosInstance } from "@/lib/axios"
+import { formatDateTime } from "@/lib/datetime-formatter"
 import { cn } from "@/lib/utils"
 import {
-  useQueryState,
-  parseAsString,
   parseAsArrayOf,
   parseAsInteger,
+  parseAsString,
+  useQueryState,
 } from "nuqs"
 
 interface WorkspaceMember {
@@ -404,11 +405,11 @@ export default function AuditLogsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <div className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-8 py-8">
+      <div className="max-w-9xl mx-auto w-full flex-1 space-y-6 px-8 py-8">
         {/* Header Section */}
         <div className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
-            <h1 className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+            <h1 className="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               Workspace Audit Logs
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -448,7 +449,7 @@ export default function AuditLogsPage() {
           selectedActions.length > 0 ||
           startDate ||
           endDate) && (
-          <Card className="border border-border/80 bg-card shadow-sm transition-all duration-200">
+          <Card className="border border-border/80 bg-card pb-0 shadow-sm transition-all duration-200">
             <CardHeader className="border-b border-border/50 bg-muted/20 py-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-sm font-semibold">
@@ -599,11 +600,11 @@ export default function AuditLogsPage() {
         )}
 
         {/* Ledger Table Section */}
-        <Card className="overflow-hidden border border-border/80 bg-card shadow-sm">
+        <Card className="overflow-hidden border border-border/80 bg-card pt-0 shadow-sm">
           <CardContent className="p-0">
             {isLogsLoading ? (
               <div className="w-full overflow-x-auto">
-                <div className="flex min-w-[1100px] flex-col">
+                <div className="flex min-w-275 flex-col">
                   {/* Skeleton Header */}
                   <div className="grid grid-cols-[180px_200px_160px_180px_1fr_160px_80px] items-center border-b border-border bg-muted/30 px-4 py-3 text-sm font-semibold text-muted-foreground">
                     <div>Timestamp</div>
@@ -752,10 +753,7 @@ export default function AuditLogsPage() {
                             ) : (
                               <>
                                 <div className="pr-2 font-mono text-xs text-muted-foreground">
-                                  {format(
-                                    new Date(log.createdAt),
-                                    "yyyy-MM-dd hh:mm a"
-                                  )}
+                                  {formatDateTime(log.createdAt)}
                                 </div>
                                 <div className="pr-2">
                                   <div className="flex min-w-0 items-center gap-2">
