@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { axiosInstance } from "@/lib/axios"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 export type PortfolioProject = {
@@ -8,8 +8,8 @@ export type PortfolioProject = {
   title: string
   description?: string | null
   icon?: string | null
-  status: string // on_track, at_risk, off_track, on_hold
-  priority: string // low, medium, high
+  status: string
+  priority: string
   startDate?: string | null
   endDate?: string | null
   owner?: {

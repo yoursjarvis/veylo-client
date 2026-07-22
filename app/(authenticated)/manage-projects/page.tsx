@@ -7,15 +7,50 @@ import { axiosInstance } from "@/lib/axios"
 import {
   keepPreviousData,
   useInfiniteQuery,
+  useMutation,
   useQuery,
+  useQueryClient,
 } from "@tanstack/react-query"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
+import { toast } from "sonner"
 
 import { Filter, FilterFieldConfig, Filters } from "@/components/reui/filters"
+import {
+  ActionBar,
+  ActionBarClose,
+  ActionBarGroup,
+  ActionBarItem,
+  ActionBarSelection,
+  ActionBarSeparator,
+} from "@/components/ui/action-bar"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Calendar as ShadcnCalendar } from "@/components/ui/calendar"
 import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
@@ -24,9 +59,14 @@ import {
 } from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
+  Cancel01Icon,
+  Delete02Icon,
   FilterHorizontalIcon,
+  PlayIcon,
   PlusSignIcon,
+  Refresh04Icon,
   Search02Icon,
+  UserAdd01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
@@ -37,20 +77,37 @@ import { EditProjectDialog } from "./components/edit-project-dialog"
 import { ProjectsTable } from "./components/projects-table"
 import { Project, STATUS_OPTIONS, WorkspaceMember } from "./types"
 
+interface BulkActionPayload {
+  status?: string
+  userIds?: string[]
+}
+
 export default function ManageProjectsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const {
     workspaces,
     activeWorkspace,
     isLoading: isWorkspaceLoading,
   } = useWorkspaceContext()
 
+  // Selection states for bulk action
+  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([])
+
   // Dialog states
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isMembersOpen, setIsMembersOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isBulkMembersOpen, setIsBulkMembersOpen] = useState(false)
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
+  const [isBulkForceDeleteOpen, setIsBulkForceDeleteOpen] = useState(false)
+  const [isBulkStartOpen, setIsBulkStartOpen] = useState(false)
+
+  // Bulk actions member selection state
+  const [bulkSelectedUserIds, setBulkSelectedUserIds] = useState<string[]>([])
+  const [bulkMemberSearch, setBulkMemberSearch] = useState("")
 
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -65,6 +122,10 @@ export default function ManageProjectsPage() {
   const canCreateProject = hasPermission("project:create")
   const canReadProjects = hasPermission("project:read")
   const canUpdateProject = hasPermission("project:update")
+  const canDeleteProject = hasPermission("project:delete")
+  const canRestoreProject = hasPermission("project:restore")
+  const canForceDeleteProject = hasPermission("project:force-delete")
+  const canAssignMembers = hasPermission("project-member:invite-member")
 
   // Load state from URL search params on mount
   useEffect(() => {
@@ -286,6 +347,49 @@ export default function ManageProjectsPage() {
     enabled: isOwnerOrAdmin || canReadProjects,
   })
 
+  // Selected projects details for bulk validation
+  const selectedProjects = useMemo(() => {
+    return visibleProjects.filter((p) => selectedProjectIds.includes(p.id))
+  }, [visibleProjects, selectedProjectIds])
+
+  const hasActiveSelected = selectedProjects.some((p) => !p.deletedAt)
+  const hasDeletedSelected = selectedProjects.some((p) => p.deletedAt)
+  const allDeletedSelected =
+    selectedProjects.length > 0 && selectedProjects.every((p) => p.deletedAt)
+
+  // Bulk action mutation
+  const bulkActionMutation = useMutation({
+    mutationFn: async (payload: {
+      projectIds: string[]
+      action: string
+      payload?: BulkActionPayload
+    }) => {
+      const res = await axiosInstance.post("/projects/bulk", payload)
+      return res.data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["manage-all-projects-infinite"],
+      })
+      queryClient.invalidateQueries({ queryKey: ["projects"] })
+      setSelectedProjectIds([])
+      toast.success(`Bulk action completed successfully`)
+    },
+    onError: (err: Error & { response?: { data?: { message?: string } } }) => {
+      toast.error(
+        err.response?.data?.message || "Failed to execute bulk action"
+      )
+    },
+  })
+
+  const handleBulkAction = (action: string, payload?: BulkActionPayload) => {
+    bulkActionMutation.mutate({
+      projectIds: selectedProjectIds,
+      action,
+      payload,
+    })
+  }
+
   // Filters field configurations
   const filterFields = useMemo<FilterFieldConfig[]>(() => {
     const isValidDate = (d: Date | undefined) =>
@@ -457,6 +561,17 @@ export default function ManageProjectsPage() {
     setIsDeleteOpen(true)
   }
 
+  const filteredOrgMembers = useMemo(() => {
+    const membersArray = Array.isArray(orgMembers) ? orgMembers : []
+    if (!bulkMemberSearch.trim()) return membersArray
+    const query = bulkMemberSearch.toLowerCase()
+    return membersArray.filter(
+      (m) =>
+        m.user?.name?.toLowerCase().includes(query) ||
+        m.user?.email?.toLowerCase().includes(query)
+    )
+  }, [orgMembers, bulkMemberSearch])
+
   if (isWorkspaceLoading || isProjectsLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] p-6">
@@ -535,7 +650,6 @@ export default function ManageProjectsPage() {
               className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground"
               strokeWidth={2}
             />
-            {/* <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" /> */}
             <Input
               placeholder="Search by title, key..."
               className="h-9 bg-background pl-9 text-xs"
@@ -554,6 +668,11 @@ export default function ManageProjectsPage() {
           fetchNextPage={fetchNextPage}
           canCreateProject={canCreateProject}
           canUpdateProject={canUpdateProject}
+          canDeleteProject={canDeleteProject}
+          canRestoreProject={canRestoreProject}
+          canForceDeleteProject={canForceDeleteProject}
+          selectedProjectIds={selectedProjectIds}
+          onSelectProjectIds={setSelectedProjectIds}
           searchQuery={debouncedSearchQuery}
           sortBy={sortBy}
           sortOrder={sortOrder}
@@ -591,6 +710,304 @@ export default function ManageProjectsPage() {
           onOpenChange={setIsDeleteOpen}
           project={selectedProject}
         />
+
+        {/* Bulk Assign Members Dialog */}
+        <Dialog open={isBulkMembersOpen} onOpenChange={setIsBulkMembersOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Bulk Assign Members</DialogTitle>
+              <DialogDescription>
+                Assign members to the {selectedProjectIds.length} selected
+                projects.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="relative py-2">
+              <HugeiconsIcon
+                icon={Search02Icon}
+                className="absolute top-4 left-3.5 h-4 w-4 text-muted-foreground"
+                strokeWidth={2}
+              />
+              <Input
+                placeholder="Search organization members..."
+                className="pl-9 text-xs"
+                value={bulkMemberSearch}
+                onChange={(e) => setBulkMemberSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="max-h-60 scrollbar-thin space-y-2 overflow-y-auto py-2 pr-1">
+              {filteredOrgMembers.map((member) => (
+                <div
+                  key={member.userId}
+                  className="flex items-center space-x-3 rounded-lg border p-2 transition-colors hover:bg-muted/30"
+                >
+                  <Checkbox
+                    id={`bulk-member-${member.userId}`}
+                    checked={bulkSelectedUserIds.includes(member.userId)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setBulkSelectedUserIds([
+                          ...bulkSelectedUserIds,
+                          member.userId,
+                        ])
+                      } else {
+                        setBulkSelectedUserIds(
+                          bulkSelectedUserIds.filter(
+                            (id) => id !== member.userId
+                          )
+                        )
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor={`bulk-member-${member.userId}`}
+                    className="flex flex-1 cursor-pointer flex-col"
+                  >
+                    <span className="text-sm font-semibold text-foreground">
+                      {member.user?.name || "Unknown Member"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {member.user?.email}
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                onClick={() => setIsBulkMembersOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  handleBulkAction("assign-members", {
+                    userIds: bulkSelectedUserIds,
+                  })
+                  setIsBulkMembersOpen(false)
+                  setBulkSelectedUserIds([])
+                }}
+                disabled={
+                  bulkSelectedUserIds.length === 0 ||
+                  bulkActionMutation.isPending
+                }
+              >
+                Assign Selected
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* ── Selection Bulk Action Bar ── */}
+        <ActionBar
+          open={selectedProjectIds.length > 0}
+          onOpenChange={(open) => {
+            const anyDialogOpen =
+              isBulkDeleteOpen ||
+              isBulkForceDeleteOpen ||
+              isBulkStartOpen ||
+              isBulkMembersOpen ||
+              isCreateOpen ||
+              isEditOpen ||
+              isMembersOpen ||
+              isDeleteOpen
+
+            if (!open && !anyDialogOpen) {
+              setSelectedProjectIds([])
+            }
+          }}
+        >
+          <ActionBarGroup>
+            <ActionBarSelection>
+              {selectedProjectIds.length} selected
+              <ActionBarClose>
+                <HugeiconsIcon
+                  icon={Cancel01Icon}
+                  strokeWidth={2}
+                  className="ml-2 cursor-pointer transition-opacity hover:opacity-85"
+                  onClick={() => setSelectedProjectIds([])}
+                />
+              </ActionBarClose>
+            </ActionBarSelection>
+            <ActionBarSeparator />
+
+            {/* Bulk Start Project Action */}
+            {canUpdateProject && hasActiveSelected && (
+              <ActionBarItem
+                variant="outline"
+                onSelect={() => setIsBulkStartOpen(true)}
+                disabled={bulkActionMutation.isPending}
+              >
+                <HugeiconsIcon icon={PlayIcon} className="h-4 w-4" />
+                Start
+              </ActionBarItem>
+            )}
+
+            {/* Bulk Update Status Action */}
+            {canUpdateProject && hasActiveSelected && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <ActionBarItem variant="outline">
+                      <HugeiconsIcon
+                        icon={Refresh04Icon}
+                        className="mr-2 h-4 w-4"
+                      />
+                      Status
+                    </ActionBarItem>
+                  }
+                />
+                <DropdownMenuContent align="start">
+                  {STATUS_OPTIONS.map((statusOpt) => (
+                    <DropdownMenuItem
+                      key={statusOpt.value}
+                      onClick={() =>
+                        handleBulkAction("update-status", {
+                          status: statusOpt.value,
+                        })
+                      }
+                      className="text-xs"
+                    >
+                      {statusOpt.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Bulk Assign Members Action */}
+            {canAssignMembers && hasActiveSelected && (
+              <ActionBarItem
+                variant="outline"
+                onSelect={() => setIsBulkMembersOpen(true)}
+                disabled={bulkActionMutation.isPending}
+              >
+                <HugeiconsIcon icon={UserAdd01Icon} className="h-4 w-4" />
+                Assign Members
+              </ActionBarItem>
+            )}
+
+            {/* Bulk Soft Delete Action */}
+            {canDeleteProject && hasActiveSelected && (
+              <ActionBarItem
+                variant="destructive"
+                onSelect={() => setIsBulkDeleteOpen(true)}
+                disabled={bulkActionMutation.isPending}
+              >
+                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
+                Delete
+              </ActionBarItem>
+            )}
+
+            {/* Bulk Restore Action */}
+            {canRestoreProject && hasDeletedSelected && (
+              <ActionBarItem
+                variant="outline"
+                className="border-green-600/30 text-green-600 hover:bg-green-50 hover:text-green-700!"
+                onSelect={() => handleBulkAction("restore")}
+                disabled={bulkActionMutation.isPending}
+              >
+                <HugeiconsIcon icon={Refresh04Icon} className="h-4 w-4" />
+                Restore
+              </ActionBarItem>
+            )}
+
+            {/* Bulk Force Delete Action */}
+            {canForceDeleteProject && allDeletedSelected && (
+              <ActionBarItem
+                variant="destructive"
+                onSelect={() => setIsBulkForceDeleteOpen(true)}
+                disabled={bulkActionMutation.isPending}
+              >
+                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
+                Force Delete
+              </ActionBarItem>
+            )}
+          </ActionBarGroup>
+        </ActionBar>
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <DialogTitle>Delete projects?</DialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete these{" "}
+                {selectedProjectIds.length} projects?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  handleBulkAction("delete")
+                  setIsBulkDeleteOpen(false)
+                }}
+                className="bg-destructive font-semibold hover:bg-destructive/95"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Bulk Force Delete Confirmation Dialog */}
+        <AlertDialog
+          open={isBulkForceDeleteOpen}
+          onOpenChange={setIsBulkForceDeleteOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <DialogTitle>Permanently delete projects?</DialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to permanently delete these{" "}
+                {selectedProjectIds.length} projects? This action is
+                irreversible and cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  handleBulkAction("force-delete")
+                  setIsBulkForceDeleteOpen(false)
+                }}
+                className="bg-destructive font-semibold hover:bg-destructive/95"
+              >
+                Permanently Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Bulk Start Projects Confirmation Dialog */}
+        <AlertDialog open={isBulkStartOpen} onOpenChange={setIsBulkStartOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <DialogTitle>Start projects?</DialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to start these {selectedProjectIds.length}{" "}
+                projects? This will set their start date to today and status to
+                on track.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  handleBulkAction("start")
+                  setIsBulkStartOpen(false)
+                }}
+                className="bg-primary font-semibold text-primary-foreground hover:bg-primary/95"
+              >
+                Start Projects
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )

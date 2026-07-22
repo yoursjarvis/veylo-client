@@ -8,12 +8,24 @@ import {
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { useRouter } from "next/navigation"
-import { useMemo, useRef } from "react"
+import { useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +46,7 @@ import {
   DocumentValidationIcon,
   Edit02Icon,
   MoreHorizontalCircle01Icon,
+  PlayIcon,
   Refresh04Icon,
   SortByDownIcon,
   SortByUpIcon,
@@ -52,6 +65,11 @@ interface ProjectsTableProps {
   fetchNextPage: () => void
   canCreateProject: boolean
   canUpdateProject: boolean
+  canDeleteProject: boolean
+  canRestoreProject: boolean
+  canForceDeleteProject: boolean
+  selectedProjectIds: string[]
+  onSelectProjectIds: (ids: string[]) => void
   searchQuery: string
   sortBy: string
   sortOrder: "asc" | "desc"
@@ -68,6 +86,11 @@ export function ProjectsTable({
   fetchNextPage,
   canCreateProject,
   canUpdateProject,
+  canDeleteProject,
+  canRestoreProject,
+  canForceDeleteProject,
+  selectedProjectIds,
+  onSelectProjectIds,
   searchQuery,
   sortBy,
   sortOrder,
@@ -79,6 +102,14 @@ export function ProjectsTable({
   const router = useRouter()
   const queryClient = useQueryClient()
   const tableContainerRef = useRef<HTMLDivElement>(null)
+
+  // State to track project for force deletion
+  const [projectToForceDelete, setProjectToForceDelete] = useState<
+    string | null
+  >(null)
+
+  // State to track project for starting
+  const [projectToStart, setProjectToStart] = useState<Project | null>(null)
 
   // Edit/Update Project status mutation
   const updateProjectMutation = useMutation({
@@ -120,9 +151,61 @@ export function ProjectsTable({
     },
   })
 
+  // Force Delete Project mutation
+  const forceDeleteProjectMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return axiosInstance.delete(`/projects/${id}/force`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["manage-all-projects-infinite"],
+      })
+      queryClient.invalidateQueries({ queryKey: ["projects"] })
+      toast.success("Project permanently deleted")
+    },
+    onError: (err: Error & { response?: { data?: { message?: string } } }) => {
+      toast.error(
+        err.response?.data?.message || "Failed to permanently delete project"
+      )
+    },
+  })
+
   // Table Columns Definition
   const columns = useMemo<ColumnDef<Project>[]>(
     () => [
+      {
+        id: "select",
+        header: () => (
+          <Checkbox
+            checked={
+              projects.length > 0 &&
+              projects.every((p) => selectedProjectIds.includes(p.id))
+            }
+            onCheckedChange={(checked) => {
+              if (checked) {
+                onSelectProjectIds(projects.map((p) => p.id))
+              } else {
+                onSelectProjectIds([])
+              }
+            }}
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={selectedProjectIds.includes(row.original.id)}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                onSelectProjectIds([...selectedProjectIds, row.original.id])
+              } else {
+                onSelectProjectIds(
+                  selectedProjectIds.filter((id) => id !== row.original.id)
+                )
+              }
+            }}
+          />
+        ),
+        size: 40,
+      },
       {
         id: "icon",
         header: "",
@@ -333,36 +416,52 @@ export function ProjectsTable({
                 />
                 <DropdownMenuContent align="end" className="w-36">
                   {isDeleted ? (
-                    <DropdownMenuItem
-                      onClick={() => restoreProjectMutation.mutate(project.id)}
-                      disabled={restoreProjectMutation.isPending}
-                      className="text-xs font-medium text-green-600 hover:bg-green-800!"
-                    >
-                      <HugeiconsIcon
-                        icon={Refresh04Icon}
-                        className="mr-2 h-3.5 w-3.5"
-                      />
-                      Restore
-                    </DropdownMenuItem>
+                    <>
+                      {canRestoreProject && (
+                        <DropdownMenuItem
+                          onClick={() =>
+                            restoreProjectMutation.mutate(project.id)
+                          }
+                          disabled={restoreProjectMutation.isPending}
+                          className="text-xs font-medium text-green-600 hover:bg-green-800!"
+                        >
+                          <HugeiconsIcon
+                            icon={Refresh04Icon}
+                            className="mr-2 h-3.5 w-3.5"
+                          />
+                          Restore
+                        </DropdownMenuItem>
+                      )}
+                      {canForceDeleteProject && (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setProjectToForceDelete(project.id)
+                          }}
+                          disabled={forceDeleteProjectMutation.isPending}
+                          className="text-xs font-medium text-destructive focus:text-destructive"
+                        >
+                          <HugeiconsIcon
+                            icon={Delete02Icon}
+                            className="mr-2 h-3.5 w-3.5"
+                          />
+                          Force Delete
+                        </DropdownMenuItem>
+                      )}
+                    </>
                   ) : (
                     <>
                       {!project.startDate &&
                         canCreateProject &&
                         canUpdateProject && (
                           <DropdownMenuItem
-                            onClick={() =>
-                              updateProjectMutation.mutate({
-                                id: project.id,
-                                startDate: new Date().toISOString(),
-                                status: "on_track",
-                              })
-                            }
+                            onClick={() => setProjectToStart(project)}
                             disabled={updateProjectMutation.isPending}
                             className="text-xs font-medium text-primary"
                           >
                             <HugeiconsIcon
-                              icon={Refresh04Icon}
+                              icon={PlayIcon}
                               className="mr-2 h-3.5 w-3.5"
+                              strokeWidth={2}
                             />
                             Start Project
                           </DropdownMenuItem>
@@ -389,17 +488,19 @@ export function ProjectsTable({
                         />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onDeleteClick(project)}
-                        className="text-xs font-medium text-destructive focus:text-destructive"
-                      >
-                        <HugeiconsIcon
-                          icon={Delete02Icon}
-                          strokeWidth={2}
-                          className="mr-2 h-3.5 w-3.5"
-                        />
-                        Delete
-                      </DropdownMenuItem>
+                      {canDeleteProject && (
+                        <DropdownMenuItem
+                          onClick={() => onDeleteClick(project)}
+                          className="text-xs font-medium text-destructive focus:text-destructive"
+                        >
+                          <HugeiconsIcon
+                            icon={Delete02Icon}
+                            strokeWidth={2}
+                            className="mr-2 h-3.5 w-3.5"
+                          />
+                          Delete
+                        </DropdownMenuItem>
+                      )}
                     </>
                   )}
                 </DropdownMenuContent>
@@ -412,12 +513,19 @@ export function ProjectsTable({
     [
       router,
       restoreProjectMutation,
+      forceDeleteProjectMutation,
       canCreateProject,
       canUpdateProject,
+      canDeleteProject,
+      canRestoreProject,
+      canForceDeleteProject,
       updateProjectMutation,
       onEditClick,
       onMembersClick,
       onDeleteClick,
+      selectedProjectIds,
+      onSelectProjectIds,
+      projects,
       sortBy,
       sortOrder,
       onSort,
@@ -439,141 +547,210 @@ export function ProjectsTable({
   })
 
   return (
-    <Card className="overflow-hidden border border-border/50 pt-0 shadow-xs">
-      {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <HugeiconsIcon
-            icon={DocumentValidationIcon}
-            className="mb-4 h-12 w-12 text-muted-foreground"
-          />
-          <h3 className="text-lg font-semibold text-foreground">
-            No Projects Found
-          </h3>
-          <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-            {searchQuery
-              ? "No projects matches your search query."
-              : "No projects match the selected filters."}
-          </p>
-        </div>
-      ) : (
-        <CardContent className="p-0">
-          <div
-            ref={tableContainerRef}
-            className="relative h-137.5 overflow-auto"
-            onScroll={(e) => {
-              const target = e.currentTarget
-              if (
-                target.scrollHeight - target.scrollTop <=
-                  target.clientHeight + 100 &&
-                hasNextPage &&
-                !isFetchingNextPage
-              ) {
-                fetchNextPage()
-              }
-            }}
-          >
-            <Table className="w-full border-collapse text-left">
-              <TableHeader className="sticky top-0 z-20 border-b border-border/50 bg-muted/65 backdrop-blur-md">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow
-                    key={headerGroup.id}
-                    className="border-b hover:bg-transparent"
-                  >
-                    {headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        style={{ width: header.column.columnDef.size }}
-                        className="px-4 py-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="divide-y divide-border/40">
-                {rowVirtualizer.getVirtualItems().length > 0 && (
-                  <TableRow className="border-0 hover:bg-transparent">
-                    <TableCell
-                      style={{
-                        height: `${rowVirtualizer.getVirtualItems()[0]?.start || 0}px`,
-                      }}
-                      className="border-0 p-0"
-                      colSpan={columns.length}
-                    />
-                  </TableRow>
-                )}
-                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                  const row = table.getRowModel().rows[virtualRow.index]
-                  if (!row) return null
-
-                  return (
+    <>
+      <Card className="overflow-hidden border border-border/50 pt-0 shadow-xs">
+        {projects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <HugeiconsIcon
+              icon={DocumentValidationIcon}
+              className="mb-4 h-12 w-12 text-muted-foreground"
+            />
+            <h3 className="text-lg font-semibold text-foreground">
+              No Projects Found
+            </h3>
+            <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+              {searchQuery
+                ? "No projects matches your search query."
+                : "No projects match the selected filters."}
+            </p>
+          </div>
+        ) : (
+          <CardContent className="p-0">
+            <div
+              ref={tableContainerRef}
+              className="relative h-137.5 overflow-auto"
+              onScroll={(e) => {
+                const target = e.currentTarget
+                if (
+                  target.scrollHeight - target.scrollTop <=
+                    target.clientHeight + 100 &&
+                  hasNextPage &&
+                  !isFetchingNextPage
+                ) {
+                  fetchNextPage()
+                }
+              }}
+            >
+              <Table className="w-full border-collapse text-left">
+                <TableHeader className="sticky top-0 z-20 border-b border-border/50 bg-muted/65 backdrop-blur-md">
+                  {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow
-                      key={virtualRow.index}
-                      data-index={virtualRow.index}
-                      ref={rowVirtualizer.measureElement}
-                      className="border-b transition-colors hover:bg-muted/10"
+                      key={headerGroup.id}
+                      className="border-b hover:bg-transparent"
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell
-                          key={cell.id}
-                          className="h-14.5 px-4 py-3 align-middle text-sm"
+                      {headerGroup.headers.map((header) => (
+                        <TableHead
+                          key={header.id}
+                          style={{ width: header.column.columnDef.size }}
+                          className="px-4 py-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                         >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  )
-                })}
-                {rowVirtualizer.getVirtualItems().length > 0 && (
-                  <TableRow className="border-0 hover:bg-transparent">
-                    <TableCell
-                      style={{
-                        height: `${
-                          rowVirtualizer.getTotalSize() -
-                          (rowVirtualizer.getVirtualItems()[
-                            rowVirtualizer.getVirtualItems().length - 1
-                          ]?.end || 0)
-                        }px`,
-                      }}
-                      className="border-0 p-0"
-                      colSpan={columns.length}
-                    />
-                  </TableRow>
-                )}
-                {isFetchingNextPage && (
-                  <>
-                    {Array.from({ length: 3 }).map((_, idx) => (
+                  ))}
+                </TableHeader>
+                <TableBody className="divide-y divide-border/40">
+                  {rowVirtualizer.getVirtualItems().length > 0 && (
+                    <TableRow className="border-0 hover:bg-transparent">
+                      <TableCell
+                        style={{
+                          height: `${rowVirtualizer.getVirtualItems()[0]?.start || 0}px`,
+                        }}
+                        className="border-0 p-0"
+                        colSpan={columns.length}
+                      />
+                    </TableRow>
+                  )}
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const row = table.getRowModel().rows[virtualRow.index]
+                    if (!row) return null
+
+                    return (
                       <TableRow
-                        key={`skeleton-${idx}`}
-                        className="border-t border-border/40 transition-colors hover:bg-muted/5"
+                        key={virtualRow.index}
+                        data-index={virtualRow.index}
+                        ref={rowVirtualizer.measureElement}
+                        className="border-b transition-colors hover:bg-muted/10"
                       >
-                        {columns.map((col, colIdx) => (
+                        {row.getVisibleCells().map((cell) => (
                           <TableCell
-                            key={`skeleton-${idx}-${colIdx}`}
-                            className="h-14.5 px-4 py-3 align-middle"
-                            style={{ width: col.size }}
+                            key={cell.id}
+                            className="h-14.5 px-4 py-3 align-middle text-sm"
                           >
-                            <Skeleton className="h-4 w-full bg-muted/20" />
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
                           </TableCell>
                         ))}
                       </TableRow>
-                    ))}
-                  </>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      )}
-    </Card>
+                    )
+                  })}
+                  {rowVirtualizer.getVirtualItems().length > 0 && (
+                    <TableRow className="border-0 hover:bg-transparent">
+                      <TableCell
+                        style={{
+                          height: `${
+                            rowVirtualizer.getTotalSize() -
+                            (rowVirtualizer.getVirtualItems()[
+                              rowVirtualizer.getVirtualItems().length - 1
+                            ]?.end || 0)
+                          }px`,
+                        }}
+                        className="border-0 p-0"
+                        colSpan={columns.length}
+                      />
+                    </TableRow>
+                  )}
+                  {isFetchingNextPage && (
+                    <>
+                      {Array.from({ length: 3 }).map((_, idx) => (
+                        <TableRow
+                          key={`skeleton-${idx}`}
+                          className="border-t border-border/40 transition-colors hover:bg-muted/5"
+                        >
+                          {columns.map((col, colIdx) => (
+                            <TableCell
+                              key={`skeleton-${idx}-${colIdx}`}
+                              className="h-14.5 px-4 py-3 align-middle"
+                              style={{ width: col.size }}
+                            >
+                              <Skeleton className="h-4 w-full bg-muted/20" />
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
+      <AlertDialog
+        open={!!projectToForceDelete}
+        onOpenChange={(open) => {
+          if (!open) setProjectToForceDelete(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Permanently delete project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete this project? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (projectToForceDelete) {
+                  forceDeleteProjectMutation.mutate(projectToForceDelete)
+                  setProjectToForceDelete(null)
+                }
+              }}
+              className="bg-destructive font-semibold hover:bg-destructive/95"
+            >
+              Permanently Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={!!projectToStart}
+        onOpenChange={(open) => {
+          if (!open) setProjectToStart(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to start the project &quot;
+              {projectToStart?.title}&quot;? This will set its start date to
+              today and status to on track.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (projectToStart) {
+                  updateProjectMutation.mutate({
+                    id: projectToStart.id,
+                    startDate: new Date().toISOString(),
+                    status: "on_track",
+                  })
+                  setProjectToStart(null)
+                }
+              }}
+              className="bg-primary font-semibold text-primary-foreground hover:bg-primary/95"
+            >
+              Start Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
