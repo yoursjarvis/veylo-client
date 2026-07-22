@@ -16,7 +16,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Textarea } from "@/components/ui/textarea"
 import { ProjectTemplate } from "../types"
@@ -42,15 +41,17 @@ export function CreateProjectDialog({
   const [description, setDescription] = useState("")
   const [icon, setIcon] = useState<string | File | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState("general-project")
-  const [selectedWorkspaceIds, setSelectedWorkspaceIds] = useState<string[]>([])
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(
+    null
+  )
 
   // Initialize selected workspace to the active one on open
   useEffect(() => {
     if (open) {
       if (activeWorkspace) {
-        setSelectedWorkspaceIds([activeWorkspace.id])
+        setSelectedWorkspaceId(activeWorkspace.id)
       } else {
-        setSelectedWorkspaceIds([])
+        setSelectedWorkspaceId(null)
       }
       // Reset form states
       setTitle("")
@@ -144,14 +145,14 @@ export function CreateProjectDialog({
   })
 
   const handleCreate = () => {
-    if (selectedWorkspaceIds.length === 0) return
+    if (!selectedWorkspaceId) return
     createProjectMutation.mutate({
       title,
       projectKey,
       description,
       icon: icon || "📁",
       template: selectedTemplate,
-      workspaceId: selectedWorkspaceIds[0],
+      workspaceId: selectedWorkspaceId,
     })
   }
 
@@ -172,15 +173,16 @@ export function CreateProjectDialog({
             <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
               Target Workspace <span className="text-destructive">*</span>
             </label>
-            <MultiSearchableSelect
-              value={selectedWorkspaceIds}
+            <SearchableSelect
+              value={selectedWorkspaceId}
               onValueChange={(val) => {
-                setSelectedWorkspaceIds(val.slice(-1))
+                setSelectedWorkspaceId(val)
               }}
               options={workspaceOptions}
               placeholder="Select target workspace..."
               searchPlaceholder="Search workspaces..."
               emptyText="No workspaces found"
+              triggerClassName="h-9 text-xs"
             />
           </div>
 
@@ -295,7 +297,7 @@ export function CreateProjectDialog({
             disabled={
               !title.trim() ||
               projectKey.trim().length < 2 ||
-              selectedWorkspaceIds.length === 0 ||
+              !selectedWorkspaceId ||
               createProjectMutation.isPending
             }
             onClick={handleCreate}
