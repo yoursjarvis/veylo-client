@@ -452,39 +452,39 @@ export function RolesTable({ organizationId }: RolesTableProps) {
               onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
               className="relative h-150 overflow-auto"
             >
-              <Table>
-                <TableHeader className="sticky top-0 z-20 bg-muted/50">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow
-                      key={headerGroup.id}
-                      className="hover:bg-transparent"
-                    >
-                      {headerGroup.headers.map((header) => (
-                        <TableHead
-                          key={header.id}
-                          className="px-4 py-3 font-medium text-muted-foreground"
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={orderedRoles.map((r) => r.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <Table>
+                    <TableHeader className="sticky top-0 z-20 bg-muted/50">
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow
+                          key={headerGroup.id}
+                          className="hover:bg-transparent"
                         >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
+                          {headerGroup.headers.map((header) => (
+                            <TableHead
+                              key={header.id}
+                              className="px-4 py-3 font-medium text-muted-foreground"
+                            >
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                            </TableHead>
+                          ))}
+                        </TableRow>
                       ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext
-                      items={orderedRoles.map((r) => r.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
+                    </TableHeader>
+                    <TableBody>
                       {rowVirtualizer.getVirtualItems().length > 0 && (
                         <TableRow>
                           <TableCell
@@ -565,10 +565,10 @@ export function RolesTable({ organizationId }: RolesTableProps) {
                           />
                         </TableRow>
                       )}
-                    </SortableContext>
-                  </DndContext>
-                </TableBody>
-              </Table>
+                    </TableBody>
+                  </Table>
+                </SortableContext>
+              </DndContext>
             </div>
           </CardContent>
         )}
