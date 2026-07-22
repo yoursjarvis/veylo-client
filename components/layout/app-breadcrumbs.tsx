@@ -6,6 +6,8 @@ import {
 } from "@/components/ui/breadcrumb"
 import type { ReactNode } from "react"
 
+import { useEffect, useState } from "react"
+
 /** Current page segment shown in the header — pass a nav item or `{ title, icon? }`. */
 export type AppBreadcrumbPage = {
   title: string
@@ -13,7 +15,13 @@ export type AppBreadcrumbPage = {
 }
 
 export function AppBreadcrumbs({ page }: { page?: AppBreadcrumbPage | null }) {
-  if (!page?.title) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted || !page?.title) {
     return null
   }
 

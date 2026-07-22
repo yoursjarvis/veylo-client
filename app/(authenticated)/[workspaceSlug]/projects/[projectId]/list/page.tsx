@@ -6,9 +6,11 @@ import {
   type Filter,
   type FilterFieldConfig,
 } from "@/components/reui/filters"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
 import { TaskList } from "@/features/tasks/components/task-list"
 import { useProjectTasks } from "@/features/tasks/hooks/use-tasks"
 import { Cancel01Icon } from "@hugeicons/core-free-icons"
@@ -231,6 +233,7 @@ export default function ListPage() {
                   )}
                 </Button>
               }
+              hidePills
             />
 
             {/* Group Filter Button */}
@@ -344,36 +347,36 @@ export default function ListPage() {
 
         {/* Right Side: View Switcher (List active, Kanban, Calendar) */}
         <div className="flex shrink-0 items-center gap-1 self-end rounded-md bg-muted p-0.5 sm:self-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 bg-card p-0 text-foreground shadow-sm"
+          <Link
+            href={`/${workspaceSlug}/projects/${projectId}/list`}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon" }),
+              "h-7 w-7 bg-card p-0 text-foreground shadow-sm hover:text-foreground"
+            )}
             aria-label="List view"
           >
             <List className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+          </Link>
+          <Link
+            href={`/${workspaceSlug}/projects/${projectId}/board`}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon" }),
+              "h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            )}
             aria-label="Board view"
-            onClick={() =>
-              router.push(`/${workspaceSlug}/projects/${projectId}/board`)
-            }
           >
             <Kanban className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+          </Link>
+          <Link
+            href={`/${workspaceSlug}/projects/${projectId}/calendar`}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon" }),
+              "h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            )}
             aria-label="Calendar view"
-            onClick={() =>
-              router.push(`/${workspaceSlug}/projects/${projectId}/calendar`)
-            }
           >
             <Calendar className="h-4 w-4" />
-          </Button>
+          </Link>
         </div>
       </div>
 

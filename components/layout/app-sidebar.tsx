@@ -23,6 +23,8 @@ import { usePathname } from "next/navigation"
 
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
 import { usePermissions } from "@/hooks/use-permissions"
+import { useQuery } from "@tanstack/react-query"
+import { axiosInstance } from "@/lib/axios"
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -40,6 +42,18 @@ export function AppSidebar() {
   const canReadOkrs = hasPermission("goal-okrs:read")
   const canReadWorkspaces = hasPermission("workspace:read")
   const canReadAuditLogs = hasPermission("audit-log:read")
+
+  const { data: projects = [] } = useQuery<any[]>({
+    queryKey: ["projects", activeWorkspace?.id],
+    queryFn: async () => {
+      if (!activeWorkspace) return []
+      const response = await axiosInstance.get(
+        `/workspaces/${activeWorkspace.id}/projects`
+      )
+      return response.data.data
+    },
+    enabled: !!activeWorkspace && canReadProjects,
+  })
 
   const hasNoWorkspaces = workspaces && workspaces.length === 0
   const isCollapsed = state === "collapsed"
@@ -59,7 +73,8 @@ export function AppSidebar() {
       canReadWorkspaces,
       canReadAuditLogs,
     },
-    activeWorkspace?.kpiEnabled
+    activeWorkspace?.kpiEnabled,
+    projects
   )
 
   return (

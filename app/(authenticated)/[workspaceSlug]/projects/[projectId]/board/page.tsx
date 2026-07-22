@@ -172,6 +172,7 @@ export default function BoardPage() {
           onChange={setActiveFilters}
           size="sm"
           trigger={filterTrigger}
+          hidePills
         />
       </div>
 

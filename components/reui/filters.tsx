@@ -1168,6 +1168,7 @@ interface FiltersProps<T = unknown> {
   enableShortcut?: boolean
   shortcutKey?: string
   shortcutLabel?: string
+  hidePills?: boolean
 }
 
 interface FilterSubmenuContentProps<T = unknown> {
@@ -1417,6 +1418,7 @@ export function Filters<T = unknown>({
   enableShortcut = false,
   shortcutKey = "f",
   shortcutLabel = "F",
+  hidePills = false,
 }: FiltersProps<T>) {
   const [addFilterOpen, setAddFilterOpen] = useState(false)
   const [menuSearchInput, setMenuSearchInput] = useState("")
@@ -1880,7 +1882,7 @@ export function Filters<T = unknown>({
           </DropdownMenu>
         )}
 
-        {filters.map((filter) => {
+        {!hidePills && filters.map((filter) => {
           const field = fieldsMap[filter.field]
           if (!field) return null
           return (

@@ -424,14 +424,30 @@ export default function ProjectLayout({
   ]
 
   const settingsLinks = [
-    ...(canUpdateProject ? [{ name: "General", path: `${basePath}/settings/general` }] : []),
-    ...(canReadMembers ? [{ name: "Members", path: `${basePath}/settings/members` }] : []),
-    ...(canReadVault ? [{ name: "Vault", path: `${basePath}/settings/vault` }] : []),
-    ...(canReadFields ? [{ name: "Fields", path: `${basePath}/settings/fields` }] : []),
-    ...(canReadStatuses ? [{ name: "Statuses", path: `${basePath}/settings/statuses` }] : []),
-    ...(canReadLabels ? [{ name: "Labels", path: `${basePath}/settings/labels` }] : []),
-    ...(canReadWebhooks ? [{ name: "Webhooks", path: `${basePath}/settings/webhooks` }] : []),
-    ...(canReadAutomation ? [{ name: "Automation", path: `${basePath}/settings/automation` }] : []),
+    ...(canUpdateProject
+      ? [{ name: "General", path: `${basePath}/settings/general` }]
+      : []),
+    ...(canReadMembers
+      ? [{ name: "Members", path: `${basePath}/settings/members` }]
+      : []),
+    ...(canReadVault
+      ? [{ name: "Vault", path: `${basePath}/settings/vault` }]
+      : []),
+    ...(canReadFields
+      ? [{ name: "Fields", path: `${basePath}/settings/fields` }]
+      : []),
+    ...(canReadStatuses
+      ? [{ name: "Statuses", path: `${basePath}/settings/statuses` }]
+      : []),
+    ...(canReadLabels
+      ? [{ name: "Labels", path: `${basePath}/settings/labels` }]
+      : []),
+    ...(canReadWebhooks
+      ? [{ name: "Webhooks", path: `${basePath}/settings/webhooks` }]
+      : []),
+    ...(canReadAutomation
+      ? [{ name: "Automation", path: `${basePath}/settings/automation` }]
+      : []),
   ]
 
   if (settingsLinks.length > 0) {
@@ -502,17 +518,18 @@ export default function ProjectLayout({
         >
           {/* Header */}
           <header className="mb-5 flex shrink-0 flex-col">
-            <div className="px-6 pt-5 pb-4">
+            <div className="px-6 pb-4">
               {/* Breadcrumb section */}
               <div className="mb-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Button
-                  onClick={() => router.push(`/${workspaceSlug}/projects`)}
-                  variant="outline"
-                  size="icon"
+                <Link
+                  href={`/${workspaceSlug}/projects`}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "icon" })
+                  )}
                   aria-label="Back to projects"
                 >
                   <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-                </Button>
+                </Link>
                 <Link
                   href={`/${workspaceSlug}/projects`}
                   className="font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -688,9 +705,9 @@ export default function ProjectLayout({
               {navLinks.map((link) => {
                 const isActive = isLinkActive(link.path)
                 return (
-                  <a
+                  <Link
                     key={link.path}
-                    onClick={() => router.push(link.path)}
+                    href={link.path}
                     className={cn(
                       "mb-2 cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-all",
                       isActive
@@ -699,7 +716,7 @@ export default function ProjectLayout({
                     )}
                   >
                     <span>{link.name}</span>
-                  </a>
+                  </Link>
                 )
               })}
             </div>
@@ -714,12 +731,14 @@ export default function ProjectLayout({
               {settingsLinks.map((link) => {
                 const isActive = pathname === link.path
                 return (
-                  <Button
+                  <Link
                     key={link.path}
-                    onClick={() => router.push(link.path)}
-                    variant={isActive ? "secondary" : "ghost"}
-                    size="sm"
+                    href={link.path}
                     className={cn(
+                      buttonVariants({
+                        variant: isActive ? "secondary" : "ghost",
+                        size: "sm",
+                      }),
                       "h-7 cursor-pointer px-3 text-xs font-semibold transition-all",
                       isActive
                         ? "bg-primary/10 text-primary hover:bg-primary/15"
@@ -727,7 +746,7 @@ export default function ProjectLayout({
                     )}
                   >
                     {link.name}
-                  </Button>
+                  </Link>
                 )
               })}
             </div>
