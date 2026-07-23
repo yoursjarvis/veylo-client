@@ -1,16 +1,8 @@
 "use client"
-/* eslint-disable @next/next/no-img-element */
+
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { IconPicker } from "@/components/shared/icon-picker"
+import { ProjectIcon } from "@/components/shared/project-icon"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,11 +14,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
+import { usePermissions } from "@/hooks/use-permissions"
 import { useWorkspaces } from "@/hooks/use-workspaces"
 import { axiosInstance } from "@/lib/axios"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Briefcase02Icon,
   Delete02Icon,
@@ -38,10 +42,6 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
-import { IconPicker } from "@/components/shared/icon-picker"
-import { getThumbUrl } from "@/lib/utils"
-import { usePermissions } from "@/hooks/use-permissions"
-import { Switch } from "@/components/ui/switch"
 
 export function WorkspaceList() {
   const { workspaces, isLoading, setIsCreateModalOpen } = useWorkspaceContext()
@@ -108,37 +108,6 @@ export function WorkspaceList() {
       const err = error as { response?: { data?: { message?: string } } }
       toast.error(err.response?.data?.message || "Failed to delete workspace")
     }
-  }
-
-  const renderIcon = (icon?: string | null, size = 18) => {
-    if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
-    if (
-      icon.startsWith("http") ||
-      icon.startsWith("/") ||
-      icon.startsWith("blob:")
-    ) {
-      const imageUrl = icon.startsWith("blob:")
-        ? icon
-        : getThumbUrl(icon) || icon
-      return (
-        <img
-          src={imageUrl}
-          onError={(e) => {
-            if (imageUrl !== icon && icon) {
-              e.currentTarget.src = icon
-            }
-          }}
-          alt="Workspace Icon"
-          className="h-full w-full rounded-[inherit] object-cover"
-          style={{ width: size, height: size }}
-        />
-      )
-    }
-    return (
-      <span className="leading-none" style={{ fontSize: size }}>
-        {icon}
-      </span>
-    )
   }
 
   if (isLoading) {
@@ -271,9 +240,11 @@ export function WorkspaceList() {
             />
 
             <div className="pointer-events-none relative z-10 flex items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                {renderIcon(workspace.icon)}
-              </div>
+              <ProjectIcon
+                icon={workspace.icon}
+                size="h-10 w-10"
+                iconSize="h-6 w-6"
+              />
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-foreground">
                   {workspace.name}

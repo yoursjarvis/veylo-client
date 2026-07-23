@@ -11,6 +11,7 @@ import React, { useState } from "react"
 import { toast } from "sonner"
 
 import { IconPicker } from "@/components/shared/icon-picker"
+import { ProjectIcon } from "@/components/shared/project-icon"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -196,56 +197,6 @@ export default function ProjectsPage() {
     },
   })
 
-  const renderProjectIcon = (
-    icon?: string | null,
-    sizeClass = "h-12 w-12",
-    textClass = "text-2xl"
-  ) => {
-    const baseClasses = `flex items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-105 border border-border shadow-xs`
-    if (!icon) {
-      return (
-        <span
-          className={`${baseClasses} ${sizeClass} bg-secondary ${textClass}`}
-        >
-          📁
-        </span>
-      )
-    }
-    if (
-      icon.startsWith("http") ||
-      icon.startsWith("/") ||
-      icon.startsWith("blob:")
-    ) {
-      const imageUrl = icon.startsWith("blob:")
-        ? icon
-        : getThumbUrl(icon) || icon
-      return (
-        <div
-          className={`${baseClasses} ${sizeClass} relative overflow-hidden bg-background`}
-        >
-          <Image
-            src={imageUrl}
-            onError={(e) => {
-              if (imageUrl !== icon && icon) {
-                e.currentTarget.src = icon
-              }
-            }}
-            alt="Project Icon"
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
-      )
-    }
-    return (
-      <span
-        className={`${baseClasses} ${sizeClass} bg-secondary ${textClass} leading-none`}
-      >
-        {icon}
-      </span>
-    )
-  }
 
   if (isWorkspaceLoading || isProjectsLoading) {
     return (
@@ -449,7 +400,7 @@ export default function ProjectsPage() {
                         onChange={(val) => setNewProjectIcon(val)}
                       />
                       <span className="text-xs leading-normal text-muted-foreground">
-                        Choose an emoji or upload an image logo.
+                        Choose a predefined icon &amp; color, or upload a custom image.
                       </span>
                     </div>
                   </div>
@@ -528,7 +479,12 @@ export default function ProjectsPage() {
                 className="group relative flex cursor-pointer flex-col overflow-hidden p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40"
               >
                 <div className="flex items-start gap-4">
-                  {renderProjectIcon(project.icon, "h-12 w-12", "text-2xl")}
+                  <ProjectIcon
+                    icon={project.icon}
+                    size="h-12 w-12"
+                    iconSize="h-6 w-6"
+                    className="transition-transform duration-300 group-hover:scale-105 border border-border/20 shadow-xs"
+                  />
                   <div className="flex-1 space-y-1">
                     <h3 className="line-clamp-1 font-semibold text-foreground transition-colors duration-200 group-hover:text-primary">
                       {project.title}

@@ -57,7 +57,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Project, STATUS_OPTIONS } from "../types"
-import { ProjectIcon } from "./project-icon"
+import { ProjectIcon } from "@/components/shared/project-icon"
 
 interface ProjectsTableProps {
   projects: Project[]

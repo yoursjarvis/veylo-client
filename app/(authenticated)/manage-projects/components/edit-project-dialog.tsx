@@ -175,7 +175,7 @@ export function EditProjectDialog({
                 onChange={(val) => setIcon(val)}
               />
               <span className="text-xs leading-normal text-muted-foreground">
-                Choose an emoji or upload an image logo.
+                Choose a predefined icon &amp; color, or upload a custom image.
               </span>
             </div>
           </div>

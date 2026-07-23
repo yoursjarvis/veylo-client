@@ -31,6 +31,7 @@ import { toast } from "sonner"
 
 import { Badge } from "@/components/reui/badge"
 import { IconPicker } from "@/components/shared/icon-picker"
+import { ProjectIcon } from "@/components/shared/project-icon"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -323,48 +324,6 @@ export default function ProjectLayout({
     },
   })
 
-  const renderProjectIcon = (
-    icon?: string | null,
-    sizeClass = "h-14 w-14",
-    textClass = "text-3xl"
-  ) => {
-    const baseClasses = `flex items-center justify-center rounded-xl transition-all duration-300 shadow-md backdrop-blur`
-    if (!icon) {
-      return (
-        <span className={`${baseClasses} ${sizeClass} ${textClass}`}>📁</span>
-      )
-    }
-    if (
-      icon.startsWith("http") ||
-      icon.startsWith("/") ||
-      icon.startsWith("blob:")
-    ) {
-      const imageUrl = icon.startsWith("blob:")
-        ? icon
-        : getThumbUrl(icon) || icon
-      return (
-        <div className={`${baseClasses} ${sizeClass} relative overflow-hidden`}>
-          <Image
-            src={imageUrl}
-            onError={(e) => {
-              if (imageUrl !== icon && icon) {
-                e.currentTarget.src = icon
-              }
-            }}
-            alt="Project Icon"
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
-      )
-    }
-    return (
-      <span className={`${baseClasses} ${sizeClass} ${textClass} leading-none`}>
-        {icon}
-      </span>
-    )
-  }
 
   if (isWorkspaceLoading || isProjectDetailLoading) {
     return (
@@ -560,19 +519,21 @@ export default function ProjectLayout({
                         }}
                       >
                         <div className="cursor-pointer transition-opacity hover:opacity-85">
-                          {renderProjectIcon(
-                            selectedProject?.icon,
-                            "h-9 w-9 rounded-lg text-lg bg-warning",
-                            "text-base"
-                          )}
+                          <ProjectIcon
+                            icon={updateProjectIconMutation.isPending ? null : selectedProject?.icon}
+                            size="h-9 w-9"
+                            iconSize="h-4.5 w-4.5"
+                            className="rounded-lg shadow-md"
+                          />
                         </div>
                       </IconPicker>
                     ) : (
-                      renderProjectIcon(
-                        selectedProject?.icon,
-                        "h-9 w-9 rounded-lg text-lg bg-warning",
-                        "text-base"
-                      )
+                      <ProjectIcon
+                        icon={selectedProject?.icon}
+                        size="h-9 w-9"
+                        iconSize="h-4.5 w-4.5"
+                        className="rounded-lg shadow-md"
+                      />
                     )}
                   </div>
                   <div>

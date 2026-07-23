@@ -1,5 +1,6 @@
 "use client"
 import { useWorkspaceContext } from "@/components/providers/workspace-provider"
+import { ProjectIcon } from "@/components/shared/project-icon"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getThumbUrl } from "@/lib/utils"
 import {
   ArrowDown01Icon,
   Briefcase02Icon,
@@ -24,7 +24,6 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -56,33 +55,6 @@ export function WorkspaceSwitcher() {
     workspace.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const renderIcon = (icon?: string | null, size = 18) => {
-    if (!icon) return <HugeiconsIcon icon={Briefcase02Icon} size={size} />
-    if (icon.startsWith("http") || icon.startsWith("/")) {
-      const imageUrl = getThumbUrl(icon) || icon
-      return (
-        <Image
-          src={imageUrl}
-          onError={(e) => {
-            if (imageUrl !== icon && icon) {
-              e.currentTarget.src = icon
-            }
-          }}
-          alt="Workspace Icon"
-          width={32}
-          height={32}
-          unoptimized
-          className="h-full w-full rounded-[inherit] object-cover"
-        />
-      )
-    }
-    return (
-      <span className="leading-none" style={{ fontSize: size }}>
-        {icon}
-      </span>
-    )
-  }
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -96,9 +68,11 @@ export function WorkspaceSwitcher() {
                 size="lg"
                 className="border data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  {renderIcon(activeWorkspace?.icon)}
-                </div>
+                <ProjectIcon
+                  icon={activeWorkspace?.icon}
+                  size="h-10 w-10"
+                  iconSize="h-7 w-7"
+                />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     {activeWorkspace?.name || "Select Workspace"}
@@ -141,9 +115,11 @@ export function WorkspaceSwitcher() {
                     onClick={() => setActiveWorkspace(workspace.id)}
                     className="gap-2 p-2"
                   >
-                    <div className="flex size-6 items-center justify-center rounded-sm border">
-                      {renderIcon(workspace.icon, 12)}
-                    </div>
+                    <ProjectIcon
+                      icon={workspace.icon}
+                      size="h-8 w-8"
+                      iconSize="h-6 w-6"
+                    />
                     {workspace.name}
                     {activeWorkspace?.id === workspace.id && (
                       <HugeiconsIcon

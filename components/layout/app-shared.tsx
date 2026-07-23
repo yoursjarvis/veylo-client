@@ -17,6 +17,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import type { ReactNode } from "react"
 import Image from "next/image"
 import { getThumbUrl } from "@/lib/utils"
+import { parseIconValue, getPresetIconEntry } from "@/components/shared/icon-picker"
 
 export type SidebarNavItem = {
   title: string
@@ -33,20 +34,29 @@ export type SidebarNavGroup = {
 
 export function renderSidebarProjectIcon(icon?: string | null) {
   const baseClasses =
-    "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-border/40 text-2xs leading-none shadow-2xs font-normal"
+    "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/40 text-2xs leading-none shadow-2xs font-normal"
 
-  if (!icon) {
+  const parsed = parseIconValue(icon)
+
+  if (parsed.type === "preset") {
+    const entry = getPresetIconEntry(parsed.iconName)
     return (
-      <span className={`${baseClasses} bg-secondary/50 text-[10px]`}>📁</span>
+      <span
+        className={`${baseClasses}`}
+        style={{ backgroundColor: parsed.bgColor }}
+      >
+        {entry && (
+          <HugeiconsIcon
+            icon={entry.icon as Parameters<typeof HugeiconsIcon>[0]["icon"]}
+            className="h-4 w-4 text-white"
+          />
+        )}
+      </span>
     )
   }
 
-  if (
-    icon.startsWith("http") ||
-    icon.startsWith("/") ||
-    icon.startsWith("blob:")
-  ) {
-    const imageUrl = icon.startsWith("blob:") ? icon : getThumbUrl(icon) || icon
+  if (parsed.type === "image") {
+    const imageUrl = parsed.url.startsWith("blob:") ? parsed.url : getThumbUrl(parsed.url) || parsed.url
     return (
       <div className={`${baseClasses} relative overflow-hidden bg-background`}>
         <Image
@@ -60,9 +70,11 @@ export function renderSidebarProjectIcon(icon?: string | null) {
     )
   }
 
-  // Emoji or single character
+  // Fallback
   return (
-    <span className={`${baseClasses} bg-secondary/50 text-[10px]`}>{icon}</span>
+    <span className={`${baseClasses} bg-secondary/50`}>
+      <HugeiconsIcon icon={Briefcase02Icon} className="h-4 w-4 text-muted-foreground" />
+    </span>
   )
 }
 
